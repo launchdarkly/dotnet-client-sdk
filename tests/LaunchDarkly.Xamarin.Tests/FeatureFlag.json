@@ -1,0 +1,33 @@
+{
+  "boolean-flag": {
+    "value": true,
+    "version": 123,
+    "variation": 0,
+    "trackEvents": true,
+    "debugEventsUntilDate": 1525196668210
+  },
+  "json-flag": {
+    "value": {"some-key": "some-value"},
+    "version": 456,
+    "variation": 1,
+    "trackEvents": false
+  },
+  "float-flag": {
+    "value": 3.14159,
+    "version": 456,
+    "variation": 1,
+    "trackEvents": false
+  },
+  "int-flag": {
+    "value": 5,
+    "version": 456,
+    "variation": 1,
+    "trackEvents": false
+  },
+  "string-flag": {
+    "value": "string value",
+    "version": 456,
+    "variation": 1,
+    "trackEvents": false
+  }
+}

@@ -1,0 +1,22 @@
+﻿dependencies:
+  pre:
+    - curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+    - sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+    - sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+    - sudo apt-get install apt-transport-https
+    - sudo apt-get update
+    - sudo apt-get install dotnet-sdk-2.0.0
+    - sudo apt-get install xsltproc
+  override:
+    - dotnet restore
+    - dotnet build src/LaunchDarkly.Common -f netstandard1.6
+    - dotnet build src/LaunchDarkly.Common -f netstandard2.0
+    - dotnet build src/LaunchDarkly.Xamarin -f netstandard1.6
+    - dotnet build src/LaunchDarkly.Xamarin -f netstandard2.0
+test:
+  override:
+    - dotnet add tests/LaunchDarkly.Xamarin.Tests/LaunchDarkly.Xamarin.Tests.csproj package dotnet-xunit
+    - dotnet restore
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit
+    - cd tests/LaunchDarkly.Xamarin.Tests; dotnet xunit -xml xunit.xml
+    - xsltproc -o $CIRCLE_TEST_REPORTS/junit/junit.xml tests/LaunchDarkly.Xamarin.Tests/xunit-to-junit.xslt tests/LaunchDarkly.Xamarin.Tests/xunit.xml
