@@ -102,7 +102,9 @@ namespace LaunchDarkly.Xamarin
         /// <param name="user">The user needed for client operations.</param>
         public static LdClient Init(string mobileKey, User user)
         {
-            return InitAsync(mobileKey, user).Result;
+            var config = Configuration.Default(mobileKey);
+
+            return Init(config, user);
         }
 
         /// <summary>
@@ -142,7 +144,14 @@ namespace LaunchDarkly.Xamarin
         /// <param name="user">The user needed for client operations.</param>
         public static LdClient Init(Configuration config, User user)
         {
-            return InitAsync(config, user).Result;
+            CreateInstance(config, user);
+
+            if (Instance.Online)
+            {
+                StartUpdateProcessor();
+            }
+
+            return Instance;
         }
 
         /// <summary>
