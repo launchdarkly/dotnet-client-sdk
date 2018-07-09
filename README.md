@@ -1,6 +1,6 @@
 LaunchDarkly SDK [BETA] for Xamarin
 ===========================
-[![CircleCI](https://circleci.com/gh/launchdarkly/.xamarin-client/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/.xamarin-client/tree/master)
+[![CircleCI](https://circleci.com/gh/launchdarkly/xamarin-client/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/.xamarin-client/tree/master)
 
 *This software is a **beta** version and should not be considered ready for production use until tagged at least 1.0.*
 
@@ -9,16 +9,16 @@ Quick setup
 
 0. Use [NuGet](http://docs.nuget.org/docs/start-here/using-the-package-manager-console) to add the Xamarin SDK to your project:
 
-        Install-Package LaunchDarkly.Client
+        Install-Package LaunchDarkly.Xamarin
 
 1. Import the LaunchDarkly package:
 
-        using LaunchDarkly.Client;
+        using LaunchDarkly.Xamarin;
 
-2. Create a new LDClient with your Mobile key and user:
+2. Initialize the LDClient with your Mobile key and user:
 
         User user = User.WithKey(username);
-        LdClient ldClient = new LdClient("YOUR_MOBILE_KEY", username);
+        LdClient ldClient = LdClient.Init("YOUR_MOBILE_KEY", username);
 
 Your first feature flag
 -----------------------
