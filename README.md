@@ -1,6 +1,6 @@
 LaunchDarkly SDK [BETA] for Xamarin
 ===========================
-[![CircleCI](https://circleci.com/gh/launchdarkly/xamarin-client/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/.xamarin-client/tree/master)
+[![CircleCI](https://circleci.com/gh/launchdarkly/xamarin-client/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/xamarin-client/tree/master)
 
 *This software is a **beta** version and should not be considered ready for production use until tagged at least 1.0.*
 
