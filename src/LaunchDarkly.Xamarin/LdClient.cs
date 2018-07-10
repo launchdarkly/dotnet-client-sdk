@@ -102,7 +102,9 @@ namespace LaunchDarkly.Xamarin
         /// <param name="user">The user needed for client operations.</param>
         public static LdClient Init(string mobileKey, User user)
         {
-            return InitAsync(mobileKey, user).Result;
+            var config = Configuration.Default(mobileKey);
+
+            return Init(config, user);
         }
 
         /// <summary>
@@ -142,7 +144,14 @@ namespace LaunchDarkly.Xamarin
         /// <param name="user">The user needed for client operations.</param>
         public static LdClient Init(Configuration config, User user)
         {
-            return InitAsync(config, user).Result;
+            CreateInstance(config, user);
+
+            if (Instance.Online)
+            {
+                StartUpdateProcessor();
+            }
+
+            return Instance;
         }
 
         /// <summary>
@@ -158,21 +167,29 @@ namespace LaunchDarkly.Xamarin
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="config">The client configuration object</param>
         /// <param name="user">The user needed for client operations.</param>
-        public static async Task<LdClient> InitAsync(Configuration config, User user)
+        public static Task<LdClient> InitAsync(Configuration config, User user)
+        {
+            CreateInstance(config, user);
+
+            if (Instance.Online)
+            {
+                Task t = StartUpdateProcessorAsync();
+                return t.ContinueWith((result) => Instance);
+            }
+            else
+            {
+                return Task.FromResult(Instance);
+            }
+        }
+
+        static void CreateInstance(Configuration configuration, User user)
         {
             if (Instance != null)
                 throw new Exception("LdClient instance already exists.");
 
-            Instance = new LdClient(config, user);
+            Instance = new LdClient(configuration, user);
             Log.InfoFormat("Initialized LaunchDarkly Client {0}",
                            Instance.Version);
-
-            if (Instance.Online)
-            {
-                await StartUpdateProcessorAsync();
-            }
-
-            return Instance;
         }
 
         static void StartUpdateProcessor()
