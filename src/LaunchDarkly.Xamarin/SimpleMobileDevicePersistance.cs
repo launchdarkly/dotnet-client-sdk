@@ -3,7 +3,7 @@ using Xamarin.Essentials;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class SimplePersistance : ISimplePersistance
+    internal class SimpleMobileDevicePersistance : ISimplePersistance
     {
         public void Save(string key, string value)
         {

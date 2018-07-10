@@ -114,11 +114,16 @@ namespace LaunchDarkly.Xamarin
         /// only include the user key, except for one "index" event that provides the full details for the user).
         /// </summary>
         public bool InlineUsersInEvents { get; internal set; }
-
+        /// <see cref="IMobileConfiguration.BackgroundPollingInterval"/>
         public TimeSpan BackgroundPollingInterval { get; internal set; }
+        /// <see cref="IMobileConfiguration.ConnectionTimeout"/>
         public TimeSpan ConnectionTimeout { get; internal set; }
+        /// <see cref="IMobileConfiguration.EnableBackgroundUpdating"/>
         public bool EnableBackgroundUpdating { get; internal set; }
+        /// <see cref="IMobileConfiguration.UseReport"/>
         public bool UseReport { get; internal set; }
+        /// <see cref="IMobileConfiguration.UseInMemoryPersistanceOnly"/>
+        public bool UseInMemoryPersistanceOnly { get; internal set; }
 
         internal IFlagCacheManager FlagCacheManager { get; set; }
         internal IConnectionManager ConnectionManager { get; set; }
@@ -657,6 +662,18 @@ namespace LaunchDarkly.Xamarin
         public static Configuration WithBackgroundPollingInterval(this Configuration configuration, TimeSpan backgroundPollingInternal)
         {
             configuration.BackgroundPollingInterval = backgroundPollingInternal;
+            return configuration;
+        }
+
+        /// <summary>
+        /// Sets the boolean of whether to use in-memory persistance on the device only.
+        /// </summary>
+        /// <param name="configuration">Configuration.</param>
+        /// <param name="useInMemoryPersistanceOnly">If set to <c>true</c> use in memory persistance only.</param>
+        /// <returns>the same <c>Configuration</c> instance</returns>
+        public static Configuration WithUseInMemoryPersistanceOnly(this Configuration configuration, bool useInMemoryPersistanceOnly)
+        {
+            configuration.UseInMemoryPersistanceOnly = useInMemoryPersistanceOnly;
             return configuration;
         }
     }

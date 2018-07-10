@@ -13,6 +13,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <IntermediateOutputPath>obj\Release\netstandard2.0</IntermediateOutputPath>
+    <TreatWarningsAsErrors></TreatWarningsAsErrors>
+    <DocumentationFile></DocumentationFile>
+    <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Common.Logging" Version="3.4.1" />

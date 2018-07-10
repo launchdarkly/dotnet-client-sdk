@@ -41,5 +41,12 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <value><c>true</c> if use report; otherwise, <c>false</c>.</value>
         bool UseReport { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether to use in-memory persistance on the device instead of
+        /// the default device storage scheme.
+        /// </summary>
+        /// <value><c>true</c> if use in memory persistance only; otherwise, <c>false</c>.</value>
+        bool UseInMemoryPersistanceOnly { get; }
     }
 }

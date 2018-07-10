@@ -86,12 +86,17 @@ namespace LaunchDarkly.Xamarin
 
         internal static ISimplePersistance CreatePersister(Configuration configuration)
         {
+            if (configuration.UseInMemoryPersistanceOnly)
+            {
+                return new SimpleInMemoryPersistance();
+            }
+
             if (configuration.Persister != null)
             {
                 return configuration.Persister;
             }
 
-            return new SimplePersistance();
+            return new SimpleMobileDevicePersistance();
         }
 
         internal static IDeviceInfo CreateDeviceInfo(Configuration configuration)
