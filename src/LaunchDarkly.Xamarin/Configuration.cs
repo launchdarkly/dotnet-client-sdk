@@ -122,8 +122,6 @@ namespace LaunchDarkly.Xamarin
         public bool EnableBackgroundUpdating { get; internal set; }
         /// <see cref="IMobileConfiguration.UseReport"/>
         public bool UseReport { get; internal set; }
-        /// <see cref="IMobileConfiguration.UseInMemoryPersistanceOnly"/>
-        public bool UseInMemoryPersistanceOnly { get; internal set; }
 
         internal IFlagCacheManager FlagCacheManager { get; set; }
         internal IConnectionManager ConnectionManager { get; set; }
@@ -563,7 +561,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="configuration">Configuration.</param>
         /// <param name="connectionManager">Connection manager.</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
-        internal static Configuration WithConnectionManager(this Configuration configuration, IConnectionManager connectionManager)
+        public static Configuration WithConnectionManager(this Configuration configuration, IConnectionManager connectionManager)
         {
             configuration.ConnectionManager = connectionManager;
             return configuration;
@@ -611,7 +609,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="configuration">Configuration.</param>
         /// <param name="persister">Persister.</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
-        internal static Configuration WithPersister(this Configuration configuration, ISimplePersistance persister)
+        public static Configuration WithPersister(this Configuration configuration, ISimplePersistance persister)
         {
             configuration.Persister = persister;
             return configuration;
@@ -623,7 +621,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="configuration">Configuration.</param>
         /// <param name="deviceInfo">Device info.</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
-        internal static Configuration WithDeviceInfo(this Configuration configuration, IDeviceInfo deviceInfo)
+        public static Configuration WithDeviceInfo(this Configuration configuration, IDeviceInfo deviceInfo)
         {
             configuration.DeviceInfo = deviceInfo;
             return configuration;
@@ -662,18 +660,6 @@ namespace LaunchDarkly.Xamarin
         public static Configuration WithBackgroundPollingInterval(this Configuration configuration, TimeSpan backgroundPollingInternal)
         {
             configuration.BackgroundPollingInterval = backgroundPollingInternal;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Sets the boolean of whether to use in-memory persistance on the device only.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="useInMemoryPersistanceOnly">If set to <c>true</c> use in memory persistance only.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithUseInMemoryPersistanceOnly(this Configuration configuration, bool useInMemoryPersistanceOnly)
-        {
-            configuration.UseInMemoryPersistanceOnly = useInMemoryPersistanceOnly;
             return configuration;
         }
     }

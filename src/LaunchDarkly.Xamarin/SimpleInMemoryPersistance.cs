@@ -2,7 +2,7 @@
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class SimpleInMemoryPersistance : ISimplePersistance
+    public class SimpleInMemoryPersistance : ISimplePersistance
     {
         IDictionary<string, string> map = new Dictionary<string, string>();
 

@@ -2,7 +2,7 @@
 
 namespace LaunchDarkly.Xamarin
 {
-    internal interface IConnectionManager
+    public interface IConnectionManager
     {
         bool IsConnected { get; set; }
     }
