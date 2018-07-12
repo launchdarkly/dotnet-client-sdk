@@ -8,6 +8,7 @@ namespace LaunchDarkly.Xamarin
     {
         public JToken value;
         public int version;
+        public int? flagVersion;
         public bool trackEvents;
         public int? variation;
         public long? debugEventsUntilDate;
@@ -16,6 +17,7 @@ namespace LaunchDarkly.Xamarin
         {
             return JToken.DeepEquals(value, otherFlag.value)
                         && version == otherFlag.version
+                        && flagVersion == otherFlag.flagVersion
                         && trackEvents == otherFlag.trackEvents
                         && variation == otherFlag.variation
                         && debugEventsUntilDate == otherFlag.debugEventsUntilDate;
@@ -41,7 +43,7 @@ namespace LaunchDarkly.Xamarin
         }
 
         public string Key => _key;
-        public int Version => _featureFlag.version;
+        public int Version => _featureFlag.flagVersion ?? _featureFlag.version;
         public bool TrackEvents => _featureFlag.trackEvents;
         public long? DebugEventsUntilDate => _featureFlag.debugEventsUntilDate;
     }

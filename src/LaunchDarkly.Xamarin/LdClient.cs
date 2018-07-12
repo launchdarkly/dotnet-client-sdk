@@ -67,8 +67,8 @@ namespace LaunchDarkly.Xamarin
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
 
-            // If you pass in a null user or user with an empty key, one will be assigned to them.
-            if (user == null || String.IsNullOrEmpty(user.Key))
+            // If you pass in a null user or user with a null key, one will be assigned to them.
+            if (user == null || user.Key == null)
             {
                 User = UserWithUniqueKey(user);
             }
@@ -427,7 +427,7 @@ namespace LaunchDarkly.Xamarin
             }
 
             User userWithKey = null;
-            if (String.IsNullOrEmpty(user.Key))
+            if (user.Key == null)
             {
                 userWithKey = UserWithUniqueKey(user);
             }
