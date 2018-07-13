@@ -32,7 +32,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var initTask = processor.Start();
             var unused = initTask.Wait(TimeSpan.FromSeconds(1));
             var flags = mockFlagCacheManager.FlagsForUser(user);
-            Assert.Equal(5, flags.Count);
+            Assert.Equal(6, flags.Count);
         }
     }
 }

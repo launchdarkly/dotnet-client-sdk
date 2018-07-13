@@ -77,6 +77,13 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
+        public void DefaultValueReturnedIfFlagIsOff()
+        {
+            var client = Client();
+            Assert.Equal(123, client.IntVariation("off-flag", 123));
+        }
+
+        [Fact]
         public void IdentifyUpdatesTheUser()
         {
             var client = Client();
