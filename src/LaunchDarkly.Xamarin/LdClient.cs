@@ -334,13 +334,21 @@ namespace LaunchDarkly.Xamarin
             if (flag != null)
             {
                 featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
-                featureRequestEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent,
-                                                                          User,
-                                                                          flag.variation,
-                                                                          flag.value,
-                                                                          defaultValue);
+                var value = flag.value;
+                if (value == null) {
+                    featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
+                                                                                     User,
+                                                                                     defaultValue);
+                    value = defaultValue;
+                } else {
+                    featureRequestEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent,
+                                                                              User,
+                                                                              flag.variation,
+                                                                              flag.value,
+                                                                              defaultValue);
+                }
                 eventProcessor.SendEvent(featureRequestEvent);
-                return flag.value;
+                return value;
             }
 
             Log.InfoFormat("Unknown feature flag {0}; returning default value",
