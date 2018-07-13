@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.0-beta8</Version>
+    <Version>1.0.0-beta9</Version>
     <TargetFrameworks>netstandard1.6;netstandard2.0;net45</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\LaunchDarkly.Xamarin.snk</AssemblyOriginatorKeyFile>
