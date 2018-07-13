@@ -4,7 +4,6 @@
     <TargetFrameworks>netstandard1.6;netstandard2.0;net45</TargetFrameworks>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\LaunchDarkly.Xamarin.snk</AssemblyOriginatorKeyFile>
-    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -23,12 +22,6 @@
     <PackageReference Include="Xamarin.Essentials" Version="0.6.0-preview" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
     <PackageReference Include="LaunchDarkly.Common" Version="1.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="User.cs" />
-    <Compile Remove="ILdClient.cs" />
-    <Compile Remove="MobileExtensions.cs" />
-    <Compile Remove="IFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
