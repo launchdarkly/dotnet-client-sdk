@@ -67,8 +67,8 @@ namespace LaunchDarkly.Xamarin
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
 
-            // If you pass in a null user or user with an empty key, one will be assigned to them.
-            if (user == null || String.IsNullOrEmpty(user.Key))
+            // If you pass in a null user or user with a null key, one will be assigned to them.
+            if (user == null || user.Key == null)
             {
                 User = UserWithUniqueKey(user);
             }
@@ -334,13 +334,21 @@ namespace LaunchDarkly.Xamarin
             if (flag != null)
             {
                 featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
-                featureRequestEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent,
-                                                                          User,
-                                                                          flag.variation,
-                                                                          flag.value,
-                                                                          defaultValue);
+                var value = flag.value;
+                if (value == null) {
+                    featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
+                                                                                     User,
+                                                                                     defaultValue);
+                    value = defaultValue;
+                } else {
+                    featureRequestEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent,
+                                                                              User,
+                                                                              flag.variation,
+                                                                              flag.value,
+                                                                              defaultValue);
+                }
                 eventProcessor.SendEvent(featureRequestEvent);
-                return flag.value;
+                return value;
             }
 
             Log.InfoFormat("Unknown feature flag {0}; returning default value",
@@ -427,7 +435,7 @@ namespace LaunchDarkly.Xamarin
             }
 
             User userWithKey = null;
-            if (String.IsNullOrEmpty(user.Key))
+            if (user.Key == null)
             {
                 userWithKey = UserWithUniqueKey(user);
             }

@@ -77,6 +77,13 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
+        public void DefaultValueReturnedIfFlagIsOff()
+        {
+            var client = Client();
+            Assert.Equal(123, client.IntVariation("off-flag", 123));
+        }
+
+        [Fact]
         public void IdentifyUpdatesTheUser()
         {
             var client = Client();
@@ -127,12 +134,12 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void UserWithMissingKeyWillHaveUniqueKeySet()
+        public void UserWithNullKeyWillHaveUniqueKeySet()
         {
             LdClient.Instance = null;
-            var userWithoutKey = User.WithKey(String.Empty);
-            var config = StubbedConfigAndUserBuilder.Config(userWithoutKey, "someOtherAppKey");
-            var client = LdClient.Init(config, userWithoutKey);
+            var userWithNullKey = User.WithKey(null);
+            var config = StubbedConfigAndUserBuilder.Config(userWithNullKey, "someOtherAppKey");
+            var client = LdClient.Init(config, userWithNullKey);
             Assert.Equal(MockDeviceInfo.key, client.User.Key);
             LdClient.Instance = null;
         }
@@ -140,8 +147,10 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void IdentifyWithUserMissingKeyUsesUniqueGeneratedKey()
         {
+            var client = Client();
             LdClient.Instance.Identify(User.WithKey("a new user's key"));
-            LdClient.Instance.Identify(User.WithKey(String.Empty));
+            var userWithNullKey = User.WithKey(null);
+            LdClient.Instance.Identify(userWithNullKey);
             Assert.Equal(MockDeviceInfo.key, LdClient.Instance.User.Key);
             LdClient.Instance = null;
         }
