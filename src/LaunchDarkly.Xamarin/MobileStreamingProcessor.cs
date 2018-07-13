@@ -129,7 +129,7 @@ namespace LaunchDarkly.Xamarin
                     break;
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
         void PatchFeatureFlag(string flagKey, FeatureFlag featureFlag)
