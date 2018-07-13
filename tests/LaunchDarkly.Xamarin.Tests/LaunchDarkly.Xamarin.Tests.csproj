@@ -28,11 +28,6 @@
     <ProjectReference Include="..\..\src\LaunchDarkly.Xamarin\LaunchDarkly.Xamarin.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="EventUserTest.cs" />
-    <Compile Remove="MockUpdateProcessor.cs" />
-    <Compile Remove="MockFeatureFlagListenerManager.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="FeatureFlag.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
