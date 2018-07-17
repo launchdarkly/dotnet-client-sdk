@@ -13,14 +13,9 @@ namespace LaunchDarkly.Xamarin.Tests
 
         LdClient Client()
         {
-            if (LdClient.Instance == null)
-            {
-                User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
-                var configuration = StubbedConfigAndUserBuilder.Config(user, appKey);
-                return LdClient.Init(configuration, user);
-            }
-
-            return LdClient.Instance;
+            User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
+            var configuration = StubbedConfigAndUserBuilder.Config(user, appKey);
+            return TestUtil.CreateClient(configuration, user);
         }
 
         [Fact]
@@ -95,9 +90,20 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void SharedClientIsTheOnlyClientAvailable()
         {
-            var client = Client();
-            var config = Configuration.Default(appKey);
-            Assert.ThrowsAsync<Exception>(async () => await LdClient.InitAsync(config, User.WithKey("otherUserKey")));
+            lock (TestUtil.ClientInstanceLock)
+            {
+                User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
+                var config = StubbedConfigAndUserBuilder.Config(user, appKey);
+                var client = LdClient.Init(config, user);
+                try
+                {
+                    Assert.ThrowsAsync<Exception>(async () => await LdClient.InitAsync(config, User.WithKey("otherUserKey")));
+                }
+                finally
+                {
+                    LdClient.Instance = null;
+                }
+            }
         }
 
         [Fact]
@@ -136,23 +142,20 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void UserWithNullKeyWillHaveUniqueKeySet()
         {
-            LdClient.Instance = null;
             var userWithNullKey = User.WithKey(null);
             var config = StubbedConfigAndUserBuilder.Config(userWithNullKey, "someOtherAppKey");
-            var client = LdClient.Init(config, userWithNullKey);
+            var client = TestUtil.CreateClient(config, userWithNullKey);
             Assert.Equal(MockDeviceInfo.key, client.User.Key);
-            LdClient.Instance = null;
         }
 
         [Fact]
         public void IdentifyWithUserMissingKeyUsesUniqueGeneratedKey()
         {
             var client = Client();
-            LdClient.Instance.Identify(User.WithKey("a new user's key"));
+            client.Identify(User.WithKey("a new user's key"));
             var userWithNullKey = User.WithKey(null);
-            LdClient.Instance.Identify(userWithNullKey);
-            Assert.Equal(MockDeviceInfo.key, LdClient.Instance.User.Key);
-            LdClient.Instance = null;
+            client.Identify(userWithNullKey);
+            Assert.Equal(MockDeviceInfo.key, client.User.Key);
         }
 
         [Fact]

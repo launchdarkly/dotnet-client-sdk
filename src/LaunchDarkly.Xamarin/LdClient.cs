@@ -148,7 +148,7 @@ namespace LaunchDarkly.Xamarin
 
             if (Instance.Online)
             {
-                StartUpdateProcessor();
+                Instance.StartUpdateProcessor();
             }
 
             return Instance;
@@ -173,7 +173,7 @@ namespace LaunchDarkly.Xamarin
 
             if (Instance.Online)
             {
-                Task t = StartUpdateProcessorAsync();
+                Task t = Instance.StartUpdateProcessorAsync();
                 return t.ContinueWith((result) => Instance);
             }
             else
@@ -192,16 +192,15 @@ namespace LaunchDarkly.Xamarin
                            Instance.Version);
         }
 
-        static void StartUpdateProcessor()
+        void StartUpdateProcessor()
         {
-            var initTask = Instance.updateProcessor.Start();
-            var configuration = Instance.Config as Configuration;
-            var unused = initTask.Wait(configuration.StartWaitTime);
+            var initTask = updateProcessor.Start();
+            var unused = initTask.Wait(Config.StartWaitTime);
         }
 
-        static Task StartUpdateProcessorAsync()
+        Task StartUpdateProcessorAsync()
         {
-            return Instance.updateProcessor.Start();
+            return updateProcessor.Start();
         }
 
         void SetupConnectionManager()
@@ -300,7 +299,7 @@ namespace LaunchDarkly.Xamarin
             {
                 Log.ErrorFormat("Expected type: {0} but got {1} when evaluating FeatureFlag: {2}. Returning default",
                                 jtokenType,
-                                returnedFlagValue.GetType(),
+                                returnedFlagValue.Type,
                                 featureKey);
                 
                 return defaultValue;
@@ -403,8 +402,12 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            bool isInited = Instance != null;
-            return isInited && Online;
+            //bool isInited = Instance != null;
+            //return isInited && Online;
+            // TODO: This method needs to be fixed to actually check whether the update processor has initialized.
+            // The previous logic (above) was meaningless because this method is not static, so by definition you
+            // do have a client instance if we've gotten here. But that doesn't mean it is initialized.
+            return Online;
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
