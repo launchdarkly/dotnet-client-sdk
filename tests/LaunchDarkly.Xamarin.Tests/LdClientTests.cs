@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -9,12 +7,11 @@ namespace LaunchDarkly.Xamarin.Tests
     public class DefaultLdClientTests
     {
         static readonly string appKey = "some app key";
-        static readonly string flagKey = "some flag key";
 
         LdClient Client()
         {
             User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
-            var configuration = StubbedConfigAndUserBuilder.Config(user, appKey);
+            var configuration = TestUtil.ConfigWithFlagsJson(user, appKey, JSONReader.FeatureFlagJSON());
             return TestUtil.CreateClient(configuration, user);
         }
 
@@ -22,60 +19,6 @@ namespace LaunchDarkly.Xamarin.Tests
         public void CanCreateClientWithConfigAndUser()
         {
             Assert.NotNull(Client());
-        }
-
-        [Fact]
-        public void DefaultBoolVariationFlag()
-        {
-            Assert.False(Client().BoolVariation(flagKey));
-        }
-
-        [Fact]
-        public void DefaultStringVariationFlag()
-        {
-            Assert.Equal(String.Empty, Client().StringVariation(flagKey, String.Empty));
-        }
-
-        [Fact]
-        public void DefaultFloatVariationFlag()
-        {
-            Assert.Equal(0, Client().FloatVariation(flagKey));
-        }
-
-        [Fact]
-        public void DefaultIntVariationFlag()
-        {
-            Assert.Equal(0, Client().IntVariation(flagKey));
-        }
-
-        [Fact]
-        public void DefaultJSONVariationFlag()
-        {
-            Assert.Null(Client().JsonVariation(flagKey, null));
-        }
-
-        [Fact]
-        public void DefaultAllFlagsShouldBeEmpty()
-        {
-            var client = Client();
-            client.Identify(User.WithKey("some other user key with no flags"));
-            Assert.Equal(0, client.AllFlags().Count);
-            client.Identify(User.WithKey("user1Key"));
-        }
-
-        [Fact]
-        public void DefaultValueReturnedIfTypeBackIsDifferent()
-        {
-            var client = Client();
-            Assert.Equal(0, client.IntVariation("string-flag", 0));
-            Assert.False(client.BoolVariation("float-flag", false));
-        }
-
-        [Fact]
-        public void DefaultValueReturnedIfFlagIsOff()
-        {
-            var client = Client();
-            Assert.Equal(123, client.IntVariation("off-flag", 123));
         }
 
         [Fact]
@@ -93,7 +36,7 @@ namespace LaunchDarkly.Xamarin.Tests
             lock (TestUtil.ClientInstanceLock)
             {
                 User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
-                var config = StubbedConfigAndUserBuilder.Config(user, appKey);
+                var config = TestUtil.ConfigWithFlagsJson(user, appKey, "{}");
                 var client = LdClient.Init(config, user);
                 try
                 {
@@ -105,17 +48,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 }
             }
         }
-
-        [Fact]
-        public void CanFetchFlagFromInMemoryCache()
-        {
-            var client = Client();
-            bool boolFlag = client.BoolVariation("boolean-flag", true);
-            Assert.True(boolFlag);
-            int intFlag = client.IntVariation("int-flag", 0);
-            Assert.Equal(15, intFlag);
-        }
-
+        
         [Fact]
         public void ConnectionManagerShouldKnowIfOnlineOrNot()
         {
@@ -143,7 +76,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void UserWithNullKeyWillHaveUniqueKeySet()
         {
             var userWithNullKey = User.WithKey(null);
-            var config = StubbedConfigAndUserBuilder.Config(userWithNullKey, "someOtherAppKey");
+            var config = TestUtil.ConfigWithFlagsJson(userWithNullKey, "someOtherAppKey", "{}");
             var client = TestUtil.CreateClient(config, userWithNullKey);
             Assert.Equal(MockDeviceInfo.key, client.User.Key);
         }

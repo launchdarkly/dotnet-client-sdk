@@ -7,28 +7,6 @@ namespace LaunchDarkly.Xamarin.Tests
 {
     public static class StubbedConfigAndUserBuilder
     {
-        public static Configuration Config(User user, string appKey)
-        {
-            var stubbedFlagCache = JSONReader.StubbedFlagCache(user);
-
-            // overriding the default implementation of dependencies for testing purposes
-            var mockOnlineConnectionManager = new MockConnectionManager(true);
-            var mockFlagCacheManager = new MockFlagCacheManager(stubbedFlagCache);
-            var mockPollingProcessor = new MockPollingProcessor();
-            var mockPersister = new MockPersister();
-            var mockDeviceInfo = new MockDeviceInfo();
-            var featureFlagListener = new FeatureFlagListenerManager();
-
-            Configuration configuration = Configuration.Default(appKey)
-                                                       .WithFlagCacheManager(mockFlagCacheManager)
-                                                       .WithConnectionManager(mockOnlineConnectionManager)
-                                                       .WithUpdateProcessor(mockPollingProcessor)
-                                                       .WithPersister(mockPersister)
-                                                       .WithDeviceInfo(mockDeviceInfo)
-                                                       .WithFeatureFlagListenerManager(featureFlagListener);
-            return configuration;
-        }
-
         public static User UserWithAllPropertiesFilledIn(string key)
         {
             var user = User.WithKey(key);
