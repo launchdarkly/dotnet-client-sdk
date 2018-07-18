@@ -4,6 +4,13 @@ namespace LaunchDarkly.Xamarin.Tests
 {
     internal class MockFeatureFlagRequestor : IFeatureFlagRequestor
     {
+        private readonly string _jsonFlags;
+
+        public MockFeatureFlagRequestor(string jsonFlags)
+        {
+            _jsonFlags = jsonFlags;
+        }
+
         public void Dispose()
         {
 
@@ -11,8 +18,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         public Task<WebResponse> FeatureFlagsAsync()
         {
-            var jsonText = JSONReader.FeatureFlagJSONFromService();
-            var response = new WebResponse(200, jsonText, null);
+            var response = new WebResponse(200, _jsonFlags, null);
             return Task.FromResult(response);
         }
     }

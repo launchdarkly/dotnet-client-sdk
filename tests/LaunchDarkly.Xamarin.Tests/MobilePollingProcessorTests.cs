@@ -6,12 +6,18 @@ namespace LaunchDarkly.Xamarin.Tests
 {
     public class MobilePollingProcessorTests
     {
+        private const string flagsJson = "{" +
+            "\"int-flag\":{\"value\":15}," +
+            "\"float-flag\":{\"value\":13.5}," +
+            "\"string-flag\":{\"value\":\"markw@magenic.com\"}" +
+            "}";
+
         IFlagCacheManager mockFlagCacheManager;
         User user;
 
         IMobileUpdateProcessor Processor()
         {
-            var mockFeatureFlagRequestor = new MockFeatureFlagRequestor();
+            var mockFeatureFlagRequestor = new MockFeatureFlagRequestor(flagsJson);
             var stubbedFlagCache = new UserFlagInMemoryCache();
             mockFlagCacheManager = new MockFlagCacheManager(stubbedFlagCache);
             user = User.WithKey("user1Key");
@@ -32,7 +38,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var initTask = processor.Start();
             var unused = initTask.Wait(TimeSpan.FromSeconds(1));
             var flags = mockFlagCacheManager.FlagsForUser(user);
-            Assert.Equal(6, flags.Count);
+            Assert.Equal(3, flags.Count);
         }
     }
 }

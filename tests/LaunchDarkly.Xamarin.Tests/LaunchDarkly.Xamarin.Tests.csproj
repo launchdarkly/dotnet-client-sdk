@@ -27,12 +27,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\LaunchDarkly.Xamarin\LaunchDarkly.Xamarin.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="FeatureFlag.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="FeatureFlagsFromService.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

@@ -11,6 +11,12 @@ namespace LaunchDarkly.Xamarin.Tests
 {
     public class MobileStreamingProcessorTests
     {
+        private const string initialFlagsJson = "{" +
+            "\"int-flag\":{\"value\":15,\"version\":100}," +
+            "\"float-flag\":{\"value\":13.5,\"version\":100}," +
+            "\"string-flag\":{\"value\":\"markw@magenic.com\",\"version\":100}" +
+            "}";
+
         User user = User.WithKey("user key");
         EventSourceMock mockEventSource;
         TestEventSourceFactory eventSourceFactory;
@@ -150,8 +156,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         void PUTMessageSentToProcessor()
         {
-            string jsonData = JSONReader.FeatureFlagJSONFromService();
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(jsonData, null), "put");
+            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(initialFlagsJson, null), "put");
             mockEventSource.RaiseMessageRcvd(eventArgs);
         }
     }

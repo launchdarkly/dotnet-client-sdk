@@ -1,5 +1,4 @@
-﻿using System;
-using LaunchDarkly.Client;
+﻿using LaunchDarkly.Client;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -7,6 +6,12 @@ namespace LaunchDarkly.Xamarin.Tests
 {
     public class FlagCacheManagerTests
     {
+        private const string initialFlagsJson = "{" +
+            "\"int-flag\":{\"value\":15}," +
+            "\"float-flag\":{\"value\":13.5}," +
+            "\"string-flag\":{\"value\":\"markw@magenic.com\"}" +
+            "}";
+
         IUserFlagCache deviceCache = new UserFlagInMemoryCache();
         IUserFlagCache inMemoryCache = new UserFlagInMemoryCache();
         FeatureFlagListenerManager listenerManager = new FeatureFlagListenerManager();
@@ -16,7 +21,8 @@ namespace LaunchDarkly.Xamarin.Tests
         IFlagCacheManager ManagerWithCachedFlags()
         {
             var flagCacheManager = new FlagCacheManager(deviceCache, inMemoryCache, listenerManager, user);
-            flagCacheManager.CacheFlagsFromService(JSONReader.StubbedFlagsDictionary(), user);
+            var flags = TestUtil.DecodeFlagsJson(initialFlagsJson);
+            flagCacheManager.CacheFlagsFromService(flags, user);
             return flagCacheManager;
         }
 
@@ -27,7 +33,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var cachedDeviceFlags = deviceCache.RetrieveFlags(user);
             Assert.Equal(15, cachedDeviceFlags["int-flag"].value.ToObject<int>());
             Assert.Equal("markw@magenic.com", cachedDeviceFlags["string-flag"].value.ToString());
-            Assert.Equal(13.14159, cachedDeviceFlags["float-flag"].value.ToObject<double>());
+            Assert.Equal(13.5, cachedDeviceFlags["float-flag"].value.ToObject<double>());
         }
 
         [Fact]
@@ -37,7 +43,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var cachedDeviceFlags = inMemoryCache.RetrieveFlags(user);
             Assert.Equal(15, cachedDeviceFlags["int-flag"].value.ToObject<int>());
             Assert.Equal("markw@magenic.com", cachedDeviceFlags["string-flag"].value.ToString());
-            Assert.Equal(13.14159, cachedDeviceFlags["float-flag"].value.ToObject<double>());
+            Assert.Equal(13.5, cachedDeviceFlags["float-flag"].value.ToObject<double>());
         }
 
         [Fact]
@@ -97,8 +103,8 @@ namespace LaunchDarkly.Xamarin.Tests
             var listener = new TestListener();
             listenerManager.RegisterListener(listener, "int-flag");
 
-            var updatedFlags = JSONReader.UpdatedStubbedFlagsDictionary();
-            flagCacheManager.CacheFlagsFromService(updatedFlags, user);
+            var newFlagsJson = "{\"int-flag\":{\"value\":5}}";
+            flagCacheManager.CacheFlagsFromService(TestUtil.DecodeFlagsJson(newFlagsJson), user);
 
             Assert.Equal(5, listener.FeatureFlags["int-flag"].ToObject<int>());
         }
