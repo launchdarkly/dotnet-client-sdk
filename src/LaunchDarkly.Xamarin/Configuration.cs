@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using Common.Logging;
+using LaunchDarkly.Client;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -125,6 +126,7 @@ namespace LaunchDarkly.Xamarin
 
         internal IFlagCacheManager FlagCacheManager { get; set; }
         internal IConnectionManager ConnectionManager { get; set; }
+        internal IEventProcessor EventProcessor { get; set; }
         internal IMobileUpdateProcessor MobileUpdateProcessor { get; set; }
         internal ISimplePersistance Persister { get; set; }
         internal IDeviceInfo DeviceInfo { get; set; }
@@ -564,6 +566,18 @@ namespace LaunchDarkly.Xamarin
         public static Configuration WithConnectionManager(this Configuration configuration, IConnectionManager connectionManager)
         {
             configuration.ConnectionManager = connectionManager;
+            return configuration;
+        }
+
+        /// <summary>
+        /// Sets the IEventProcessor instance, used internally for stubbing mock instances.
+        /// </summary>
+        /// <param name="configuration">Configuration.</param>
+        /// <param name="eventProcessor">Event processor.</param>
+        /// <returns>the same <c>Configuration</c> instance</returns>
+        public static Configuration WithEventProcessor(this Configuration configuration, IEventProcessor eventProcessor)
+        {
+            configuration.EventProcessor = eventProcessor;
             return configuration;
         }
 
