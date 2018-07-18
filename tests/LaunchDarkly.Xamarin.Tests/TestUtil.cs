@@ -31,9 +31,14 @@ namespace LaunchDarkly.Xamarin.Tests
             return JsonConvert.SerializeObject(o);
         }
 
+        public static IDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
+        {
+            return JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsJson);
+        }
+
         public static Configuration ConfigWithFlagsJson(User user, string appKey, string flagsJson)
         {
-            var flags = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsJson);
+            var flags = DecodeFlagsJson(flagsJson);
             IUserFlagCache stubbedFlagCache = new UserFlagInMemoryCache();
             if (user != null && user.Key != null)
             {

@@ -11,7 +11,7 @@ namespace LaunchDarkly.Xamarin.Tests
         LdClient Client()
         {
             User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
-            var configuration = TestUtil.ConfigWithFlagsJson(user, appKey, JSONReader.FeatureFlagJSON());
+            var configuration = TestUtil.ConfigWithFlagsJson(user, appKey, "{}");
             return TestUtil.CreateClient(configuration, user);
         }
 
