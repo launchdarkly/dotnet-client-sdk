@@ -334,7 +334,7 @@ namespace LaunchDarkly.Xamarin
             {
                 featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
                 var value = flag.value;
-                if (value == null) {
+                if (value == null || value.Type == JTokenType.Null) {
                     featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
                                                                                      User,
                                                                                      defaultValue);
