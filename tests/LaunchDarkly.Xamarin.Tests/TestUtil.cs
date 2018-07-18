@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    class TestUtil
+    public class TestUtil
     {
         // Any tests that are going to access the static LdClient.Instance must hold this lock,
         // to avoid interfering with tests that use CreateClient.

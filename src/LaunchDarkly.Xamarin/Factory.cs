@@ -72,8 +72,12 @@ namespace LaunchDarkly.Xamarin
             return updateProcessor;
         }
 
-        internal static IEventProcessor CreateEventProcessor(IBaseConfiguration configuration)
+        internal static IEventProcessor CreateEventProcessor(Configuration configuration)
         {
+            if (configuration.EventProcessor != null)
+            {
+                return configuration.EventProcessor;
+            }
             if (configuration.Offline)
             {
                 Log.InfoFormat("Was configured to be offline, starting service with NullEventProcessor");
