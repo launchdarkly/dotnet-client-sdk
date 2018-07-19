@@ -22,12 +22,40 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
+        public void CannotCreateClientWithNullConfig()
+        {
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, User.WithKey("user")));
+        }
+
+        [Fact]
+        public void CannotCreateClientWithNullUser()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(User.WithKey("dummy"), appKey, "{}");
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null));
+        }
+
+        [Fact]
         public void IdentifyUpdatesTheUser()
         {
             var client = Client();
             var updatedUser = User.WithKey("some new key");
             client.Identify(updatedUser);
             Assert.Equal(client.User, updatedUser);
+        }
+
+        [Fact]
+        public void IdentifyWithNullUserThrowsException()
+        {
+            var client = Client();
+            Assert.Throws<AggregateException>(() => client.Identify(null));
+        }
+
+        [Fact]
+        public void IdentifyAsyncWithNullUserThrowsException()
+        {
+            var client = Client();
+            Assert.ThrowsAsync<AggregateException>(async () => await client.IdentifyAsync(null));
+            // note that exceptions thrown out of an async task are always wrapped in AggregateException
         }
 
         [Fact]
@@ -82,12 +110,30 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void IdentifyWithUserMissingKeyUsesUniqueGeneratedKey()
+        public void UserWithEmptyKeyWillHaveUniqueKeySet()
+        {
+            var userWithEmptyKey = User.WithKey("");
+            var config = TestUtil.ConfigWithFlagsJson(userWithEmptyKey, "someOtherAppKey", "{}");
+            var client = TestUtil.CreateClient(config, userWithEmptyKey);
+            Assert.Equal(MockDeviceInfo.key, client.User.Key);
+        }
+
+        [Fact]
+        public void IdentifyWithUserWithNullKeyUsesUniqueGeneratedKey()
         {
             var client = Client();
             client.Identify(User.WithKey("a new user's key"));
             var userWithNullKey = User.WithKey(null);
             client.Identify(userWithNullKey);
+            Assert.Equal(MockDeviceInfo.key, client.User.Key);
+        }
+
+        [Fact]
+        public void IdentifyWithUserWithEmptyKeyUsesUniqueGeneratedKey()
+        {
+            var client = Client();
+            var userWithEmptyKey = User.WithKey("");
+            client.Identify(userWithEmptyKey);
             Assert.Equal(MockDeviceInfo.key, client.User.Key);
         }
 
