@@ -59,6 +59,15 @@ namespace LaunchDarkly.Xamarin
 
         LdClient(Configuration configuration, User user)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
             Config = configuration;
 
             connectionLock = new SemaphoreSlim(1, 1);
@@ -67,8 +76,8 @@ namespace LaunchDarkly.Xamarin
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
 
-            // If you pass in a null user or user with a null key, one will be assigned to them.
-            if (user == null || user.Key == null)
+            // If you pass in a user with a null or blank key, one will be assigned to them.
+            if (String.IsNullOrEmpty(user.Key))
             {
                 User = UserWithUniqueKey(user);
             }
@@ -91,7 +100,7 @@ namespace LaunchDarkly.Xamarin
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
         /// first response from the LaunchDarkly service is returned, if you would rather this happen
-        /// in an async fashion you can use <see cref="InitAsync(string, User)"/>
+        /// in an async fashion you can use <see cref="InitAsync(string, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more specific
         /// <see cref="Init(Configuration, User)"/> to instantiate the single instance of LdClient
@@ -99,7 +108,8 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="mobileKey">The mobile key given to you by LaunchDarkly.</param>
-        /// <param name="user">The user needed for client operations.</param>
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static LdClient Init(string mobileKey, User user)
         {
             var config = Configuration.Default(mobileKey);
@@ -110,7 +120,7 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// Creates and returns new LdClient singleton instance, then starts the workflow for 
         /// fetching feature flags. This constructor should be used if you do not want to wait 
-        /// for the IUpdateProcessor instance to finish initializing and receive the first response
+        /// for the client to finish initializing and receive the first response
         /// from the LaunchDarkly service.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more specific
@@ -119,7 +129,8 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="mobileKey">The mobile key given to you by LaunchDarkly.</param>
-        /// <param name="user">The user needed for client operations.</param>
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static async Task<LdClient> InitAsync(string mobileKey, User user)
         {
             var config = Configuration.Default(mobileKey);
@@ -133,7 +144,7 @@ namespace LaunchDarkly.Xamarin
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
         /// first response from the LaunchDarkly service is returned, if you would rather this happen
-        /// in an async fashion you can use <see cref="InitAsync(Configuration, User)"/>
+        /// in an async fashion you can use <see cref="InitAsync(Configuration, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more basic
         /// <see cref="Init(string, User)"/> to instantiate the single instance of LdClient
@@ -141,7 +152,8 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="config">The client configuration object</param>
-        /// <param name="user">The user needed for client operations.</param>
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static LdClient Init(Configuration config, User user)
         {
             CreateInstance(config, user);
@@ -166,7 +178,8 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="config">The client configuration object</param>
-        /// <param name="user">The user needed for client operations.</param>
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static Task<LdClient> InitAsync(Configuration config, User user)
         {
             CreateInstance(config, user);
@@ -185,7 +198,9 @@ namespace LaunchDarkly.Xamarin
         static void CreateInstance(Configuration configuration, User user)
         {
             if (Instance != null)
+            {
                 throw new Exception("LdClient instance already exists.");
+            }
 
             Instance = new LdClient(configuration, user);
             Log.InfoFormat("Initialized LaunchDarkly Client {0}",
@@ -318,17 +333,7 @@ namespace LaunchDarkly.Xamarin
                 Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
                 return defaultValue;
             }
-
-            if (User == null || User.Key == null)
-            {
-                Log.Warn("Feature flag evaluation called with null user or null user key. Returning default");
-                featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
-                                                                                 User,
-                                                                                 defaultValue);
-                eventProcessor.SendEvent(featureRequestEvent);
-                return defaultValue;
-            }
-
+            
             var flag = flagCacheManager.FlagForUser(featureKey, User);
             if (flag != null)
             {
@@ -372,11 +377,6 @@ namespace LaunchDarkly.Xamarin
                 Log.Warn("AllFlags() was called before client has finished initializing. Returning null.");
                 return null;
             }
-            if (User == null || User.Key == null)
-            {
-                Log.Warn("AllFlags() called with null user or null user key. Returning null");
-                return null;
-            }
 
             return flagCacheManager.FlagsForUser(User)
                                     .ToDictionary(p => p.Key, p => p.Value.value);
@@ -385,11 +385,6 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Track(string, JToken)"/>
         public void Track(string eventName, JToken data)
         {
-            if (User == null || User.Key == null)
-            {
-                Log.Warn("Track called with null user or null user key");
-            }
-
             eventProcessor.SendEvent(eventFactory.NewCustomEvent(eventName, User, data));
         }
 
@@ -433,18 +428,13 @@ namespace LaunchDarkly.Xamarin
         {
             if (user == null)
             {
-                Log.Warn("Identify called with null user");
-                return;
+                throw new ArgumentNullException("user");
             }
 
-            User userWithKey = null;
-            if (user.Key == null)
+            User userWithKey = user;
+            if (String.IsNullOrEmpty(user.Key))
             {
                 userWithKey = UserWithUniqueKey(user);
-            }
-            else
-            {
-                userWithKey = user;
             }
 
             await connectionLock.WaitAsync();
@@ -488,22 +478,14 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        User UserWithUniqueKey(User user = null)
+        User UserWithUniqueKey(User user)
         {
             string uniqueId = deviceInfo.UniqueDeviceId();
-
-            if (user != null)
+            return new User(user)
             {
-                var updatedUser = new User(user)
-                {
-                    Key = uniqueId,
-                    Anonymous = true
-                };
-
-                return updatedUser;
-            }
-
-            return new User(uniqueId);
+                Key = uniqueId,
+                Anonymous = true
+            };
         }
 
         void IDisposable.Dispose()
