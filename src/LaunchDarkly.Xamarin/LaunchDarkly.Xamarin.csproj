@@ -14,8 +14,8 @@
     <DocumentationFile></DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System.Net.Http" />
     <PackageReference Include="Common.Logging" Version="3.4.1" />
-    <PackageReference Include="System.Net.Http" Version="4.3.3" />
     <PackageReference Include="Xamarin.Essentials" Version="0.6.0-preview" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
     <PackageReference Include="LaunchDarkly.Common" Version="1.0.2-beta2" />
