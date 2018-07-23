@@ -24,14 +24,14 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CannotCreateClientWithNullConfig()
         {
-            Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, User.WithKey("user")));
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, User.WithKey("user"), TimeSpan.Zero));
         }
 
         [Fact]
         public void CannotCreateClientWithNullUser()
         {
             Configuration config = TestUtil.ConfigWithFlagsJson(User.WithKey("dummy"), appKey, "{}");
-            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null));
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null, TimeSpan.Zero));
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
                 var config = TestUtil.ConfigWithFlagsJson(user, appKey, "{}");
-                var client = LdClient.Init(config, user);
+                var client = LdClient.Init(config, user, TimeSpan.Zero);
                 try
                 {
                     Assert.ThrowsAsync<Exception>(async () => await LdClient.InitAsync(config, User.WithKey("otherUserKey")));

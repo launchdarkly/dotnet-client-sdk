@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using LaunchDarkly.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,7 +19,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             lock (ClientInstanceLock)
             {
-                LdClient client = LdClient.Init(config, user);
+                LdClient client = LdClient.Init(config, user, TimeSpan.Zero);
                 LdClient.Instance = null;
                 return client;
             }
