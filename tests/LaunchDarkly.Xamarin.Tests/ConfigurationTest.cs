@@ -11,7 +11,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void CanOverrideConfiguration()
         {
             var config = Configuration.Default("AnyOtherSdkKey")
-                .WithUri("https://app.AnyOtherEndpoint.com")
+                .WithBaseUri("https://app.AnyOtherEndpoint.com")
                 .WithEventQueueCapacity(99)
                 .WithPollingInterval(TimeSpan.FromMinutes(1));
 
