@@ -45,20 +45,14 @@ namespace LaunchDarkly.Xamarin.Tests
                 stubbedFlagCache.CacheFlagsForUser(flags, user);
             }
 
-            var mockOnlineConnectionManager = new MockConnectionManager(true);
-            var mockFlagCacheManager = new MockFlagCacheManager(stubbedFlagCache);
-            var mockPollingProcessor = new MockPollingProcessor();
-            var mockPersister = new MockPersister();
-            var mockDeviceInfo = new MockDeviceInfo();
-            var featureFlagListener = new FeatureFlagListenerManager();
-
             Configuration configuration = Configuration.Default(appKey)
-                                                       .WithFlagCacheManager(mockFlagCacheManager)
-                                                       .WithConnectionManager(mockOnlineConnectionManager)
-                                                       .WithUpdateProcessor(mockPollingProcessor)
-                                                       .WithPersister(mockPersister)
-                                                       .WithDeviceInfo(mockDeviceInfo)
-                                                       .WithFeatureFlagListenerManager(featureFlagListener);
+                                                       .WithFlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
+                                                       .WithConnectionManager(new MockConnectionManager(true))
+                                                       .WithEventProcessor(new MockEventProcessor())
+                                                       .WithUpdateProcessor(new MockPollingProcessor())
+                                                       .WithPersister(new MockPersister())
+                                                       .WithDeviceInfo(new MockDeviceInfo(""))
+                                                       .WithFeatureFlagListenerManager(new FeatureFlagListenerManager());
             return configuration;
         }
     }
