@@ -239,7 +239,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="configuration">the configuration</param>
         /// <param name="uri">the base URI as a string</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithUri(this Configuration configuration, string uri)
+        public static Configuration WithBaseUri(this Configuration configuration, string uri)
         {
             if (uri != null)
                 configuration.BaseUri = new Uri(uri);
@@ -253,7 +253,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="configuration">the configuration</param>
         /// <param name="uri">the base URI</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithUri(this Configuration configuration, Uri uri)
+        public static Configuration WithBaseUri(this Configuration configuration, Uri uri)
         {
             if (uri != null)
                 configuration.BaseUri = uri;
