@@ -7,12 +7,23 @@ namespace LaunchDarkly.Xamarin
     {
         public void Save(string key, string value)
         {
-            Preferences.Set(key, value);
+            try
+            {
+                Preferences.Set(key, value);
+            }
+            catch (NotImplementedInReferenceAssemblyException) { }
         }
 
         public string GetValue(string key)
         {
-            return Preferences.Get(key, null);
+            try
+            {
+                return Preferences.Get(key, null);
+            }
+            catch (NotImplementedInReferenceAssemblyException)
+            {
+                return null;
+            }
         }
     }
 }

@@ -474,7 +474,7 @@ namespace LaunchDarkly.Xamarin
             if (updateProcessor != null)
             {
                 updateProcessor.Dispose();
-                updateProcessor = null;
+                updateProcessor = new NullUpdateProcessor();
             }
         }
 
