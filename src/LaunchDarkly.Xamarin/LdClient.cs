@@ -162,6 +162,11 @@ namespace LaunchDarkly.Xamarin
         /// an uninitialized state.</param>
         public static LdClient Init(Configuration config, User user, TimeSpan maxWaitTime)
         {
+            if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxWaitTime));
+            }
+
             CreateInstance(config, user);
 
             if (Instance.Online)

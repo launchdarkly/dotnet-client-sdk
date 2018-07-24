@@ -29,6 +29,27 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
+        public void CannotCreateClientWithNegativeWaitTime()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            Assert.Throws<ArgumentOutOfRangeException>(() => LdClient.Init(config, simpleUser, TimeSpan.FromMilliseconds(-2)));
+        }
+
+        [Fact]
+        public void CanCreateClientWithInfiniteWaitTime()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            try
+            {
+                using (var client = LdClient.Init(config, simpleUser, System.Threading.Timeout.InfiniteTimeSpan)) { }
+            }
+            finally
+            {
+                LdClient.Instance = null;
+            }
+        }
+
+        [Fact]
         public void IdentifyUpdatesTheUser()
         {
             using (var client = Client())
