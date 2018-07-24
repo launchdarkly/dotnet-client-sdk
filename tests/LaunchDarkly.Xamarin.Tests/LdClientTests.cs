@@ -44,7 +44,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var client = Client())
             {
-                Assert.Throws<AggregateException>(() => client.Identify(null));
+                Assert.Throws<ArgumentNullException>(() => client.Identify(null));
             }
         }
 

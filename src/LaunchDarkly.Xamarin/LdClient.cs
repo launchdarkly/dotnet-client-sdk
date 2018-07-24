@@ -220,7 +220,14 @@ namespace LaunchDarkly.Xamarin
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
             var initTask = updateProcessor.Start();
-            return initTask.Wait(maxWaitTime);
+            try
+            {
+                return initTask.Wait(maxWaitTime);
+            }
+            catch (AggregateException e)
+            {
+                throw UnwrapAggregateException(e);
+            }
         }
 
         Task StartUpdateProcessorAsync()
@@ -427,7 +434,14 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Identify(User)"/>
         public void Identify(User user)
         {
-            IdentifyAsync(user).Wait();
+            try
+            {
+                IdentifyAsync(user).Wait();
+            }
+            catch (AggregateException e)
+            {
+                throw UnwrapAggregateException(e);
+            }
         }
 
         /// <see cref="ILdMobileClient.IdentifyAsync(User)"/>
@@ -586,6 +600,15 @@ namespace LaunchDarkly.Xamarin
             {
                 await pollingProcessor.PingAndWait();
             }
+        }
+
+        private Exception UnwrapAggregateException(AggregateException e)
+        {
+            if (e.InnerExceptions.Count == 1)
+            {
+                return e.InnerExceptions[0];
+            }
+            return e;
         }
     }
 }

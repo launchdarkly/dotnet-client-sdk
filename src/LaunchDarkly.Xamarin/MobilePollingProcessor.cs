@@ -19,8 +19,8 @@ namespace LaunchDarkly.Xamarin
         private readonly TimeSpan pollingInterval;
         private readonly TaskCompletionSource<bool> _startTask;
         private readonly TaskCompletionSource<bool> _stopTask;
-        private static int UNINITIALIZED = 0;
-        private static int INITIALIZED = 1;
+        private const int UNINITIALIZED = 0;
+        private const int INITIALIZED = 1;
         private int _initialized = UNINITIALIZED;
         private volatile bool _disposed;
 
@@ -80,7 +80,7 @@ namespace LaunchDarkly.Xamarin
                     _flagCacheManager.CacheFlagsFromService(flagsDictionary, user);
 
                     //We can't use bool in CompareExchange because it is not a reference type.
-                    if (Interlocked.CompareExchange(ref _initialized, INITIALIZED, UNINITIALIZED) == 0)
+                    if (Interlocked.CompareExchange(ref _initialized, INITIALIZED, UNINITIALIZED) == UNINITIALIZED)
                     {
                         _startTask.SetResult(true);
                         Log.Info("Initialized LaunchDarkly Polling Processor.");
@@ -91,6 +91,10 @@ namespace LaunchDarkly.Xamarin
             {
                 Log.ErrorFormat("Error Updating features: '{0}'", Util.ExceptionMessage(ex));
                 Log.Error("Received 401 error, no further polling requests will be made since SDK key is invalid");
+                if (_initialized == UNINITIALIZED)
+                {
+                    _startTask.SetException(ex);
+                }
                 ((IDisposable)this).Dispose();
             }
             catch (Exception ex)
