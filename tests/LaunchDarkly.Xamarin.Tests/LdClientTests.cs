@@ -18,14 +18,35 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CannotCreateClientWithNullConfig()
         {
-            Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, simpleUser));
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, simpleUser, TimeSpan.Zero));
         }
 
         [Fact]
         public void CannotCreateClientWithNullUser()
         {
             Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
-            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null));
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null, TimeSpan.Zero));
+        }
+
+        [Fact]
+        public void CannotCreateClientWithNegativeWaitTime()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            Assert.Throws<ArgumentOutOfRangeException>(() => LdClient.Init(config, simpleUser, TimeSpan.FromMilliseconds(-2)));
+        }
+
+        [Fact]
+        public void CanCreateClientWithInfiniteWaitTime()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            try
+            {
+                using (var client = LdClient.Init(config, simpleUser, System.Threading.Timeout.InfiniteTimeSpan)) { }
+            }
+            finally
+            {
+                LdClient.Instance = null;
+            }
         }
 
         [Fact]
@@ -64,7 +85,7 @@ namespace LaunchDarkly.Xamarin.Tests
             lock (TestUtil.ClientInstanceLock)
             {
                 var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
-                using (var client = LdClient.Init(config, simpleUser))
+                using (var client = LdClient.Init(config, simpleUser, TimeSpan.Zero))
                 {
                     try
                     {

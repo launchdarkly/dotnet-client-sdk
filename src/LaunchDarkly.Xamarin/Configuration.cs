@@ -60,12 +60,6 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         public TimeSpan PollingInterval { get; internal set; }
         /// <summary>
-        /// How long the client constructor will block awaiting a successful connection to
-        /// LaunchDarkly. Setting this to 0 will not block and will cause the constructor to return
-        /// immediately. The default value is 5 seconds.
-        /// </summary>
-        public TimeSpan StartWaitTime { get; internal set; }
-        /// <summary>
         /// The timeout when reading data from the EventSource API. The default value is 5 minutes.
         /// </summary>
         public TimeSpan ReadTimeout { get; internal set; }
@@ -157,10 +151,6 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         private static readonly TimeSpan DefaultEventQueueFrequency = TimeSpan.FromSeconds(5);
         /// <summary>
-        /// Default value for <see cref="StartWaitTime"/>.
-        /// </summary>
-        private static readonly TimeSpan DefaultStartWaitTime = TimeSpan.FromSeconds(5);
-        /// <summary>
         /// Default value for <see cref="ReadTimeout"/>.
         /// </summary>
         private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromMinutes(5);
@@ -205,7 +195,6 @@ namespace LaunchDarkly.Xamarin
                 EventQueueCapacity = DefaultEventQueueCapacity,
                 EventQueueFrequency = DefaultEventQueueFrequency,
                 PollingInterval = DefaultPollingInterval,
-                StartWaitTime = DefaultStartWaitTime,
                 ReadTimeout = DefaultReadTimeout,
                 ReconnectTime = DefaultReconnectTime,
                 HttpClientTimeout = DefaultHttpClientTimeout,
@@ -379,20 +368,6 @@ namespace LaunchDarkly.Xamarin
                 pollingInterval = Configuration.DefaultPollingInterval;
             }
             configuration.PollingInterval = pollingInterval;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Sets how long the client constructor will block awaiting a successful connection to
-        /// LaunchDarkly. Setting this to 0 will not block and will cause the constructor to return
-        /// immediately. The default value is 5 seconds.
-        /// </summary>
-        /// <param name="configuration">the configuration</param>
-        /// <param name="startWaitTime">the length of time to wait</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithStartWaitTime(this Configuration configuration, TimeSpan startWaitTime)
-        {
-            configuration.StartWaitTime = startWaitTime;
             return configuration;
         }
 

@@ -99,8 +99,8 @@ namespace LaunchDarkly.Xamarin
         /// fetching feature flags.
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
-        /// first response from the LaunchDarkly service is returned, if you would rather this happen
-        /// in an async fashion you can use <see cref="InitAsync(string, User)"/>.
+        /// first response from the LaunchDarkly service is returned, up to the specified timeout.
+        /// If you would rather this happen in an async fashion you can use <see cref="InitAsync(string, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more specific
         /// <see cref="Init(Configuration, User)"/> to instantiate the single instance of LdClient
@@ -110,11 +110,14 @@ namespace LaunchDarkly.Xamarin
         /// <param name="mobileKey">The mobile key given to you by LaunchDarkly.</param>
         /// <param name="user">The user needed for client operations. Must not be null.
         /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
-        public static LdClient Init(string mobileKey, User user)
+        /// <param name="maxWaitTime">The maximum length of time to wait for the client to initialize.
+        /// If this time elapses, the method will not throw an exception but will return the client in
+        /// an uninitialized state.</param>
+        public static LdClient Init(string mobileKey, User user, TimeSpan maxWaitTime)
         {
             var config = Configuration.Default(mobileKey);
 
-            return Init(config, user);
+            return Init(config, user, maxWaitTime);
         }
 
         /// <summary>
@@ -143,8 +146,8 @@ namespace LaunchDarkly.Xamarin
         /// fetching Feature Flags.
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
-        /// first response from the LaunchDarkly service is returned, if you would rather this happen
-        /// in an async fashion you can use <see cref="InitAsync(Configuration, User)"/>.
+        /// first response from the LaunchDarkly service is returned, up to the specified timeout.
+        /// If you would rather this happen in an async fashion you can use <see cref="InitAsync(Configuration, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more basic
         /// <see cref="Init(string, User)"/> to instantiate the single instance of LdClient
@@ -154,13 +157,25 @@ namespace LaunchDarkly.Xamarin
         /// <param name="config">The client configuration object</param>
         /// <param name="user">The user needed for client operations. Must not be null.
         /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
-        public static LdClient Init(Configuration config, User user)
+        /// <param name="maxWaitTime">The maximum length of time to wait for the client to initialize.
+        /// If this time elapses, the method will not throw an exception but will return the client in
+        /// an uninitialized state.</param>
+        public static LdClient Init(Configuration config, User user, TimeSpan maxWaitTime)
         {
+            if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxWaitTime));
+            }
+
             CreateInstance(config, user);
 
             if (Instance.Online)
             {
-                Instance.StartUpdateProcessor();
+                if (!Instance.StartUpdateProcessor(maxWaitTime))
+                {
+                    Log.WarnFormat("Client did not successfully initialize within {0} milliseconds.",
+                        maxWaitTime.TotalMilliseconds);
+                }
             }
 
             return Instance;
@@ -207,10 +222,10 @@ namespace LaunchDarkly.Xamarin
                            Instance.Version);
         }
 
-        void StartUpdateProcessor()
+        bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
             var initTask = updateProcessor.Start();
-            var unused = initTask.Wait(Config.StartWaitTime);
+            return initTask.Wait(maxWaitTime);
         }
 
         Task StartUpdateProcessorAsync()
@@ -233,13 +248,10 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Online"/>
         public bool Online
         {
-            get
-            {
-                return online;
-            }
+            get => online;
             set
             {
-                SetOnlineAsync(value).Wait();
+                var doNotAwaitResult = SetOnlineAsync(value);
             }
         }
 
@@ -451,12 +463,6 @@ namespace LaunchDarkly.Xamarin
             eventProcessor.SendEvent(eventFactory.NewIdentifyEvent(userWithKey));
         }
 
-        void RestartUpdateProcessor()
-        {
-            ClearAndSetUpdateProcessor();
-            StartUpdateProcessor();
-        }
-
         async Task RestartUpdateProcessorAsync()
         {
             ClearAndSetUpdateProcessor();
@@ -525,22 +531,6 @@ namespace LaunchDarkly.Xamarin
             flagListenerManager.UnregisterListener(listener, flagKey);
         }
 
-        internal void EnterBackground()
-        {
-            // if using Streaming, processor needs to be reset
-            if (Config.IsStreamingEnabled)
-            {
-                ClearUpdateProcessor();
-                Config.IsStreamingEnabled = false;
-                RestartUpdateProcessor();
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
-            }
-            else
-            {
-                PingPollingProcessor();
-            }
-        }
-
         internal async Task EnterBackgroundAsync()
         {
             // if using Streaming, processor needs to be reset
@@ -555,12 +545,6 @@ namespace LaunchDarkly.Xamarin
             {
                 await PingPollingProcessorAsync();
             }
-        }
-
-        internal void EnterForeground()
-        {
-            ResetProcessorForForeground();
-            RestartUpdateProcessor();
         }
 
         internal async Task EnterForegroundAsync()
