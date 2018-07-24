@@ -1,12 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.0-beta9</Version>
+    <Version>1.0.0-beta10</Version>
     <TargetFrameworks>netstandard1.6;netstandard2.0;net45</TargetFrameworks>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\LaunchDarkly.Xamarin.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath></OutputPath>
     <ExternalConsole>false</ExternalConsole>
@@ -15,14 +12,13 @@
     <IntermediateOutputPath>obj\Release\netstandard2.0</IntermediateOutputPath>
     <TreatWarningsAsErrors></TreatWarningsAsErrors>
     <DocumentationFile></DocumentationFile>
-    <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Common.Logging" Version="3.4.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
     <PackageReference Include="Xamarin.Essentials" Version="0.6.0-preview" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
-    <PackageReference Include="LaunchDarkly.Common" Version="1.0.1" />
+    <PackageReference Include="LaunchDarkly.Common" Version="1.0.2-beta2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
