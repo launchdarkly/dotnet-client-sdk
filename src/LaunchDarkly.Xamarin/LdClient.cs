@@ -91,6 +91,8 @@ namespace LaunchDarkly.Xamarin
             updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager);
             eventProcessor = Factory.CreateEventProcessor(configuration);
 
+            eventProcessor.SendEvent(eventFactory.NewIdentifyEvent(User));
+
             SetupConnectionManager();
         }
 
