@@ -2,25 +2,31 @@
 
   <PropertyGroup>
     <Version>1.0.0-beta11</Version>
+    <OutputType>Library</OutputType>
+    <AssemblyName>LaunchDarkly.Xamarin</AssemblyName>
+    <PackageId>LaunchDarkly.Xamarin</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <TargetFrameworks>netstandard1.6;netstandard2.0;net45</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath></OutputPath>
-    <ExternalConsole>false</ExternalConsole>
+  <PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
+    <TargetFrameworks>netstandard1.6;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <IntermediateOutputPath>obj\Release\netstandard2.0</IntermediateOutputPath>
-    <TreatWarningsAsErrors></TreatWarningsAsErrors>
-    <DocumentationFile></DocumentationFile>
-  </PropertyGroup>
+  
   <ItemGroup>
-    <Reference Include="System.Net.Http" />
     <PackageReference Include="Common.Logging" Version="3.4.1" />
     <PackageReference Include="Xamarin.Essentials" Version="0.6.0-preview" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
     <PackageReference Include="LaunchDarkly.Common" Version="1.0.2-beta2" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
+
 </Project>

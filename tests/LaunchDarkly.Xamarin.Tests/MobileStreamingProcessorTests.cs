@@ -187,11 +187,13 @@ namespace LaunchDarkly.Xamarin.Tests
     {
         public ReadyState ReadyState => throw new NotImplementedException();
 
+#pragma warning disable 0067 // unused properties
         public event EventHandler<StateChangedEventArgs> Opened;
         public event EventHandler<StateChangedEventArgs> Closed;
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event EventHandler<CommentReceivedEventArgs> CommentReceived;
         public event EventHandler<ExceptionEventArgs> Error;
+#pragma warning restore 0067
 
         public void Close()
         {
