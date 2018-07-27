@@ -562,12 +562,18 @@ namespace LaunchDarkly.Xamarin
             {
                 ClearUpdateProcessor();
                 Config.IsStreamingEnabled = false;
-                await RestartUpdateProcessorAsync();
+                if (Config.EnableBackgroundUpdating)
+                {
+                    await RestartUpdateProcessorAsync();
+                }
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
             }
             else
             {
-                await PingPollingProcessorAsync();
+                if (Config.EnableBackgroundUpdating)
+                {
+                    await PingPollingProcessorAsync();
+                }
             }
         }
 
