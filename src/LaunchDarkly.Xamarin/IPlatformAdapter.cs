@@ -25,12 +25,13 @@ namespace LaunchDarkly.Xamarin
         /// the application, and provides a callback object for it to use when the state changes.
         /// </summary>
         /// <param name="backgroundingState">An implementation of <c>IBackgroundingState</c> provided by the client</param>
-        void EnableBackgrounding(IBackgroundingState backgroundingState);
+        /// <param name="pollWhileInBackground">True if the client should poll while in the background</param>
+        void EnableBackgrounding(IBackgroundingState backgroundingState, bool pollWhileInBackground);
     }
 
     internal class NullPlatformAdapter : IPlatformAdapter
     {
-        public void EnableBackgrounding(IBackgroundingState backgroundingState) { }
+        public void EnableBackgrounding(IBackgroundingState backgroundingState, bool pollWhileInBackground) { }
 
         public void Dispose() { }
     }
