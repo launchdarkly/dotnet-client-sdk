@@ -14,27 +14,21 @@ namespace LaunchDarkly.Xamarin
                                                                  IFlagListenerUpdater updater,
                                                                  User user)
         {
-            IFlagCacheManager flagCacheManager;
-
             if (configuration.FlagCacheManager != null)
             {
-                flagCacheManager = configuration.FlagCacheManager;
+                return configuration.FlagCacheManager;
             }
             else
             {
                 var inMemoryCache = new UserFlagInMemoryCache();
                 var deviceCache = new UserFlagDeviceCache(persister);
-                flagCacheManager = new FlagCacheManager(inMemoryCache, deviceCache, updater, user);
+                return new FlagCacheManager(inMemoryCache, deviceCache, updater, user);
             }
-
-            return flagCacheManager;
         }
 
         internal static IConnectionManager CreateConnectionManager(Configuration configuration)
         {
-            IConnectionManager connectionManager;
-            connectionManager = configuration.ConnectionManager ?? new MobileConnectionManager();
-            return connectionManager;
+            return configuration.ConnectionManager ?? new MobileConnectionManager();
         }
 
         internal static IMobileUpdateProcessor CreateUpdateProcessor(Configuration configuration,
@@ -47,29 +41,26 @@ namespace LaunchDarkly.Xamarin
                 return configuration.MobileUpdateProcessor;
             }
 
-            IMobileUpdateProcessor updateProcessor = null;
             if (configuration.Offline)
             {
-                Log.InfoFormat("Was configured to be offline, starting service with NullUpdateProcessor");
+                Log.InfoFormat("Starting LaunchDarkly client in offline mode");
                 return new NullUpdateProcessor();
             }
 
             if (configuration.IsStreamingEnabled)
             {
-                updateProcessor = new MobileStreamingProcessor(configuration,
+                return new MobileStreamingProcessor(configuration,
                                                                flagCacheManager,
                                                                user, source);
             }
             else
             {
                 var featureFlagRequestor = new FeatureFlagRequestor(configuration, user);
-                updateProcessor = new MobilePollingProcessor(featureFlagRequestor,
-                                                             flagCacheManager,
-                                                             user,
-                                                             configuration.PollingInterval);
+                return new MobilePollingProcessor(featureFlagRequestor,
+                                                  flagCacheManager,
+                                                  user,
+                                                  configuration.PollingInterval);
             }
-
-            return updateProcessor;
         }
 
         internal static IEventProcessor CreateEventProcessor(Configuration configuration)
@@ -80,7 +71,6 @@ namespace LaunchDarkly.Xamarin
             }
             if (configuration.Offline)
             {
-                Log.InfoFormat("Was configured to be offline, starting service with NullEventProcessor");
                 return new NullEventProcessor();
             }
 
@@ -90,32 +80,22 @@ namespace LaunchDarkly.Xamarin
 
         internal static ISimplePersistance CreatePersister(Configuration configuration)
         {
-            if (configuration.Persister != null)
-            {
-                return configuration.Persister;
-            }
-
-            return new SimpleMobileDevicePersistance();
+            return configuration.Persister ?? new SimpleMobileDevicePersistance();
         }
 
         internal static IDeviceInfo CreateDeviceInfo(Configuration configuration)
         {
-            if (configuration.DeviceInfo != null)
-            {
-                return configuration.DeviceInfo;
-            }
-
-            return new DeviceInfo();
+            return configuration.DeviceInfo ?? new DeviceInfo();
         }
 
         internal static IFeatureFlagListenerManager CreateFeatureFlagListenerManager(Configuration configuration)
         {
-            if (configuration.FeatureFlagListenerManager != null)
-            {
-                return configuration.FeatureFlagListenerManager;
-            }
+            return configuration.FeatureFlagListenerManager ?? new FeatureFlagListenerManager();
+        }
 
-            return new FeatureFlagListenerManager();
+        internal static IPlatformAdapter CreatePlatformAdapter(Configuration configuration)
+        {
+            return configuration.PlatformAdapter ?? new NullPlatformAdapter();
         }
     }
 }

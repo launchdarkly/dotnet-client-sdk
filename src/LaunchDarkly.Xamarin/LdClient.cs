@@ -50,6 +50,7 @@ namespace LaunchDarkly.Xamarin
         IDeviceInfo deviceInfo;
         EventFactory eventFactory = EventFactory.Default;
         IFeatureFlagListenerManager flagListenerManager;
+        IPlatformAdapter platformAdapter;
 
         SemaphoreSlim connectionLock;
 
@@ -75,6 +76,7 @@ namespace LaunchDarkly.Xamarin
             persister = Factory.CreatePersister(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
+            platformAdapter = Factory.CreatePlatformAdapter(configuration);
 
             // If you pass in a user with a null or blank key, one will be assigned to them.
             if (String.IsNullOrEmpty(user.Key))
@@ -222,6 +224,11 @@ namespace LaunchDarkly.Xamarin
             Instance = new LdClient(configuration, user);
             Log.InfoFormat("Initialized LaunchDarkly Client {0}",
                            Instance.Version);
+
+            if (configuration.EnableBackgroundUpdating)
+            {
+                Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance));
+            }
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
@@ -520,7 +527,8 @@ namespace LaunchDarkly.Xamarin
         {
             if (disposing)
             {
-                Log.InfoFormat("The mobile client is being disposed");
+                Log.InfoFormat("Shutting down the LaunchDarkly client");
+                platformAdapter.Dispose();
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
             }
@@ -616,6 +624,32 @@ namespace LaunchDarkly.Xamarin
                 return e.InnerExceptions[0];
             }
             return e;
+        }
+    }
+
+    // Implementation of IBackgroundingState - this allows us to keep these methods out of the public LdClient API
+    internal class LdClientBackgroundingState : IBackgroundingState
+    {
+        private readonly LdClient _client;
+
+        internal LdClientBackgroundingState(LdClient client)
+        {
+            _client = client;
+        }
+
+        public async Task EnterBackgroundAsync()
+        {
+            await _client.EnterBackgroundAsync();
+        }
+
+        public async Task ExitBackgroundAsync()
+        {
+            await _client.EnterForegroundAsync();
+        }
+
+        public async Task BackgroundUpdateAsync()
+        {
+            await _client.BackgroundTickAsync();
         }
     }
 }
