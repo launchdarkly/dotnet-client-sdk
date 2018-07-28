@@ -152,7 +152,7 @@ namespace LaunchDarkly.Xamarin
         /// If you would rather this happen in an async fashion you can use <see cref="InitAsync(Configuration, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more basic
-        /// <see cref="Init(string, User)"/> to instantiate the single instance of LdClient
+        /// <see cref="Init(string, User, TimeSpan)"/> to instantiate the single instance of LdClient
         /// for the lifetime of your application.
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
