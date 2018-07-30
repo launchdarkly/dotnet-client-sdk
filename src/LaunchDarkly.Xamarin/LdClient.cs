@@ -443,7 +443,10 @@ namespace LaunchDarkly.Xamarin
         {
             try
             {
-                IdentifyAsync(user).Wait();
+                // Note that we must use Task.Run here, rather than just doing IdentifyAsync(user).Wait(),
+                // to avoid a deadlock if we are on the main thread. See:
+                // https://olitee.com/2015/01/c-async-await-common-deadlock-scenario/
+                Task.Run(() => IdentifyAsync(user)).Wait();
             }
             catch (AggregateException e)
             {
