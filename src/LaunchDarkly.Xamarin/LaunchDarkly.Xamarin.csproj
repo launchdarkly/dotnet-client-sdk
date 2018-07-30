@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.0-beta12</Version>
+    <Version>1.0.0-beta13</Version>
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.Xamarin</AssemblyName>
     <PackageId>LaunchDarkly.Xamarin</PackageId>
