@@ -225,8 +225,12 @@ namespace LaunchDarkly.Xamarin
             Log.InfoFormat("Initialized LaunchDarkly Client {0}",
                            Instance.Version);
 
-            Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance),
-                configuration.EnableBackgroundUpdating);
+            TimeSpan? bgPollInterval = null;
+            if (configuration.EnableBackgroundUpdating)
+            {
+                bgPollInterval = configuration.BackgroundPollingInterval;
+            }
+            Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance), bgPollInterval);
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
