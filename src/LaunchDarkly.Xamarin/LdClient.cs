@@ -457,8 +457,6 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.IdentifyAsync(User)"/>
         public async Task IdentifyAsync(User user)
         {
-            Log.Warn("IdentifyAsync");
-
             if (user == null)
             {
                 throw new ArgumentNullException("user");
@@ -482,8 +480,6 @@ namespace LaunchDarkly.Xamarin
             }
 
             eventProcessor.SendEvent(eventFactory.NewIdentifyEvent(userWithKey));
-
-            Log.Warn("IdentifyAsync ending");
         }
 
         async Task RestartUpdateProcessorAsync()
