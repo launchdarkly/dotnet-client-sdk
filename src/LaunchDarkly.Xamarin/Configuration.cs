@@ -130,7 +130,11 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// Default value for <see cref="PollingInterval"/>.
         /// </summary>
-        public static TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(30);
+        public static TimeSpan DefaultPollingInterval = TimeSpan.FromMinutes(5);
+        /// <summary>
+        /// Minimum value for <see cref="PollingInterval"/>.
+        /// </summary>
+        public static TimeSpan MinimumPollingInterval = TimeSpan.FromMinutes(5);
         /// <summary>
         /// Default value for <see cref="BaseUri"/>.
         /// </summary>
@@ -174,7 +178,11 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// The default value for <see cref="BackgroundPollingInterval"/>.
         /// </summary>
-        private static readonly TimeSpan DefaultBackgroundPollingInterval = TimeSpan.FromMinutes(3600);
+        private static readonly TimeSpan DefaultBackgroundPollingInterval = TimeSpan.FromMinutes(60);
+        /// <summary>
+        /// The minimum value for <see cref="BackgroundPollingInterval"/>.
+        /// </summary>
+        public static readonly TimeSpan MinimumBackgroundPollingInterval = TimeSpan.FromMinutes(15);
         /// <summary>
         /// The default value for <see cref="ConnectionTimeout"/>.
         /// </summary>
@@ -367,10 +375,10 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the same <c>Configuration</c> instance</returns>
         public static Configuration WithPollingInterval(this Configuration configuration, TimeSpan pollingInterval)
         {
-            if (pollingInterval.CompareTo(Configuration.DefaultPollingInterval) < 0)
+            if (pollingInterval.CompareTo(Configuration.MinimumPollingInterval) < 0)
             {
-                Log.Warn("PollingInterval cannot be less than the default of 30 seconds.");
-                pollingInterval = Configuration.DefaultPollingInterval;
+                Log.WarnFormat("PollingInterval cannot be less than the default of {0}.");
+                pollingInterval = Configuration.MinimumPollingInterval;
             }
             configuration.PollingInterval = pollingInterval;
             return configuration;
@@ -653,6 +661,11 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the same <c>Configuration</c> instance</returns>
         public static Configuration WithBackgroundPollingInterval(this Configuration configuration, TimeSpan backgroundPollingInternal)
         {
+            if (backgroundPollingInternal.CompareTo(Configuration.MinimumBackgroundPollingInterval) < 0)
+            {
+                Log.WarnFormat("BackgroundPollingInterval cannot be less than the default of {0}.", Configuration.MinimumBackgroundPollingInterval);
+                backgroundPollingInternal = Configuration.MinimumBackgroundPollingInterval;
+            }
             configuration.BackgroundPollingInterval = backgroundPollingInternal;
             return configuration;
         }
