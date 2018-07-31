@@ -188,6 +188,10 @@ namespace LaunchDarkly.Xamarin
         /// <returns>a <c>Configuration</c> instance</returns>
         public static Configuration Default(string mobileKey)
         {
+            if (String.IsNullOrEmpty(mobileKey))
+            {
+                throw new ArgumentOutOfRangeException("mobileKey", "key is required");
+            }
             var defaultConfiguration = new Configuration
             {
                 BaseUri = DefaultUri,
