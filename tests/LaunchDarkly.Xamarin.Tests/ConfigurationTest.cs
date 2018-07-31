@@ -37,6 +37,18 @@ namespace LaunchDarkly.Xamarin.Tests
         }
         
         [Fact]
+        public void MobileKeyCannotBeNull()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(null));
+        }
+
+        [Fact]
+        public void MobileKeyCannotBeEmpty()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(""));
+        }
+
+        [Fact]
         public void CannotOverrideTooSmallPollingInterval()
         {
             var config = Configuration.Default("AnyOtherSdkKey").WithPollingInterval(TimeSpan.FromSeconds(29));
