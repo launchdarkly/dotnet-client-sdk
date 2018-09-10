@@ -11,14 +11,15 @@ Quick setup
 
         Install-Package LaunchDarkly.Xamarin
 
-1. Import the LaunchDarkly package:
+1. Import the LaunchDarkly packages:
 
+        using LaunchDarkly.Client;
         using LaunchDarkly.Xamarin;
 
 2. Initialize the LDClient with your Mobile key and user:
 
         User user = User.WithKey(username);
-        LdClient ldClient = LdClient.Init("YOUR_MOBILE_KEY", username);
+        LdClient ldClient = LdClient.Init("YOUR_MOBILE_KEY", user);
 
 Your first feature flag
 -----------------------
