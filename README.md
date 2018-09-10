@@ -11,14 +11,15 @@ Quick setup
 
         Install-Package LaunchDarkly.Xamarin
 
-1. Import the LaunchDarkly package:
+1. Import the LaunchDarkly packages:
 
+        using LaunchDarkly.Client;
         using LaunchDarkly.Xamarin;
 
 2. Initialize the LDClient with your Mobile key and user:
 
         User user = User.WithKey(username);
-        LdClient ldClient = LdClient.Init("YOUR_MOBILE_KEY", username);
+        LdClient ldClient = LdClient.Init("YOUR_MOBILE_KEY", user);
 
 Your first feature flag
 -----------------------
@@ -48,26 +49,6 @@ Contributing
 ------------
 
 See [Contributing](https://github.com/launchdarkly/xamarin-client/blob/master/CONTRIBUTING.md).
-
-Signing
--------
-The artifacts generated from this repo are signed by LaunchDarkly. The public key file is in this repo at `LaunchDarkly.Xamarin.pk` as well as here:
-
-```
-Public Key:
-00240000048000009400000006020000
-00240000525341310004000001000100
-058a1dbccbc342759dc98b1eaba4467b
-fdea062629f212cf7c669ff26b4e2ff3
-c408292487bc349b8a687d73033ff14d
-bf861e1eea23303a5b5d13b1db034799
-13bd120ba372cf961d27db9f65263156
-5f4e8aff4a79e11cfe713833157ecb5d
-cbc02d772967d919f8f06fbee227a664
-dc591932d5b05f4da1c8439702ecfdb1
-
-Public Key Token: 90b24964a3dfb906f86add69004e6885
-```
 
 About LaunchDarkly
 -----------

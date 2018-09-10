@@ -75,8 +75,10 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// Gets or sets the online status of the client.
         /// 
-        /// The setter will block and wait on the current thread for the Update processor
-        /// to either be stopped or started.
+        /// The setter is equivalent to calling <see cref="SetOnlineAsync(bool)"/>. If you are going from offline
+        /// to online, and you want to wait until the connection has been established, call
+        /// <see cref="SetOnlineAsync(bool)"/> and then use <c>await</c> or call <c>Wait()</c> on
+        /// its return value.
         /// </summary>
         /// <value><c>true</c> if online; otherwise, <c>false</c>.</value>
         bool Online { get; set; }

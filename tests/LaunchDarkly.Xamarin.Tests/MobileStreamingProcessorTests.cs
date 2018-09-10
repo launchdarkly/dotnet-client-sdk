@@ -11,6 +11,12 @@ namespace LaunchDarkly.Xamarin.Tests
 {
     public class MobileStreamingProcessorTests
     {
+        private const string initialFlagsJson = "{" +
+            "\"int-flag\":{\"value\":15,\"version\":100}," +
+            "\"float-flag\":{\"value\":13.5,\"version\":100}," +
+            "\"string-flag\":{\"value\":\"markw@magenic.com\",\"version\":100}" +
+            "}";
+
         User user = User.WithKey("user key");
         EventSourceMock mockEventSource;
         TestEventSourceFactory eventSourceFactory;
@@ -150,8 +156,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         void PUTMessageSentToProcessor()
         {
-            string jsonData = JSONReader.FeatureFlagJSONFromService();
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(jsonData, null), "put");
+            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(initialFlagsJson, null), "put");
             mockEventSource.RaiseMessageRcvd(eventArgs);
         }
     }
@@ -182,11 +187,13 @@ namespace LaunchDarkly.Xamarin.Tests
     {
         public ReadyState ReadyState => throw new NotImplementedException();
 
+#pragma warning disable 0067 // unused properties
         public event EventHandler<StateChangedEventArgs> Opened;
         public event EventHandler<StateChangedEventArgs> Closed;
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event EventHandler<CommentReceivedEventArgs> CommentReceived;
         public event EventHandler<ExceptionEventArgs> Error;
+#pragma warning restore 0067
 
         public void Close()
         {

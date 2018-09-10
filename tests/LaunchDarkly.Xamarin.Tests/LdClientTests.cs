@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -9,206 +7,245 @@ namespace LaunchDarkly.Xamarin.Tests
     public class DefaultLdClientTests
     {
         static readonly string appKey = "some app key";
-        static readonly string flagKey = "some flag key";
+        static readonly User simpleUser = User.WithKey("user-key");
 
         LdClient Client()
         {
-            if (LdClient.Instance == null)
+            var configuration = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            return TestUtil.CreateClient(configuration, simpleUser);
+        }
+        
+        [Fact]
+        public void CannotCreateClientWithNullConfig()
+        {
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, simpleUser, TimeSpan.Zero));
+        }
+
+        [Fact]
+        public void CannotCreateClientWithNullUser()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null, TimeSpan.Zero));
+        }
+
+        [Fact]
+        public void CannotCreateClientWithNegativeWaitTime()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            Assert.Throws<ArgumentOutOfRangeException>(() => LdClient.Init(config, simpleUser, TimeSpan.FromMilliseconds(-2)));
+        }
+
+        [Fact]
+        public void CanCreateClientWithInfiniteWaitTime()
+        {
+            Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+            try
             {
-                User user = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn("user1Key");
-                var configuration = StubbedConfigAndUserBuilder.Config(user, appKey);
-                return LdClient.Init(configuration, user);
+                using (var client = LdClient.Init(config, simpleUser, System.Threading.Timeout.InfiniteTimeSpan)) { }
             }
-
-            return LdClient.Instance;
-        }
-
-        [Fact]
-        public void CanCreateClientWithConfigAndUser()
-        {
-            Assert.NotNull(Client());
-        }
-
-        [Fact]
-        public void DefaultBoolVariationFlag()
-        {
-            Assert.False(Client().BoolVariation(flagKey));
-        }
-
-        [Fact]
-        public void DefaultStringVariationFlag()
-        {
-            Assert.Equal(String.Empty, Client().StringVariation(flagKey, String.Empty));
-        }
-
-        [Fact]
-        public void DefaultFloatVariationFlag()
-        {
-            Assert.Equal(0, Client().FloatVariation(flagKey));
-        }
-
-        [Fact]
-        public void DefaultIntVariationFlag()
-        {
-            Assert.Equal(0, Client().IntVariation(flagKey));
-        }
-
-        [Fact]
-        public void DefaultJSONVariationFlag()
-        {
-            Assert.Null(Client().JsonVariation(flagKey, null));
-        }
-
-        [Fact]
-        public void DefaultAllFlagsShouldBeEmpty()
-        {
-            var client = Client();
-            client.Identify(User.WithKey("some other user key with no flags"));
-            Assert.Equal(0, client.AllFlags().Count);
-            client.Identify(User.WithKey("user1Key"));
-        }
-
-        [Fact]
-        public void DefaultValueReturnedIfTypeBackIsDifferent()
-        {
-            var client = Client();
-            Assert.Equal(0, client.IntVariation("string-flag", 0));
-            Assert.False(client.BoolVariation("float-flag", false));
-        }
-
-        [Fact]
-        public void DefaultValueReturnedIfFlagIsOff()
-        {
-            var client = Client();
-            Assert.Equal(123, client.IntVariation("off-flag", 123));
+            finally
+            {
+                LdClient.Instance = null;
+            }
         }
 
         [Fact]
         public void IdentifyUpdatesTheUser()
         {
-            var client = Client();
-            var updatedUser = User.WithKey("some new key");
-            client.Identify(updatedUser);
-            Assert.Equal(client.User, updatedUser);
+            using (var client = Client())
+            {
+                var updatedUser = User.WithKey("some new key");
+                client.Identify(updatedUser);
+                Assert.Equal(client.User, updatedUser);
+            }
+        }
+
+        [Fact]
+        public void IdentifyWithNullUserThrowsException()
+        {
+            using (var client = Client())
+            {
+                Assert.Throws<ArgumentNullException>(() => client.Identify(null));
+            }
+        }
+
+        [Fact]
+        public void IdentifyAsyncWithNullUserThrowsException()
+        {
+            using (var client = Client())
+            {
+                Assert.ThrowsAsync<AggregateException>(async () => await client.IdentifyAsync(null));
+                // note that exceptions thrown out of an async task are always wrapped in AggregateException
+            }
         }
 
         [Fact]
         public void SharedClientIsTheOnlyClientAvailable()
         {
-            var client = Client();
-            var config = Configuration.Default(appKey);
-            Assert.ThrowsAsync<Exception>(async () => await LdClient.InitAsync(config, User.WithKey("otherUserKey")));
+            lock (TestUtil.ClientInstanceLock)
+            {
+                var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+                using (var client = LdClient.Init(config, simpleUser, TimeSpan.Zero))
+                {
+                    try
+                    {
+                        Assert.ThrowsAsync<Exception>(async () => await LdClient.InitAsync(config, simpleUser));
+                    }
+                    finally
+                    {
+                        LdClient.Instance = null;
+                    }
+                }
+            }
         }
-
-        [Fact]
-        public void CanFetchFlagFromInMemoryCache()
-        {
-            var client = Client();
-            bool boolFlag = client.BoolVariation("boolean-flag", true);
-            Assert.True(boolFlag);
-            int intFlag = client.IntVariation("int-flag", 0);
-            Assert.Equal(15, intFlag);
-        }
-
+        
         [Fact]
         public void ConnectionManagerShouldKnowIfOnlineOrNot()
         {
-            var client = Client();
-            var connMgr = client.Config.ConnectionManager as MockConnectionManager;
-            connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
-            connMgr.Connect(true);
-            Assert.False(client.IsOffline());
-            connMgr.Connect(false);
-            Assert.False(client.Online);
+            using (var client = Client())
+            {
+                var connMgr = client.Config.ConnectionManager as MockConnectionManager;
+                connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
+                connMgr.Connect(true);
+                Assert.False(client.IsOffline());
+                connMgr.Connect(false);
+                Assert.False(client.Online);
+            }
         }
 
         [Fact]
         public void ConnectionChangeShouldStopUpdateProcessor()
         {
-            var client = Client();
-            var connMgr = client.Config.ConnectionManager as MockConnectionManager;
-            connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
-            connMgr.Connect(false);
-            var mockUpdateProc = client.Config.MobileUpdateProcessor as MockPollingProcessor;
-            Assert.False(mockUpdateProc.IsRunning);
+            using (var client = Client())
+            {
+                var connMgr = client.Config.ConnectionManager as MockConnectionManager;
+                connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
+                connMgr.Connect(false);
+                var mockUpdateProc = client.Config.MobileUpdateProcessor as MockPollingProcessor;
+                Assert.False(mockUpdateProc.IsRunning);
+            }
         }
 
         [Fact]
         public void UserWithNullKeyWillHaveUniqueKeySet()
         {
-            LdClient.Instance = null;
             var userWithNullKey = User.WithKey(null);
-            var config = StubbedConfigAndUserBuilder.Config(userWithNullKey, "someOtherAppKey");
-            var client = LdClient.Init(config, userWithNullKey);
-            Assert.Equal(MockDeviceInfo.key, client.User.Key);
-            LdClient.Instance = null;
+            var uniqueId = "some-unique-key";
+            var config = TestUtil.ConfigWithFlagsJson(userWithNullKey, appKey, "{}")
+                .WithDeviceInfo(new MockDeviceInfo(uniqueId));
+            using (var client = TestUtil.CreateClient(config, userWithNullKey))
+            {
+                Assert.Equal(uniqueId, client.User.Key);
+                Assert.True(client.User.Anonymous);
+            }
         }
 
         [Fact]
-        public void IdentifyWithUserMissingKeyUsesUniqueGeneratedKey()
+        public void UserWithEmptyKeyWillHaveUniqueKeySet()
         {
-            var client = Client();
-            LdClient.Instance.Identify(User.WithKey("a new user's key"));
+            var userWithEmptyKey = User.WithKey("");
+            var uniqueId = "some-unique-key";
+            var config = TestUtil.ConfigWithFlagsJson(userWithEmptyKey, appKey, "{}")
+                .WithDeviceInfo(new MockDeviceInfo(uniqueId));
+            using (var client = TestUtil.CreateClient(config, userWithEmptyKey))
+            {
+                Assert.Equal(uniqueId, client.User.Key);
+                Assert.True(client.User.Anonymous);
+            }
+        }
+
+        [Fact]
+        public void IdentifyWithUserWithNullKeyUsesUniqueGeneratedKey()
+        {
             var userWithNullKey = User.WithKey(null);
-            LdClient.Instance.Identify(userWithNullKey);
-            Assert.Equal(MockDeviceInfo.key, LdClient.Instance.User.Key);
-            LdClient.Instance = null;
+            var uniqueId = "some-unique-key";
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .WithDeviceInfo(new MockDeviceInfo(uniqueId));
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                client.Identify(userWithNullKey);
+                Assert.Equal(uniqueId, client.User.Key);
+                Assert.True(client.User.Anonymous);
+            }
         }
 
         [Fact]
-        public void UpdatingKeylessUserWillGenerateNewUserWithSameValues()
+        public void IdentifyWithUserWithEmptyKeyUsesUniqueGeneratedKey()
         {
-            var updatedUser = StubbedConfigAndUserBuilder.UserWithAllPropertiesFilledIn(String.Empty);
-            var client = Client();
-            var previousUser = client.User;
-            client.Identify(updatedUser);
-            Assert.NotEqual(updatedUser, previousUser);
-            Assert.Equal(updatedUser.Avatar, previousUser.Avatar);
-            Assert.Equal(updatedUser.Country, previousUser.Country);
-            Assert.Equal(updatedUser.Email, previousUser.Email);
-            Assert.Equal(updatedUser.FirstName, previousUser.FirstName);
-            Assert.Equal(updatedUser.LastName, previousUser.LastName);
-            Assert.Equal(updatedUser.Name, previousUser.Name);
-            Assert.Equal(updatedUser.IpAddress, previousUser.IpAddress);
-            Assert.Equal(updatedUser.SecondaryKey, previousUser.SecondaryKey);
-            Assert.Equal(updatedUser.Custom["somePrivateAttr1"], previousUser.Custom["somePrivateAttr1"]);
-            Assert.Equal(updatedUser.Custom["somePrivateAttr2"], previousUser.Custom["somePrivateAttr2"]);
+            var userWithEmptyKey = User.WithKey("");
+            var uniqueId = "some-unique-key";
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .WithDeviceInfo(new MockDeviceInfo(uniqueId));
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                client.Identify(userWithEmptyKey);
+                Assert.Equal(uniqueId, client.User.Key);
+                Assert.True(client.User.Anonymous);
+            }
         }
 
         [Fact]
-        public void UpdatingKeylessUserSetsAnonymousToTrue()
+        public void AllOtherAttributesArePreservedWhenSubstitutingUniqueUserKey()
         {
-            var updatedUser = User.WithKey(null);
-            var client = Client();
-            var previousUser = client.User;
-            client.Identify(updatedUser);
-            Assert.True(client.User.Anonymous);
+            var user = User.WithKey("")
+                .AndSecondaryKey("secondary")
+                .AndIpAddress("10.0.0.1")
+                .AndCountry("US")
+                .AndFirstName("John")
+                .AndLastName("Doe")
+                .AndName("John Doe")
+                .AndAvatar("images.google.com/myAvatar")
+                .AndEmail("test@example.com")
+                .AndCustomAttribute("attr", "value");
+            var uniqueId = "some-unique-key";
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .WithDeviceInfo(new MockDeviceInfo(uniqueId));
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            { 
+                client.Identify(user);
+                User newUser = client.User;
+                Assert.NotEqual(user.Key, newUser.Key);
+                Assert.Equal(user.Avatar, newUser.Avatar);
+                Assert.Equal(user.Country, newUser.Country);
+                Assert.Equal(user.Email, newUser.Email);
+                Assert.Equal(user.FirstName, newUser.FirstName);
+                Assert.Equal(user.LastName, newUser.LastName);
+                Assert.Equal(user.Name, newUser.Name);
+                Assert.Equal(user.IpAddress, newUser.IpAddress);
+                Assert.Equal(user.SecondaryKey, newUser.SecondaryKey);
+                Assert.Equal(user.Custom["attr"], newUser.Custom["attr"]);
+                Assert.True(newUser.Anonymous);
+            }
         }
-
+        
         [Fact]
         public void CanRegisterListener()
         {
-            var client = Client();
-            var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-            var listener = new TestListener();
-            client.RegisterFeatureFlagListener("user1-flag", listener);
-            listenerMgr.FlagWasUpdated("user1-flag", 7);
-            Assert.Equal(7, listener.FeatureFlags["user1-flag"].ToObject<int>());
+            using (var client = Client())
+            {
+                var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
+                var listener = new TestListener();
+                client.RegisterFeatureFlagListener("user1-flag", listener);
+                listenerMgr.FlagWasUpdated("user1-flag", 7);
+                Assert.Equal(7, listener.FeatureFlags["user1-flag"].ToObject<int>());
+            }
         }
 
         [Fact]
         public void UnregisterListenerUnregistersPassedInListenerForFlagKeyOnListenerManager()
         {
-            var client = Client();
-            var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-            var listener = new TestListener();
-            client.RegisterFeatureFlagListener("user2-flag", listener);
-            listenerMgr.FlagWasUpdated("user2-flag", 7);
-            Assert.Equal(7, listener.FeatureFlags["user2-flag"]);
+            using (var client = Client())
+            {
+                var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
+                var listener = new TestListener();
+                client.RegisterFeatureFlagListener("user2-flag", listener);
+                listenerMgr.FlagWasUpdated("user2-flag", 7);
+                Assert.Equal(7, listener.FeatureFlags["user2-flag"]);
 
-            client.UnregisterFeatureFlagListener("user2-flag", listener);
-            listenerMgr.FlagWasUpdated("user2-flag", 12);
-            Assert.NotEqual(12, listener.FeatureFlags["user2-flag"]);
+                client.UnregisterFeatureFlagListener("user2-flag", listener);
+                listenerMgr.FlagWasUpdated("user2-flag", 12);
+                Assert.NotEqual(12, listener.FeatureFlags["user2-flag"]);
+            }
         }
     }
 }

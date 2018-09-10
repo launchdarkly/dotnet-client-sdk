@@ -9,8 +9,13 @@ namespace LaunchDarkly.Xamarin
 
         internal MobileConnectionManager()
         {
-            isConnected = Connectivity.NetworkAccess == NetworkAccess.Internet;
-            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+            UpdateConnectedStatus();
+            try
+            {
+                Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+            }
+            catch (NotImplementedInReferenceAssemblyException)
+            { }
         }
 
         bool isConnected;
@@ -22,12 +27,24 @@ namespace LaunchDarkly.Xamarin
                 isConnected = value;
             }
         }
-
-
+        
         void Connectivity_ConnectivityChanged(ConnectivityChangedEventArgs e)
         {
-            isConnected = Connectivity.NetworkAccess == NetworkAccess.Internet;
+            UpdateConnectedStatus();
             ConnectionChanged?.Invoke(isConnected);
+        }
+
+        private void UpdateConnectedStatus()
+        {
+            try
+            {
+                isConnected = Connectivity.NetworkAccess == NetworkAccess.Internet;
+            }
+            catch (NotImplementedInReferenceAssemblyException)
+            {
+                // .NET Standard has no way to detect network connectivity
+                isConnected = true;
+            }
         }
     }
 }

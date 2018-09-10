@@ -11,14 +11,14 @@ namespace LaunchDarkly.Xamarin.Tests
         public void CanOverrideConfiguration()
         {
             var config = Configuration.Default("AnyOtherSdkKey")
-                .WithUri("https://app.AnyOtherEndpoint.com")
+                .WithBaseUri("https://app.AnyOtherEndpoint.com")
                 .WithEventQueueCapacity(99)
-                .WithPollingInterval(TimeSpan.FromMinutes(1));
+                .WithPollingInterval(TimeSpan.FromMinutes(45));
 
             Assert.Equal(new Uri("https://app.AnyOtherEndpoint.com"), config.BaseUri);
             Assert.Equal("AnyOtherSdkKey", config.MobileKey);
             Assert.Equal(99, config.EventQueueCapacity);
-            Assert.Equal(TimeSpan.FromMinutes(1), config.PollingInterval);
+            Assert.Equal(TimeSpan.FromMinutes(45), config.PollingInterval);
         }
 
         [Fact]
@@ -37,11 +37,31 @@ namespace LaunchDarkly.Xamarin.Tests
         }
         
         [Fact]
-        public void CannotOverrideTooSmallPollingInterval()
+        public void MobileKeyCannotBeNull()
         {
-            var config = Configuration.Default("AnyOtherSdkKey").WithPollingInterval(TimeSpan.FromSeconds(29));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(null));
+        }
 
-            Assert.Equal(TimeSpan.FromSeconds(30), config.PollingInterval);
+        [Fact]
+        public void MobileKeyCannotBeEmpty()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(""));
+        }
+
+        [Fact]
+        public void CannotSetTooSmallPollingInterval()
+        {
+            var config = Configuration.Default("AnyOtherSdkKey").WithPollingInterval(TimeSpan.FromSeconds(299));
+
+            Assert.Equal(TimeSpan.FromSeconds(300), config.PollingInterval);
+        }
+
+        [Fact]
+        public void CannotSetTooSmallBackgroundPollingInterval()
+        {
+            var config = Configuration.Default("SdkKey").WithBackgroundPollingInterval(TimeSpan.FromSeconds(899));
+
+            Assert.Equal(TimeSpan.FromSeconds(900), config.BackgroundPollingInterval);
         }
 
         [Fact]

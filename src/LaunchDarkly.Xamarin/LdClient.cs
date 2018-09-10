@@ -50,6 +50,7 @@ namespace LaunchDarkly.Xamarin
         IDeviceInfo deviceInfo;
         EventFactory eventFactory = EventFactory.Default;
         IFeatureFlagListenerManager flagListenerManager;
+        IPlatformAdapter platformAdapter;
 
         SemaphoreSlim connectionLock;
 
@@ -59,6 +60,15 @@ namespace LaunchDarkly.Xamarin
 
         LdClient(Configuration configuration, User user)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
             Config = configuration;
 
             connectionLock = new SemaphoreSlim(1, 1);
@@ -66,9 +76,10 @@ namespace LaunchDarkly.Xamarin
             persister = Factory.CreatePersister(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
+            platformAdapter = Factory.CreatePlatformAdapter(configuration);
 
-            // If you pass in a null user or user with a null key, one will be assigned to them.
-            if (user == null || user.Key == null)
+            // If you pass in a user with a null or blank key, one will be assigned to them.
+            if (String.IsNullOrEmpty(user.Key))
             {
                 User = UserWithUniqueKey(user);
             }
@@ -82,6 +93,8 @@ namespace LaunchDarkly.Xamarin
             updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager);
             eventProcessor = Factory.CreateEventProcessor(configuration);
 
+            eventProcessor.SendEvent(eventFactory.NewIdentifyEvent(User));
+
             SetupConnectionManager();
         }
 
@@ -90,8 +103,8 @@ namespace LaunchDarkly.Xamarin
         /// fetching feature flags.
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
-        /// first response from the LaunchDarkly service is returned, if you would rather this happen
-        /// in an async fashion you can use <see cref="InitAsync(string, User)"/>
+        /// first response from the LaunchDarkly service is returned, up to the specified timeout.
+        /// If you would rather this happen in an async fashion you can use <see cref="InitAsync(string, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more specific
         /// <see cref="Init(Configuration, User)"/> to instantiate the single instance of LdClient
@@ -99,27 +112,32 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="mobileKey">The mobile key given to you by LaunchDarkly.</param>
-        /// <param name="user">The user needed for client operations.</param>
-        public static LdClient Init(string mobileKey, User user)
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
+        /// <param name="maxWaitTime">The maximum length of time to wait for the client to initialize.
+        /// If this time elapses, the method will not throw an exception but will return the client in
+        /// an uninitialized state.</param>
+        public static LdClient Init(string mobileKey, User user, TimeSpan maxWaitTime)
         {
             var config = Configuration.Default(mobileKey);
 
-            return Init(config, user);
+            return Init(config, user, maxWaitTime);
         }
 
         /// <summary>
         /// Creates and returns new LdClient singleton instance, then starts the workflow for 
         /// fetching feature flags. This constructor should be used if you do not want to wait 
-        /// for the IUpdateProcessor instance to finish initializing and receive the first response
+        /// for the client to finish initializing and receive the first response
         /// from the LaunchDarkly service.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more specific
-        /// <see cref="Init(Configuration, User)"/> to instantiate the single instance of LdClient
+        /// <see cref="InitAsync(Configuration, User)"/> to instantiate the single instance of LdClient
         /// for the lifetime of your application.
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="mobileKey">The mobile key given to you by LaunchDarkly.</param>
-        /// <param name="user">The user needed for client operations.</param>
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static async Task<LdClient> InitAsync(string mobileKey, User user)
         {
             var config = Configuration.Default(mobileKey);
@@ -132,23 +150,36 @@ namespace LaunchDarkly.Xamarin
         /// fetching Feature Flags.
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
-        /// first response from the LaunchDarkly service is returned, if you would rather this happen
-        /// in an async fashion you can use <see cref="InitAsync(Configuration, User)"/>
+        /// first response from the LaunchDarkly service is returned, up to the specified timeout.
+        /// If you would rather this happen in an async fashion you can use <see cref="InitAsync(Configuration, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more basic
-        /// <see cref="Init(string, User)"/> to instantiate the single instance of LdClient
+        /// <see cref="Init(string, User, TimeSpan)"/> to instantiate the single instance of LdClient
         /// for the lifetime of your application.
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="config">The client configuration object</param>
-        /// <param name="user">The user needed for client operations.</param>
-        public static LdClient Init(Configuration config, User user)
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
+        /// <param name="maxWaitTime">The maximum length of time to wait for the client to initialize.
+        /// If this time elapses, the method will not throw an exception but will return the client in
+        /// an uninitialized state.</param>
+        public static LdClient Init(Configuration config, User user, TimeSpan maxWaitTime)
         {
+            if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxWaitTime));
+            }
+
             CreateInstance(config, user);
 
             if (Instance.Online)
             {
-                StartUpdateProcessor();
+                if (!Instance.StartUpdateProcessor(maxWaitTime))
+                {
+                    Log.WarnFormat("Client did not successfully initialize within {0} milliseconds.",
+                        maxWaitTime.TotalMilliseconds);
+                }
             }
 
             return Instance;
@@ -166,14 +197,15 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="config">The client configuration object</param>
-        /// <param name="user">The user needed for client operations.</param>
+        /// <param name="user">The user needed for client operations. Must not be null.
+        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static Task<LdClient> InitAsync(Configuration config, User user)
         {
             CreateInstance(config, user);
 
             if (Instance.Online)
             {
-                Task t = StartUpdateProcessorAsync();
+                Task t = Instance.StartUpdateProcessorAsync();
                 return t.ContinueWith((result) => Instance);
             }
             else
@@ -185,23 +217,38 @@ namespace LaunchDarkly.Xamarin
         static void CreateInstance(Configuration configuration, User user)
         {
             if (Instance != null)
+            {
                 throw new Exception("LdClient instance already exists.");
+            }
 
             Instance = new LdClient(configuration, user);
             Log.InfoFormat("Initialized LaunchDarkly Client {0}",
                            Instance.Version);
+
+            TimeSpan? bgPollInterval = null;
+            if (configuration.EnableBackgroundUpdating)
+            {
+                bgPollInterval = configuration.BackgroundPollingInterval;
+            }
+            Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance), bgPollInterval);
         }
 
-        static void StartUpdateProcessor()
+        bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
-            var initTask = Instance.updateProcessor.Start();
-            var configuration = Instance.Config as Configuration;
-            var unused = initTask.Wait(configuration.StartWaitTime);
+            var initTask = updateProcessor.Start();
+            try
+            {
+                return initTask.Wait(maxWaitTime);
+            }
+            catch (AggregateException e)
+            {
+                throw UnwrapAggregateException(e);
+            }
         }
 
-        static Task StartUpdateProcessorAsync()
+        Task StartUpdateProcessorAsync()
         {
-            return Instance.updateProcessor.Start();
+            return updateProcessor.Start();
         }
 
         void SetupConnectionManager()
@@ -219,13 +266,10 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Online"/>
         public bool Online
         {
-            get
-            {
-                return online;
-            }
+            get => online;
             set
             {
-                SetOnlineAsync(value).Wait();
+                var doNotAwaitResult = SetOnlineAsync(value);
             }
         }
 
@@ -300,7 +344,7 @@ namespace LaunchDarkly.Xamarin
             {
                 Log.ErrorFormat("Expected type: {0} but got {1} when evaluating FeatureFlag: {2}. Returning default",
                                 jtokenType,
-                                returnedFlagValue.GetType(),
+                                returnedFlagValue.Type,
                                 featureKey);
                 
                 return defaultValue;
@@ -319,23 +363,13 @@ namespace LaunchDarkly.Xamarin
                 Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
                 return defaultValue;
             }
-
-            if (User == null || User.Key == null)
-            {
-                Log.Warn("Feature flag evaluation called with null user or null user key. Returning default");
-                featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
-                                                                                 User,
-                                                                                 defaultValue);
-                eventProcessor.SendEvent(featureRequestEvent);
-                return defaultValue;
-            }
-
+            
             var flag = flagCacheManager.FlagForUser(featureKey, User);
             if (flag != null)
             {
                 featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
                 var value = flag.value;
-                if (value == null) {
+                if (value == null || value.Type == JTokenType.Null) {
                     featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
                                                                                      User,
                                                                                      defaultValue);
@@ -373,11 +407,6 @@ namespace LaunchDarkly.Xamarin
                 Log.Warn("AllFlags() was called before client has finished initializing. Returning null.");
                 return null;
             }
-            if (User == null || User.Key == null)
-            {
-                Log.Warn("AllFlags() called with null user or null user key. Returning null");
-                return null;
-            }
 
             return flagCacheManager.FlagsForUser(User)
                                     .ToDictionary(p => p.Key, p => p.Value.value);
@@ -386,11 +415,6 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Track(string, JToken)"/>
         public void Track(string eventName, JToken data)
         {
-            if (User == null || User.Key == null)
-            {
-                Log.Warn("Track called with null user or null user key");
-            }
-
             eventProcessor.SendEvent(eventFactory.NewCustomEvent(eventName, User, data));
         }
 
@@ -403,8 +427,12 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            bool isInited = Instance != null;
-            return isInited && Online;
+            //bool isInited = Instance != null;
+            //return isInited && Online;
+            // TODO: This method needs to be fixed to actually check whether the update processor has initialized.
+            // The previous logic (above) was meaningless because this method is not static, so by definition you
+            // do have a client instance if we've gotten here. But that doesn't mean it is initialized.
+            return Online;
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
@@ -422,7 +450,17 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Identify(User)"/>
         public void Identify(User user)
         {
-            IdentifyAsync(user).Wait();
+            try
+            {
+                // Note that we must use Task.Run here, rather than just doing IdentifyAsync(user).Wait(),
+                // to avoid a deadlock if we are on the main thread. See:
+                // https://olitee.com/2015/01/c-async-await-common-deadlock-scenario/
+                Task.Run(() => IdentifyAsync(user)).Wait();
+            }
+            catch (AggregateException e)
+            {
+                throw UnwrapAggregateException(e);
+            }
         }
 
         /// <see cref="ILdMobileClient.IdentifyAsync(User)"/>
@@ -430,18 +468,13 @@ namespace LaunchDarkly.Xamarin
         {
             if (user == null)
             {
-                Log.Warn("Identify called with null user");
-                return;
+                throw new ArgumentNullException("user");
             }
 
-            User userWithKey = null;
-            if (user.Key == null)
+            User userWithKey = user;
+            if (String.IsNullOrEmpty(user.Key))
             {
                 userWithKey = UserWithUniqueKey(user);
-            }
-            else
-            {
-                userWithKey = user;
             }
 
             await connectionLock.WaitAsync();
@@ -456,12 +489,6 @@ namespace LaunchDarkly.Xamarin
             }
 
             eventProcessor.SendEvent(eventFactory.NewIdentifyEvent(userWithKey));
-        }
-
-        void RestartUpdateProcessor()
-        {
-            ClearAndSetUpdateProcessor();
-            StartUpdateProcessor();
         }
 
         async Task RestartUpdateProcessorAsync()
@@ -481,26 +508,18 @@ namespace LaunchDarkly.Xamarin
             if (updateProcessor != null)
             {
                 updateProcessor.Dispose();
-                updateProcessor = null;
+                updateProcessor = new NullUpdateProcessor();
             }
         }
 
-        User UserWithUniqueKey(User user = null)
+        User UserWithUniqueKey(User user)
         {
             string uniqueId = deviceInfo.UniqueDeviceId();
-
-            if (user != null)
+            return new User(user)
             {
-                var updatedUser = new User(user)
-                {
-                    Key = uniqueId,
-                    Anonymous = true
-                };
-
-                return updatedUser;
-            }
-
-            return new User(uniqueId);
+                Key = uniqueId,
+                Anonymous = true
+            };
         }
 
         void IDisposable.Dispose()
@@ -513,7 +532,8 @@ namespace LaunchDarkly.Xamarin
         {
             if (disposing)
             {
-                Log.InfoFormat("The mobile client is being disposed");
+                Log.InfoFormat("Shutting down the LaunchDarkly client");
+                platformAdapter.Dispose();
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
             }
@@ -540,22 +560,6 @@ namespace LaunchDarkly.Xamarin
             flagListenerManager.UnregisterListener(listener, flagKey);
         }
 
-        internal void EnterBackground()
-        {
-            // if using Streaming, processor needs to be reset
-            if (Config.IsStreamingEnabled)
-            {
-                ClearUpdateProcessor();
-                Config.IsStreamingEnabled = false;
-                RestartUpdateProcessor();
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
-            }
-            else
-            {
-                PingPollingProcessor();
-            }
-        }
-
         internal async Task EnterBackgroundAsync()
         {
             // if using Streaming, processor needs to be reset
@@ -563,19 +567,19 @@ namespace LaunchDarkly.Xamarin
             {
                 ClearUpdateProcessor();
                 Config.IsStreamingEnabled = false;
-                await RestartUpdateProcessorAsync();
+                if (Config.EnableBackgroundUpdating)
+                {
+                    await RestartUpdateProcessorAsync();
+                }
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
             }
             else
             {
-                await PingPollingProcessorAsync();
+                if (Config.EnableBackgroundUpdating)
+                {
+                    await PingPollingProcessorAsync();
+                }
             }
-        }
-
-        internal void EnterForeground()
-        {
-            ResetProcessorForForeground();
-            RestartUpdateProcessor();
         }
 
         internal async Task EnterForegroundAsync()
@@ -622,6 +626,41 @@ namespace LaunchDarkly.Xamarin
             {
                 await pollingProcessor.PingAndWait();
             }
+        }
+
+        private Exception UnwrapAggregateException(AggregateException e)
+        {
+            if (e.InnerExceptions.Count == 1)
+            {
+                return e.InnerExceptions[0];
+            }
+            return e;
+        }
+    }
+
+    // Implementation of IBackgroundingState - this allows us to keep these methods out of the public LdClient API
+    internal class LdClientBackgroundingState : IBackgroundingState
+    {
+        private readonly LdClient _client;
+
+        internal LdClientBackgroundingState(LdClient client)
+        {
+            _client = client;
+        }
+
+        public async Task EnterBackgroundAsync()
+        {
+            await _client.EnterBackgroundAsync();
+        }
+
+        public async Task ExitBackgroundAsync()
+        {
+            await _client.EnterForegroundAsync();
+        }
+
+        public async Task BackgroundUpdateAsync()
+        {
+            await _client.BackgroundTickAsync();
         }
     }
 }

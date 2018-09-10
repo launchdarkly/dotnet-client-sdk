@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using Common.Logging;
+using LaunchDarkly.Client;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -58,12 +59,6 @@ namespace LaunchDarkly.Xamarin
         /// Set the polling interval (when streaming is disabled). The default value is 30 seconds.
         /// </summary>
         public TimeSpan PollingInterval { get; internal set; }
-        /// <summary>
-        /// How long the client constructor will block awaiting a successful connection to
-        /// LaunchDarkly. Setting this to 0 will not block and will cause the constructor to return
-        /// immediately. The default value is 5 seconds.
-        /// </summary>
-        public TimeSpan StartWaitTime { get; internal set; }
         /// <summary>
         /// The timeout when reading data from the EventSource API. The default value is 5 minutes.
         /// </summary>
@@ -125,15 +120,21 @@ namespace LaunchDarkly.Xamarin
 
         internal IFlagCacheManager FlagCacheManager { get; set; }
         internal IConnectionManager ConnectionManager { get; set; }
+        internal IEventProcessor EventProcessor { get; set; }
         internal IMobileUpdateProcessor MobileUpdateProcessor { get; set; }
         internal ISimplePersistance Persister { get; set; }
         internal IDeviceInfo DeviceInfo { get; set; }
         internal IFeatureFlagListenerManager FeatureFlagListenerManager { get; set; }
+        internal IPlatformAdapter PlatformAdapter { get; set; }
 
         /// <summary>
         /// Default value for <see cref="PollingInterval"/>.
         /// </summary>
-        public static TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(30);
+        public static TimeSpan DefaultPollingInterval = TimeSpan.FromMinutes(5);
+        /// <summary>
+        /// Minimum value for <see cref="PollingInterval"/>.
+        /// </summary>
+        public static TimeSpan MinimumPollingInterval = TimeSpan.FromMinutes(5);
         /// <summary>
         /// Default value for <see cref="BaseUri"/>.
         /// </summary>
@@ -154,10 +155,6 @@ namespace LaunchDarkly.Xamarin
         /// Default value for <see cref="EventQueueFrequency"/>.
         /// </summary>
         private static readonly TimeSpan DefaultEventQueueFrequency = TimeSpan.FromSeconds(5);
-        /// <summary>
-        /// Default value for <see cref="StartWaitTime"/>.
-        /// </summary>
-        private static readonly TimeSpan DefaultStartWaitTime = TimeSpan.FromSeconds(5);
         /// <summary>
         /// Default value for <see cref="ReadTimeout"/>.
         /// </summary>
@@ -181,7 +178,11 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// The default value for <see cref="BackgroundPollingInterval"/>.
         /// </summary>
-        private static readonly TimeSpan DefaultBackgroundPollingInterval = TimeSpan.FromMinutes(3600);
+        private static readonly TimeSpan DefaultBackgroundPollingInterval = TimeSpan.FromMinutes(60);
+        /// <summary>
+        /// The minimum value for <see cref="BackgroundPollingInterval"/>.
+        /// </summary>
+        public static readonly TimeSpan MinimumBackgroundPollingInterval = TimeSpan.FromMinutes(15);
         /// <summary>
         /// The default value for <see cref="ConnectionTimeout"/>.
         /// </summary>
@@ -195,6 +196,10 @@ namespace LaunchDarkly.Xamarin
         /// <returns>a <c>Configuration</c> instance</returns>
         public static Configuration Default(string mobileKey)
         {
+            if (String.IsNullOrEmpty(mobileKey))
+            {
+                throw new ArgumentOutOfRangeException("mobileKey", "key is required");
+            }
             var defaultConfiguration = new Configuration
             {
                 BaseUri = DefaultUri,
@@ -203,7 +208,6 @@ namespace LaunchDarkly.Xamarin
                 EventQueueCapacity = DefaultEventQueueCapacity,
                 EventQueueFrequency = DefaultEventQueueFrequency,
                 PollingInterval = DefaultPollingInterval,
-                StartWaitTime = DefaultStartWaitTime,
                 ReadTimeout = DefaultReadTimeout,
                 ReconnectTime = DefaultReconnectTime,
                 HttpClientTimeout = DefaultHttpClientTimeout,
@@ -237,7 +241,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="configuration">the configuration</param>
         /// <param name="uri">the base URI as a string</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithUri(this Configuration configuration, string uri)
+        public static Configuration WithBaseUri(this Configuration configuration, string uri)
         {
             if (uri != null)
                 configuration.BaseUri = new Uri(uri);
@@ -251,7 +255,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="configuration">the configuration</param>
         /// <param name="uri">the base URI</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithUri(this Configuration configuration, Uri uri)
+        public static Configuration WithBaseUri(this Configuration configuration, Uri uri)
         {
             if (uri != null)
                 configuration.BaseUri = uri;
@@ -371,26 +375,12 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the same <c>Configuration</c> instance</returns>
         public static Configuration WithPollingInterval(this Configuration configuration, TimeSpan pollingInterval)
         {
-            if (pollingInterval.CompareTo(Configuration.DefaultPollingInterval) < 0)
+            if (pollingInterval.CompareTo(Configuration.MinimumPollingInterval) < 0)
             {
-                Log.Warn("PollingInterval cannot be less than the default of 30 seconds.");
-                pollingInterval = Configuration.DefaultPollingInterval;
+                Log.WarnFormat("PollingInterval cannot be less than the default of {0}.");
+                pollingInterval = Configuration.MinimumPollingInterval;
             }
             configuration.PollingInterval = pollingInterval;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Sets how long the client constructor will block awaiting a successful connection to
-        /// LaunchDarkly. Setting this to 0 will not block and will cause the constructor to return
-        /// immediately. The default value is 5 seconds.
-        /// </summary>
-        /// <param name="configuration">the configuration</param>
-        /// <param name="startWaitTime">the length of time to wait</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithStartWaitTime(this Configuration configuration, TimeSpan startWaitTime)
-        {
-            configuration.StartWaitTime = startWaitTime;
             return configuration;
         }
 
@@ -568,6 +558,18 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <summary>
+        /// Sets the IEventProcessor instance, used internally for stubbing mock instances.
+        /// </summary>
+        /// <param name="configuration">Configuration.</param>
+        /// <param name="eventProcessor">Event processor.</param>
+        /// <returns>the same <c>Configuration</c> instance</returns>
+        public static Configuration WithEventProcessor(this Configuration configuration, IEventProcessor eventProcessor)
+        {
+            configuration.EventProcessor = eventProcessor;
+            return configuration;
+        }
+
+        /// <summary>
         /// Determines whether to use the Report method for networking requests
         /// </summary>
         /// <param name="configuration">Configuration.</param>
@@ -659,7 +661,24 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the same <c>Configuration</c> instance</returns>
         public static Configuration WithBackgroundPollingInterval(this Configuration configuration, TimeSpan backgroundPollingInternal)
         {
+            if (backgroundPollingInternal.CompareTo(Configuration.MinimumBackgroundPollingInterval) < 0)
+            {
+                Log.WarnFormat("BackgroundPollingInterval cannot be less than the default of {0}.", Configuration.MinimumBackgroundPollingInterval);
+                backgroundPollingInternal = Configuration.MinimumBackgroundPollingInterval;
+            }
             configuration.BackgroundPollingInterval = backgroundPollingInternal;
+            return configuration;
+        }
+
+        /// <summary>
+        /// Specifies a component that provides special functionality for the current mobile platform.
+        /// </summary>
+        /// <param name="configuration">Configuration.</param>
+        /// <param name="adapter">An implementation of <see cref="IPlatformAdapter"/>.</param>
+        /// <returns>the same <c>Configuration</c> instance</returns>
+        public static Configuration WithPlatformAdapter(this Configuration configuration, IPlatformAdapter adapter)
+        {
+            configuration.PlatformAdapter = adapter;
             return configuration;
         }
     }

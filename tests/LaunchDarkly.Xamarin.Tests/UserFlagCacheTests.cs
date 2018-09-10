@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using LaunchDarkly.Client;
-using Newtonsoft.Json;
+﻿using LaunchDarkly.Client;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -16,14 +12,13 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CanCacheFlagsInMemory()
         {
-            var text = JSONReader.FeatureFlagJSON();
-            var flags = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(text);
+            var jsonFlags = @"{""flag1"":{""value"":1},""flag2"":{""value"":2}}";
+            var flags = TestUtil.DecodeFlagsJson(jsonFlags);
             inMemoryCache.CacheFlagsForUser(flags, user1);
             var flagsRetrieved = inMemoryCache.RetrieveFlags(user1);
-            Assert.Equal(flags.Count, flagsRetrieved.Count);
-            var secondFlag = flags.Values.ToList()[1];
-            var secondFlagRetrieved = flagsRetrieved.Values.ToList()[1];
-            Assert.Equal(secondFlag, secondFlagRetrieved);
+            Assert.Equal(2, flagsRetrieved.Count);
+            Assert.Equal(flags["flag1"], flagsRetrieved["flag1"]);
+            Assert.Equal(flags["flag2"], flagsRetrieved["flag2"]);
         }
     }
 }
