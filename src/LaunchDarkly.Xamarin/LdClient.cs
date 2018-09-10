@@ -372,13 +372,13 @@ namespace LaunchDarkly.Xamarin
                 if (value == null || value.Type == JTokenType.Null) {
                     featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
                                                                                      User,
-                                                                                     defaultValue);
+                                                                                     defaultValue,
+                                                                                     EvaluationErrorKind.FLAG_NOT_FOUND);
                     value = defaultValue;
                 } else {
                     featureRequestEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent,
                                                                               User,
-                                                                              flag.variation,
-                                                                              flag.value,
+                                                                              new EvaluationDetail<JToken>(flag.value, flag.variation, null),
                                                                               defaultValue);
                 }
                 eventProcessor.SendEvent(featureRequestEvent);
@@ -389,7 +389,8 @@ namespace LaunchDarkly.Xamarin
                         featureKey);
             featureRequestEvent = eventFactory.NewUnknownFeatureRequestEvent(featureKey,
                                                                              User,
-                                                                             defaultValue);
+                                                                             defaultValue,
+                                                                             EvaluationErrorKind.FLAG_NOT_FOUND);
             eventProcessor.SendEvent(featureRequestEvent);
             return defaultValue;
         }
