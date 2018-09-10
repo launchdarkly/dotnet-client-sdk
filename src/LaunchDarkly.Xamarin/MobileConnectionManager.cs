@@ -28,7 +28,7 @@ namespace LaunchDarkly.Xamarin
             }
         }
         
-        void Connectivity_ConnectivityChanged(ConnectivityChangedEventArgs e)
+        void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
         {
             UpdateConnectedStatus();
             ConnectionChanged?.Invoke(isConnected);

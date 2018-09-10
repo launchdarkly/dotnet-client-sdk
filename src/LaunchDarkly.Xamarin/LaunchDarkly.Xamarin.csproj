@@ -16,7 +16,7 @@
   
   <ItemGroup>
     <PackageReference Include="Common.Logging" Version="3.4.1" />
-    <PackageReference Include="Xamarin.Essentials" Version="0.6.0-preview" />
+    <PackageReference Include="Xamarin.Essentials" Version="0.10.0-preview" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
     <PackageReference Include="LaunchDarkly.Common" Version="1.1.1" />
   </ItemGroup>
