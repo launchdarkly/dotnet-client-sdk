@@ -1,6 +1,7 @@
 LaunchDarkly SDK [BETA] for Xamarin
 ===========================
 [![CircleCI](https://circleci.com/gh/launchdarkly/xamarin-client/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/xamarin-client/tree/master)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Flaunchdarkly%2Fxamarin-client.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Flaunchdarkly%2Fxamarin-client?ref=badge_shield)
 
 *This software is a **beta** version and should not be considered ready for production use until tagged at least 1.0.*
 
@@ -77,3 +78,7 @@ About LaunchDarkly
     * [apidocs.launchdarkly.com](http://apidocs.launchdarkly.com/  "LaunchDarkly API Documentation") for our API documentation
     * [blog.launchdarkly.com](http://blog.launchdarkly.com/  "LaunchDarkly Blog Documentation") for the latest product updates
     * [Feature Flagging Guide](https://github.com/launchdarkly/featureflags/  "Feature Flagging Guide") for best practices and strategies
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Flaunchdarkly%2Fxamarin-client.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Flaunchdarkly%2Fxamarin-client?ref=badge_large)
