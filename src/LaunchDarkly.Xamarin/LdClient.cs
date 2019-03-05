@@ -428,12 +428,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            //bool isInited = Instance != null;
-            //return isInited && Online;
-            // TODO: This method needs to be fixed to actually check whether the update processor has initialized.
-            // The previous logic (above) was meaningless because this method is not static, so by definition you
-            // do have a client instance if we've gotten here. But that doesn't mean it is initialized.
-            return Online;
+            return Online && updateProcessor.Initialized();
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
