@@ -20,23 +20,25 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+using System;
+
 namespace LaunchDarkly.Xamarin.Preferences
 {
     public static partial class Preferences
     {
         static bool PlatformContainsKey(string key, string sharedName) =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
 
         static void PlatformRemove(string key, string sharedName) =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
 
         static void PlatformClear(string sharedName) =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
 
         static void PlatformSet<T>(string key, T value, string sharedName) =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
 
         static T PlatformGet<T>(string key, T defaultValue, string sharedName) =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
     }
 }

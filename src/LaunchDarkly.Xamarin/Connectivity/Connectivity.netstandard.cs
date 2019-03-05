@@ -20,6 +20,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+using System;
+
 using System.Collections.Generic;
 
 namespace LaunchDarkly.Xamarin.Connectivity
@@ -27,15 +29,15 @@ namespace LaunchDarkly.Xamarin.Connectivity
     public static partial class Connectivity
     {
         static NetworkAccess PlatformNetworkAccess =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
 
         static IEnumerable<ConnectionProfile> PlatformConnectionProfiles =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
 
         static void StartListeners() =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
 
         static void StopListeners() =>
-            throw new System.NullReferenceException();
+            throw new NotImplementedException();
     }
 }

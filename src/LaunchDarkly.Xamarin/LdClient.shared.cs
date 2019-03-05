@@ -69,6 +69,8 @@ namespace LaunchDarkly.Xamarin
                 throw new ArgumentNullException("user");
             }
 
+            configuration.PlatformAdapter = new LaunchDarkly.Xamarin.BackgroundAdapter.BackgroundAdapter();
+
             Config = configuration;
 
             connectionLock = new SemaphoreSlim(1, 1);
