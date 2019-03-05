@@ -1,7 +1,4 @@
-﻿using System;
-using Xamarin.Essentials;
-
-namespace LaunchDarkly.Xamarin
+﻿namespace LaunchDarkly.Xamarin
 {
     internal class SimpleMobileDevicePersistance : ISimplePersistance
     {

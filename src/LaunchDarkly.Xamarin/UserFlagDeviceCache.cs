@@ -4,7 +4,6 @@ using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
 using Newtonsoft.Json;
-using Xamarin.Essentials;
 
 namespace LaunchDarkly.Xamarin
 {

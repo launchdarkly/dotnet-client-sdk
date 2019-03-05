@@ -5,18 +5,18 @@
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.Xamarin</AssemblyName>
     <PackageId>LaunchDarkly.Xamarin</PackageId>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
-    <TargetFrameworks>netstandard1.6;netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;netstandard2.0;net45;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
-    <TargetFrameworks>netstandard1.6;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;netstandard2.0;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81</TargetFrameworks>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Common.Logging" Version="3.4.1" />
-    <PackageReference Include="Xamarin.Essentials" Version="0.10.0-preview" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
     <PackageReference Include="LaunchDarkly.Common" Version="1.1.1" />
   </ItemGroup>
@@ -27,6 +27,54 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <Compile Include="**\*.shared.cs" />
+    <Compile Include="**\*.shared.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard1.')) ">
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
+    <Compile Include="**\*.netstandard.cs" />
+    <Compile Include="**\*.netstandard.*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+    <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.android.*.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid81')) ">
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="27.0.2.1" />
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="27.0.2.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid80')) ">
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="26.1.0.1" />
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="26.1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid71')) ">
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="25.4.0.2" />
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="25.4.0.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+    <Compile Include="**\*.ios.cs" />
+    <Compile Include="**\*.ios.*.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
 
 </Project>
