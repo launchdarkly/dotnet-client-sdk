@@ -232,7 +232,14 @@ namespace LaunchDarkly.Xamarin
             {
                 bgPollInterval = configuration.BackgroundPollingInterval;
             }
-            Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance), bgPollInterval);
+            try
+            {
+                Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance), bgPollInterval);
+            }
+            catch
+            {
+                Log.Info("Foreground/Background is only available on iOS and Android");
+            }
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
@@ -531,7 +538,14 @@ namespace LaunchDarkly.Xamarin
             if (disposing)
             {
                 Log.InfoFormat("Shutting down the LaunchDarkly client");
-                platformAdapter.Dispose();
+                try
+                {
+                    platformAdapter.Dispose();
+                }
+                catch
+                {
+                    Log.Info("Foreground/Background is only available on iOS and Android");
+                }
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
             }
