@@ -35,9 +35,11 @@ namespace LaunchDarkly.Xamarin
     internal class FeatureFlagRequestor : IFeatureFlagRequestor
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(FeatureFlagRequestor));
+        private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
+
         private readonly IMobileConfiguration _configuration;
         private readonly User _currentUser;
-        private volatile HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
         private volatile EntityTagHeaderValue _etag;
 
         internal FeatureFlagRequestor(IMobileConfiguration configuration, User user)
@@ -49,34 +51,32 @@ namespace LaunchDarkly.Xamarin
 
         public async Task<WebResponse> FeatureFlagsAsync()
         {
-            HttpRequestMessage requestMessage;
-            if (_configuration.UseReport)
-            {
-                requestMessage = ReportRequestMessage();
-            }
-            else
-            {
-                requestMessage = GetRequestMessage();
-            }
-
+            var requestMessage = _configuration.UseReport ? ReportRequestMessage() : GetRequestMessage();
             return await MakeRequest(requestMessage);
         }
 
         private HttpRequestMessage GetRequestMessage()
         {
-            var encodedUser = _currentUser.AsJson().Base64Encode();
-            var requestUrlPath = _configuration.BaseUri + Constants.FLAG_REQUEST_PATH_GET + encodedUser;
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUrlPath);
-            return request;
+            var path = Constants.FLAG_REQUEST_PATH_GET + _currentUser.AsJson().Base64Encode();
+            return new HttpRequestMessage(HttpMethod.Get, MakeRequestUriWithPath(path));
         }
 
         private HttpRequestMessage ReportRequestMessage()
         {
-            var requestUrlPath = _configuration.BaseUri + Constants.FLAG_REQUEST_PATH_REPORT;
-            var request = new HttpRequestMessage(new HttpMethod("REPORT"), requestUrlPath);
+            var request = new HttpRequestMessage(ReportMethod, MakeRequestUriWithPath(Constants.FLAG_REQUEST_PATH_REPORT));
             request.Content = new StringContent(_currentUser.AsJson(), Encoding.UTF8, Constants.APPLICATION_JSON);
-
             return request;
+        }
+
+        private Uri MakeRequestUriWithPath(string path)
+        {
+            var uri = new UriBuilder(_configuration.BaseUri);
+            uri.Path = path;
+            if (_configuration.EvaluationReasons)
+            {
+                uri.Query = "withReasons=true";
+            }
+            return uri.Uri;
         }
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)

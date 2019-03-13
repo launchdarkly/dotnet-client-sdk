@@ -14,7 +14,7 @@ namespace LaunchDarkly.Xamarin.Tests
             flag.flagVersion = 123;
             flag.version = 456;
             var flagEvent = new FeatureFlagEvent("my-flag", flag);
-            Assert.Equal(123, flagEvent.Version);
+            Assert.Equal(123, flagEvent.EventVersion);
         }
 
         [Fact]
@@ -23,7 +23,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var flag = new FeatureFlag();
             flag.version = 456;
             var flagEvent = new FeatureFlagEvent("my-flag", flag);
-            Assert.Equal(456, flagEvent.Version);
+            Assert.Equal(456, flagEvent.EventVersion);
         }
     }
 }

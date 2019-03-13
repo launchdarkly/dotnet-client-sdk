@@ -41,5 +41,15 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <value><c>true</c> if use report; otherwise, <c>false</c>.</value>
         bool UseReport { get; }
+
+        /// <summary>
+        /// True if LaunchDarkly should provide additional information about how flag values were
+        /// calculated. The additional information will then be available through the client's "detail"
+        /// methods such as <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>. Since this
+        /// increases the size of network requests, such information is not sent unless you set this option
+        /// to true.
+        /// </summary>
+        /// <value><c>true</c> if evaluation reasons are desired.</value>
+        bool EvaluationReasons { get; }
     }
 }
