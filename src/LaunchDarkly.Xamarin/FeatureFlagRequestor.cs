@@ -81,48 +81,45 @@ namespace LaunchDarkly.Xamarin
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)
         {
-            var cts = new CancellationTokenSource(_configuration.HttpClientTimeout);
-
-            if (_etag != null)
+            using (var cts = new CancellationTokenSource(_configuration.HttpClientTimeout))
             {
-                request.Headers.IfNoneMatch.Add(_etag);
-            }
-
-            try
-            {
-                Log.DebugFormat("Getting flags with uri: {0}", request.RequestUri.AbsoluteUri);
-                using (var response = await _httpClient.SendAsync(request, cts.Token).ConfigureAwait(false))
+                if (_etag != null)
                 {
-                    if (response.StatusCode == HttpStatusCode.NotModified)
-                    {
-                        Log.Debug("Get all flags returned 304: not modified");
-                        return new WebResponse(304, null, "Get all flags returned 304: not modified");
-                    }
-                    _etag = response.Headers.ETag;
-                    //We ensure the status code after checking for 304, because 304 isn't considered success
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new UnsuccessfulResponseException((int)response.StatusCode);
-                    }
+                    request.Headers.IfNoneMatch.Add(_etag);
+                }
 
-                    var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    return new WebResponse(200, content, null);
-                }
-            }
-            catch (TaskCanceledException tce)
-            {
-                if (tce.CancellationToken == cts.Token)
+                try
                 {
-                    //Indicates the task was cancelled by something other than a request timeout
-                    throw;
+                    Log.DebugFormat("Getting flags with uri: {0}", request.RequestUri.AbsoluteUri);
+                    using (var response = await _httpClient.SendAsync(request, cts.Token).ConfigureAwait(false))
+                    {
+                        if (response.StatusCode == HttpStatusCode.NotModified)
+                        {
+                            Log.Debug("Get all flags returned 304: not modified");
+                            return new WebResponse(304, null, "Get all flags returned 304: not modified");
+                        }
+                        _etag = response.Headers.ETag;
+                        //We ensure the status code after checking for 304, because 304 isn't considered success
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            throw new UnsuccessfulResponseException((int)response.StatusCode);
+                        }
+
+                        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        return new WebResponse(200, content, null);
+                    }
                 }
-                //Otherwise this was a request timeout.
-                throw new TimeoutException("Get item with URL: " + request.RequestUri +
-                                            " timed out after : " + _configuration.HttpClientTimeout);
-            }
-            catch (Exception)
-            {
-                throw;
+                catch (TaskCanceledException tce)
+                {
+                    if (tce.CancellationToken == cts.Token)
+                    {
+                        //Indicates the task was cancelled by something other than a request timeout
+                        throw;
+                    }
+                    //Otherwise this was a request timeout.
+                    throw new TimeoutException("Get item with URL: " + request.RequestUri +
+                                                " timed out after : " + _configuration.HttpClientTimeout);
+                }
             }
         }
 
