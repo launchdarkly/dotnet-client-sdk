@@ -20,23 +20,34 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System;
-using System.Collections.Generic;
-
-namespace LaunchDarkly.Xamarin.Connectivity
+namespace LaunchDarkly.Xamarin.Permissions
 {
-    public static partial class Connectivity
+    enum PermissionStatus
     {
-        static NetworkAccess PlatformNetworkAccess =>
-            throw new NotImplementedException();
+        // Denied by user
+        Denied,
 
-        static IEnumerable<ConnectionProfile> PlatformConnectionProfiles =>
-            throw new NotImplementedException();
+        // Feature is disabled on device
+        Disabled,
 
-        static void StartListeners() =>
-            throw new NotImplementedException();
+        // Granted by user
+        Granted,
 
-        static void StopListeners() =>
-            throw new NotImplementedException();
+        // Restricted (only iOS)
+        Restricted,
+
+        // Permission is in an unknown state
+        Unknown
+    }
+
+    enum PermissionType
+    {
+        Unknown,
+        Battery,
+        Camera,
+        Flashlight,
+        LocationWhenInUse,
+        NetworkState,
+        Vibrate,
     }
 }

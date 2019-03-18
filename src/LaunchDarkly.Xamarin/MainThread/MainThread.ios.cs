@@ -21,22 +21,18 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 using System;
-using System.Collections.Generic;
+using Foundation;
 
-namespace LaunchDarkly.Xamarin.Connectivity
+namespace LaunchDarkly.Xamarin.MainThread
 {
-    public static partial class Connectivity
+    public static partial class MainThread
     {
-        static NetworkAccess PlatformNetworkAccess =>
-            throw new NotImplementedException();
+        static bool PlatformIsMainThread =>
+            NSThread.Current.IsMainThread;
 
-        static IEnumerable<ConnectionProfile> PlatformConnectionProfiles =>
-            throw new NotImplementedException();
-
-        static void StartListeners() =>
-            throw new NotImplementedException();
-
-        static void StopListeners() =>
-            throw new NotImplementedException();
+        static void PlatformBeginInvokeOnMainThread(Action action)
+        {
+            NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
+        }
     }
 }

@@ -21,22 +21,31 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 using System;
-using System.Collections.Generic;
+using Android.OS;
 
-namespace LaunchDarkly.Xamarin.Connectivity
+namespace LaunchDarkly.Xamarin.MainThread
 {
-    public static partial class Connectivity
+    public static partial class MainThread
     {
-        static NetworkAccess PlatformNetworkAccess =>
-            throw new NotImplementedException();
+        static Handler handler;
 
-        static IEnumerable<ConnectionProfile> PlatformConnectionProfiles =>
-            throw new NotImplementedException();
+        static bool PlatformIsMainThread
+        {
+            get
+            {
+                if (Platform.Platform.HasApiLevel(BuildVersionCodes.M))
+                    return Looper.MainLooper.IsCurrentThread;
 
-        static void StartListeners() =>
-            throw new NotImplementedException();
+                return Looper.MyLooper() == Looper.MainLooper;
+            }
+        }
 
-        static void StopListeners() =>
-            throw new NotImplementedException();
+        static void PlatformBeginInvokeOnMainThread(Action action)
+        {
+            if (handler?.Looper != Looper.MainLooper)
+                handler = new Handler(Looper.MainLooper);
+
+            handler.Post(action);
+        }
     }
 }

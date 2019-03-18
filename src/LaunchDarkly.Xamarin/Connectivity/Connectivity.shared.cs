@@ -70,6 +70,21 @@ namespace LaunchDarkly.Xamarin.Connectivity
             currentAccess = NetworkAccess;
             currentProfiles = new List<ConnectionProfile>(ConnectionProfiles);
         }
+
+        static void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
+            => OnConnectivityChanged(new ConnectivityChangedEventArgs(access, profiles));
+
+        static void OnConnectivityChanged()
+            => OnConnectivityChanged(NetworkAccess, ConnectionProfiles);
+
+        static void OnConnectivityChanged(ConnectivityChangedEventArgs e)
+        {
+            if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.ConnectionProfiles))
+            {
+                SetCurrent();
+                MainThread.MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
+            }
+        }
     }
 
     public class ConnectivityChangedEventArgs : EventArgs

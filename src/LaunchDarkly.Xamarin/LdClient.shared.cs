@@ -234,7 +234,7 @@ namespace LaunchDarkly.Xamarin
             }
             try
             {
-                Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance), bgPollInterval);
+                Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance));
             }
             catch
             {

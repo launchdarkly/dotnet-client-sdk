@@ -10,7 +10,7 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
             throw new NotImplementedException();
         }
 
-        public void EnableBackgrounding(IBackgroundingState backgroundingState, TimeSpan? backgroundPollInterval)
+        public void EnableBackgrounding(IBackgroundingState backgroundingState)
         {
             throw new NotImplementedException();
         }

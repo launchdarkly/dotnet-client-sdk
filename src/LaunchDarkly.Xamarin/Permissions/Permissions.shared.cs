@@ -22,21 +22,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace LaunchDarkly.Xamarin.Connectivity
+namespace LaunchDarkly.Xamarin.Permissions
 {
-    public static partial class Connectivity
+    internal static partial class Permissions
     {
-        static NetworkAccess PlatformNetworkAccess =>
-            throw new NotImplementedException();
+        internal static void EnsureDeclared(PermissionType permission) =>
+            PlatformEnsureDeclared(permission);
 
-        static IEnumerable<ConnectionProfile> PlatformConnectionProfiles =>
-            throw new NotImplementedException();
+        internal static Task<PermissionStatus> CheckStatusAsync(PermissionType permission) =>
+            PlatformCheckStatusAsync(permission);
 
-        static void StartListeners() =>
-            throw new NotImplementedException();
+        internal static Task<PermissionStatus> RequestAsync(PermissionType permission) =>
+            PlatformRequestAsync(permission);
 
-        static void StopListeners() =>
-            throw new NotImplementedException();
+        internal static async Task RequireAsync(PermissionType permission)
+        {
+            if (await RequestAsync(permission) != PermissionStatus.Granted)
+                throw new System.UnauthorizedAccessException($"{permission} was not granted.");
+        }
     }
 }
