@@ -71,6 +71,8 @@ namespace LaunchDarkly.Xamarin
 
             configuration.PlatformAdapter = new LaunchDarkly.Xamarin.BackgroundAdapter.BackgroundAdapter();
 
+            Log.Debug("After Platform Adapter");
+
             Config = configuration;
 
             connectionLock = new SemaphoreSlim(1, 1);
@@ -577,10 +579,12 @@ namespace LaunchDarkly.Xamarin
             // if using Streaming, processor needs to be reset
             if (Config.IsStreamingEnabled)
             {
+                Console.WriteLine("StreamingEnabled");
                 ClearUpdateProcessor();
                 Config.IsStreamingEnabled = false;
                 if (Config.EnableBackgroundUpdating)
                 {
+                    Console.WriteLine("BackgroundEnabled");
                     await RestartUpdateProcessorAsync();
                 }
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
@@ -589,6 +593,7 @@ namespace LaunchDarkly.Xamarin
             {
                 if (Config.EnableBackgroundUpdating)
                 {
+                    Console.WriteLine("BackgroundEnabled");
                     await PingPollingProcessorAsync();
                 }
             }
@@ -626,7 +631,8 @@ namespace LaunchDarkly.Xamarin
             var pollingProcessor = updateProcessor as MobilePollingProcessor;
             if (pollingProcessor != null)
             {
-                var waitTask = pollingProcessor.PingAndWait();
+                Console.WriteLine("PingPollingProcessor");
+                var waitTask = pollingProcessor.PingAndWait(Config.BackgroundPollingInterval);
                 waitTask.Wait();
             }
         }
@@ -636,7 +642,8 @@ namespace LaunchDarkly.Xamarin
             var pollingProcessor = updateProcessor as MobilePollingProcessor;
             if (pollingProcessor != null)
             {
-                await pollingProcessor.PingAndWait();
+                Console.WriteLine("PingPollingProcessorAsync");
+                await pollingProcessor.PingAndWait(Config.BackgroundPollingInterval);
             }
         }
 
@@ -662,16 +669,19 @@ namespace LaunchDarkly.Xamarin
 
         public async Task EnterBackgroundAsync()
         {
+            Console.WriteLine("EnterBackgroundAsyncc");
             await _client.EnterBackgroundAsync();
         }
 
         public async Task ExitBackgroundAsync()
         {
+            Console.WriteLine("ExitBackgroundAsync");
             await _client.EnterForegroundAsync();
         }
 
         public async Task BackgroundUpdateAsync()
         {
+            Console.WriteLine("BackgroundUpdateAsync");
             await _client.BackgroundTickAsync();
         }
     }

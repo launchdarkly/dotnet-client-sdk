@@ -220,7 +220,7 @@ namespace LaunchDarkly.Xamarin
                 UserKeysCapacity = DefaultUserKeysCapacity,
                 UserKeysFlushInterval = DefaultUserKeysFlushInterval,
                 InlineUsersInEvents = false,
-                EnableBackgroundUpdating = false,               
+                EnableBackgroundUpdating = true,               
                 UseReport = true
             };
 
@@ -590,18 +590,6 @@ namespace LaunchDarkly.Xamarin
         internal static Configuration WithUpdateProcessor(this Configuration configuration, IMobileUpdateProcessor mobileUpdateProcessor)
         {
             configuration.MobileUpdateProcessor = mobileUpdateProcessor;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Sets the Events URI.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="eventsUri">Events URI.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithEventsURI(this Configuration configuration, Uri eventsUri)
-        {
-            configuration.EventsUri = eventsUri;
             return configuration;
         }
 
