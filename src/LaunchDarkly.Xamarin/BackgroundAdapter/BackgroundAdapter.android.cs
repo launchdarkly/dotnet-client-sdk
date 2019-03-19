@@ -2,7 +2,6 @@
 using LaunchDarkly.Xamarin;
 using Android.App;
 using Android.OS;
-using Android.Util;
 
 namespace LaunchDarkly.Xamarin.BackgroundAdapter
 {
@@ -15,7 +14,7 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
         {
             if (_callbacks == null)
             {
-                Log.Info("Xamarin", "Enable Backgrounding");
+                Console.WriteLine("Enable Backgrounding");
                 _callbacks = new ActivityLifecycleCallbacks(backgroundingState);
                 application = (Application)Application.Context;
                 application.RegisterActivityLifecycleCallbacks(_callbacks);
@@ -67,13 +66,13 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
 
             public void OnActivityPaused(Activity activity)
             {
-                Log.Info("Xamarin", "Entering Background");
+                Console.WriteLine("Entering Background");
                 _backgroundingState.EnterBackgroundAsync();
             }
 
             public void OnActivityResumed(Activity activity)
             {
-                Log.Info("Xamarin", "Entering Foreground");
+                Console.WriteLine("Entering Foreground");
                 _backgroundingState.ExitBackgroundAsync();
             }
 
