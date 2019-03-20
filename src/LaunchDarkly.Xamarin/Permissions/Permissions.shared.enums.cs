@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace LaunchDarkly.Xamarin.Permissions
 {
-    enum PermissionStatus
+    internal enum PermissionStatus
     {
         // Denied by user
         Denied,
@@ -40,7 +40,7 @@ namespace LaunchDarkly.Xamarin.Permissions
         Unknown
     }
 
-    enum PermissionType
+    internal enum PermissionType
     {
         Unknown,
         Battery,

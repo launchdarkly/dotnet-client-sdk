@@ -28,7 +28,7 @@ using Android.Preferences;
 
 namespace LaunchDarkly.Xamarin.Preferences
 {
-    public static partial class Preferences
+    internal static partial class Preferences
     {
         static readonly object locker = new object();
 

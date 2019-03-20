@@ -158,7 +158,7 @@ namespace LaunchDarkly.Xamarin.Permissions
         }
     }
 
-    static class PermissionTypeExtensions
+    internal static class PermissionTypeExtensions
     {
         internal static IEnumerable<string> ToAndroidPermissions(this PermissionType permissionType, bool onlyRuntimePermissions)
         {

@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace LaunchDarkly.Xamarin.Connectivity
 {
-    public static partial class Connectivity
+    internal static partial class Connectivity
     {
         static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
 
@@ -87,7 +87,7 @@ namespace LaunchDarkly.Xamarin.Connectivity
         }
     }
 
-    public class ConnectivityChangedEventArgs : EventArgs
+    internal class ConnectivityChangedEventArgs : EventArgs
     {
         public ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> connectionProfiles)
         {

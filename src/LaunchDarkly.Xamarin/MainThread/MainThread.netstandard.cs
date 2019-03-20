@@ -24,7 +24,7 @@ using System;
 
 namespace LaunchDarkly.Xamarin.MainThread
 {
-    public static partial class MainThread
+    internal static partial class MainThread
     {
         static void PlatformBeginInvokeOnMainThread(Action action) =>
             throw new NotImplementedException();

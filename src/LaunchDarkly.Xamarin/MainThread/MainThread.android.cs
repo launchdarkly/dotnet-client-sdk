@@ -25,7 +25,7 @@ using Android.OS;
 
 namespace LaunchDarkly.Xamarin.MainThread
 {
-    public static partial class MainThread
+    internal static partial class MainThread
     {
         static Handler handler;
 

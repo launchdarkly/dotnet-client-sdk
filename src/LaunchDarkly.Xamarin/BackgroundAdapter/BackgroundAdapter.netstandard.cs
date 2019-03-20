@@ -3,7 +3,7 @@ using LaunchDarkly.Xamarin;
 
 namespace LaunchDarkly.Xamarin.BackgroundAdapter
 {
-    public class BackgroundAdapter : IPlatformAdapter
+    internal class BackgroundAdapter : IPlatformAdapter
     {
         public void Dispose()
         {

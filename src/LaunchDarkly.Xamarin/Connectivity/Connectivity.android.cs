@@ -30,7 +30,7 @@ using Debug = System.Diagnostics.Debug;
 
 namespace LaunchDarkly.Xamarin.Connectivity
 {
-    public partial class Connectivity
+    internal partial class Connectivity
     {
         static ConnectivityBroadcastReceiver conectivityReceiver;
 

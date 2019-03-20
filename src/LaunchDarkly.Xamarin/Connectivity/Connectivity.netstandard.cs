@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace LaunchDarkly.Xamarin.Connectivity
 {
-    public static partial class Connectivity
+    internal static partial class Connectivity
     {
         static NetworkAccess PlatformNetworkAccess =>
             throw new NotImplementedException();

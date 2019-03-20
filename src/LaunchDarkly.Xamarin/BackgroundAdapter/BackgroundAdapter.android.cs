@@ -5,7 +5,7 @@ using Android.OS;
 
 namespace LaunchDarkly.Xamarin.BackgroundAdapter
 {
-    public class BackgroundAdapter : IPlatformAdapter
+    internal class BackgroundAdapter : IPlatformAdapter
     {
         private static ActivityLifecycleCallbacks _callbacks;
         private Application application;

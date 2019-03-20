@@ -25,7 +25,7 @@ using Foundation;
 
 namespace LaunchDarkly.Xamarin.MainThread
 {
-    public static partial class MainThread
+    internal static partial class MainThread
     {
         static bool PlatformIsMainThread =>
             NSThread.Current.IsMainThread;

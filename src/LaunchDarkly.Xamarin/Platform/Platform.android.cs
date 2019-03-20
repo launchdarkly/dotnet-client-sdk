@@ -34,7 +34,7 @@ using Android.OS;
 
 namespace LaunchDarkly.Xamarin.Platform
 {
-    public static partial class Platform
+    internal static partial class Platform
     {
         static ActivityLifecycleContextListener lifecycleListener;
 
@@ -136,7 +136,7 @@ namespace LaunchDarkly.Xamarin.Platform
         }
     }
 
-    class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
+    internal class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
     {
         WeakReference<Activity> currentActivity = new WeakReference<Activity>(null);
 

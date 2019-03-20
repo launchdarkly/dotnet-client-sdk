@@ -36,7 +36,7 @@ namespace LaunchDarkly.Xamarin.Connectivity
         ReachableViaWiFiNetwork
     }
 
-    static class Reachability
+    internal static class Reachability
     {
         internal const string HostName = "www.microsoft.com";
 

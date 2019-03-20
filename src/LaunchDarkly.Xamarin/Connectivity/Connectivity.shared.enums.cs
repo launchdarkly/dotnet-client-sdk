@@ -22,7 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace LaunchDarkly.Xamarin.Connectivity
 {
-    public enum ConnectionProfile
+    internal enum ConnectionProfile
     {
         Unknown = 0,
         Bluetooth = 1,
@@ -31,7 +31,7 @@ namespace LaunchDarkly.Xamarin.Connectivity
         WiFi = 4
     }
 
-    public enum NetworkAccess
+    internal enum NetworkAccess
     {
         Unknown = 0,
         None = 1,

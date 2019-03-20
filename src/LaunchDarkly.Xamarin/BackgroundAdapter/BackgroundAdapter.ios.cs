@@ -6,7 +6,7 @@ using Foundation;
 
 namespace LaunchDarkly.Xamarin.BackgroundAdapter
 {
-    public class BackgroundAdapter : IPlatformAdapter
+    internal class BackgroundAdapter : IPlatformAdapter
     {
         private IBackgroundingState _backgroundingState;
         private NSObject _foregroundHandle;

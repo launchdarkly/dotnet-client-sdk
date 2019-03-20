@@ -30,7 +30,7 @@ using UIKit;
 
 namespace LaunchDarkly.Xamarin.Platform
 {
-    public static partial class Platform
+    internal static partial class Platform
     {
         [DllImport(ObjCRuntime.Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
         internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, IntPtr oldLen, IntPtr newp, uint newlen);

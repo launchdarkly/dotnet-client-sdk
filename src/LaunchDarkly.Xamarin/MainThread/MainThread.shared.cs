@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace LaunchDarkly.Xamarin.MainThread
 {
-    public static partial class MainThread
+    internal static partial class MainThread
     {
         public static bool IsMainThread =>
             PlatformIsMainThread;

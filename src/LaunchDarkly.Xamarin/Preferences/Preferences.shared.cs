@@ -24,7 +24,7 @@ using System;
 
 namespace LaunchDarkly.Xamarin.Preferences
 {
-    public static partial class Preferences
+    internal static partial class Preferences
     {
         internal static string GetPrivatePreferencesSharedName(string feature) =>
             $"LaunchDarkly.Xamarin.{feature}";

@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace LaunchDarkly.Xamarin.Platform
 {
 #if !NETSTANDARD
-    public static partial class Platform
+    internal static partial class Platform
     {
     }
 #endif
