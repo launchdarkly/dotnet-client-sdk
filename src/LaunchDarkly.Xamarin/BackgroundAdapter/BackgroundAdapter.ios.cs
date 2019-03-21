@@ -40,7 +40,7 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
             }
         }
 
-        public new void Dispose()
+        public void Dispose()
         {
             _Dispose(true);
             GC.SuppressFinalize(this);

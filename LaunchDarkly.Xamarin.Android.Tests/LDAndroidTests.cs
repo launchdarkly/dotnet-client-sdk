@@ -12,7 +12,8 @@ namespace LaunchDarkly.Xamarin.Android.Tests
         public void Setup()
         {
             var user = LaunchDarkly.Client.User.WithKey("test-user");
-            client = LdClient.Init("mob-368413a0-28e1-495d-ab32-7aa389ac33b6", user, TimeSpan.Zero);
+            var timeSpan = TimeSpan.FromSeconds(10);
+            client = LdClient.Init("mob-368413a0-28e1-495d-ab32-7aa389ac33b6", user, timeSpan);
         }
 
         [TearDown]
