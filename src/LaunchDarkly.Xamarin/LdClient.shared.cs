@@ -314,61 +314,61 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.BoolVariation(string, bool)"/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueType.Bool, eventFactoryDefault).Value;
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>
         public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueType.Bool, eventFactoryWithReasons);
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.StringVariation(string, string)"/>
         public string StringVariation(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueType.String, eventFactoryDefault).Value;
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.StringVariationDetail(string, string)"/>
         public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueType.String, eventFactoryWithReasons);
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.FloatVariation(string, float)"/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueType.Float, eventFactoryDefault).Value;
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.FloatVariationDetail(string, float)"/>
         public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueType.Float, eventFactoryWithReasons);
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.IntVariation(string, int)"/>
         public int IntVariation(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueType.Int, eventFactoryDefault).Value;
+            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.IntVariationDetail(string, int)"/>
         public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueType.Int, eventFactoryWithReasons);
+            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.JsonVariation(string, JToken)"/>
         public JToken JsonVariation(string key, JToken defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueType.Json, eventFactoryDefault).Value;
+            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.JsonVariationDetail(string, JToken)"/>
         public EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueType.Json, eventFactoryWithReasons);
+            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryWithReasons);
         }
 
         EvaluationDetail<T> VariationInternal<T>(string featureKey, T defaultValue, ValueType<T> desiredType, EventFactory eventFactory)
