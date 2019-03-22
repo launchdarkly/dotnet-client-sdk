@@ -208,6 +208,7 @@ namespace LaunchDarkly.Xamarin
                 EventQueueCapacity = DefaultEventQueueCapacity,
                 EventQueueFrequency = DefaultEventQueueFrequency,
                 PollingInterval = DefaultPollingInterval,
+                BackgroundPollingInterval = DefaultBackgroundPollingInterval,
                 ReadTimeout = DefaultReadTimeout,
                 ReconnectTime = DefaultReconnectTime,
                 HttpClientTimeout = DefaultHttpClientTimeout,

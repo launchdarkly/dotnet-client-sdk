@@ -14,7 +14,6 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
         {
             if (_callbacks == null)
             {
-                Console.WriteLine("Enable Backgrounding");
                 _callbacks = new ActivityLifecycleCallbacks(backgroundingState);
                 application = (Application)Application.Context;
                 application.RegisterActivityLifecycleCallbacks(_callbacks);
@@ -66,13 +65,11 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
 
             public void OnActivityPaused(Activity activity)
             {
-                Console.WriteLine("Entering Background");
                 _backgroundingState.EnterBackgroundAsync();
             }
 
             public void OnActivityResumed(Activity activity)
             {
-                Console.WriteLine("Entering Foreground");
                 _backgroundingState.ExitBackgroundAsync();
             }
 

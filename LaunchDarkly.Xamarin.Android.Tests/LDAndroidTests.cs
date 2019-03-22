@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin.Android.Tests
 {
@@ -13,7 +14,7 @@ namespace LaunchDarkly.Xamarin.Android.Tests
         {
             var user = LaunchDarkly.Client.User.WithKey("test-user");
             var timeSpan = TimeSpan.FromSeconds(10);
-            client = LdClient.Init("mob-368413a0-28e1-495d-ab32-7aa389ac33b6", user, timeSpan);
+            client = LdClient.Init("MOBILE_KEY", user, timeSpan);
         }
 
         [TearDown]
@@ -31,6 +32,31 @@ namespace LaunchDarkly.Xamarin.Android.Tests
         {
             Console.WriteLine("Test Integer Variation");
             Assert.True(client.IntVariation("int-feature-flag") == 2);
+        }
+
+        [Test]
+        public void StringFeatureFlag()
+        {
+            Console.WriteLine("Test String Variation");
+            Assert.True(client.StringVariation("string-feature-flag", "false").Equals("bravo"));
+        }
+
+        [Test]
+        public void JsonFeatureFlag()
+        {
+            string json = @"{
+            ""test2"": ""testing2""
+            }";
+            Console.WriteLine("Test JSON Variation");
+            JToken jsonToken = JToken.FromObject(JObject.Parse(json));
+            Assert.True(JToken.DeepEquals(jsonToken, client.JsonVariation("json-feature-flag", "false")));
+        }
+
+        [Test]
+        public void FloatFeatureFlag()
+        {
+            Console.WriteLine("Test Float Variation");
+            Assert.True(client.FloatVariation("float-feature-flag") == 1.5);
         }
     }
 }

@@ -58,7 +58,6 @@ namespace LaunchDarkly.Xamarin
         {
             while (!_disposed)
             {
-                Console.WriteLine("PingAndWait");
                 await UpdateTaskAsync();
                 await Task.Delay(backgroundPollingInterval);
             }

@@ -15,7 +15,6 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
 
         public void EnableBackgrounding(IBackgroundingState backgroundingState)
         {
-            Log.Debug("Enable Backgrounding");
             _foregroundHandle = NSNotificationCenter.DefaultCenter.AddObserver(UIApplication.WillEnterForegroundNotification, HandleWillEnterForeground);
             _backgroundHandle = NSNotificationCenter.DefaultCenter.AddObserver(UIApplication.DidEnterBackgroundNotification, HandleWillEnterBackground);
             _backgroundingState = backgroundingState;
@@ -49,13 +48,11 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
 
         private void HandleWillEnterForeground(NSNotification notification)
         {
-            Log.Debug("Entering Foreground");
             _backgroundingState.ExitBackgroundAsync();
         }
 
         private void HandleWillEnterBackground(NSNotification notification)
         {
-            Log.Debug("Entering Background");
             _backgroundingState.EnterBackgroundAsync();
         }
     }
