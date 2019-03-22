@@ -68,6 +68,7 @@ namespace LaunchDarkly.Xamarin.Tests
                         Assert.Equal("b", fe.Default);
                         Assert.True(fe.TrackEvents);
                         Assert.Equal(2000, fe.DebugEventsUntilDate);
+                        Assert.Null(fe.Reason);
                     });
             }
         }
@@ -113,6 +114,7 @@ namespace LaunchDarkly.Xamarin.Tests
                         Assert.Null(fe.Variation);
                         Assert.Equal(1000, fe.Version);
                         Assert.Equal("b", fe.Default);
+                        Assert.Null(fe.Reason);
                     });
             }
         }
@@ -133,6 +135,88 @@ namespace LaunchDarkly.Xamarin.Tests
                         Assert.Null(fe.Variation);
                         Assert.Null(fe.Version);
                         Assert.Equal("b", fe.Default);
+                        Assert.Null(fe.Reason);
+                    });
+            }
+        }
+
+        [Fact]
+        public void VariationSendsFeatureEventWithTrackingAndReasonIfTrackReasonIsTrue()
+        {
+            string flagsJson = @"{""flag"":{
+                ""value"":""a"",""variation"":1,""version"":1000,
+                ""trackReason"":true, ""reason"":{""kind"":""OFF""}
+                }}";
+            using (LdClient client = MakeClient(user, flagsJson))
+            {
+                string result = client.StringVariation("flag", "b");
+                Assert.Equal("a", result);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
+                        Assert.Equal("flag", fe.Key);
+                        Assert.Equal("a", fe.Value);
+                        Assert.Equal(1, fe.Variation);
+                        Assert.Equal(1000, fe.Version);
+                        Assert.Equal("b", fe.Default);
+                        Assert.True(fe.TrackEvents);
+                        Assert.Null(fe.DebugEventsUntilDate);
+                        Assert.Equal(EvaluationReason.Off.Instance, fe.Reason);
+                    });
+            }
+        }
+
+        [Fact]
+        public void VariationDetailSendsFeatureEventWithReasonForValidFlag()
+        {
+            string flagsJson = @"{""flag"":{
+                ""value"":""a"",""variation"":1,""version"":1000,
+                ""trackEvents"":true, ""debugEventsUntilDate"":2000,
+                ""reason"":{""kind"":""OFF""}
+                }}";
+            using (LdClient client = MakeClient(user, flagsJson))
+            {
+                EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
+                Assert.Equal("a", result.Value);
+                Assert.Equal(EvaluationReason.Off.Instance, result.Reason);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
+                        Assert.Equal("flag", fe.Key);
+                        Assert.Equal("a", fe.Value);
+                        Assert.Equal(1, fe.Variation);
+                        Assert.Equal(1000, fe.Version);
+                        Assert.Equal("b", fe.Default);
+                        Assert.True(fe.TrackEvents);
+                        Assert.Equal(2000, fe.DebugEventsUntilDate);
+                        Assert.Equal(EvaluationReason.Off.Instance, fe.Reason);
+                    });
+            }
+        }
+
+        [Fact]
+        public void VariationDetailSendsFeatureEventWithReasonForUnknownFlag()
+        {
+            using (LdClient client = MakeClient(user, "{}"))
+            {
+                EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
+                var expectedReason = new EvaluationReason.Error(EvaluationErrorKind.FLAG_NOT_FOUND);
+                Assert.Equal("b", result.Value);
+                Assert.Equal(expectedReason, result.Reason);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
+                        Assert.Equal("flag", fe.Key);
+                        Assert.Equal("b", fe.Value);
+                        Assert.Null(fe.Variation);
+                        Assert.Null(fe.Version);
+                        Assert.Equal("b", fe.Default);
+                        Assert.False(fe.TrackEvents);
+                        Assert.Null(fe.DebugEventsUntilDate);
+                        Assert.Equal(expectedReason, fe.Reason);
                     });
             }
         }
