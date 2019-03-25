@@ -91,7 +91,7 @@ namespace LaunchDarkly.Xamarin
 
             flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagListenerManager, User);
             connectionManager = Factory.CreateConnectionManager(configuration);
-            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager);
+            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, configuration.PollingInterval);
             eventProcessor = Factory.CreateEventProcessor(configuration);
 
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(User));
@@ -502,7 +502,7 @@ namespace LaunchDarkly.Xamarin
             try
             {
                 User = userWithKey;
-                await RestartUpdateProcessorAsync();
+                await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
             finally
             {
@@ -512,16 +512,16 @@ namespace LaunchDarkly.Xamarin
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(userWithKey));
         }
 
-        async Task RestartUpdateProcessorAsync()
+        async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)
         {
-            ClearAndSetUpdateProcessor();
+            ClearAndSetUpdateProcessor(pollingInterval);
             await StartUpdateProcessorAsync();
         }
 
-        void ClearAndSetUpdateProcessor()
+        void ClearAndSetUpdateProcessor(TimeSpan pollingInterval)
         {
             ClearUpdateProcessor();
-            updateProcessor = Factory.CreateUpdateProcessor(Config, User, flagCacheManager);
+            updateProcessor = Factory.CreateUpdateProcessor(Config, User, flagCacheManager, pollingInterval);
         }
 
         void ClearUpdateProcessor()
@@ -591,31 +591,19 @@ namespace LaunchDarkly.Xamarin
 
         internal async Task EnterBackgroundAsync()
         {
-            // if using Streaming, processor needs to be reset
-            if (Config.IsStreamingEnabled)
+            ClearUpdateProcessor();
+            Config.IsStreamingEnabled = false;
+            if (Config.EnableBackgroundUpdating)
             {
-                ClearUpdateProcessor();
-                Config.IsStreamingEnabled = false;
-                if (Config.EnableBackgroundUpdating)
-                {
-                    await RestartUpdateProcessorAsync();
-                    await PingPollingProcessorAsync();
-                }
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
+                await RestartUpdateProcessorAsync(Config.BackgroundPollingInterval);
             }
-            else
-            {
-                if (Config.EnableBackgroundUpdating)
-                {
-                    await PingPollingProcessorAsync();
-                }
-            }
+            persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
         }
 
         internal async Task EnterForegroundAsync()
         {
             ResetProcessorForForeground();
-            await RestartUpdateProcessorAsync();
+            await RestartUpdateProcessorAsync(Config.PollingInterval);
         }
 
         void ResetProcessorForForeground()
@@ -626,35 +614,6 @@ namespace LaunchDarkly.Xamarin
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
                 ClearUpdateProcessor();
                 Config.IsStreamingEnabled = true;
-            }
-        }
-
-        internal void BackgroundTick()
-        {
-            PingPollingProcessor();
-        }
-
-        internal async Task BackgroundTickAsync()
-        {
-            await PingPollingProcessorAsync();
-        }
-
-        void PingPollingProcessor()
-        {
-            var pollingProcessor = updateProcessor as MobilePollingProcessor;
-            if (pollingProcessor != null)
-            {
-                var waitTask = pollingProcessor.PingAndWait(Config.BackgroundPollingInterval);
-                waitTask.Wait();
-            }
-        }
-
-        async Task PingPollingProcessorAsync()
-        {
-            var pollingProcessor = updateProcessor as MobilePollingProcessor;
-            if (pollingProcessor != null)
-            {
-                await pollingProcessor.PingAndWait(Config.BackgroundPollingInterval);
             }
         }
 
@@ -686,11 +645,6 @@ namespace LaunchDarkly.Xamarin
         public async Task ExitBackgroundAsync()
         {
             await _client.EnterForegroundAsync();
-        }
-
-        public async Task BackgroundUpdateAsync()
-        {
-            await _client.BackgroundTickAsync();
         }
     }
 }

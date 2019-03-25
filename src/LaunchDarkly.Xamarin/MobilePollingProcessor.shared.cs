@@ -54,15 +54,6 @@ namespace LaunchDarkly.Xamarin
             return _initialized == INITIALIZED;
         }
 
-        public async Task PingAndWait(TimeSpan backgroundPollingInterval)
-        {
-            while (!_disposed)
-            {
-                await UpdateTaskAsync();
-                await Task.Delay(backgroundPollingInterval);
-            }
-        }
-
         private async Task UpdateTaskLoopAsync()
         {
             while (!_disposed)
