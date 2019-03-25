@@ -289,7 +289,7 @@ namespace LaunchDarkly.Xamarin
             {
                 if (online)
                 {
-                    await RestartUpdateProcessorAsync();
+                    await RestartUpdateProcessorAsync(Config.PollingInterval);
                 }
                 else
                 {
