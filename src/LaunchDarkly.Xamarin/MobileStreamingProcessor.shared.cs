@@ -14,6 +14,7 @@ namespace LaunchDarkly.Xamarin
     internal class MobileStreamingProcessor : IMobileUpdateProcessor, IStreamProcessor
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MobileStreamingProcessor));
+        private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
         private readonly IMobileConfiguration _configuration;
         private readonly IFlagCacheManager _cacheManager;
@@ -29,15 +30,7 @@ namespace LaunchDarkly.Xamarin
             this._cacheManager = cacheManager;
             this._user = user;
 
-            StreamProperties streamProperties;
-            if (_configuration.UseReport)
-            {
-                streamProperties = MakeStreamPropertiesForREPORT();
-            }
-            else
-            {
-                streamProperties = MakeStreamPropertiesForGET();
-            }
+            var streamProperties = _configuration.UseReport ? MakeStreamPropertiesForReport() : MakeStreamPropertiesForGet();
 
             _streamManager = new StreamManager(this,
                                                streamProperties,
@@ -60,20 +53,28 @@ namespace LaunchDarkly.Xamarin
 
         #endregion
 
-        private StreamProperties MakeStreamPropertiesForGET()
+        private StreamProperties MakeStreamPropertiesForGet()
         {
             var userEncoded = _user.AsJson().Base64Encode();
-            Uri uri = new Uri(_configuration.StreamUri, Constants.STREAM_REQUEST_PATH + userEncoded);
-            return new StreamProperties(uri, HttpMethod.Get, null);
+            var path = Constants.STREAM_REQUEST_PATH + userEncoded;
+            return new StreamProperties(MakeRequestUriWithPath(path), HttpMethod.Get, null);
         }
 
-        private StreamProperties MakeStreamPropertiesForREPORT()
+        private StreamProperties MakeStreamPropertiesForReport()
         {
-            var userEncoded = _user.AsJson();
-            Uri uri = new Uri(_configuration.StreamUri, Constants.STREAM_REQUEST_PATH);
             var content = new StringContent(_user.AsJson(), Encoding.UTF8, Constants.APPLICATION_JSON);
-            var method = new HttpMethod("REPORT");
-            return new StreamProperties(uri, method, content);
+            return new StreamProperties(MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH), ReportMethod, content);
+        }
+
+        private Uri MakeRequestUriWithPath(string path)
+        {
+            var uri = new UriBuilder(_configuration.StreamUri);
+            uri.Path = path;
+            if (_configuration.EvaluationReasons)
+            {
+                uri.Query = "withReasons=true";
+            }
+            return uri.Uri;
         }
 
         #region IStreamProcessor

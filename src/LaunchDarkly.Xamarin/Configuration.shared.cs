@@ -109,6 +109,14 @@ namespace LaunchDarkly.Xamarin
         /// only include the user key, except for one "index" event that provides the full details for the user).
         /// </summary>
         public bool InlineUsersInEvents { get; internal set; }
+        /// <summary>
+        /// True if LaunchDarkly should provide additional information about how flag values were
+        /// calculated. The additional information will then be available through the client's "detail"
+        /// methods such as <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>. Since this
+        /// increases the size of network requests, such information is not sent unless you set this option
+        /// to true.
+        /// </summary>
+        public bool EvaluationReasons { get; internal set; }
         /// <see cref="IMobileConfiguration.BackgroundPollingInterval"/>
         public TimeSpan BackgroundPollingInterval { get; internal set; }
         /// <see cref="IMobileConfiguration.ConnectionTimeout"/>
@@ -578,6 +586,22 @@ namespace LaunchDarkly.Xamarin
         public static Configuration WithUseReport(this Configuration configuration, bool useReport)
         {
             configuration.UseReport = useReport;
+            return configuration;
+        }
+
+        /// <summary>
+        /// Set to true if LaunchDarkly should provide additional information about how flag values were
+        /// calculated. The additional information will then be available through the client's "detail"
+        /// methods such as <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>. Since this
+        /// increases the size of network requests, such information is not sent unless you set this option
+        /// to true.
+        /// </summary>
+        /// <param name="configuration">Configuration.</param>
+        /// <param name="evaluationReasons">True if evaluation reasons are desired.</param>
+        /// <returns>the same <c>Configuration</c> instance</returns>
+        public static Configuration WithEvaluationReasons(this Configuration configuration, bool evaluationReasons)
+        {
+            configuration.EvaluationReasons = evaluationReasons;
             return configuration;
         }
 

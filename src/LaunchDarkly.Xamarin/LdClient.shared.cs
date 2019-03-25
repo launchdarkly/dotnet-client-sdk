@@ -48,7 +48,8 @@ namespace LaunchDarkly.Xamarin
         IEventProcessor eventProcessor;
         ISimplePersistance persister;
         IDeviceInfo deviceInfo;
-        EventFactory eventFactory = EventFactory.Default;
+        readonly EventFactory eventFactoryDefault = EventFactory.Default;
+        readonly EventFactory eventFactoryWithReasons = EventFactory.DefaultWithReasons;
         IFeatureFlagListenerManager flagListenerManager;
         IPlatformAdapter platformAdapter;
 
@@ -93,7 +94,7 @@ namespace LaunchDarkly.Xamarin
             updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager);
             eventProcessor = Factory.CreateEventProcessor(configuration);
 
-            eventProcessor.SendEvent(eventFactory.NewIdentifyEvent(User));
+            eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(User));
 
             SetupConnectionManager();
         }
@@ -311,95 +312,112 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.BoolVariation(string, bool)"/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            return VariationWithType(key, defaultValue, JTokenType.Boolean).Value<bool>();
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryDefault).Value;
+        }
+
+        /// <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>
+        public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
+        {
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.StringVariation(string, string)"/>
         public string StringVariation(string key, string defaultValue)
         {
-            var value = VariationWithType(key, defaultValue, JTokenType.String);
-            if (value != null)
-            {
-                return value.Value<string>();
-            }
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryDefault).Value;
+        }
 
-            return null;
+        /// <see cref="ILdMobileClient.StringVariationDetail(string, string)"/>
+        public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
+        {
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.FloatVariation(string, float)"/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            return VariationWithType(key, defaultValue, JTokenType.Float).Value<float>();
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryDefault).Value;
+        }
+
+        /// <see cref="ILdMobileClient.FloatVariationDetail(string, float)"/>
+        public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
+        {
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.IntVariation(string, int)"/>
         public int IntVariation(string key, int defaultValue = 0)
         {
-            return VariationWithType(key, defaultValue, JTokenType.Integer).Value<int>();
+            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryDefault).Value;
+        }
+
+        /// <see cref="ILdMobileClient.IntVariationDetail(string, int)"/>
+        public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
+        {
+            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.JsonVariation(string, JToken)"/>
         public JToken JsonVariation(string key, JToken defaultValue)
         {
-            return VariationWithType(key, defaultValue, null);
+            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryDefault).Value;
         }
 
-        JToken VariationWithType(string featureKey, JToken defaultValue, JTokenType? jtokenType)
+        /// <see cref="ILdMobileClient.JsonVariationDetail(string, JToken)"/>
+        public EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue)
         {
-            var returnedFlagValue = Variation(featureKey, defaultValue);
-            if (returnedFlagValue != null && jtokenType != null && !returnedFlagValue.Type.Equals(jtokenType))
-            {
-                Log.ErrorFormat("Expected type: {0} but got {1} when evaluating FeatureFlag: {2}. Returning default",
-                                jtokenType,
-                                returnedFlagValue.Type,
-                                featureKey);
-                
-                return defaultValue;
-            }
-
-            return returnedFlagValue;
+            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryWithReasons);
         }
 
-        JToken Variation(string featureKey, JToken defaultValue)
+        EvaluationDetail<T> VariationInternal<T>(string featureKey, T defaultValue, ValueType<T> desiredType, EventFactory eventFactory)
         {
             FeatureFlagEvent featureFlagEvent = FeatureFlagEvent.Default(featureKey);
-            FeatureRequestEvent featureRequestEvent;
+            JToken defaultJson = desiredType.ValueToJson(defaultValue);
+
+            EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
+                new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(kind));
 
             if (!Initialized())
             {
                 Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
-                return defaultValue;
-            }
-            
-            var flag = flagCacheManager.FlagForUser(featureKey, User);
-            if (flag != null)
-            {
-                featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
-                var value = flag.value;
-                if (value == null || value.Type == JTokenType.Null) {
-                    featureRequestEvent = eventFactory.NewDefaultFeatureRequestEvent(featureFlagEvent,
-                                                                                     User,
-                                                                                     defaultValue,
-                                                                                     EvaluationErrorKind.FLAG_NOT_FOUND);
-                    value = defaultValue;
-                } else {
-                    featureRequestEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent,
-                                                                              User,
-                                                                              new EvaluationDetail<JToken>(flag.value, flag.variation, null),
-                                                                              defaultValue);
-                }
-                eventProcessor.SendEvent(featureRequestEvent);
-                return value;
+                return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
             }
 
-            Log.InfoFormat("Unknown feature flag {0}; returning default value",
-                        featureKey);
-            featureRequestEvent = eventFactory.NewUnknownFeatureRequestEvent(featureKey,
-                                                                             User,
-                                                                             defaultValue,
-                                                                             EvaluationErrorKind.FLAG_NOT_FOUND);
-            eventProcessor.SendEvent(featureRequestEvent);
-            return defaultValue;
+            var flag = flagCacheManager.FlagForUser(featureKey, User);
+            if (flag == null)
+            {
+                Log.InfoFormat("Unknown feature flag {0}; returning default value", featureKey);
+                eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
+                    EvaluationErrorKind.FLAG_NOT_FOUND));
+                return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
+            }
+
+            featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
+            EvaluationDetail<T> result;
+            JToken valueJson;
+            if (flag.value == null || flag.value.Type == JTokenType.Null)
+            {
+                valueJson = defaultJson;
+                result = new EvaluationDetail<T>(defaultValue, flag.variation, flag.reason);
+            }
+            else
+            {
+                try
+                {
+                    valueJson = flag.value;
+                    var value = desiredType.ValueFromJson(flag.value);
+                    result = new EvaluationDetail<T>(value, flag.variation, flag.reason);
+                }
+                catch (Exception)
+                {
+                    valueJson = defaultJson;
+                    result = new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(EvaluationErrorKind.WRONG_TYPE));
+                }
+            }
+            var featureEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent, User,
+                new EvaluationDetail<JToken>(valueJson, flag.variation, flag.reason), defaultJson);
+            eventProcessor.SendEvent(featureEvent);
+            return result;
         }
 
         /// <see cref="ILdMobileClient.AllFlags()"/>
@@ -423,7 +441,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Track(string, JToken)"/>
         public void Track(string eventName, JToken data)
         {
-            eventProcessor.SendEvent(eventFactory.NewCustomEvent(eventName, User, data));
+            eventProcessor.SendEvent(eventFactoryDefault.NewCustomEvent(eventName, User, data));
         }
 
         /// <see cref="ILdMobileClient.Track(string)"/>
@@ -491,7 +509,7 @@ namespace LaunchDarkly.Xamarin
                 connectionLock.Release();
             }
 
-            eventProcessor.SendEvent(eventFactory.NewIdentifyEvent(userWithKey));
+            eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(userWithKey));
         }
 
         async Task RestartUpdateProcessorAsync()
@@ -536,6 +554,7 @@ namespace LaunchDarkly.Xamarin
             if (disposing)
             {
                 Log.InfoFormat("Shutting down the LaunchDarkly client");
+
                 try
                 {
                     platformAdapter.Dispose();

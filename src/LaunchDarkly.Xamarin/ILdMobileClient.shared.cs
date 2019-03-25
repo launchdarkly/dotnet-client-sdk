@@ -24,6 +24,16 @@ namespace LaunchDarkly.Xamarin
         bool BoolVariation(string key, bool defaultValue = false);
 
         /// <summary>
+        /// Returns the boolean value of a feature flag for a given flag key, in an object that also
+        /// describes the way the value was determined. The <c>Reason</c> property in the result will
+        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// </summary>
+        /// <param name="key">the unique feature key for the feature flag</param>
+        /// <param name="defaultValue">the default value of the flag</param>
+        /// <returns>an <c>EvaluationDetail</c> object</returns>
+        EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false);
+
+        /// <summary>
         /// Returns the string value of a feature flag for a given flag key.
         /// </summary>
         /// <param name="key">the unique feature key for the feature flag</param>
@@ -31,6 +41,16 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the variation for the selected user, or <c>defaultValue</c> if the flag is
         /// disabled in the LaunchDarkly control panel</returns>
         string StringVariation(string key, string defaultValue);
+
+        /// <summary>
+        /// Returns the string value of a feature flag for a given flag key, in an object that also
+        /// describes the way the value was determined. The <c>Reason</c> property in the result will
+        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// </summary>
+        /// <param name="key">the unique feature key for the feature flag</param>
+        /// <param name="defaultValue">the default value of the flag</param>
+        /// <returns>an <c>EvaluationDetail</c> object</returns>
+        EvaluationDetail<string> StringVariationDetail(string key, string defaultValue);
 
         /// <summary>
         /// Returns the float value of a feature flag for a given flag key.
@@ -42,6 +62,16 @@ namespace LaunchDarkly.Xamarin
         float FloatVariation(string key, float defaultValue = 0);
 
         /// <summary>
+        /// Returns the float value of a feature flag for a given flag key, in an object that also
+        /// describes the way the value was determined. The <c>Reason</c> property in the result will
+        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// </summary>
+        /// <param name="key">the unique feature key for the feature flag</param>
+        /// <param name="defaultValue">the default value of the flag</param>
+        /// <returns>an <c>EvaluationDetail</c> object</returns>
+        EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0);
+
+        /// <summary>
         /// Returns the integer value of a feature flag for a given flag key.
         /// </summary>
         /// <param name="key">the unique feature key for the feature flag</param>
@@ -51,6 +81,16 @@ namespace LaunchDarkly.Xamarin
         int IntVariation(string key, int defaultValue = 0);
 
         /// <summary>
+        /// Returns the integer value of a feature flag for a given flag key, in an object that also
+        /// describes the way the value was determined. The <c>Reason</c> property in the result will
+        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// </summary>
+        /// <param name="key">the unique feature key for the feature flag</param>
+        /// <param name="defaultValue">the default value of the flag</param>
+        /// <returns>an <c>EvaluationDetail</c> object</returns>
+        EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0);
+
+        /// <summary>
         /// Returns the JToken value of a feature flag for a given flag key.
         /// </summary>
         /// <param name="key">the unique feature key for the feature flag</param>
@@ -58,6 +98,16 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the variation for the selected user, or <c>defaultValue</c> if the flag is
         /// disabled in the LaunchDarkly control panel</returns>
         JToken JsonVariation(string key, JToken defaultValue);
+
+        /// <summary>
+        /// Returns the JToken value of a feature flag for a given flag key, in an object that also
+        /// describes the way the value was determined. The <c>Reason</c> property in the result will
+        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// </summary>
+        /// <param name="key">the unique feature key for the feature flag</param>
+        /// <param name="defaultValue">the default value of the flag</param>
+        /// <returns>an <c>EvaluationDetail</c> object</returns>
+        EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue);
 
         /// <summary>
         /// Tracks that current user performed an event for the given JToken value and given event name.
