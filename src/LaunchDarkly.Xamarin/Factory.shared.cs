@@ -92,10 +92,5 @@ namespace LaunchDarkly.Xamarin
         {
             return configuration.FeatureFlagListenerManager ?? new FeatureFlagListenerManager();
         }
-
-        internal static IPlatformAdapter CreatePlatformAdapter(Configuration configuration)
-        {
-            return configuration.PlatformAdapter ?? new NullPlatformAdapter();
-        }
     }
 }

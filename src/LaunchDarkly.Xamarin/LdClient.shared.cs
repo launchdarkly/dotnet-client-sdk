@@ -69,8 +69,6 @@ namespace LaunchDarkly.Xamarin
                 throw new ArgumentNullException("user");
             }
 
-            configuration.PlatformAdapter = new LaunchDarkly.Xamarin.BackgroundAdapter.BackgroundAdapter();
-
             Config = configuration;
 
             connectionLock = new SemaphoreSlim(1, 1);
@@ -78,7 +76,7 @@ namespace LaunchDarkly.Xamarin
             persister = Factory.CreatePersister(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
-            platformAdapter = Factory.CreatePlatformAdapter(configuration);
+            platformAdapter = new LaunchDarkly.Xamarin.BackgroundAdapter.BackgroundAdapter();
 
             // If you pass in a user with a null or blank key, one will be assigned to them.
             if (String.IsNullOrEmpty(user.Key))
@@ -542,9 +540,9 @@ namespace LaunchDarkly.Xamarin
                 {
                     platformAdapter.Dispose();
                 }
-                catch
+                catch(Exception error)
                 {
-                    Log.Info("Foreground/Background is only available on iOS and Android");
+                    Log.Error(error);
                 }
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();

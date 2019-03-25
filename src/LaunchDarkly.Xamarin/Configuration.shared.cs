@@ -125,7 +125,6 @@ namespace LaunchDarkly.Xamarin
         internal ISimplePersistance Persister { get; set; }
         internal IDeviceInfo DeviceInfo { get; set; }
         internal IFeatureFlagListenerManager FeatureFlagListenerManager { get; set; }
-        internal IPlatformAdapter PlatformAdapter { get; set; }
 
         /// <summary>
         /// Default value for <see cref="PollingInterval"/>.
@@ -656,18 +655,6 @@ namespace LaunchDarkly.Xamarin
                 backgroundPollingInternal = Configuration.MinimumBackgroundPollingInterval;
             }
             configuration.BackgroundPollingInterval = backgroundPollingInternal;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Specifies a component that provides special functionality for the current mobile platform.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="adapter">An implementation of <see cref="IPlatformAdapter"/>.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithPlatformAdapter(this Configuration configuration, IPlatformAdapter adapter)
-        {
-            configuration.PlatformAdapter = adapter;
             return configuration;
         }
     }
