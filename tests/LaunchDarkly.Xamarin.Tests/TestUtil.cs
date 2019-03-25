@@ -25,6 +25,15 @@ namespace LaunchDarkly.Xamarin.Tests
             }
         }
 
+        public static void ClearClient()
+        {
+            if (LdClient.Instance != null)
+            {
+                (LdClient.Instance as IDisposable).Dispose();
+                LdClient.Instance = null;
+            }
+        }
+
         public static string JsonFlagsWithSingleFlag(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
         {
             JObject fo = new JObject { { "value", value } };
