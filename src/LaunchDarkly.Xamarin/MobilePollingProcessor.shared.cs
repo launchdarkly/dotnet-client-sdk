@@ -54,11 +54,6 @@ namespace LaunchDarkly.Xamarin
             return _initialized == INITIALIZED;
         }
 
-        public async Task PingAndWait()
-        {
-            await UpdateTaskAsync();
-        }
-
         private async Task UpdateTaskLoopAsync()
         {
             while (!_disposed)

@@ -77,7 +77,7 @@ namespace LaunchDarkly.Xamarin
             persister = Factory.CreatePersister(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
-            platformAdapter = Factory.CreatePlatformAdapter(configuration);
+            platformAdapter = new LaunchDarkly.Xamarin.BackgroundAdapter.BackgroundAdapter();
 
             // If you pass in a user with a null or blank key, one will be assigned to them.
             if (String.IsNullOrEmpty(user.Key))
@@ -91,7 +91,7 @@ namespace LaunchDarkly.Xamarin
 
             flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagListenerManager, User);
             connectionManager = Factory.CreateConnectionManager(configuration);
-            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager);
+            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, configuration.PollingInterval);
             eventProcessor = Factory.CreateEventProcessor(configuration);
 
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(User));
@@ -231,7 +231,14 @@ namespace LaunchDarkly.Xamarin
             {
                 bgPollInterval = configuration.BackgroundPollingInterval;
             }
-            Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance), bgPollInterval);
+            try
+            {
+                Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance));
+            }
+            catch
+            {
+                Log.Info("Foreground/Background is only available on iOS and Android");
+            }
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
@@ -282,7 +289,7 @@ namespace LaunchDarkly.Xamarin
             {
                 if (online)
                 {
-                    await RestartUpdateProcessorAsync();
+                    await RestartUpdateProcessorAsync(Config.PollingInterval);
                 }
                 else
                 {
@@ -305,61 +312,61 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.BoolVariation(string, bool)"/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueType.Bool, eventFactoryDefault).Value;
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>
         public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueType.Bool, eventFactoryWithReasons);
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.StringVariation(string, string)"/>
         public string StringVariation(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueType.String, eventFactoryDefault).Value;
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.StringVariationDetail(string, string)"/>
         public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueType.String, eventFactoryWithReasons);
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.FloatVariation(string, float)"/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueType.Float, eventFactoryDefault).Value;
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.FloatVariationDetail(string, float)"/>
         public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueType.Float, eventFactoryWithReasons);
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.IntVariation(string, int)"/>
         public int IntVariation(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueType.Int, eventFactoryDefault).Value;
+            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.IntVariationDetail(string, int)"/>
         public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueType.Int, eventFactoryWithReasons);
+            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.JsonVariation(string, JToken)"/>
         public JToken JsonVariation(string key, JToken defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueType.Json, eventFactoryDefault).Value;
+            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.JsonVariationDetail(string, JToken)"/>
         public EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueType.Json, eventFactoryWithReasons);
+            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryWithReasons);
         }
 
         EvaluationDetail<T> VariationInternal<T>(string featureKey, T defaultValue, ValueType<T> desiredType, EventFactory eventFactory)
@@ -446,12 +453,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            //bool isInited = Instance != null;
-            //return isInited && Online;
-            // TODO: This method needs to be fixed to actually check whether the update processor has initialized.
-            // The previous logic (above) was meaningless because this method is not static, so by definition you
-            // do have a client instance if we've gotten here. But that doesn't mean it is initialized.
-            return Online;
+            return Online && updateProcessor.Initialized();
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
@@ -500,7 +502,7 @@ namespace LaunchDarkly.Xamarin
             try
             {
                 User = userWithKey;
-                await RestartUpdateProcessorAsync();
+                await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
             finally
             {
@@ -510,16 +512,16 @@ namespace LaunchDarkly.Xamarin
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(userWithKey));
         }
 
-        async Task RestartUpdateProcessorAsync()
+        async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)
         {
-            ClearAndSetUpdateProcessor();
+            ClearAndSetUpdateProcessor(pollingInterval);
             await StartUpdateProcessorAsync();
         }
 
-        void ClearAndSetUpdateProcessor()
+        void ClearAndSetUpdateProcessor(TimeSpan pollingInterval)
         {
             ClearUpdateProcessor();
-            updateProcessor = Factory.CreateUpdateProcessor(Config, User, flagCacheManager);
+            updateProcessor = Factory.CreateUpdateProcessor(Config, User, flagCacheManager, pollingInterval);
         }
 
         void ClearUpdateProcessor()
@@ -552,7 +554,15 @@ namespace LaunchDarkly.Xamarin
             if (disposing)
             {
                 Log.InfoFormat("Shutting down the LaunchDarkly client");
-                platformAdapter.Dispose();
+
+                try
+                {
+                    platformAdapter.Dispose();
+                }
+                catch(Exception error)
+                {
+                    Log.Error(error);
+                }
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
             }
@@ -581,30 +591,19 @@ namespace LaunchDarkly.Xamarin
 
         internal async Task EnterBackgroundAsync()
         {
-            // if using Streaming, processor needs to be reset
-            if (Config.IsStreamingEnabled)
+            ClearUpdateProcessor();
+            Config.IsStreamingEnabled = false;
+            if (Config.EnableBackgroundUpdating)
             {
-                ClearUpdateProcessor();
-                Config.IsStreamingEnabled = false;
-                if (Config.EnableBackgroundUpdating)
-                {
-                    await RestartUpdateProcessorAsync();
-                }
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
+                await RestartUpdateProcessorAsync(Config.BackgroundPollingInterval);
             }
-            else
-            {
-                if (Config.EnableBackgroundUpdating)
-                {
-                    await PingPollingProcessorAsync();
-                }
-            }
+            persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
         }
 
         internal async Task EnterForegroundAsync()
         {
             ResetProcessorForForeground();
-            await RestartUpdateProcessorAsync();
+            await RestartUpdateProcessorAsync(Config.PollingInterval);
         }
 
         void ResetProcessorForForeground()
@@ -615,35 +614,6 @@ namespace LaunchDarkly.Xamarin
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
                 ClearUpdateProcessor();
                 Config.IsStreamingEnabled = true;
-            }
-        }
-
-        internal void BackgroundTick()
-        {
-            PingPollingProcessor();
-        }
-
-        internal async Task BackgroundTickAsync()
-        {
-            await PingPollingProcessorAsync();
-        }
-
-        void PingPollingProcessor()
-        {
-            var pollingProcessor = updateProcessor as MobilePollingProcessor;
-            if (pollingProcessor != null)
-            {
-                var waitTask = pollingProcessor.PingAndWait();
-                waitTask.Wait();
-            }
-        }
-
-        async Task PingPollingProcessorAsync()
-        {
-            var pollingProcessor = updateProcessor as MobilePollingProcessor;
-            if (pollingProcessor != null)
-            {
-                await pollingProcessor.PingAndWait();
             }
         }
 
@@ -675,11 +645,6 @@ namespace LaunchDarkly.Xamarin
         public async Task ExitBackgroundAsync()
         {
             await _client.EnterForegroundAsync();
-        }
-
-        public async Task BackgroundUpdateAsync()
-        {
-            await _client.BackgroundTickAsync();
         }
     }
 }

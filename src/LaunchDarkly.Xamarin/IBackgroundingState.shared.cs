@@ -24,10 +24,5 @@ namespace LaunchDarkly.Xamarin
         /// resume the regular streaming or polling process.
         /// </summary>
         Task ExitBackgroundAsync();
-
-        /// <summary>
-        /// Tells the LaunchDarkly client to initiate a request for feature flag updates while in background mode.
-        /// </summary>
-        Task BackgroundUpdateAsync();
     }
 }

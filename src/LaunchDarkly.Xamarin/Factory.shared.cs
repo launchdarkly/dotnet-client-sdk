@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
@@ -34,6 +35,7 @@ namespace LaunchDarkly.Xamarin
         internal static IMobileUpdateProcessor CreateUpdateProcessor(Configuration configuration,
                                                                      User user,
                                                                      IFlagCacheManager flagCacheManager,
+                                                                     TimeSpan pollingInterval,
                                                                      StreamManager.EventSourceCreator source = null)
         {
             if (configuration.MobileUpdateProcessor != null)
@@ -59,7 +61,7 @@ namespace LaunchDarkly.Xamarin
                 return new MobilePollingProcessor(featureFlagRequestor,
                                                   flagCacheManager,
                                                   user,
-                                                  configuration.PollingInterval);
+                                                  pollingInterval);
             }
         }
 
@@ -91,11 +93,6 @@ namespace LaunchDarkly.Xamarin
         internal static IFeatureFlagListenerManager CreateFeatureFlagListenerManager(Configuration configuration)
         {
             return configuration.FeatureFlagListenerManager ?? new FeatureFlagListenerManager();
-        }
-
-        internal static IPlatformAdapter CreatePlatformAdapter(Configuration configuration)
-        {
-            return configuration.PlatformAdapter ?? new NullPlatformAdapter();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Xamarin.Essentials;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -12,9 +11,9 @@ namespace LaunchDarkly.Xamarin
             UpdateConnectedStatus();
             try
             {
-                Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+                LaunchDarkly.Xamarin.Connectivity.Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
             }
-            catch (NotImplementedInReferenceAssemblyException)
+            catch (NotImplementedException)
             { }
         }
 
@@ -28,7 +27,7 @@ namespace LaunchDarkly.Xamarin
             }
         }
         
-        void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
+        void Connectivity_ConnectivityChanged(object sender, Connectivity.ConnectivityChangedEventArgs e)
         {
             UpdateConnectedStatus();
             ConnectionChanged?.Invoke(isConnected);
@@ -38,9 +37,9 @@ namespace LaunchDarkly.Xamarin
         {
             try
             {
-                isConnected = Connectivity.NetworkAccess == NetworkAccess.Internet;
+                isConnected = LaunchDarkly.Xamarin.Connectivity.Connectivity.NetworkAccess == LaunchDarkly.Xamarin.Connectivity.NetworkAccess.Internet;
             }
-            catch (NotImplementedInReferenceAssemblyException)
+            catch (NotImplementedException)
             {
                 // .NET Standard has no way to detect network connectivity
                 isConnected = true;

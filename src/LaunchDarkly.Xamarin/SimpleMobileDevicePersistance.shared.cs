@@ -1,5 +1,4 @@
 ﻿using System;
-using Xamarin.Essentials;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -9,18 +8,18 @@ namespace LaunchDarkly.Xamarin
         {
             try
             {
-                Preferences.Set(key, value);
+                LaunchDarkly.Xamarin.Preferences.Preferences.Set(key, value);
             }
-            catch (NotImplementedInReferenceAssemblyException) { }
+            catch (NotImplementedException) { }
         }
 
         public string GetValue(string key)
         {
             try
             {
-                return Preferences.Get(key, null);
+                return LaunchDarkly.Xamarin.Preferences.Preferences.Get(key, null);
             }
-            catch (NotImplementedInReferenceAssemblyException)
+            catch (NotImplementedException)
             {
                 return null;
             }
