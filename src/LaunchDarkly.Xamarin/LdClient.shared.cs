@@ -79,15 +79,7 @@ namespace LaunchDarkly.Xamarin
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
             platformAdapter = new LaunchDarkly.Xamarin.BackgroundAdapter.BackgroundAdapter();
 
-            // If you pass in a user with a null or blank key, one will be assigned to them.
-            if (String.IsNullOrEmpty(user.Key))
-            {
-                User = UserWithUniqueKey(user);
-            }
-            else
-            {
-                User = user;
-            }
+            User = DecorateUser(user);
 
             flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagListenerManager, User);
             connectionManager = Factory.CreateConnectionManager(configuration);
@@ -492,16 +484,12 @@ namespace LaunchDarkly.Xamarin
                 throw new ArgumentNullException("user");
             }
 
-            User userWithKey = user;
-            if (String.IsNullOrEmpty(user.Key))
-            {
-                userWithKey = UserWithUniqueKey(user);
-            }
+            User newUser = DecorateUser(user);
 
             await connectionLock.WaitAsync();
             try
             {
-                User = userWithKey;
+                User = newUser;
                 await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
             finally
@@ -509,7 +497,7 @@ namespace LaunchDarkly.Xamarin
                 connectionLock.Release();
             }
 
-            eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(userWithKey));
+            eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(newUser));
         }
 
         async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)
@@ -533,14 +521,24 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        User UserWithUniqueKey(User user)
+        User DecorateUser(User user)
         {
-            string uniqueId = deviceInfo.UniqueDeviceId();
-            return new User(user)
+            var newUser = new User(user);
+            if (UserMetadata.DeviceName != null)
             {
-                Key = uniqueId,
-                Anonymous = true
-            };
+                newUser = newUser.AndCustomAttribute("device", UserMetadata.DeviceName);
+            }
+            if (UserMetadata.OSName != null)
+            {
+                newUser = newUser.AndCustomAttribute("os", UserMetadata.OSName);
+            }
+            // If you pass in a user with a null or blank key, one will be assigned to them.
+            if (String.IsNullOrEmpty(user.Key))
+            {
+                newUser.Key = deviceInfo.UniqueDeviceId();
+                newUser.Anonymous = true;
+            }
+            return newUser;
         }
 
         void IDisposable.Dispose()
