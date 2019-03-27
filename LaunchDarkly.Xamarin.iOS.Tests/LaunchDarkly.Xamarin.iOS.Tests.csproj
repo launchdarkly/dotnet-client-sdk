@@ -102,10 +102,10 @@
       <HintPath>..\packages\Common.Logging.3.4.1\lib\netstandard1.3\Common.Logging.dll</HintPath>
     </Reference>
     <Reference Include="LaunchDarkly.EventSource">
-      <HintPath>..\packages\LaunchDarkly.EventSource.3.2.3\lib\netstandard1.4\LaunchDarkly.EventSource.dll</HintPath>
+      <HintPath>..\packages\LaunchDarkly.EventSource.3.3.0\lib\netstandard1.4\LaunchDarkly.EventSource.dll</HintPath>
     </Reference>
     <Reference Include="LaunchDarkly.Common">
-      <HintPath>..\packages\LaunchDarkly.Common.1.2.3\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
+      <HintPath>..\packages\LaunchDarkly.Common.2.0.0\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
     </Reference>
     <Reference Include="Plugin.DeviceInfo">
       <HintPath>..\packages\Xam.Plugin.DeviceInfo.4.1.1\lib\xamarinios10\Plugin.DeviceInfo.dll</HintPath>
