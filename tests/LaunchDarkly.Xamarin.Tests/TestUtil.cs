@@ -27,10 +27,13 @@ namespace LaunchDarkly.Xamarin.Tests
 
         public static void ClearClient()
         {
-            if (LdClient.Instance != null)
+            lock (ClientInstanceLock)
             {
-                (LdClient.Instance as IDisposable).Dispose();
-                LdClient.Instance = null;
+                if (LdClient.Instance != null)
+                {
+                    (LdClient.Instance as IDisposable).Dispose();
+                    LdClient.Instance = null;
+                }
             }
         }
 
