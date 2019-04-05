@@ -9,6 +9,16 @@ namespace LaunchDarkly.Xamarin.Tests
         static readonly string appKey = "some app key";
         static readonly User simpleUser = User.WithKey("user-key");
 
+        public DefaultLdClientTests()
+        {
+            TestUtil.ClearClient();
+        }
+
+        ~DefaultLdClientTests()
+        {
+            TestUtil.ClearClient();
+        }
+
         LdClient Client()
         {
             var configuration = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
@@ -39,14 +49,8 @@ namespace LaunchDarkly.Xamarin.Tests
         public void CanCreateClientWithInfiniteWaitTime()
         {
             Configuration config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
-            try
-            {
-                using (var client = LdClient.Init(config, simpleUser, System.Threading.Timeout.InfiniteTimeSpan)) { }
-            }
-            finally
-            {
-                LdClient.Instance = null;
-            }
+            using (var client = LdClient.Init(config, simpleUser, System.Threading.Timeout.InfiniteTimeSpan)) { }
+            TestUtil.ClearClient();
         }
 
         [Fact]
@@ -87,16 +91,10 @@ namespace LaunchDarkly.Xamarin.Tests
                 var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
                 using (var client = LdClient.Init(config, simpleUser, TimeSpan.Zero))
                 {
-                    try
-                    {
-                        Assert.ThrowsAsync<Exception>(async () => await LdClient.InitAsync(config, simpleUser));
-                    }
-                    finally
-                    {
-                        LdClient.Instance = null;
-                    }
+                    Assert.Throws<Exception>(() => LdClient.Init(config, simpleUser, TimeSpan.Zero));
                 }
             }
+            TestUtil.ClearClient();
         }
         
         [Fact]

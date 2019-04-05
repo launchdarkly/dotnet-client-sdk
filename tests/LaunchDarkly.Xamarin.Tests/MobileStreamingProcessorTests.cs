@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
@@ -17,32 +19,82 @@ namespace LaunchDarkly.Xamarin.Tests
             "\"string-flag\":{\"value\":\"markw@magenic.com\",\"version\":100}" +
             "}";
 
-        User user = User.WithKey("user key");
-        EventSourceMock mockEventSource;
-        TestEventSourceFactory eventSourceFactory;
-        IFlagCacheManager mockFlagCacheMgr;
+        private readonly User user = User.WithKey("me");
+        private const string encodedUser = "eyJrZXkiOiJtZSIsImN1c3RvbSI6e319";
 
-        private IMobileUpdateProcessor MobileStreamingProcessorStarted()
+        private EventSourceMock mockEventSource;
+        private TestEventSourceFactory eventSourceFactory;
+        private IFlagCacheManager mockFlagCacheMgr;
+        private Configuration config;
+
+        public MobileStreamingProcessorTests()
         {
             mockEventSource = new EventSourceMock();
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
-            // stub with an empty InMemoryCache, so Stream updates can be tested
             mockFlagCacheMgr = new MockFlagCacheManager(new UserFlagInMemoryCache());
-            var config = Configuration.Default("someKey")
-                                      .WithConnectionManager(new MockConnectionManager(true))
-                                      .WithIsStreamingEnabled(true)
-                                      .WithFlagCacheManager(mockFlagCacheMgr);
-            
-            var processor = Factory.CreateUpdateProcessor(config, user, mockFlagCacheMgr, eventSourceFactory.Create());
+            config = Configuration.Default("someKey")
+                                  .WithConnectionManager(new MockConnectionManager(true))
+                                  .WithIsStreamingEnabled(true)
+                                  .WithFlagCacheManager(mockFlagCacheMgr);
+
+        }
+
+        private IMobileUpdateProcessor MobileStreamingProcessorStarted()
+        {
+            var processor = Factory.CreateUpdateProcessor(config, user, mockFlagCacheMgr, TimeSpan.FromMinutes(5), eventSourceFactory.Create());
             processor.Start();
             return processor;
         }
 
         [Fact]
-        public void CanCreateMobileStreamingProcFromFactory()
+        public void StreamUriInGetModeHasUser()
         {
+            config.WithUseReport(false);
             var streamingProcessor = MobileStreamingProcessorStarted();
-            Assert.IsType<MobileStreamingProcessor>(streamingProcessor);
+            var props = eventSourceFactory.ReceivedProperties;
+            Assert.Equal(HttpMethod.Get, props.Method);
+            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + encodedUser), props.StreamUri);
+        }
+
+        [Fact]
+        public void StreamUriInGetModeHasReasonsParameterIfConfigured()
+        {
+            config.WithUseReport(false);
+            config.WithEvaluationReasons(true);
+            var streamingProcessor = MobileStreamingProcessorStarted();
+            var props = eventSourceFactory.ReceivedProperties;
+            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + encodedUser + "?withReasons=true"), props.StreamUri);
+        }
+
+        [Fact]
+        public void StreamUriInReportModeHasNoUser()
+        {
+            config.WithUseReport(true);
+            var streamingProcessor = MobileStreamingProcessorStarted();
+            var props = eventSourceFactory.ReceivedProperties;
+            Assert.Equal(new HttpMethod("REPORT"), props.Method);
+            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH), props.StreamUri);
+        }
+
+        [Fact]
+        public void StreamUriInReportModeHasReasonsParameterIfConfigured()
+        {
+            config.WithUseReport(true);
+            config.WithEvaluationReasons(true);
+            var streamingProcessor = MobileStreamingProcessorStarted();
+            var props = eventSourceFactory.ReceivedProperties;
+            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + "?withReasons=true"), props.StreamUri);
+        }
+
+        [Fact]
+        public async void StreamRequestBodyInReportModeHasUser()
+        {
+            config.WithUseReport(true);
+            var streamingProcessor = MobileStreamingProcessorStarted();
+            var props = eventSourceFactory.ReceivedProperties;
+            var body = Assert.IsType<StringContent>(props.RequestBody);
+            var s = await body.ReadAsStringAsync();
+            Assert.Equal(user.AsJson(), s);
         }
 
         [Fact]

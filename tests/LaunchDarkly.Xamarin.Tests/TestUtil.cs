@@ -25,9 +25,29 @@ namespace LaunchDarkly.Xamarin.Tests
             }
         }
 
-        public static string JsonFlagsWithSingleFlag(string flagKey, JToken value)
+        public static void ClearClient()
         {
-            JObject fo = new JObject { { "value", value }  };
+            lock (ClientInstanceLock)
+            {
+                if (LdClient.Instance != null)
+                {
+                    (LdClient.Instance as IDisposable).Dispose();
+                    LdClient.Instance = null;
+                }
+            }
+        }
+
+        public static string JsonFlagsWithSingleFlag(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
+        {
+            JObject fo = new JObject { { "value", value } };
+            if (variation != null)
+            {
+                fo["variation"] = new JValue(variation.Value);
+            }
+            if (reason != null)
+            {
+                fo["reason"] = JToken.FromObject(reason);
+            }
             JObject o = new JObject { { flagKey, fo } };
             return JsonConvert.SerializeObject(o);
         }
