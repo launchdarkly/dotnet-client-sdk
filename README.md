@@ -12,16 +12,16 @@ This beta release is built for the following targets: Android 7.1, 8.0, 8.1; iOS
 Quick setup
 -----------
 
-0. Use [NuGet](http://docs.nuget.org/docs/start-here/using-the-package-manager-console) to add the Xamarin SDK to your project:
+1. Use [NuGet](http://docs.nuget.org/docs/start-here/using-the-package-manager-console) to add the Xamarin SDK to your project:
 
         Install-Package LaunchDarkly.Xamarin
 
-1. Import the LaunchDarkly packages:
+2. Import the LaunchDarkly packages:
 
         using LaunchDarkly.Client;
         using LaunchDarkly.Xamarin;
 
-2. Initialize the LDClient with your Mobile key and user:
+3. Initialize the LDClient with your Mobile key and user:
 
         User user = User.WithKey(username);
         LdClient ldClient = LdClient.Init("YOUR_MOBILE_KEY", user);
