@@ -4,6 +4,11 @@ LaunchDarkly SDK [BETA] for Xamarin
 
 *This software is a **beta** version and should not be considered ready for production use until tagged at least 1.0.*
 
+Supported platforms
+-------------------
+
+This beta release is built for the following targets: Android 7.1, 8.0, 8.1; iOS 10; .NET Standard 1.6, 2.0. It has not been tested with higher platform versions.
+
 Quick setup
 -----------
 
