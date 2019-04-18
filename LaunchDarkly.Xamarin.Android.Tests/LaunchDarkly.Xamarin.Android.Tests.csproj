@@ -65,7 +65,7 @@
       <HintPath>..\packages\LaunchDarkly.EventSource.3.3.0\lib\netstandard1.4\LaunchDarkly.EventSource.dll</HintPath>
     </Reference>
     <Reference Include="LaunchDarkly.Common">
-      <HintPath>..\packages\LaunchDarkly.Common.2.0.0\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
+      <HintPath>..\packages\LaunchDarkly.Common.2.1.0\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
     </Reference>
     <Reference Include="Plugin.CurrentActivity">
       <HintPath>..\packages\Plugin.CurrentActivity.2.1.0.4\lib\monoandroid44\Plugin.CurrentActivity.dll</HintPath>

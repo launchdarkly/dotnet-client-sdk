@@ -44,15 +44,54 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (LdClient client = MakeClient(user, "{}"))
             {
-                JToken data = new JValue("hi");
-                client.Track("eventkey", data);
+                client.Track("eventkey");
                 Assert.Collection(eventProcessor.Events, 
                     e => CheckIdentifyEvent(e, user),
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.Key);
                         Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Null(ce.JsonData);
+                        Assert.Null(ce.MetricValue);
+                    });
+            }
+        }
+
+        [Fact]
+        public void TrackWithDataSendsCustomEvent()
+        {
+            using (LdClient client = MakeClient(user, "{}"))
+            {
+                JToken data = new JValue("hi");
+                client.Track("eventkey", data);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        CustomEvent ce = Assert.IsType<CustomEvent>(e);
+                        Assert.Equal("eventkey", ce.Key);
+                        Assert.Equal(user.Key, ce.User.Key);
                         Assert.Equal(data, ce.JsonData);
+                        Assert.Null(ce.MetricValue);
+                    });
+            }
+        }
+
+        [Fact]
+        public void TrackWithMetricValueSendsCustomEvent()
+        {
+            using (LdClient client = MakeClient(user, "{}"))
+            {
+                JToken data = new JValue("hi");
+                double metricValue = 1.5;
+                client.Track("eventkey", data, metricValue);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        CustomEvent ce = Assert.IsType<CustomEvent>(e);
+                        Assert.Equal("eventkey", ce.Key);
+                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(data, ce.JsonData);
+                        Assert.Equal(metricValue, ce.MetricValue);
                     });
             }
         }
