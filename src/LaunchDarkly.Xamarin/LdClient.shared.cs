@@ -430,16 +430,22 @@ namespace LaunchDarkly.Xamarin
                                     .ToDictionary(p => p.Key, p => p.Value.value);
         }
 
+        /// <see cref="ILdMobileClient.Track(string)"/>
+        public void Track(string eventName)
+        {
+            Track(eventName, null);
+        }
+
         /// <see cref="ILdMobileClient.Track(string, JToken)"/>
         public void Track(string eventName, JToken data)
         {
             eventProcessor.SendEvent(eventFactoryDefault.NewCustomEvent(eventName, User, data));
         }
 
-        /// <see cref="ILdMobileClient.Track(string)"/>
-        public void Track(string eventName)
+        /// <see cref="ILdMobileClient.Track(string, JToken, double)"/>
+        public void Track(string eventName, JToken data, double metricValue)
         {
-            Track(eventName, null);
+            eventProcessor.SendEvent(eventFactoryDefault.NewCustomEvent(eventName, User, data, metricValue));
         }
 
         /// <see cref="ILdMobileClient.Initialized"/>

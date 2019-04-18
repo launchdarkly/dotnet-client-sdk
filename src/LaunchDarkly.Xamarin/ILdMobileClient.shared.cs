@@ -110,6 +110,12 @@ namespace LaunchDarkly.Xamarin
         EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue);
 
         /// <summary>
+        /// Tracks that current user performed an event for the given event name.
+        /// </summary>
+        /// <param name="eventName">the name of the event</param>
+        void Track(string eventName);
+
+        /// <summary>
         /// Tracks that current user performed an event for the given JToken value and given event name.
         /// </summary>
         /// <param name="eventName">the name of the event</param>
@@ -117,10 +123,14 @@ namespace LaunchDarkly.Xamarin
         void Track(string eventName, JToken data);
 
         /// <summary>
-        /// Tracks that current user performed an event for the given event name.
+        /// Tracks that current user performed an event for the given event name, and associates it with a
+        /// numeric metric value.
         /// </summary>
         /// <param name="eventName">the name of the event</param>
-        void Track(string eventName);
+        /// <param name="data">a JSON string containing additional data associated with the event</param>
+        /// <param name="metricValue">This value is used by the LaunchDarkly experimentation feature in
+        /// numeric custom metrics, and will also be returned as part of the custom event for Data Export.</param>
+        void Track(string eventName, JToken data, double metricValue);
 
         /// <summary>
         /// Gets or sets the online status of the client.

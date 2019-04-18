@@ -81,6 +81,9 @@
     <MtouchVerbosity></MtouchVerbosity>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LaunchDarkly.Common, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\LaunchDarkly.Common.2.1.0\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
+    </Reference>
     <Reference Include="LaunchDarkly.Xamarin">
       <HintPath>..\..\xamarin-client-private\src\LaunchDarkly.Xamarin\bin\Debug\xamarin.ios10\LaunchDarkly.Xamarin.dll</HintPath>
     </Reference>
@@ -103,9 +106,6 @@
     </Reference>
     <Reference Include="LaunchDarkly.EventSource">
       <HintPath>..\packages\LaunchDarkly.EventSource.3.3.0\lib\netstandard1.4\LaunchDarkly.EventSource.dll</HintPath>
-    </Reference>
-    <Reference Include="LaunchDarkly.Common">
-      <HintPath>..\packages\LaunchDarkly.Common.2.0.0\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
     </Reference>
     <Reference Include="Plugin.DeviceInfo">
       <HintPath>..\packages\Xam.Plugin.DeviceInfo.4.1.1\lib\xamarinios10\Plugin.DeviceInfo.dll</HintPath>
