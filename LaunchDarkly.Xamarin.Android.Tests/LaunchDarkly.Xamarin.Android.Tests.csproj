@@ -42,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LaunchDarkly.Xamarin">
-      <HintPath>..\..\xamarin-client-private\src\LaunchDarkly.Xamarin\bin\Debug\monoandroid81\LaunchDarkly.Xamarin.dll</HintPath>
+      <HintPath>..\..\xamarin-client-sdk-private\src\LaunchDarkly.Xamarin\bin\Debug\monoandroid81\LaunchDarkly.Xamarin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
