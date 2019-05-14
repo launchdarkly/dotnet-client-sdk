@@ -38,6 +38,6 @@ msbuild
 
 To build the SDK and run all unit tests:
 ```
-dotnet build src/LaunchDarkly.Xamarin -f netstandard2.0
-dotnet test tests/LaunchDarkly.Xamarin.Tests/LaunchDarkly.Xamarin.Tests.csproj -f netcoreapp2.0
+dotnet build src/LaunchDarkly.XamarinSdk -f netstandard2.0
+dotnet test tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
 ```
