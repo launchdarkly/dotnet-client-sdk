@@ -9,6 +9,10 @@ The LaunchDarkly SDK repositories are being renamed for consistency. This reposi
 
 The package name will also change. In the 1.0.0-beta16 release, the published package was `LaunchDarkly.Xamarin`; in all future releases, it will be `LaunchDarkly.XamarinSdk`.
 
+## [1.0.0-beta17] - 2019-05-15
+### Changed:
+- The NuGet package name for this SDK is now `LaunchDarkly.XamarinSdk`. There are no other changes. Substituting `LaunchDarkly.Xamarin` 1.0.0-beta16 with `LaunchDarkly.XamarinSdk` 1.0.0-beta17 should not affect functionality.
+
 ## [1.0.0-beta16] - 2019-04-05
 ### Added:
 - In Android and iOS, when an app is in the background, the SDK should turn off the streaming connection and instead poll for flag updates at an interval determined by `Configuration.BackgroundPollingInterval` (default: 60 minutes).
