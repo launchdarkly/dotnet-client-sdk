@@ -11,5 +11,5 @@ jobs:
     steps:
       - checkout
       - run: dotnet restore
-      - run: dotnet build src/LaunchDarkly.Xamarin -f netstandard2.0
-      - run: dotnet test tests/LaunchDarkly.Xamarin.Tests/LaunchDarkly.Xamarin.Tests.csproj -f netcoreapp2.0
+      - run: dotnet build src/LaunchDarkly.XamarinSdk -f netstandard2.0
+      - run: dotnet test tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0

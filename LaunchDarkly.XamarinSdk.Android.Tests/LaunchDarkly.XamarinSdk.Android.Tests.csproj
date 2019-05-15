@@ -7,7 +7,7 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <RootNamespace>LaunchDarkly.Xamarin.Android.Tests</RootNamespace>
-    <AssemblyName>LaunchDarkly.Xamarin.Android.Tests</AssemblyName>
+    <AssemblyName>LaunchDarkly.XamarinSdk.Android.Tests</AssemblyName>
     <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
     <TargetFramework>MonoAndroid90</TargetFramework>
     <AndroidApplication>True</AndroidApplication>
@@ -42,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LaunchDarkly.Xamarin">
-      <HintPath>..\..\xamarin-client-sdk-private\src\LaunchDarkly.Xamarin\bin\Debug\monoandroid81\LaunchDarkly.Xamarin.dll</HintPath>
+      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\monoandroid81\LaunchDarkly.XamarinSdk.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
@@ -64,8 +64,8 @@
     <Reference Include="LaunchDarkly.EventSource">
       <HintPath>..\packages\LaunchDarkly.EventSource.3.3.0\lib\netstandard1.4\LaunchDarkly.EventSource.dll</HintPath>
     </Reference>
-    <Reference Include="LaunchDarkly.Common">
-      <HintPath>..\packages\LaunchDarkly.Common.2.0.0\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
+    <Reference Include="LaunchDarkly.CommonSdk">
+      <HintPath>..\packages\LaunchDarkly.CommonSdk.2.1.2\lib\netstandard2.0\LaunchDarkly.CommonSdk.dll</HintPath>
     </Reference>
     <Reference Include="Plugin.CurrentActivity">
       <HintPath>..\packages\Plugin.CurrentActivity.2.1.0.4\lib\monoandroid44\Plugin.CurrentActivity.dll</HintPath>

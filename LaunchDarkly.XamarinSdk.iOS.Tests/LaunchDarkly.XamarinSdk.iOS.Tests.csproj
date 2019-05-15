@@ -7,7 +7,7 @@
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
     <RootNamespace>LaunchDarkly.Xamarin.iOS.Tests</RootNamespace>
-    <AssemblyName>LaunchDarkly.Xamarin.iOS.Tests</AssemblyName>
+    <AssemblyName>LaunchDarkly.XamarinSdk.iOS.Tests</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
@@ -81,8 +81,8 @@
     <MtouchVerbosity></MtouchVerbosity>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LaunchDarkly.Xamarin">
-      <HintPath>..\..\xamarin-client-sdk-private\src\LaunchDarkly.Xamarin\bin\Debug\xamarin.ios10\LaunchDarkly.Xamarin.dll</HintPath>
+    <Reference Include="LaunchDarkly.XamarinSdk">
+      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\xamarin.ios10\LaunchDarkly.XamarinSdk.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
@@ -104,8 +104,8 @@
     <Reference Include="LaunchDarkly.EventSource">
       <HintPath>..\packages\LaunchDarkly.EventSource.3.3.0\lib\netstandard1.4\LaunchDarkly.EventSource.dll</HintPath>
     </Reference>
-    <Reference Include="LaunchDarkly.Common">
-      <HintPath>..\packages\LaunchDarkly.Common.2.0.0\lib\netstandard2.0\LaunchDarkly.Common.dll</HintPath>
+    <Reference Include="LaunchDarkly.CommonSdk">
+      <HintPath>..\packages\LaunchDarkly.CommonSdk.2.1.2\lib\netstandard2.0\LaunchDarkly.CommonSdk.dll</HintPath>
     </Reference>
     <Reference Include="Plugin.DeviceInfo">
       <HintPath>..\packages\Xam.Plugin.DeviceInfo.4.1.1\lib\xamarinios10\Plugin.DeviceInfo.dll</HintPath>
