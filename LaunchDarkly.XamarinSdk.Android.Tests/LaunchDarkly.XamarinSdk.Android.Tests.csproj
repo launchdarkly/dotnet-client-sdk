@@ -41,7 +41,7 @@
     <JavaMaximumHeapSize></JavaMaximumHeapSize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LaunchDarkly.Xamarin">
+    <Reference Include="LaunchDarkly.XamarinSdk">
       <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\monoandroid81\LaunchDarkly.XamarinSdk.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -54,7 +54,7 @@
       <HintPath>..\packages\Common.Logging.Core.3.4.1\lib\netstandard1.0\Common.Logging.Core.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\netstandard2.0\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\netstandard1.0\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
