@@ -32,15 +32,20 @@ using Android.Support.V4.Content;
 
 namespace LaunchDarkly.Xamarin.Permissions
 {
+    // All commented-out code in this file came from Xamarin Essentials but was removed because it is not used by this SDK.
+    // Note that we are no longer using the shared Permissions abstraction at all; this Android code is being used directly
+    // by other Android-specific code.
+
     internal static partial class Permissions
     {
-        static readonly object locker = new object();
-        static int requestCode = 0;
+        //static readonly object locker = new object();
+        //static int requestCode = 0;
 
-        static Dictionary<PermissionType, (int requestCode, TaskCompletionSource<PermissionStatus> tcs)> requests =
-            new Dictionary<PermissionType, (int, TaskCompletionSource<PermissionStatus>)>();
+        //static Dictionary<PermissionType, (int requestCode, TaskCompletionSource<PermissionStatus> tcs)> requests =
+        //new Dictionary<PermissionType, (int, TaskCompletionSource<PermissionStatus>)>();
 
-        static void PlatformEnsureDeclared(PermissionType permission)
+        //static void PlatformEnsureDeclared(PermissionType permission)
+        internal static void EnsureDeclared(PermissionType permission)
         {
             var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: false);
 
@@ -61,101 +66,101 @@ namespace LaunchDarkly.Xamarin.Permissions
             }
         }
 
-        static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
-        {
-            EnsureDeclared(permission);
+        //static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
+        //{
+        //    EnsureDeclared(permission);
 
-            // If there are no android permissions for the given permission type
-            // just return granted since we have none to ask for
-            var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: true);
+        //    // If there are no android permissions for the given permission type
+        //    // just return granted since we have none to ask for
+        //    var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: true);
 
-            if (androidPermissions == null || !androidPermissions.Any())
-                return Task.FromResult(PermissionStatus.Granted);
+        //    if (androidPermissions == null || !androidPermissions.Any())
+        //        return Task.FromResult(PermissionStatus.Granted);
 
-            var context = Platform.Platform.AppContext;
-            var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
+        //    var context = Platform.Platform.AppContext;
+        //    var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
 
-            foreach (var ap in androidPermissions)
-            {
-                if (targetsMOrHigher)
-                {
-                    if (ContextCompat.CheckSelfPermission(context, ap) != Permission.Granted)
-                        return Task.FromResult(PermissionStatus.Denied);
-                }
-                else
-                {
-                    if (PermissionChecker.CheckSelfPermission(context, ap) != PermissionChecker.PermissionGranted)
-                        return Task.FromResult(PermissionStatus.Denied);
-                }
-            }
+        //    foreach (var ap in androidPermissions)
+        //    {
+        //        if (targetsMOrHigher)
+        //        {
+        //            if (ContextCompat.CheckSelfPermission(context, ap) != Permission.Granted)
+        //                return Task.FromResult(PermissionStatus.Denied);
+        //        }
+        //        else
+        //        {
+        //            if (PermissionChecker.CheckSelfPermission(context, ap) != PermissionChecker.PermissionGranted)
+        //                return Task.FromResult(PermissionStatus.Denied);
+        //        }
+        //    }
 
-            return Task.FromResult(PermissionStatus.Granted);
-        }
+        //    return Task.FromResult(PermissionStatus.Granted);
+        //}
 
-        static async Task<PermissionStatus> PlatformRequestAsync(PermissionType permission)
-        {
-            // Check status before requesting first
-            if (await PlatformCheckStatusAsync(permission) == PermissionStatus.Granted)
-                return PermissionStatus.Granted;
+        //static async Task<PermissionStatus> PlatformRequestAsync(PermissionType permission)
+        //{
+        //    // Check status before requesting first
+        //    if (await PlatformCheckStatusAsync(permission) == PermissionStatus.Granted)
+        //        return PermissionStatus.Granted;
 
-            TaskCompletionSource<PermissionStatus> tcs;
-            var doRequest = true;
+        //    TaskCompletionSource<PermissionStatus> tcs;
+        //    var doRequest = true;
 
-            lock (locker)
-            {
-                if (requests.ContainsKey(permission))
-                {
-                    tcs = requests[permission].tcs;
-                    doRequest = false;
-                }
-                else
-                {
-                    tcs = new TaskCompletionSource<PermissionStatus>();
+        //    lock (locker)
+        //    {
+        //        if (requests.ContainsKey(permission))
+        //        {
+        //            tcs = requests[permission].tcs;
+        //            doRequest = false;
+        //        }
+        //        else
+        //        {
+        //            tcs = new TaskCompletionSource<PermissionStatus>();
 
-                    // Get new request code and wrap it around for next use if it's going to reach max
-                    if (++requestCode >= int.MaxValue)
-                        requestCode = 1;
+        //            // Get new request code and wrap it around for next use if it's going to reach max
+        //            if (++requestCode >= int.MaxValue)
+        //                requestCode = 1;
 
-                    requests.Add(permission, (requestCode, tcs));
-                }
-            }
+        //            requests.Add(permission, (requestCode, tcs));
+        //        }
+        //    }
 
-            if (!doRequest)
-                return await tcs.Task;
+        //    if (!doRequest)
+        //        return await tcs.Task;
 
-            if (!MainThread.MainThread.IsMainThread)
-                throw new System.UnauthorizedAccessException("Permission request must be invoked on main thread.");
+        //    if (!MainThread.MainThread.IsMainThread)
+        //        throw new System.UnauthorizedAccessException("Permission request must be invoked on main thread.");
 
-            var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: true).ToArray();
+        //    var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: true).ToArray();
 
-            ActivityCompat.RequestPermissions(Platform.Platform.GetCurrentActivity(true), androidPermissions, requestCode);
+        //    ActivityCompat.RequestPermissions(Platform.Platform.GetCurrentActivity(true), androidPermissions, requestCode);
 
-            return await tcs.Task;
-        }
+        //    return await tcs.Task;
+        //}
 
-        internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
-        {
-            lock (locker)
-            {
-                // Check our pending requests for one with a matching request code
-                foreach (var kvp in requests)
-                {
-                    if (kvp.Value.requestCode == requestCode)
-                    {
-                        var tcs = kvp.Value.tcs;
+        //internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        //{
+        //    lock (locker)
+        //    {
+        //        // Check our pending requests for one with a matching request code
+        //        foreach (var kvp in requests)
+        //        {
+        //            if (kvp.Value.requestCode == requestCode)
+        //            {
+        //                var tcs = kvp.Value.tcs;
 
-                        // Look for any denied requests, and deny the whole request if so
-                        // Remember, each PermissionType is tied to 1 or more android permissions
-                        // so if any android permissions denied the whole PermissionType is considered denied
-                        if (grantResults.Any(g => g == Permission.Denied))
-                            tcs.TrySetResult(PermissionStatus.Denied);
-                        else
-                            tcs.TrySetResult(PermissionStatus.Granted);
-                        break;
-                    }
-                }
-            }
-        }
+        //                // Look for any denied requests, and deny the whole request if so
+        //                // Remember, each PermissionType is tied to 1 or more android permissions
+        //                // so if any android permissions denied the whole PermissionType is considered denied
+        //                if (grantResults.Any(g => g == Permission.Denied))
+        //                    tcs.TrySetResult(PermissionStatus.Denied);
+        //                else
+        //                    tcs.TrySetResult(PermissionStatus.Granted);
+        //                break;
+        //            }
+        //        }
+        //    }
+        //}
     }
 
     internal static class PermissionTypeExtensions

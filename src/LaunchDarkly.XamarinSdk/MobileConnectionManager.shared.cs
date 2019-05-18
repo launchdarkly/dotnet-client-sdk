@@ -9,12 +9,7 @@ namespace LaunchDarkly.Xamarin
         internal MobileConnectionManager()
         {
             UpdateConnectedStatus();
-            try
-            {
-                LaunchDarkly.Xamarin.Connectivity.Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
-            }
-            catch (NotImplementedException)
-            { }
+            LaunchDarkly.Xamarin.Connectivity.Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
         bool isConnected;
@@ -35,15 +30,7 @@ namespace LaunchDarkly.Xamarin
 
         private void UpdateConnectedStatus()
         {
-            try
-            {
-                isConnected = LaunchDarkly.Xamarin.Connectivity.Connectivity.NetworkAccess == LaunchDarkly.Xamarin.Connectivity.NetworkAccess.Internet;
-            }
-            catch (NotImplementedException)
-            {
-                // .NET Standard has no way to detect network connectivity
-                isConnected = true;
-            }
+            isConnected = LaunchDarkly.Xamarin.Connectivity.Connectivity.NetworkAccess == LaunchDarkly.Xamarin.Connectivity.NetworkAccess.Internet;
         }
     }
 }

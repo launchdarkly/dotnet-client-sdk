@@ -6,23 +6,12 @@ namespace LaunchDarkly.Xamarin
     {
         public void Save(string key, string value)
         {
-            try
-            {
-                LaunchDarkly.Xamarin.Preferences.Preferences.Set(key, value);
-            }
-            catch (NotImplementedException) { }
+            LaunchDarkly.Xamarin.Preferences.Preferences.Set(key, value);
         }
 
         public string GetValue(string key)
         {
-            try
-            {
-                return LaunchDarkly.Xamarin.Preferences.Preferences.Get(key, null);
-            }
-            catch (NotImplementedException)
-            {
-                return null;
-            }
+            return LaunchDarkly.Xamarin.Preferences.Preferences.Get(key, null);
         }
     }
 }

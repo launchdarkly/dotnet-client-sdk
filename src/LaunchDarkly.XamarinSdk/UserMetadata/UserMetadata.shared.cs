@@ -1,10 +1,14 @@
 ﻿
 namespace LaunchDarkly.Xamarin
 {
+    // This class and the rest of its partial class implementations are not derived from Xamarin Essentials.
+
     internal static partial class UserMetadata
     {
-        private static readonly string _os = GetOS();
-        private static readonly string _device = GetDevice();
+        // These values are obtained from the platform-specific code once and then stored in static fields,
+        // to avoid having to recompute them many times.
+        private static readonly string _os = PlatformOS;
+        private static readonly string _device = PlatformDevice;
 
         /// <summary>
         /// Returns the string that should be passed in the "device" property for all users.
