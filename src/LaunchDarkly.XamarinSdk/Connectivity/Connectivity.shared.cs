@@ -82,7 +82,11 @@ namespace LaunchDarkly.Xamarin.Connectivity
             if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.ConnectionProfiles))
             {
                 SetCurrent();
-                MainThread.MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
+                // Modified: Xamarin Essentials did this to guarantee that event handlers would always fire on the
+                // main thread, but that is not how event handlers normally work in .NET, and our SDK does not have
+                // any such requirement.
+                // MainThread.MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
+                ConnectivityChangedInternal?.Invoke(null, e);
             }
         }
     }
