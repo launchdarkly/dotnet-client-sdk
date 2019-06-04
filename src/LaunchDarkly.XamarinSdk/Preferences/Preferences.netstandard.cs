@@ -107,18 +107,17 @@ namespace LaunchDarkly.Xamarin.Preferences
 
         private static T WithStore<T>(Func<IsolatedStorageFile, T> callback)
         {
-            IsolatedStorageFile store;
             try
             {
                 // GetUserStoreForDomain returns a storage object that is specific to the current application and OS user.
-                store = IsolatedStorageFile.GetUserStoreForDomain();
+                var store = IsolatedStorageFile.GetUserStoreForDomain();
+                return callback(store);
             }
             catch (Exception e)
             {
                 HandleStoreException(e);
                 return default;
             }
-            return callback(store);
         }
 
         private static void HandleStoreException(Exception e)
@@ -172,7 +171,7 @@ namespace LaunchDarkly.Xamarin.Preferences
             return MakeDirectoryPath(sharedName) + "/" + EscapeFilenameComponent(key);
         }
 
-        static string EscapeFilenameComponent(string name)
+        private static string EscapeFilenameComponent(string name)
         {
             // In actual usage for LaunchDarkly this should not be an issue, because keys are really feature flag keys
             // which have a very limited character set, and we don't actually use sharedName. It's just good practice.
