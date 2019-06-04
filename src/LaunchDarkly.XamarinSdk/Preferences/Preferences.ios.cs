@@ -26,6 +26,10 @@ using Foundation;
 
 namespace LaunchDarkly.Xamarin.Preferences
 {
+    // Modified for LaunchDarkly: the SDK always serializes values to strings before using this class
+    // to store them. Therefore, the overloads for non-string types have been removed, thereby
+    // reducing the amount of multi-platform implementation code that won't be used.
+
     internal static partial class Preferences
     {
         static readonly object locker = new object();
@@ -67,7 +71,7 @@ namespace LaunchDarkly.Xamarin.Preferences
             }
         }
 
-        static void PlatformSet<T>(string key, T value, string sharedName)
+        static void PlatformSet(string key, string value, string sharedName)
         {
             lock (locker)
             {
@@ -80,36 +84,13 @@ namespace LaunchDarkly.Xamarin.Preferences
                         return;
                     }
 
-                    switch (value)
-                    {
-                        case string s:
-                            userDefaults.SetString(s, key);
-                            break;
-                        case int i:
-                            userDefaults.SetInt(i, key);
-                            break;
-                        case bool b:
-                            userDefaults.SetBool(b, key);
-                            break;
-                        case long l:
-                            var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                            userDefaults.SetString(valueString, key);
-                            break;
-                        case double d:
-                            userDefaults.SetDouble(d, key);
-                            break;
-                        case float f:
-                            userDefaults.SetFloat(f, key);
-                            break;
-                    }
+                    userDefaults.SetString(value, key);
                 }
             }
         }
 
-        static T PlatformGet<T>(string key, T defaultValue, string sharedName)
+        static string PlatformGet(string key, string defaultValue, string sharedName)
         {
-            object value = null;
-
             lock (locker)
             {
                 using (var userDefaults = GetUserDefaults(sharedName))
@@ -117,38 +98,9 @@ namespace LaunchDarkly.Xamarin.Preferences
                     if (userDefaults[key] == null)
                         return defaultValue;
 
-                    switch (defaultValue)
-                    {
-                        case int i:
-                            value = (int)(nint)userDefaults.IntForKey(key);
-                            break;
-                        case bool b:
-                            value = userDefaults.BoolForKey(key);
-                            break;
-                        case long l:
-                            var savedLong = userDefaults.StringForKey(key);
-                            value = Convert.ToInt64(savedLong, CultureInfo.InvariantCulture);
-                            break;
-                        case double d:
-                            value = userDefaults.DoubleForKey(key);
-                            break;
-                        case float f:
-                            value = userDefaults.FloatForKey(key);
-                            break;
-                        case string s:
-                            // the case when the string is not null
-                            value = userDefaults.StringForKey(key);
-                            break;
-                        default:
-                            // the case when the string is null
-                            if (typeof(T) == typeof(string))
-                                value = userDefaults.StringForKey(key);
-                            break;
-                    }
+                    return userDefaults.StringForKey(key);
                 }
             }
-
-            return (T)value;
         }
 
         static NSUserDefaults GetUserDefaults(string sharedName)

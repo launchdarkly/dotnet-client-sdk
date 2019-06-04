@@ -28,6 +28,10 @@ using Android.Preferences;
 
 namespace LaunchDarkly.Xamarin.Preferences
 {
+    // Modified for LaunchDarkly: the SDK always serializes values to strings before using this class
+    // to store them. Therefore, the overloads for non-string types have been removed, thereby
+    // reducing the amount of multi-platform implementation code that won't be used.
+
     internal static partial class Preferences
     {
         static readonly object locker = new object();
@@ -67,7 +71,7 @@ namespace LaunchDarkly.Xamarin.Preferences
             }
         }
 
-        static void PlatformSet<T>(string key, T value, string sharedName)
+        static void PlatformSet(string key, string value, string sharedName)
         {
             lock (locker)
             {
@@ -80,87 +84,22 @@ namespace LaunchDarkly.Xamarin.Preferences
                     }
                     else
                     {
-                        switch (value)
-                        {
-                            case string s:
-                                editor.PutString(key, s);
-                                break;
-                            case int i:
-                                editor.PutInt(key, i);
-                                break;
-                            case bool b:
-                                editor.PutBoolean(key, b);
-                                break;
-                            case long l:
-                                editor.PutLong(key, l);
-                                break;
-                            case double d:
-                                var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                                editor.PutString(key, valueString);
-                                break;
-                            case float f:
-                                editor.PutFloat(key, f);
-                                break;
-                        }
+                        editor.PutString(key, s);
                     }
                     editor.Apply();
                 }
             }
         }
 
-        static T PlatformGet<T>(string key, T defaultValue, string sharedName)
+        static string PlatformGet(string key, string defaultValue, string sharedName)
         {
             lock (locker)
             {
                 object value = null;
                 using (var sharedPreferences = GetSharedPreferences(sharedName))
                 {
-                    if (defaultValue == null)
-                    {
-                        value = sharedPreferences.GetString(key, null);
-                    }
-                    else
-                    {
-                        switch (defaultValue)
-                        {
-                            case int i:
-                                value = sharedPreferences.GetInt(key, i);
-                                break;
-                            case bool b:
-                                value = sharedPreferences.GetBoolean(key, b);
-                                break;
-                            case long l:
-                                value = sharedPreferences.GetLong(key, l);
-                                break;
-                            case double d:
-                                var savedDouble = sharedPreferences.GetString(key, null);
-                                if (string.IsNullOrWhiteSpace(savedDouble))
-                                {
-                                    value = defaultValue;
-                                }
-                                else
-                                {
-                                    if (!double.TryParse(savedDouble, NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out var outDouble))
-                                    {
-                                        var maxString = Convert.ToString(double.MaxValue, CultureInfo.InvariantCulture);
-                                        outDouble = savedDouble.Equals(maxString) ? double.MaxValue : double.MinValue;
-                                    }
-
-                                    value = outDouble;
-                                }
-                                break;
-                            case float f:
-                                value = sharedPreferences.GetFloat(key, f);
-                                break;
-                            case string s:
-                                // the case when the string is not null
-                                value = sharedPreferences.GetString(key, s);
-                                break;
-                        }
-                    }
+                    return sharedPreferences.GetString(key, defaultValue);
                 }
-
-                return (T)value;
             }
         }
 
