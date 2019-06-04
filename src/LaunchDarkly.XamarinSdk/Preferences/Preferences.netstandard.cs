@@ -18,6 +18,9 @@ namespace LaunchDarkly.Xamarin.Preferences
     // strings that are apparently based on the application and assembly name, so the data should be specific to both
     // the OS user account and the current app.
     //
+    // This is based on the Plugin.Settings plugin (which is what Xamarin Essentials uses for preferences), but greatly
+    // simplified since we only need one data type. See: https://github.com/jamesmontemagno/SettingsPlugin/blob/master/src/Plugin.Settings/Settings.dotnet.cs
+    //
     // In .NET Standard 1.6, there is no data store.
 
     internal static partial class Preferences
