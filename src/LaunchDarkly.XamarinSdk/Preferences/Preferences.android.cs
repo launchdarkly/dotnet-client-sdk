@@ -84,7 +84,7 @@ namespace LaunchDarkly.Xamarin.Preferences
                     }
                     else
                     {
-                        editor.PutString(key, s);
+                        editor.PutString(key, value);
                     }
                     editor.Apply();
                 }
