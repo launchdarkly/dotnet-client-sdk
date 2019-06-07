@@ -19,7 +19,7 @@ jobs:
 
   test-android:
     macos:
-      xcode: '10.1.0'
+      xcode: "10.2.1"
 
     steps:
       - run:
@@ -28,7 +28,7 @@ jobs:
 
       - run:
           name: Install Xamarin tools
-          command: brew cask install xamarin xamarin-jdk xamarin-ios xamarin-studio
+          command: brew cask install xamarin xamarin-android xamarin-ios
 
       - run:
           name: Build SDK
