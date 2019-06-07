@@ -35,4 +35,4 @@ jobs:
 
       - run:
           name: Build SDK
-          command: msbuild
+          command: msbuild /restore
