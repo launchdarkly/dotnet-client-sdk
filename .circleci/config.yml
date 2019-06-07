@@ -28,7 +28,10 @@ jobs:
 
       - run:
           name: Install Xamarin tools
-          command: brew cask install xamarin xamarin-android xamarin-ios
+          command: brew cask install xamarin xamarin-android xamarin-ios && brew install mono
+          # Note, "mono" provides the msbuild CLI tool
+
+      - checkout
 
       - run:
           name: Build SDK
