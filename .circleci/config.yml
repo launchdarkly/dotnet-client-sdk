@@ -1,11 +1,14 @@
 version: 2
+
 workflows:
   version: 2
   test:
     jobs:
-      - test-2.0
+      - test-netstandard2.0
+      - test-android
+
 jobs:  
-  test-2.0:
+  test-netstandard2.0:
     docker:
       - image: microsoft/dotnet:2.0-sdk-jessie
     steps:
@@ -13,3 +16,20 @@ jobs:
       - run: dotnet restore
       - run: dotnet build src/LaunchDarkly.XamarinSdk -f netstandard2.0
       - run: dotnet test tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
+
+  test-android:
+    macos:
+      xcode: '10.1.0'
+
+    steps:
+      - run:
+          name: Set up package source for Xamarin tools
+          command: brew install caskroom/cask/brew-cask
+
+      - run:
+          name: Install Xamarin tools
+          command: brew cask install xamarin xamarin-jdk xamarin-ios xamarin-studio
+
+      - run:
+          name: Build SDK
+          command: msbuild
