@@ -1,7 +1,6 @@
 ﻿using System;
 using LaunchDarkly.Xamarin;
 using UIKit;
-using Common.Logging;
 using Foundation;
 
 namespace LaunchDarkly.Xamarin.BackgroundDetection
@@ -10,15 +9,14 @@ namespace LaunchDarkly.Xamarin.BackgroundDetection
     {
         private static NSObject _foregroundHandle;
         private static NSObject _backgroundHandle;
-        private static readonly ILog Log = LogManager.GetLogger(typeof(BackgroundAdapter));
 
-        private static void StartListening()
+        private static void PlatformStartListening()
         {
             _foregroundHandle = NSNotificationCenter.DefaultCenter.AddObserver(UIApplication.WillEnterForegroundNotification, HandleWillEnterForeground);
             _backgroundHandle = NSNotificationCenter.DefaultCenter.AddObserver(UIApplication.DidEnterBackgroundNotification, HandleWillEnterBackground);
         }
 
-        private static void StopListening()
+        private static void PlatformStopListening()
         {
             _foregroundHandle = null;
             _backgroundHandle = null;

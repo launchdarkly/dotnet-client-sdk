@@ -10,14 +10,14 @@ namespace LaunchDarkly.Xamarin.BackgroundDetection
         private static ActivityLifecycleCallbacks _callbacks;
         private static Application _application;
 
-        private static void StartListening()
+        private static void PlatformStartListening()
         {
             _callbacks = new ActivityLifecycleCallbacks();
             _application = (Application)Application.Context;
             _application.RegisterActivityLifecycleCallbacks(_callbacks);
         }
 
-        private static void StopListening()
+        private static void PlatformStopListening()
         {
             _callbacks = null;
             _application = null;
@@ -25,13 +25,6 @@ namespace LaunchDarkly.Xamarin.BackgroundDetection
 
         private class ActivityLifecycleCallbacks : Java.Lang.Object, Application.IActivityLifecycleCallbacks
         {
-            private IBackgroundingState _backgroundingState;
-
-            public ActivityLifecycleCallbacks(IBackgroundingState backgroundingState)
-            {
-                _backgroundingState = backgroundingState;
-            }
-
             public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
             {
             }
