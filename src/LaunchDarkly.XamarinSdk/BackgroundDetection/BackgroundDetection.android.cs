@@ -3,48 +3,25 @@ using LaunchDarkly.Xamarin;
 using Android.App;
 using Android.OS;
 
-namespace LaunchDarkly.Xamarin.BackgroundAdapter
+namespace LaunchDarkly.Xamarin.BackgroundDetection
 {
-    internal class BackgroundAdapter : IPlatformAdapter
+    internal static partial class BackgroundDetection
     {
         private static ActivityLifecycleCallbacks _callbacks;
-        private Application application;
+        private static Application _application;
 
-        public void EnableBackgrounding(IBackgroundingState backgroundingState)
+        private static void StartListening()
         {
-            if (_callbacks == null)
-            {
-                _callbacks = new ActivityLifecycleCallbacks(backgroundingState);
-                application = (Application)Application.Context;
-                application.RegisterActivityLifecycleCallbacks(_callbacks);
-            }
+            _callbacks = new ActivityLifecycleCallbacks();
+            _application = (Application)Application.Context;
+            _application.RegisterActivityLifecycleCallbacks(_callbacks);
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void _Dispose(bool disposing)
+        private static void StopListening()
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                application = null;
-                _callbacks = null;
-
-                disposedValue = true;
-            }
+            _callbacks = null;
+            _application = null;
         }
-
-        public void Dispose()
-        {
-            _Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
 
         private class ActivityLifecycleCallbacks : Java.Lang.Object, Application.IActivityLifecycleCallbacks
         {
@@ -65,12 +42,12 @@ namespace LaunchDarkly.Xamarin.BackgroundAdapter
 
             public void OnActivityPaused(Activity activity)
             {
-                _backgroundingState.EnterBackgroundAsync();
+                BackgroundDetection.UpdateBackgroundMode(true);
             }
 
             public void OnActivityResumed(Activity activity)
             {
-                _backgroundingState.ExitBackgroundAsync();
+                BackgroundDetection.UpdateBackgroundMode(false);
             }
 
             public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
