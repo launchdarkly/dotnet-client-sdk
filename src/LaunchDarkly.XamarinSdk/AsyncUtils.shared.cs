@@ -19,17 +19,11 @@ namespace LaunchDarkly.Xamarin
 
         internal static void WaitSafely(Func<Task> taskFn)
         {
-            try
-            {
-                _taskFactory.StartNew(taskFn)
-                    .Unwrap()
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            catch (AggregateException e)
-            {
-                throw UnwrapAggregateException(e);
-            }
+            _taskFactory.StartNew(taskFn)
+                .Unwrap()
+                .GetAwaiter()
+                .GetResult();
+            // Note, GetResult does not throw AggregateException so we don't need to post-process exceptions
         }
 
         internal static bool WaitSafely(Func<Task> taskFn, TimeSpan timeout)
@@ -48,17 +42,10 @@ namespace LaunchDarkly.Xamarin
 
         internal static T WaitSafely<T>(Func<Task<T>> taskFn)
         {
-            try
-            {
-                return _taskFactory.StartNew(taskFn)
-                    .Unwrap()
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            catch (AggregateException e)
-            {
-                throw UnwrapAggregateException(e);
-            }
+            return _taskFactory.StartNew(taskFn)
+                .Unwrap()
+                .GetAwaiter()
+                .GetResult();
         }
 
         private static Exception UnwrapAggregateException(AggregateException e)
