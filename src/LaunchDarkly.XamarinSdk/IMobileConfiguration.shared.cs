@@ -51,5 +51,19 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <value><c>true</c> if evaluation reasons are desired.</value>
         bool EvaluationReasons { get; }
+
+        /// <summary>
+        /// True if the SDK should save flag values for each user in persistent storage, so they will be
+        /// immediately available the next time the SDK is started for the same user. This is true by
+        /// default; set it to false to disable this behavior.
+        /// </summary>
+        /// <remarks>
+        /// The implementation of persistent storage depends on the target platform. In Android and iOS, it
+        /// uses the standard user preferences mechanism. In .NET Standard, it uses the IsolatedStorageFile
+        /// API, which stores file data under the current account's home directory at
+        /// <c>~/.local/share/IsolateStorage/</c>.
+        /// </remarks>
+        /// <value><c>true</c> if flag values should be stored locally (the default).</value>
+        bool PersistFlagValues { get; }
     }
 }

@@ -41,7 +41,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private IMobileUpdateProcessor MobileStreamingProcessorStarted()
         {
-            var processor = Factory.CreateUpdateProcessor(config, user, mockFlagCacheMgr, TimeSpan.FromMinutes(5), eventSourceFactory.Create());
+            IMobileUpdateProcessor processor = new MobileStreamingProcessor(config, mockFlagCacheMgr, user, eventSourceFactory.Create());
             processor.Start();
             return processor;
         }

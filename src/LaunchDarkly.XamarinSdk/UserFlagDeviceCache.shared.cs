@@ -10,9 +10,9 @@ namespace LaunchDarkly.Xamarin
     internal class UserFlagDeviceCache : IUserFlagCache
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(UserFlagDeviceCache));
-        private readonly ISimplePersistance persister;
+        private readonly IPersistentStorage persister;
 
-        public UserFlagDeviceCache(ISimplePersistance persister)
+        public UserFlagDeviceCache(IPersistentStorage persister)
         {
             this.persister = persister;
         }

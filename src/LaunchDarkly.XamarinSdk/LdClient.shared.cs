@@ -46,7 +46,7 @@ namespace LaunchDarkly.Xamarin
         IConnectionManager connectionManager;
         IMobileUpdateProcessor updateProcessor;
         IEventProcessor eventProcessor;
-        ISimplePersistance persister;
+        IPersistentStorage persister;
         IDeviceInfo deviceInfo;
         readonly EventFactory eventFactoryDefault = EventFactory.Default;
         readonly EventFactory eventFactoryWithReasons = EventFactory.DefaultWithReasons;
@@ -73,7 +73,7 @@ namespace LaunchDarkly.Xamarin
 
             connectionLock = new SemaphoreSlim(1, 1);
 
-            persister = Factory.CreatePersister(configuration);
+            persister = Factory.CreatePersistentStorage(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
 
@@ -81,7 +81,7 @@ namespace LaunchDarkly.Xamarin
 
             flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagListenerManager, User);
             connectionManager = Factory.CreateConnectionManager(configuration);
-            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, configuration.PollingInterval);
+            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, null);
             eventProcessor = Factory.CreateEventProcessor(configuration);
 
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(User));
