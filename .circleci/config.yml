@@ -36,7 +36,8 @@ jobs:
 
       - run:
           name: Install Android SDK components
-          command: yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a"
+          command: yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a" || true
+          # Note, "|| true" is because sdkmanager is known to return a non-zero exit code (141) when there's no error
 
       - checkout
 
