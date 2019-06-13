@@ -18,7 +18,7 @@ Build instructions
 
 ### Prerequisites
 
-This SDK is built against .Net Standard 1.6 and 2.0 with the `microsoft/dotnet` Docker image. See the SDK's [CI configuration](.circleci/config.yml) to determine which image version in used by LaunchDarkly.
+The .NET Standard 1.6 and 2.0 targets require only the .NET Core 2.0 SDK, while the iOS and Android targets require the corresponding Xamarin SDKs.
 
 To set up the project and dependencies, run the following command in the root SDK directory:
 
@@ -28,16 +28,18 @@ dotnet restore
 
 ### Building
 
-To build the SDK without running any tests:
+To build the SDK (for all platforms) without running any tests:
 
 ```
-msbuild
+msbuild src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 ```
 
 ### Testing
 
-To build the SDK and run all unit tests:
+To build the .NET Standard 2.0 target and run the basic unit tests, which cover all of the non-platform-specific functionality:
 ```
-dotnet build src/LaunchDarkly.Xamarin -f netstandard2.0
-dotnet test tests/LaunchDarkly.Xamarin.Tests/LaunchDarkly.Xamarin.Tests.csproj -f netcoreapp2.0
+dotnet build src/LaunchDarkly.XamarinSdk -f netstandard2.0
+dotnet test tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
 ```
+
+Currently the Android and iOS test projects can only be run from Visual Studio in MacOS.
