@@ -51,7 +51,6 @@ namespace LaunchDarkly.Xamarin
         readonly EventFactory eventFactoryDefault = EventFactory.Default;
         readonly EventFactory eventFactoryWithReasons = EventFactory.DefaultWithReasons;
         IFeatureFlagListenerManager flagListenerManager;
-        IPlatformAdapter platformAdapter;
 
         SemaphoreSlim connectionLock;
 
@@ -77,7 +76,6 @@ namespace LaunchDarkly.Xamarin
             persister = Factory.CreatePersister(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
-            platformAdapter = new LaunchDarkly.Xamarin.BackgroundAdapter.BackgroundAdapter();
 
             User = DecorateUser(user);
 
@@ -89,6 +87,7 @@ namespace LaunchDarkly.Xamarin
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(User));
 
             SetupConnectionManager();
+            BackgroundDetection.BackgroundDetection.BackgroundModeChanged += OnBackgroundModeChanged;
         }
 
         /// <summary>
@@ -217,33 +216,11 @@ namespace LaunchDarkly.Xamarin
             Instance = new LdClient(configuration, user);
             Log.InfoFormat("Initialized LaunchDarkly Client {0}",
                            Instance.Version);
-
-            TimeSpan? bgPollInterval = null;
-            if (configuration.EnableBackgroundUpdating)
-            {
-                bgPollInterval = configuration.BackgroundPollingInterval;
-            }
-            try
-            {
-                Instance.platformAdapter.EnableBackgrounding(new LdClientBackgroundingState(Instance));
-            }
-            catch
-            {
-                Log.Info("Foreground/Background is only available on iOS and Android");
-            }
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
-            var initTask = updateProcessor.Start();
-            try
-            {
-                return initTask.Wait(maxWaitTime);
-            }
-            catch (AggregateException e)
-            {
-                throw UnwrapAggregateException(e);
-            }
+            return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
         }
 
         Task StartUpdateProcessorAsync()
@@ -463,17 +440,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Identify(User)"/>
         public void Identify(User user)
         {
-            try
-            {
-                // Note that we must use Task.Run here, rather than just doing IdentifyAsync(user).Wait(),
-                // to avoid a deadlock if we are on the main thread. See:
-                // https://olitee.com/2015/01/c-async-await-common-deadlock-scenario/
-                Task.Run(() => IdentifyAsync(user)).Wait();
-            }
-            catch (AggregateException e)
-            {
-                throw UnwrapAggregateException(e);
-            }
+            AsyncUtils.WaitSafely(() => IdentifyAsync(user));
         }
 
         /// <see cref="ILdMobileClient.IdentifyAsync(User)"/>
@@ -553,14 +520,7 @@ namespace LaunchDarkly.Xamarin
             {
                 Log.InfoFormat("Shutting down the LaunchDarkly client");
 
-                try
-                {
-                    platformAdapter.Dispose();
-                }
-                catch(Exception error)
-                {
-                    Log.Error(error);
-                }
+                BackgroundDetection.BackgroundDetection.BackgroundModeChanged -= OnBackgroundModeChanged;
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
             }
@@ -587,21 +547,28 @@ namespace LaunchDarkly.Xamarin
             flagListenerManager.UnregisterListener(listener, flagKey);
         }
 
-        internal async Task EnterBackgroundAsync()
+        internal void OnBackgroundModeChanged(object sender, BackgroundDetection.BackgroundModeChangedEventArgs args)
         {
-            ClearUpdateProcessor();
-            Config.IsStreamingEnabled = false;
-            if (Config.EnableBackgroundUpdating)
-            {
-                await RestartUpdateProcessorAsync(Config.BackgroundPollingInterval);
-            }
-            persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
+            AsyncUtils.WaitSafely(() => OnBackgroundModeChangedAsync(sender, args));
         }
 
-        internal async Task EnterForegroundAsync()
+        internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundDetection.BackgroundModeChangedEventArgs args)
         {
-            ResetProcessorForForeground();
-            await RestartUpdateProcessorAsync(Config.PollingInterval);
+            if (args.IsInBackground)
+            {
+                ClearUpdateProcessor();
+                Config.IsStreamingEnabled = false;
+                if (Config.EnableBackgroundUpdating)
+                {
+                    await RestartUpdateProcessorAsync(Config.BackgroundPollingInterval);
+                }
+                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
+            }
+            else
+            {
+                ResetProcessorForForeground();
+                await RestartUpdateProcessorAsync(Config.PollingInterval);
+            }
         }
 
         void ResetProcessorForForeground()
@@ -613,36 +580,6 @@ namespace LaunchDarkly.Xamarin
                 ClearUpdateProcessor();
                 Config.IsStreamingEnabled = true;
             }
-        }
-
-        private Exception UnwrapAggregateException(AggregateException e)
-        {
-            if (e.InnerExceptions.Count == 1)
-            {
-                return e.InnerExceptions[0];
-            }
-            return e;
-        }
-    }
-
-    // Implementation of IBackgroundingState - this allows us to keep these methods out of the public LdClient API
-    internal class LdClientBackgroundingState : IBackgroundingState
-    {
-        private readonly LdClient _client;
-
-        internal LdClientBackgroundingState(LdClient client)
-        {
-            _client = client;
-        }
-
-        public async Task EnterBackgroundAsync()
-        {
-            await _client.EnterBackgroundAsync();
-        }
-
-        public async Task ExitBackgroundAsync()
-        {
-            await _client.EnterForegroundAsync();
         }
     }
 }

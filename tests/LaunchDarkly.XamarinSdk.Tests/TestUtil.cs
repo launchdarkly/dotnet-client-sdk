@@ -19,7 +19,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             lock (ClientInstanceLock)
             {
-                LdClient client = LdClient.Init(config, user, TimeSpan.Zero);
+                LdClient client = LdClient.Init(config, user, TimeSpan.FromSeconds(1));
                 LdClient.Instance = null;
                 return client;
             }
