@@ -18,11 +18,38 @@ jobs:
       - run: dotnet test tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
 
   test-android:
+    docker:
+      - image: circleci/android:api-28
+
+    steps:
+      - checkout
+
+      - run: sdkmanager "system-images;android-24;default;armeabi-v7a" || true
+      - run: sdkmanager --licenses
+
+      - run: sudo apt install apt-transport-https dirmngr gnupg ca-certificates && sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
+      - run: echo y | sudo apt install mono-devel nuget libzip4
+      
+      - run: nuget restore
+
+      - restore_cache:
+          key: xamarin-android-cache-v9-2-99-172
+      - run: chmod +x scripts/check_xamarin_android_cache.sh && ./scripts/check_xamarin_android_cache.sh
+      - save_cache:
+          key: xamarin-android-cache-v9-2-99-172
+          paths:
+              - ~/project/xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release  
+
+      - run: sudo mkdir "/usr/lib/xamarin.android" && sudo mkdir "/usr/lib/mono/xbuild/Xamarin/"
+      - run: cd ./xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release && sudo cp -a "bin/Debug/lib/xamarin.android/." "/usr/lib/xamarin.android/"
+      - run: rm -rf "/usr/lib/mono/xbuild/Xamarin/Android" && rm -rf "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
+      - run: sudo ln -s "/usr/lib/xamarin.android/xbuild/Xamarin/Android/" "/usr/lib/mono/xbuild/Xamarin/Android" && sudo ln -s "/usr/lib/xamarin.android/xbuild-frameworks/MonoAndroid/" "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
+ 
+      - run: msbuild /restorer /p:TargetFramework=MonoAndroid81
+
+  test-ios:
     macos:
       xcode: "10.2.1"
-
-    environment:
-      ANDROID_SDK_ROOT: "/usr/local/share/android-sdk"
 
     steps:
       - run:
@@ -31,16 +58,11 @@ jobs:
 
       - run:
           name: Install Xamarin tools
-          command: brew cask install xamarin xamarin-android xamarin-ios android-sdk && brew install mono
+          command: brew cask install xamarin xamarin-ios && brew install mono
           # Note, "mono" provides the msbuild CLI tool
-
-      - run:
-          name: Install Android SDK components
-          command: yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a" || true
-          # Note, "|| true" is because sdkmanager is known to return a non-zero exit code (141) when there's no error
 
       - checkout
 
       - run:
           name: Build SDK
-          command: msbuild /restore
+          command: msbuild /restore /p:TargetFramework=Xamarin.iOS10
