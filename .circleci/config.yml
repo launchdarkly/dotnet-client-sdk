@@ -66,4 +66,4 @@ jobs:
 
       - run:
           name: Build SDK
-          command: msbuild /restore /p:TargetFramework=Xamarin.iOS10
+          command: msbuild /restore /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
