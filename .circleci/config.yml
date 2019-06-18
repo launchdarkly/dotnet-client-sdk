@@ -46,7 +46,9 @@ jobs:
       - run: rm -rf "/usr/lib/mono/xbuild/Xamarin/Android" && rm -rf "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
       - run: sudo ln -s "/usr/lib/xamarin.android/xbuild/Xamarin/Android/" "/usr/lib/mono/xbuild/Xamarin/Android" && sudo ln -s "/usr/lib/xamarin.android/xbuild-frameworks/MonoAndroid/" "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
  
-      - run: msbuild /restorer /p:TargetFramework=MonoAndroid81
+      - run:
+          name: Build SDK
+          command: msbuild /restore /p:TargetFramework=MonoAndroid81 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
   test-ios:
     macos:
