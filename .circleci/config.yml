@@ -35,7 +35,7 @@ jobs:
 
       - restore_cache:
           key: xamarin-android-cache-v9-2-99-172
-      - run: chmod +x scripts/check_xamarin_android_cache.sh && ./scripts/check_xamarin_android_cache.sh
+      - run: ./scripts/check_xamarin_android_cache.sh
       - save_cache:
           key: xamarin-android-cache-v9-2-99-172
           paths:
