@@ -22,7 +22,10 @@ namespace LaunchDarkly.Xamarin
             this.flagListenerUpdater = flagListenerUpdater;
 
             var flagsFromDevice = deviceCache.RetrieveFlags(user);
-            inMemoryCache.CacheFlagsForUser(flagsFromDevice, user);
+            if (flagsFromDevice != null)
+            {
+                inMemoryCache.CacheFlagsForUser(flagsFromDevice, user);
+            }
         }
 
         public IDictionary<string, FeatureFlag> FlagsForUser(User user)

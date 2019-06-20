@@ -1,6 +1,6 @@
 ﻿namespace LaunchDarkly.Xamarin
 {
-    public interface IDeviceInfo
+    internal interface IDeviceInfo
     {
         string UniqueDeviceId();
     }

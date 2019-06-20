@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
+using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
@@ -133,7 +134,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
     }
 
-    internal class MockPersister : ISimplePersistance
+    internal class MockPersistentStorage : IPersistentStorage
     {
         private IDictionary<string, string> map = new Dictionary<string, string>();
 
@@ -153,6 +154,34 @@ namespace LaunchDarkly.Xamarin.Tests
 
     internal class MockPollingProcessor : IMobileUpdateProcessor
     {
+        private IFlagCacheManager _cacheManager;
+        private User _user;
+        private string _flagsJson;
+
+        public MockPollingProcessor(string flagsJson) : this(null, null, flagsJson) { }
+
+        private MockPollingProcessor(IFlagCacheManager cacheManager, User user, string flagsJson)
+        {
+            _cacheManager = cacheManager;
+            _user = user;
+            _flagsJson = flagsJson;
+        }
+
+        public static Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> Factory(string flagsJson)
+        {
+            return (config, manager, user) => new MockPollingProcessor(manager, user, flagsJson);
+        }
+
+        public Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> AsFactory()
+        {
+            return (config, manager, user) =>
+            {
+                _cacheManager = manager;
+                _user = user;
+                return this;
+            };
+        }
+
         public bool IsRunning
         {
             get;
@@ -172,6 +201,10 @@ namespace LaunchDarkly.Xamarin.Tests
         public Task<bool> Start()
         {
             IsRunning = true;
+            if (_cacheManager != null && _flagsJson != null)
+            {
+                _cacheManager.CacheFlagsFromService(JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(_flagsJson), _user);
+            }
             return Task.FromResult(true);
         }
     }

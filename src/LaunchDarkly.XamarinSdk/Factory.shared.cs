@@ -11,7 +11,7 @@ namespace LaunchDarkly.Xamarin
         private static readonly ILog Log = LogManager.GetLogger(typeof(Factory));
 
         internal static IFlagCacheManager CreateFlagCacheManager(Configuration configuration, 
-                                                                 ISimplePersistance persister,
+                                                                 IPersistentStorage persister,
                                                                  IFlagListenerUpdater updater,
                                                                  User user)
         {
@@ -22,7 +22,7 @@ namespace LaunchDarkly.Xamarin
             else
             {
                 var inMemoryCache = new UserFlagInMemoryCache();
-                var deviceCache = new UserFlagDeviceCache(persister);
+                var deviceCache = configuration.PersistFlagValues ? new UserFlagDeviceCache(persister) as IUserFlagCache : new NullUserFlagCache();
                 return new FlagCacheManager(inMemoryCache, deviceCache, updater, user);
             }
         }
@@ -32,28 +32,22 @@ namespace LaunchDarkly.Xamarin
             return configuration.ConnectionManager ?? new MobileConnectionManager();
         }
 
-        internal static IMobileUpdateProcessor CreateUpdateProcessor(Configuration configuration,
-                                                                     User user,
-                                                                     IFlagCacheManager flagCacheManager,
-                                                                     TimeSpan pollingInterval,
-                                                                     StreamManager.EventSourceCreator source = null)
+        internal static IMobileUpdateProcessor CreateUpdateProcessor(Configuration configuration, User user, IFlagCacheManager flagCacheManager, TimeSpan? overridePollingInterval)
         {
-            if (configuration.MobileUpdateProcessor != null)
-            {
-                return configuration.MobileUpdateProcessor;
-            }
-
             if (configuration.Offline)
             {
                 Log.InfoFormat("Starting LaunchDarkly client in offline mode");
                 return new NullUpdateProcessor();
             }
 
+            if (configuration.UpdateProcessorFactory != null)
+            {
+                return configuration.UpdateProcessorFactory(configuration, flagCacheManager, user);
+            }
+
             if (configuration.IsStreamingEnabled)
             {
-                return new MobileStreamingProcessor(configuration,
-                                                               flagCacheManager,
-                                                               user, source);
+                return new MobileStreamingProcessor(configuration, flagCacheManager, user, null);
             }
             else
             {
@@ -61,7 +55,7 @@ namespace LaunchDarkly.Xamarin
                 return new MobilePollingProcessor(featureFlagRequestor,
                                                   flagCacheManager,
                                                   user,
-                                                  pollingInterval);
+                                                  overridePollingInterval ?? configuration.PollingInterval);
             }
         }
 
@@ -80,9 +74,9 @@ namespace LaunchDarkly.Xamarin
             return new DefaultEventProcessor(configuration, null, httpClient, Constants.EVENTS_PATH);
         }
 
-        internal static ISimplePersistance CreatePersister(Configuration configuration)
+        internal static IPersistentStorage CreatePersistentStorage(Configuration configuration)
         {
-            return configuration.Persister ?? new SimpleMobileDevicePersistance();
+            return configuration.PersistentStorage ?? new DefaultPersistentStorage();
         }
 
         internal static IDeviceInfo CreateDeviceInfo(Configuration configuration)
