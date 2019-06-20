@@ -125,12 +125,14 @@ namespace LaunchDarkly.Xamarin
         public bool EnableBackgroundUpdating { get; internal set; }
         /// <see cref="IMobileConfiguration.UseReport"/>
         public bool UseReport { get; internal set; }
+        /// <see cref="IMobileConfiguration.PersistFlagValues"/>
+        public bool PersistFlagValues { get; internal set; }
 
         internal IFlagCacheManager FlagCacheManager { get; set; }
         internal IConnectionManager ConnectionManager { get; set; }
         internal IEventProcessor EventProcessor { get; set; }
-        internal IMobileUpdateProcessor MobileUpdateProcessor { get; set; }
-        internal ISimplePersistance Persister { get; set; }
+        internal Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> UpdateProcessorFactory { get; set; }
+        internal IPersistentStorage PersistentStorage { get; set; }
         internal IDeviceInfo DeviceInfo { get; set; }
         internal IFeatureFlagListenerManager FeatureFlagListenerManager { get; set; }
 
@@ -229,7 +231,8 @@ namespace LaunchDarkly.Xamarin
                 UserKeysFlushInterval = DefaultUserKeysFlushInterval,
                 InlineUsersInEvents = false,
                 EnableBackgroundUpdating = true,               
-                UseReport = true
+                UseReport = true,
+                PersistFlagValues = true
             };
 
             return defaultConfiguration;
@@ -542,18 +545,6 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <summary>
-        /// Sets the IFlagCacheManager instance, used internally for stubbing mock instances.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="flagCacheManager">FlagCacheManager.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        internal static Configuration WithFlagCacheManager(this Configuration configuration, IFlagCacheManager flagCacheManager)
-        {
-            configuration.FlagCacheManager = flagCacheManager;
-            return configuration;
-        }
-
-        /// <summary>
         /// Sets the IConnectionManager instance, used internally for stubbing mock instances.
         /// </summary>
         /// <param name="configuration">Configuration.</param>
@@ -606,54 +597,6 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <summary>
-        /// Sets the IMobileUpdateProcessor instance, used internally for stubbing mock instances.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="mobileUpdateProcessor">Mobile update processor.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        internal static Configuration WithUpdateProcessor(this Configuration configuration, IMobileUpdateProcessor mobileUpdateProcessor)
-        {
-            configuration.MobileUpdateProcessor = mobileUpdateProcessor;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Sets the ISimplePersistance instance, used internally for stubbing mock instances.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="persister">Persister.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithPersister(this Configuration configuration, ISimplePersistance persister)
-        {
-            configuration.Persister = persister;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Sets the IDeviceInfo instance, used internally for stubbing mock instances.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="deviceInfo">Device info.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        public static Configuration WithDeviceInfo(this Configuration configuration, IDeviceInfo deviceInfo)
-        {
-            configuration.DeviceInfo = deviceInfo;
-            return configuration;
-        }
-
-        /// <summary>
-        /// Sets the IFeatureFlagListenerManager instance, used internally for stubbing mock instances.
-        /// </summary>
-        /// <param name="configuration">Configuration.</param>
-        /// <param name="featureFlagListenerManager">Feature flag listener manager.</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
-        internal static Configuration WithFeatureFlagListenerManager(this Configuration configuration, IFeatureFlagListenerManager featureFlagListenerManager)
-        {
-            configuration.FeatureFlagListenerManager = featureFlagListenerManager;
-            return configuration;
-        }
-
-        /// <summary>
         /// Sets whether to enable background polling.
         /// </summary>
         /// <param name="configuration">Configuration.</param>
@@ -679,6 +622,52 @@ namespace LaunchDarkly.Xamarin
                 backgroundPollingInternal = Configuration.MinimumBackgroundPollingInterval;
             }
             configuration.BackgroundPollingInterval = backgroundPollingInternal;
+            return configuration;
+        }
+
+        /// <summary>
+        /// Sets whether the SDK should save flag values for each user in persistent storage, so they will be
+        /// immediately available the next time the SDK is started for the same user. The default is <see langword="true"/>.
+        /// </summary>
+        /// <param name="configuration">the configuration</param>
+        /// <param name="persistFlagValues">true or false</param>
+        /// <returns>the same <c>Configuration</c> instance</returns>
+        /// <see cref="IMobileConfiguration.PersistFlagValues"/>
+        public static Configuration WithPersistFlagValues(this Configuration configuration, bool persistFlagValues)
+        {
+            configuration.PersistFlagValues = persistFlagValues;
+            return configuration;
+        }
+
+        // The following properties can only be set internally. They are used for providing stub implementations in unit tests.
+
+        internal static Configuration WithDeviceInfo(this Configuration configuration, IDeviceInfo deviceInfo)
+        {
+            configuration.DeviceInfo = deviceInfo;
+            return configuration;
+        }
+
+        internal static Configuration WithFeatureFlagListenerManager(this Configuration configuration, IFeatureFlagListenerManager featureFlagListenerManager)
+        {
+            configuration.FeatureFlagListenerManager = featureFlagListenerManager;
+            return configuration;
+        }
+
+        internal static Configuration WithFlagCacheManager(this Configuration configuration, IFlagCacheManager flagCacheManager)
+        {
+            configuration.FlagCacheManager = flagCacheManager;
+            return configuration;
+        }
+
+        internal static Configuration WithPersistentStorage(this Configuration configuration, IPersistentStorage persistentStorage)
+        {
+            configuration.PersistentStorage = persistentStorage;
+            return configuration;
+        }
+
+        internal static Configuration WithUpdateProcessorFactory(this Configuration configuration, Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> factory)
+        {
+            configuration.UpdateProcessorFactory = factory;
             return configuration;
         }
     }

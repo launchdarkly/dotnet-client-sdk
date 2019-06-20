@@ -70,8 +70,8 @@ namespace LaunchDarkly.Xamarin.Tests
                                                        .WithFlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
                                                        .WithConnectionManager(new MockConnectionManager(true))
                                                        .WithEventProcessor(new MockEventProcessor())
-                                                       .WithUpdateProcessor(new MockPollingProcessor())
-                                                       .WithPersister(new MockPersister())
+                                                       .WithUpdateProcessorFactory(MockPollingProcessor.Factory(null))
+                                                       .WithPersistentStorage(new MockPersistentStorage())
                                                        .WithDeviceInfo(new MockDeviceInfo(""))
                                                        .WithFeatureFlagListenerManager(new FeatureFlagListenerManager());
             return configuration;

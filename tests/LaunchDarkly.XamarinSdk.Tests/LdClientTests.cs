@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using LaunchDarkly.Client;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -114,12 +117,14 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void ConnectionChangeShouldStopUpdateProcessor()
         {
-            using (var client = Client())
+            var mockUpdateProc = new MockPollingProcessor(null);
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .WithUpdateProcessorFactory(mockUpdateProc.AsFactory());
+            using (var client = TestUtil.CreateClient(config, simpleUser))
             {
                 var connMgr = client.Config.ConnectionManager as MockConnectionManager;
                 connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
                 connMgr.Connect(false);
-                var mockUpdateProc = client.Config.MobileUpdateProcessor as MockPollingProcessor;
                 Assert.False(mockUpdateProc.IsRunning);
             }
         }
@@ -243,6 +248,56 @@ namespace LaunchDarkly.Xamarin.Tests
                 client.UnregisterFeatureFlagListener("user2-flag", listener);
                 listenerMgr.FlagWasUpdated("user2-flag", 12);
                 Assert.NotEqual(12, listener.FeatureFlags["user2-flag"]);
+            }
+        }
+
+        [Fact]
+        public void FlagsAreLoadedFromPersistentStorageByDefault()
+        {
+            var storage = new MockPersistentStorage();
+            var flagsJson = "{\"flag\": {\"value\": 100}}";
+            storage.Save(Constants.FLAGS_KEY_PREFIX + simpleUser.Key, flagsJson);
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .WithOffline(true)
+                .WithPersistentStorage(storage)
+                .WithFlagCacheManager(null); // use actual cache logic, not mock component (even though persistence layer is a mock)
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.Equal(100, client.IntVariation("flag", 99));
+            }
+        }
+
+        [Fact]
+        public void FlagsAreNotLoadedFromPersistentStorageIfPersistFlagValuesIsFalse()
+        {
+            var storage = new MockPersistentStorage();
+            var flagsJson = "{\"flag\": {\"value\": 100}}";
+            storage.Save(Constants.FLAGS_KEY_PREFIX + simpleUser.Key, flagsJson);
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .WithOffline(true)
+                .WithPersistFlagValues(false)
+                .WithPersistentStorage(storage)
+                .WithFlagCacheManager(null); // use actual cache logic, not mock component (even though persistence layer is a mock)
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.Equal(99, client.IntVariation("flag", 99)); // returns default value
+            }
+        }
+
+        [Fact]
+        public void FlagsAreSavedToPersistentStorageByDefault()
+        {
+            var storage = new MockPersistentStorage();
+            var flagsJson = "{\"flag\": {\"value\": 100}}";
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, flagsJson)
+                .WithPersistentStorage(storage)
+                .WithFlagCacheManager(null)
+                .WithUpdateProcessorFactory(MockPollingProcessor.Factory(flagsJson));
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                var storedJson = storage.GetValue(Constants.FLAGS_KEY_PREFIX + simpleUser.Key);
+                var flags = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(storedJson);
+                Assert.Equal(new JValue(100), flags["flag"].value);
             }
         }
     }
