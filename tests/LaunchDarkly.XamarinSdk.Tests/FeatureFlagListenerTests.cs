@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class FeatureFlagListenerTests
+    public class FeatureFlagListenerTests : BaseTest
     {
         private const string INT_FLAG = "int-flag";
         private const string DOUBLE_FLAG = "double-flag";

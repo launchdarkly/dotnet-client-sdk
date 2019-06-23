@@ -4,7 +4,7 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class LdClientEventTests
+    public class LdClientEventTests : BaseTest
     {
         private static readonly User user = User.WithKey("userkey");
         private MockEventProcessor eventProcessor = new MockEventProcessor();

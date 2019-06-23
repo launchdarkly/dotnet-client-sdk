@@ -7,20 +7,10 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class DefaultLdClientTests
+    public class DefaultLdClientTests : BaseTest
     {
         static readonly string appKey = "some app key";
         static readonly User simpleUser = User.WithKey("user-key");
-
-        public DefaultLdClientTests()
-        {
-            TestUtil.ClearClient();
-        }
-
-        ~DefaultLdClientTests()
-        {
-            TestUtil.ClearClient();
-        }
 
         LdClient Client()
         {

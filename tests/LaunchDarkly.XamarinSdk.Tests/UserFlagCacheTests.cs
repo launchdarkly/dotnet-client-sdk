@@ -3,7 +3,7 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class UserFlagCacheTests
+    public class UserFlagCacheTests : BaseTest
     {
         IUserFlagCache inMemoryCache = new UserFlagInMemoryCache();
         User user1 = User.WithKey("user1Key");

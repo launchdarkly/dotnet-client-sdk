@@ -1,28 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class TestUtil
+    public static class TestUtil
     {
         // Any tests that are going to access the static LdClient.Instance must hold this lock,
         // to avoid interfering with tests that use CreateClient.
         public static readonly object ClientInstanceLock = new object();
-        
+
         // Calls LdClient.Init, but then sets LdClient.Instance to null so other tests can
         // instantiate their own independent clients. Application code cannot do this because
         // the LdClient.Instance setter has internal scope.
-        public static LdClient CreateClient(Configuration config, User user)
+        public static LdClient CreateClient(Configuration config, User user, TimeSpan? timeout = null)
         {
+            ClearClient();
             lock (ClientInstanceLock)
             {
-                LdClient client = LdClient.Init(config, user, TimeSpan.FromSeconds(1));
+                LdClient client = LdClient.Init(config, user, timeout ?? TimeSpan.FromSeconds(1));
                 LdClient.Instance = null;
                 return client;
             }
+        }
+
+        // Calls LdClient.Init, but then sets LdClient.Instance to null so other tests can
+        // instantiate their own independent clients. Application code cannot do this because
+        // the LdClient.Instance setter has internal scope.
+        public static async Task<LdClient> CreateClientAsync(Configuration config, User user)
+        {
+            ClearClient();
+            LdClient client = await LdClient.InitAsync(config, user);
+            lock (ClientInstanceLock)
+            {
+                LdClient.Instance = null;
+            }
+            return client;
         }
 
         public static void ClearClient()
