@@ -22,11 +22,12 @@ namespace LaunchDarkly.Xamarin.Tests
 
         protected override void WriteInternal(LogLevel level, object message, Exception exception)
         {
+            var str = message?.ToString();
             if (_showLogs)
             {
-                Console.WriteLine("*** LOG: [" + level + "] " + message);
+                Console.WriteLine("*** LOG: [" + level + "] " + str);
             }
-            LogSinkScope.WithCurrent(s => s.Messages.Add(new LogItem { Level = level, Text = message.ToString() }));
+            LogSinkScope.WithCurrent(s => s.Messages.Add(new LogItem { Level = level, Text = str }));
         }
     }
 
