@@ -388,7 +388,7 @@ namespace LaunchDarkly.Xamarin
         {
             if (pollingInterval.CompareTo(Configuration.MinimumPollingInterval) < 0)
             {
-                Log.WarnFormat("PollingInterval cannot be less than the default of {0}.");
+                Log.WarnFormat("PollingInterval cannot be less than the default of {0}.", Configuration.MinimumPollingInterval);
                 pollingInterval = Configuration.MinimumPollingInterval;
             }
             configuration.PollingInterval = pollingInterval;
