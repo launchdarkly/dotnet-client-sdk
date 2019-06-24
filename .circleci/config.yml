@@ -12,8 +12,8 @@ jobs:
   test-netstandard2.0:
     docker:
       - image: microsoft/dotnet:2.0-sdk-jessie
-    env:
-      - ASPNETCORE_SUPPRESSSTATUSMESSAGES: "true" # suppresses annoying debug output from embedded HTTP servers in tests
+    environment:
+      ASPNETCORE_SUPPRESSSTATUSMESSAGES: "true" # suppresses annoying debug output from embedded HTTP servers in tests
     steps:
       - checkout
       - run: dotnet restore
