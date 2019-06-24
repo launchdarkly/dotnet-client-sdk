@@ -10,16 +10,6 @@ namespace LaunchDarkly.Xamarin.Tests
         static readonly string nonexistentFlagKey = "some flag key";
         static readonly User user = User.WithKey("userkey");
 
-        public LdClientEvaluationTests()
-        {
-            TestUtil.ClearClient();
-        }
-
-        ~LdClientEvaluationTests()
-        {
-            TestUtil.ClearClient();
-        }
-
         private static LdClient ClientWithFlagsJson(string flagsJson)
         {
             var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson);

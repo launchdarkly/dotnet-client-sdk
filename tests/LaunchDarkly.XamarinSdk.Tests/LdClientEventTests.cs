@@ -9,16 +9,6 @@ namespace LaunchDarkly.Xamarin.Tests
         private static readonly User user = User.WithKey("userkey");
         private MockEventProcessor eventProcessor = new MockEventProcessor();
 
-        public LdClientEventTests()
-        {
-            TestUtil.ClearClient();
-        }
-
-        ~LdClientEventTests()
-        {
-            TestUtil.ClearClient();
-        }
-
         public LdClient MakeClient(User user, string flagsJson)
         {
             Configuration config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);

@@ -7,7 +7,7 @@ using Xunit;
 namespace LaunchDarkly.Xamarin.Tests
 {
     [Collection("serialize all tests")]
-    public class BaseTest
+    public class BaseTest : IDisposable
     {
         public BaseTest()
         {
@@ -15,7 +15,7 @@ namespace LaunchDarkly.Xamarin.Tests
             TestUtil.ClearClient();
         }
 
-        ~BaseTest()
+        public void Dispose()
         {
             TestUtil.ClearClient();
         }
