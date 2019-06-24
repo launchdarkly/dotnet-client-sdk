@@ -33,19 +33,15 @@ namespace LaunchDarkly.Xamarin.Tests
             { "flag1", "value2" }
         };
 
-        [Fact]
-        public void InitGetsFlagsInPollingModeSync()
+        public static readonly IEnumerable<object[]> PollingAndStreaming = new List<object[]>
         {
-            InitGetsFlagsSync(UpdateMode.Polling);
-        }
+            { new object[] { UpdateMode.Polling } },
+            { new object[] { UpdateMode.Streaming } }
+        };
 
-        [Fact]
-        public void InitGetsFlagsInStreamingModeSync()
-        {
-            InitGetsFlagsSync(UpdateMode.Streaming);
-        }
-
-        private void InitGetsFlagsSync(UpdateMode mode)
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public void InitGetsFlagsSync(UpdateMode mode)
         {
             WithServer(server =>
             {
@@ -60,23 +56,9 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
-        public async Task InitGetsFlagsInPollingModeAsync()
-        {
-            await InitGetsFlagsAsync(UpdateMode.Polling);
-        }
-
-        [Fact]
-        public async Task InitGetsFlagsInStreamingModeAsync()
-        {
-            // Note: since WireMock.Net doesn't seem to support streaming responses, the response will close after the end of the
-            // data, the SDK will enter retry mode and we may get another identical streaming request. For the purposes of these tests,
-            // that doesn't matter. The correct processing of a chunked stream is tested in the LaunchDarkly.EventSource tests, and
-            // the retry logic is tested in LaunchDarkly.CommonSdk.
-            await InitGetsFlagsAsync(UpdateMode.Streaming);
-        }
-
-        private async Task InitGetsFlagsAsync(UpdateMode mode)
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public async Task InitGetsFlagsAsync(UpdateMode mode)
         {
             await WithServerAsync(async server =>
             {
@@ -111,19 +93,9 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
-        public void InitFailsOn401InPollingModeSync()
-        {
-            InitFailsOn401Sync(UpdateMode.Polling);
-        }
-
-        [Fact]
-        public void InitFailsOn401InStreamingModeSync()
-        {
-            InitFailsOn401Sync(UpdateMode.Streaming);
-        }
-
-        private void InitFailsOn401Sync(UpdateMode mode)
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public void InitFailsOn401Sync(UpdateMode mode)
         {
             WithServer(server =>
             {
@@ -149,19 +121,9 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
-        public async Task InitFailsOn401InPollingModeAsync()
-        {
-            await InitFailsOn401Async(UpdateMode.Polling);
-        }
-
-        [Fact]
-        public async Task InitFailsOn401InStreamingModeAsync()
-        {
-            await InitFailsOn401Async(UpdateMode.Streaming);
-        }
-
-        private async Task InitFailsOn401Async(UpdateMode mode)
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public async Task InitFailsOn401Async(UpdateMode mode)
         {
             await WithServerAsync(async server =>
             {
@@ -182,19 +144,9 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
-        public void IdentifySwitchesUserAndGetsFlagsInPollingModeSync()
-        {
-            IdentifySwitchesUserAndGetsFlagsSync(UpdateMode.Polling);
-        }
-
-        [Fact]
-        public void IdentifySwitchesUserAndGetsFlagsInStreamingModeSync()
-        {
-            IdentifySwitchesUserAndGetsFlagsSync(UpdateMode.Streaming);
-        }
-
-        private void IdentifySwitchesUserAndGetsFlagsSync(UpdateMode mode)
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public void IdentifySwitchesUserAndGetsFlagsSync(UpdateMode mode)
         {
             WithServer(server =>
             {
@@ -220,19 +172,9 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
-        public async Task IdentifySwitchesUserAndGetsFlagsInPollingModeAsync()
-        {
-            await IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode.Polling);
-        }
-
-        [Fact]
-        public async Task IdentifySwitchesUserAndGetsFlagsInStreamingModeAsync()
-        {
-            await IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode.Streaming);
-        }
-
-        private async Task IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode mode)
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public async Task IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode mode)
         {
             await WithServerAsync(async server =>
             {
@@ -322,6 +264,10 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             server.ForAllRequests(r =>
                 mode.IsStreaming ? r.WithEventsBody(StreamingData(data)) : r.WithJsonBody(PollingData(data)));
+            // Note: in streaming mode, since WireMock.Net doesn't seem to support streaming responses, the fake response will close
+            // after the end of the data-- so the SDK will enter retry mode and we may get another identical streaming request. For
+            // the purposes of these tests, that doesn't matter. The correct processing of a chunked stream is tested in the
+            // LaunchDarkly.EventSource tests, and the retry logic is tested in LaunchDarkly.CommonSdk.
         }
 
         private void VerifyRequest(FluentMockServer server, UpdateMode mode)
@@ -373,7 +319,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
     }
 
-    class UpdateMode
+    public class UpdateMode
     {
         public bool IsStreaming { get; private set; }
         public string FlagsPathRegex { get; private set; }
