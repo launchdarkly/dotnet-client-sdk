@@ -91,10 +91,8 @@ namespace LaunchDarkly.Xamarin.Tests
                     Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
 
                     //Assert.Equal("{\"key\":\"foo\"}", req.Body);
-                    // Here, ideally, we would verify that the request body contained the expected user data. Unfortunately, for unknown
-                    // reasons the current version of WireMock.Net does not seem to be capturing that information; Content-Type and
-                    // Content-Length are correct, and directing the request at a different listener (e.g. "nc -l") shows that the body
-                    // is definitely being sent, but req.Body and req.BodyAsJson are both null no matter what.
+                    // Here, ideally, we would verify that the request body contained the expected user data. Unfortunately, WireMock.Net
+                    // is not currently able to detect the body for REPORT requests: https://github.com/WireMock-Net/WireMock.Net/issues/290
                 }
             });
         }
