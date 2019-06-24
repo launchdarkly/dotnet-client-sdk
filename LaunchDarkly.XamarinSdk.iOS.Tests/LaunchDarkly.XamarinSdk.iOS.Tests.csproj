@@ -83,6 +83,11 @@
     <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
     <MtouchVerbosity></MtouchVerbosity>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <EnvironmentVariables>
+      <Variable name="ASPNETCORE_SUPPRESSSTATUSMESSAGES" value="true" />
+    </EnvironmentVariables>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="LaunchDarkly.XamarinSdk">
       <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\xamarin.ios10\LaunchDarkly.XamarinSdk.dll</HintPath>
