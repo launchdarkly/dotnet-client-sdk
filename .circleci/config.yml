@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - restore_cache:
-        key: homebrew
+          key: homebrew
 
       - run:
           name: Install Xamarin tools
@@ -104,7 +104,7 @@ jobs:
       - run:
           name: Wait for tests to finish running
           # https://superuser.com/questions/270529/monitoring-a-file-until-a-string-is-found
-          command: "( tail -f -n0 test-run.log & ) | grep -q 'Tests run:'"
+          command: "( tail -f -c+0 test-run.log & ) | grep -q 'Tests run:'"
 
       - run:
           name: Show test output
