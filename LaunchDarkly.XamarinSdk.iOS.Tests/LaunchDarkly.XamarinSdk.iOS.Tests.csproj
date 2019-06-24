@@ -89,9 +89,6 @@
     </EnvironmentVariables>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LaunchDarkly.XamarinSdk">
-      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\xamarin.ios10\LaunchDarkly.XamarinSdk.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -418,6 +415,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SharedTestCode\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
+      <Project>{7717A2B2-9905-40A7-989F-790139D69543}</Project>
+      <Name>LaunchDarkly.XamarinSdk</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
