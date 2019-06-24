@@ -53,7 +53,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 var updatedUser = User.WithKey("some new key");
                 client.Identify(updatedUser);
-                Assert.Equal(client.User, updatedUser);
+                Assert.Equal(client.User.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
             }
         }
 

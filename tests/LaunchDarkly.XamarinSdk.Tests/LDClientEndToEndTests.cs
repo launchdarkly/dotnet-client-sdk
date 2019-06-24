@@ -163,7 +163,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     SetupResponse(server, _flagData2, mode);
 
                     client.Identify(_otherUser);
-                    Assert.Equal(_otherUser, client.User);
+                    Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     VerifyRequest(server, mode);
                     Assert.NotEqual(user1RequestPath, server.GetLastRequest().Path);
@@ -191,7 +191,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     SetupResponse(server, _flagData2, mode);
 
                     await client.IdentifyAsync(_otherUser);
-                    Assert.Equal(_otherUser, client.User);
+                    Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     VerifyRequest(server, mode);
                     Assert.NotEqual(user1RequestPath, server.GetLastRequest().Path);
@@ -257,7 +257,7 @@ namespace LaunchDarkly.Xamarin.Tests
             return Configuration.Default(_mobileKey)
                 .WithBaseUri(server.GetUrl())
                 .WithStreamUri(server.GetUrl())
-                .WithEventProcessor(new NullEventProcessor());
+                .WithEventProcessor(new MockEventProcessor());
         }
 
         private void SetupResponse(FluentMockServer server, IDictionary<string, string> data, UpdateMode mode)
