@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class FeatureFlagEventTests
+    public class FeatureFlagEventTests : BaseTest
     {
         [Fact]
         public void ReturnsFlagVersionAsVersion()

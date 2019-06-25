@@ -4,7 +4,7 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class MobilePollingProcessorTests
+    public class MobilePollingProcessorTests : BaseTest
     {
         private const string flagsJson = "{" +
             "\"int-flag\":{\"value\":15}," +

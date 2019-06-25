@@ -42,8 +42,7 @@ namespace LaunchDarkly.Xamarin
             if (pollingInterval.Equals(TimeSpan.Zero))
                 throw new Exception("Timespan for polling can't be zero");
 
-            Log.InfoFormat("Starting LaunchDarkly PollingProcessor with interval: {0} milliseconds",
-                           pollingInterval);
+            Log.InfoFormat("Starting LaunchDarkly PollingProcessor with interval: {0}", pollingInterval);
             
             Task.Run(() => UpdateTaskLoopAsync());
             return _startTask.Task;
