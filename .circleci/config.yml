@@ -80,7 +80,7 @@ jobs:
 
       - run:
           name: Build test project
-          command: msbuild /restore LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
+          command: msbuild /restore tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
 
       - run:
           name: Start simulator
@@ -90,7 +90,7 @@ jobs:
 
       - run:
           name: Load test app into simulator
-          command: xcrun simctl install "xm-ios" LaunchDarkly.XamarinSdk.iOS.Tests/bin/iPhoneSimulator/Debug/LaunchDarkly.XamarinSdk.iOS.Tests.app
+          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/iPhoneSimulator/Debug/LaunchDarkly.XamarinSdk.iOS.Tests.app
 
       - run:
           name: Start capturing log output
@@ -99,7 +99,7 @@ jobs:
 
       - run:
           name: Launch test app in simulator
-          command: xcrun simctl launch "xm-ios" com.launchdarkly.LaunchDarkly-Xamarin-iOS-Tests
+          command: xcrun simctl launch "xm-ios" com.launchdarkly.XamarinSdkTests
 
       - run:
           name: Wait for tests to finish running
