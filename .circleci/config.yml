@@ -56,6 +56,9 @@ jobs:
     macos:
       xcode: "10.2.1"
 
+    environment:
+      PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
+    
     steps:
       - restore_cache:
           key: homebrew
@@ -64,8 +67,8 @@ jobs:
           name: Install Xamarin tools
           command: |
             brew install caskroom/cask/brew-cask
-            brew cask install xamarin xamarin-ios && brew install mono
-          # Note, "mono" provides the msbuild CLI tool
+            brew cask install xamarin xamarin-ios mono-mdk
+          # Note, "mono-mdk" provides the msbuild CLI tool
 
       - save_cache: 
           key: homebrew
