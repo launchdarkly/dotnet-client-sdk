@@ -110,5 +110,9 @@ jobs:
           command: "( tail -f -c+0 test-run.log & ) | grep -q 'Tests run:'"
 
       - run:
-          name: Show test output
-          command: cat test-run.log
+          name: Show all test output
+          command: |
+            cat test-run.log | tr -s ' ' | cut -d ' ' -f 1,2,9-
+            grep '\[FAIL\]' test-run.log >/dev/null && exit 1
+          # "exit 1" causes the CI job to fail if there were any test failures. Note that we still won't have a
+          # JUnit-compatible test results file; you'll just have to look at the output.
