@@ -56,18 +56,63 @@ jobs:
     macos:
       xcode: "10.2.1"
 
+    environment:
+      PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
+    
     steps:
-      - run:
-          name: Set up package source for Xamarin tools
-          command: brew install caskroom/cask/brew-cask
+      - restore_cache:
+          key: homebrew
 
       - run:
           name: Install Xamarin tools
-          command: brew cask install xamarin xamarin-ios && brew install mono
-          # Note, "mono" provides the msbuild CLI tool
+          command: |
+            brew install caskroom/cask/brew-cask
+            brew cask install xamarin xamarin-ios mono-mdk
+          # Note, "mono-mdk" provides the msbuild CLI tool
+
+      - save_cache: 
+          key: homebrew
+          paths:
+              - /usr/local/Homebrew
 
       - checkout
 
       - run:
           name: Build SDK
           command: msbuild /restore /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+
+      - run:
+          name: Build test project
+          command: msbuild /restore tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
+
+      - run:
+          name: Start simulator
+          command: |
+            xcrun simctl create xm-ios com.apple.CoreSimulator.SimDeviceType.iPhone-X com.apple.CoreSimulator.SimRuntime.iOS-12-2
+            xcrun simctl boot xm-ios
+
+      - run:
+          name: Load test app into simulator
+          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/iPhoneSimulator/Debug/LaunchDarkly.XamarinSdk.iOS.Tests.app
+
+      - run:
+          name: Start capturing log output
+          command: xcrun simctl spawn booted log stream --predicate 'senderImagePath contains "LaunchDarkly.XamarinSdk.iOS.Tests"' >test-run.log
+          background: true
+
+      - run:
+          name: Launch test app in simulator
+          command: xcrun simctl launch "xm-ios" com.launchdarkly.XamarinSdkTests
+
+      - run:
+          name: Wait for tests to finish running
+          # https://superuser.com/questions/270529/monitoring-a-file-until-a-string-is-found
+          command: "( tail -f -c+0 test-run.log & ) | grep -q 'Tests run:'"
+
+      - run:
+          name: Show all test output
+          command: |
+            cat test-run.log | tr -s ' ' | cut -d ' ' -f 1,2,9-
+            if grep '\[FAIL\]' test-run.log >/dev/null; then exit 1; fi
+          # "exit 1" causes the CI job to fail if there were any test failures. Note that we still won't have a
+          # JUnit-compatible test results file; you'll just have to look at the output.
