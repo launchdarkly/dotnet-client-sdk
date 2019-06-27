@@ -6218,9 +6218,6 @@ namespace LaunchDarkly.XamarinSdk.Android.Tests
 			// aapt resource value: 0x7f0c016e
 			public const int Animation_Design_BottomSheetDialog = 2131493230;
 			
-			// aapt resource value: 0x7f0c018f
-			public const int AppTheme = 2131493263;
-			
 			// aapt resource value: 0x7f0c00a9
 			public const int Base_AlertDialog_AppCompat = 2131493033;
 			
