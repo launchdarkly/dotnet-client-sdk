@@ -88,7 +88,7 @@ jobs:
 
       - run: 
           name: Start capturing log output
-          command: adb logcat
+          command: adb logcat | grep 'mono-stdout:' >test-run.log
           background: true
           no_output_timeout: 5m
 
@@ -99,6 +99,19 @@ jobs:
       - run:
           name: Start app in emulator
           command: adb shell monkey -p com.launchdarkly.xamarinandroidtests 1
+
+      - run:
+          name: Wait for tests to finish running
+          # https://superuser.com/questions/270529/monitoring-a-file-until-a-string-is-found
+          command: "( tail -f -c+0 test-run.log & ) | grep -q 'Tests run:'"
+
+      - run:
+          name: Show all test output
+          command: |
+            cat test-run.log | tr -s ' ' | cut -d ' ' -f 1,2,7-
+            if grep '\[FAIL\]' test-run.log >/dev/null; then exit 1; fi
+          # "exit 1" causes the CI job to fail if there were any test failures. Note that we still won't have a
+          # JUnit-compatible test results file; you'll just have to look at the output.
 
   test-ios:
     macos:
