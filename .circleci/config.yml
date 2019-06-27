@@ -66,7 +66,7 @@ jobs:
 
       - run:
           name: Build test project
-          command: xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release/bin/Debug/bin/xabuild tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
+          command: xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release/bin/Debug/bin/xabuild /restore tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
           # Note, xabuild is just a wrapper for msbuild that adds various tools paths etc. necessary for building an
           # Android app. See: https://github.com/xamarin/xamarin-android/blob/master/tools/scripts/xabuild
 
