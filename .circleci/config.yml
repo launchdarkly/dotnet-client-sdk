@@ -36,8 +36,10 @@ jobs:
       - run:
           name: Install Mono tools
           command: |
-            sudo apt install apt-transport-https dirmngr gnupg ca-certificates && sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
-            echo y | sudo apt install mono-devel nuget libzip4
+            sudo apt -y install apt-transport-https dirmngr gnupg ca-certificates
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+            echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
+            sudo apt -y install mono-devel nuget libzip4
       
       - restore_cache:
           key: xamarin-android-cache-v9-2-99-172
@@ -55,7 +57,8 @@ jobs:
             sudo mkdir "/usr/lib/xamarin.android" && sudo mkdir "/usr/lib/mono/xbuild/Xamarin/"
             cd ./xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release && sudo cp -a "bin/Debug/lib/xamarin.android/." "/usr/lib/xamarin.android/"
             rm -rf "/usr/lib/mono/xbuild/Xamarin/Android" && rm -rf "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
-            sudo ln -s "/usr/lib/xamarin.android/xbuild/Xamarin/Android/" "/usr/lib/mono/xbuild/Xamarin/Android" && sudo ln -s "/usr/lib/xamarin.android/xbuild-frameworks/MonoAndroid/" "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
+            sudo ln -s "/usr/lib/xamarin.android/xbuild/Xamarin/Android/" "/usr/lib/mono/xbuild/Xamarin/Android"
+            sudo ln -s "/usr/lib/xamarin.android/xbuild-frameworks/MonoAndroid/" "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
  
       - run:
           name: Build SDK
