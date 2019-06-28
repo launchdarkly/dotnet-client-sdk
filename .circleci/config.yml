@@ -88,9 +88,10 @@ jobs:
 
       - run: 
           name: Start capturing log output
-          command: adb logcat | grep 'mono-stdout:' >test-run.log
+          command: adb logcat mono-stdout:D *:S | tee test-run.log
+          # mono-stdout is the default tag for standard output from a Xamarin app - that's where our test runner output goes
           background: true
-          no_output_timeout: 5m
+          no_output_timeout: 10m
 
       - run:
           name: Deploy app to emulator
@@ -158,7 +159,7 @@ jobs:
 
       - run:
           name: Start capturing log output
-          command: xcrun simctl spawn booted log stream --predicate 'senderImagePath contains "LaunchDarkly.XamarinSdk.iOS.Tests"' >test-run.log
+          command: xcrun simctl spawn booted log stream --predicate 'senderImagePath contains "LaunchDarkly.XamarinSdk.iOS.Tests"' | tee test-run.log
           background: true
 
       - run:
