@@ -27,30 +27,94 @@ jobs:
     steps:
       - checkout
 
-      - run: sdkmanager "system-images;android-24;default;armeabi-v7a" || true
-      - run: sdkmanager --licenses
+      - run:
+          name: Install Android SDK tools
+          command: |
+            sdkmanager "system-images;android-24;default;armeabi-v7a" || true
+            sdkmanager --licenses
 
-      - run: sudo apt install apt-transport-https dirmngr gnupg ca-certificates && sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
-      - run: echo y | sudo apt install mono-devel nuget libzip4
+      - run:
+          name: Install Mono tools
+          command: |
+            sudo apt -y install apt-transport-https dirmngr gnupg ca-certificates
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+            echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
+            sudo apt -y install mono-devel nuget libzip4 libpulse0
+          # libpulse0 is required to run the emulator; the result are required to build the app
       
-      - run: nuget restore
-
       - restore_cache:
           key: xamarin-android-cache-v9-2-99-172
-      - run: ./scripts/check_xamarin_android_cache.sh
+      - run:
+          name: Download Xamarin Android tools if not already cached
+          command: ./scripts/check_xamarin_android_cache.sh
       - save_cache:
           key: xamarin-android-cache-v9-2-99-172
           paths:
               - ~/project/xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release  
 
-      - run: sudo mkdir "/usr/lib/xamarin.android" && sudo mkdir "/usr/lib/mono/xbuild/Xamarin/"
-      - run: cd ./xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release && sudo cp -a "bin/Debug/lib/xamarin.android/." "/usr/lib/xamarin.android/"
-      - run: rm -rf "/usr/lib/mono/xbuild/Xamarin/Android" && rm -rf "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
-      - run: sudo ln -s "/usr/lib/xamarin.android/xbuild/Xamarin/Android/" "/usr/lib/mono/xbuild/Xamarin/Android" && sudo ln -s "/usr/lib/xamarin.android/xbuild-frameworks/MonoAndroid/" "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
+      - run:
+          name: Move tools to expected locations
+          command: |
+            sudo mkdir "/usr/lib/xamarin.android" && sudo mkdir "/usr/lib/mono/xbuild/Xamarin/"
+            cd ./xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release && sudo cp -a "bin/Debug/lib/xamarin.android/." "/usr/lib/xamarin.android/"
+            rm -rf "/usr/lib/mono/xbuild/Xamarin/Android" && rm -rf "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
+            sudo ln -s "/usr/lib/xamarin.android/xbuild/Xamarin/Android/" "/usr/lib/mono/xbuild/Xamarin/Android"
+            sudo ln -s "/usr/lib/xamarin.android/xbuild-frameworks/MonoAndroid/" "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
  
       - run:
           name: Build SDK
           command: msbuild /restore /p:TargetFramework=MonoAndroid81 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+
+      - run:
+          name: Build test project
+          command: xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release/bin/Debug/bin/xabuild /restore /t:SignAndroidPackage tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
+          # Note, xabuild is just a wrapper for msbuild that adds various tools paths etc. necessary for building an
+          # Android app. See: https://github.com/xamarin/xamarin-android/blob/master/tools/scripts/xabuild
+
+      - run:
+          name: Set up emulator
+          command: echo no | avdmanager create avd -n xm-android -f -k "system-images;android-24;default;armeabi-v7a"
+
+      - run:
+          name: Start emulator
+          command: emulator -avd xm-android -netdelay none -netspeed full -no-audio -no-window -no-snapshot -use-system-libs -no-boot-anim
+          background: true
+          timeout: 1200
+          no_output_timeout: 20m
+
+      - run:
+          name: Wait for emulator to become available
+          command: circle-android wait-for-boot
+          # this script is provided in the CircleCI Android images:
+          # https://raw.githubusercontent.com/circleci/circleci-images/master/android/bin/circle-android
+
+      - run: 
+          name: Start capturing log output
+          command: adb logcat mono-stdout:D *:S | tee test-run.log
+          # mono-stdout is the default tag for standard output from a Xamarin app - that's where our test runner output goes
+          background: true
+          no_output_timeout: 10m
+
+      - run:
+          name: Deploy app to emulator
+          command: adb install tests/LaunchDarkly.XamarinSdk.Android.Tests/bin/Debug/com.launchdarkly.xamarinandroidtests-Signed.apk
+      
+      - run:
+          name: Start app in emulator
+          command: adb shell monkey -p com.launchdarkly.xamarinandroidtests 1
+
+      - run:
+          name: Wait for tests to finish running
+          # https://superuser.com/questions/270529/monitoring-a-file-until-a-string-is-found
+          command: "( tail -f -c+0 test-run.log & ) | grep -q 'Tests run:'"
+
+      - run:
+          name: Show all test output
+          command: |
+            cat test-run.log | tr -s ' ' | cut -d ' ' -f 1,2,7-
+            if grep '\[FAIL\]' test-run.log >/dev/null; then exit 1; fi
+          # "exit 1" causes the CI job to fail if there were any test failures. Note that we still won't have a
+          # JUnit-compatible test results file; you'll just have to look at the output.
 
   test-ios:
     macos:
@@ -97,7 +161,7 @@ jobs:
 
       - run:
           name: Start capturing log output
-          command: xcrun simctl spawn booted log stream --predicate 'senderImagePath contains "LaunchDarkly.XamarinSdk.iOS.Tests"' >test-run.log
+          command: xcrun simctl spawn booted log stream --predicate 'senderImagePath contains "LaunchDarkly.XamarinSdk.iOS.Tests"' | tee test-run.log
           background: true
 
       - run:

@@ -16,7 +16,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private const string _allDataJson = "{}"; // Note that in this implementation, unlike the .NET SDK, FeatureFlagRequestor does not unmarshal the response
 
-        [Fact]
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public async Task GetFlagsUsesCorrectUriAndMethodInGetModeAsync()
         {
             await WithServerAsync(async server =>
@@ -42,7 +42,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public async Task GetFlagsUsesCorrectUriAndMethodInGetModeWithReasonsAsync()
         {
             await WithServerAsync(async server =>
@@ -68,7 +68,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public async Task GetFlagsUsesCorrectUriAndMethodInReportModeAsync()
         {
             await WithServerAsync(async server =>
@@ -97,7 +97,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public async Task GetFlagsUsesCorrectUriAndMethodInReportModeWithReasonsAsync()
         {
             await WithServerAsync(async server =>

@@ -39,7 +39,7 @@ namespace LaunchDarkly.Xamarin.Tests
             { new object[] { UpdateMode.Streaming } }
         };
 
-        [Theory]
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitGetsFlagsSync(UpdateMode mode)
         {
@@ -56,7 +56,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitGetsFlagsAsync(UpdateMode mode)
         {
@@ -72,7 +72,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public void InitCanTimeOutSync()
         {
             WithServer(server =>
@@ -93,7 +93,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitFailsOn401Sync(UpdateMode mode)
         {
@@ -121,7 +121,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitFailsOn401Async(UpdateMode mode)
         {
@@ -144,7 +144,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
         [MemberData(nameof(PollingAndStreaming))]
         public void IdentifySwitchesUserAndGetsFlagsSync(UpdateMode mode)
         {
@@ -172,7 +172,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode mode)
         {
@@ -200,7 +200,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public void OfflineClientUsesCachedFlagsSync()
         {
             WithServer(server =>
@@ -226,7 +226,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public async Task OfflineClientUsesCachedFlagsAsync()
         {
             await WithServerAsync(async server =>
