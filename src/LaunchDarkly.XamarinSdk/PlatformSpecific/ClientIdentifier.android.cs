@@ -7,7 +7,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
     	// For mobile platforms that really have a device ID, we delegate to Plugin.DeviceInfo to get the ID.
         public static string PlatformGetOrCreateClientId()
         {
-            return CrossDeviceInfo.Current.Id();
+            return CrossDeviceInfo.Current.Id;
         }
     }
 }
