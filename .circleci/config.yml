@@ -147,7 +147,7 @@ jobs:
 
       - run:
           name: Build test project
-          command: msbuild /restore tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
+          command: msbuild /restore tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj -p:MtouchExtraArgs="--setenv:ASPNETCORE_SUPPRESSSTATUSMESSAGES=true"
 
       - run:
           name: Start simulator
