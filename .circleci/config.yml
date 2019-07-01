@@ -18,7 +18,7 @@ jobs:
       - checkout
       - run: dotnet restore
       - run: dotnet build src/LaunchDarkly.XamarinSdk -f netstandard2.0
-      - run: dotnet test tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
+      - run: dotnet test -v=normal tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
 
   test-android:
     docker:

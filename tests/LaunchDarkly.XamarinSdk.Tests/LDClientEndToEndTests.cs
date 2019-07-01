@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common.Logging;
 using LaunchDarkly.Client;
+using LaunchDarkly.Xamarin.PlatformSpecific;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WireMock.Server;
@@ -140,6 +141,35 @@ namespace LaunchDarkly.Xamarin.Tests
                     {
                         Assert.False(client.Initialized());
                     }
+                }
+            });
+        }
+
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        public async Task InitWithKeylessAnonUserAddsKeyAndReusesIt()
+        {
+            // Note, we don't care about polling mode vs. streaming mode for this functionality.
+            await WithServerAsync(async server =>
+            {
+                server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
+
+                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(false);
+                var anonUser = User.WithKey(null).AndAnonymous(true);
+
+                // Note, on mobile platforms, the generated user key is the device ID and is stable; on other platforms,
+                // it's a GUID that is cached in local storage. Calling ClearCachedClientId() resets the latter.
+                ClientIdentifier.ClearCachedClientId();
+
+                string generatedKey = null;
+                using (var client = await TestUtil.CreateClientAsync(config, anonUser))
+                {
+                    Assert.NotNull(client.User.Key);
+                    generatedKey = client.User.Key;
+                }
+
+                using (var client = await TestUtil.CreateClientAsync(config, anonUser))
+                {
+                    Assert.Equal(generatedKey, client.User.Key);
                 }
             });
         }
