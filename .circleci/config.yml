@@ -84,7 +84,7 @@ jobs:
 
       - run:
           name: Wait for emulator to become available
-          command: ./scripts/android-wait-for-boot.sh
+          command: circle-android wait-for-boot
 
       - run: 
           name: Start capturing log output
