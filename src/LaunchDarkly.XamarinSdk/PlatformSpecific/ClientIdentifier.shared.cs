@@ -16,7 +16,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
         // On mobile platforms this has no effect.
         internal static void ClearCachedClientId()
         {
-            Preferences.Preferences.Clear(PreferencesAnonUserIdKey);
+            Preferences.Preferences.Remove(PreferencesAnonUserIdKey);
         }
 
         private static string GetOrCreateRandomizedClientId()
