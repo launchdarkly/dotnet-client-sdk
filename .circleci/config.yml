@@ -85,6 +85,8 @@ jobs:
       - run:
           name: Wait for emulator to become available
           command: circle-android wait-for-boot
+          # this script is provided in the CircleCI Android images:
+          # https://raw.githubusercontent.com/circleci/circleci-images/master/android/bin/circle-android
 
       - run: 
           name: Start capturing log output
