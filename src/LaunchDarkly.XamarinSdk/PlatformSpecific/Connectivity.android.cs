@@ -28,7 +28,7 @@ using Android.Net;
 using Android.OS;
 using Debug = System.Diagnostics.Debug;
 
-namespace LaunchDarkly.Xamarin.Connectivity
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     internal partial class Connectivity
     {
@@ -36,11 +36,11 @@ namespace LaunchDarkly.Xamarin.Connectivity
 
         static void StartListeners()
         {
-            Permissions.Permissions.EnsureDeclared(Permissions.PermissionType.NetworkState);
+            Permissions.EnsureDeclared(PermissionType.NetworkState);
 
             conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
-            Platform.Platform.AppContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
+            Platform.AppContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
         }
 
         static void StopListeners()
@@ -49,7 +49,7 @@ namespace LaunchDarkly.Xamarin.Connectivity
                 return;
             try
             {
-                Platform.Platform.AppContext.UnregisterReceiver(conectivityReceiver);
+                Platform.AppContext.UnregisterReceiver(conectivityReceiver);
             }
             catch (Java.Lang.IllegalArgumentException)
             {
@@ -66,14 +66,14 @@ namespace LaunchDarkly.Xamarin.Connectivity
         {
             get
             {
-                Permissions.Permissions.EnsureDeclared(Permissions.PermissionType.NetworkState);
+                Permissions.EnsureDeclared(PermissionType.NetworkState);
 
                 try
                 {
                     var currentAccess = NetworkAccess.None;
-                    var manager = Platform.Platform.ConnectivityManager;
+                    var manager = Platform.ConnectivityManager;
 
-                    if (Platform.Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+                    if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                     {
                         foreach (var network in manager.GetAllNetworks())
                         {
@@ -140,10 +140,10 @@ namespace LaunchDarkly.Xamarin.Connectivity
         {
             get
             {
-                Permissions.Permissions.EnsureDeclared(Permissions.PermissionType.NetworkState);
+                Permissions.EnsureDeclared(PermissionType.NetworkState);
 
-                var manager = Platform.Platform.ConnectivityManager;
-                if (Platform.Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+                var manager = Platform.ConnectivityManager;
+                if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                 {
                     foreach (var network in manager.GetAllNetworks())
                     {

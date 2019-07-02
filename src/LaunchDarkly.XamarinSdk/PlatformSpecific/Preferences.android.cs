@@ -22,9 +22,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Globalization;
-using Foundation;
+using Android.App;
+using Android.Content;
+using Android.Preferences;
 
-namespace LaunchDarkly.Xamarin.Preferences
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     // Modified for LaunchDarkly: the SDK always serializes values to strings before using this class
     // to store them. Therefore, the overloads for non-string types have been removed, thereby
@@ -38,7 +40,10 @@ namespace LaunchDarkly.Xamarin.Preferences
         {
             lock (locker)
             {
-                return GetUserDefaults(sharedName)[key] != null;
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
+                {
+                    return sharedPreferences.Contains(key);
+                }
             }
         }
 
@@ -46,10 +51,10 @@ namespace LaunchDarkly.Xamarin.Preferences
         {
             lock (locker)
             {
-                using (var userDefaults = GetUserDefaults(sharedName))
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
+                using (var editor = sharedPreferences.Edit())
                 {
-                    if (userDefaults[key] != null)
-                        userDefaults.RemoveObject(key);
+                    editor.Remove(key).Commit();
                 }
             }
         }
@@ -58,15 +63,10 @@ namespace LaunchDarkly.Xamarin.Preferences
         {
             lock (locker)
             {
-                using (var userDefaults = GetUserDefaults(sharedName))
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
+                using (var editor = sharedPreferences.Edit())
                 {
-                    var items = userDefaults.ToDictionary();
-
-                    foreach (var item in items.Keys)
-                    {
-                        if (item is NSString nsString)
-                            userDefaults.RemoveObject(nsString);
-                    }
+                    editor.Clear().Commit();
                 }
             }
         }
@@ -75,16 +75,18 @@ namespace LaunchDarkly.Xamarin.Preferences
         {
             lock (locker)
             {
-                using (var userDefaults = GetUserDefaults(sharedName))
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
+                using (var editor = sharedPreferences.Edit())
                 {
                     if (value == null)
                     {
-                        if (userDefaults[key] != null)
-                            userDefaults.RemoveObject(key);
-                        return;
+                        editor.Remove(key);
                     }
-
-                    userDefaults.SetString(value, key);
+                    else
+                    {
+                        editor.PutString(key, value);
+                    }
+                    editor.Apply();
                 }
             }
         }
@@ -93,22 +95,21 @@ namespace LaunchDarkly.Xamarin.Preferences
         {
             lock (locker)
             {
-                using (var userDefaults = GetUserDefaults(sharedName))
+                object value = null;
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
                 {
-                    if (userDefaults[key] == null)
-                        return defaultValue;
-
-                    return userDefaults.StringForKey(key);
+                    return sharedPreferences.GetString(key, defaultValue);
                 }
             }
         }
 
-        static NSUserDefaults GetUserDefaults(string sharedName)
+        static ISharedPreferences GetSharedPreferences(string sharedName)
         {
-            if (!string.IsNullOrWhiteSpace(sharedName))
-                return new NSUserDefaults(sharedName, NSUserDefaultsType.SuiteName);
-            else
-                return NSUserDefaults.StandardUserDefaults;
+            var context = Application.Context;
+
+            return string.IsNullOrWhiteSpace(sharedName) ?
+                PreferenceManager.GetDefaultSharedPreferences(context) :
+                    context.GetSharedPreferences(sharedName, FileCreationMode.Private);
         }
     }
 }

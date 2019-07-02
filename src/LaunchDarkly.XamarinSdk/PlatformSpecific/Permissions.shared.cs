@@ -20,11 +20,34 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace LaunchDarkly.Xamarin.Platform
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
-#if !NETSTANDARD
-    internal static partial class Platform
+    internal enum PermissionStatus
     {
+        // Denied by user
+        Denied,
+
+        // Feature is disabled on device
+        Disabled,
+
+        // Granted by user
+        Granted,
+
+        // Restricted (only iOS)
+        Restricted,
+
+        // Permission is in an unknown state
+        Unknown
     }
-#endif
+
+    internal enum PermissionType
+    {
+        Unknown,
+        Battery,
+        Camera,
+        Flashlight,
+        LocationWhenInUse,
+        NetworkState,
+        Vibrate,
+    }
 }

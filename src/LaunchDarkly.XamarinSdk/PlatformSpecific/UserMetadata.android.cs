@@ -1,6 +1,6 @@
 ﻿using Android.OS;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     internal static partial class UserMetadata
     {

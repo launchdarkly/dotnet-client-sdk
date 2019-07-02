@@ -34,7 +34,7 @@ using Android.OS;
 
 // All commented-out code in this file came from Xamarin Essentials but was removed because it is not used by this SDK.
 
-namespace LaunchDarkly.Xamarin.Platform
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     internal static partial class Platform
     {
