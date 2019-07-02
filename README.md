@@ -1,4 +1,4 @@
-LaunchDarkly Client-side SDK for Xamarin
+LaunchDarkly Client-Side SDK for Xamarin
 ===========================
 
 [![CircleCI](https://circleci.com/gh/launchdarkly/xamarin-client-sdk/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/xamarin-client-sdk/tree/master)
