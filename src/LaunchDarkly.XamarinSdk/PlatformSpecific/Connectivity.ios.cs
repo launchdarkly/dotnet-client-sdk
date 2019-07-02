@@ -22,6 +22,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+using CoreFoundation;
+using SystemConfiguration;
 
 namespace LaunchDarkly.Xamarin.PlatformSpecific
 {

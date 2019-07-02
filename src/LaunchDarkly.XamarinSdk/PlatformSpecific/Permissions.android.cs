@@ -53,7 +53,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             if (androidPermissions == null || !androidPermissions.Any())
                 return;
 
-            var context = Platform.Platform.AppContext;
+            var context = Platform.AppContext;
 
             foreach (var ap in androidPermissions)
             {

@@ -36,11 +36,11 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
         static void StartListeners()
         {
-            Permissions.Permissions.EnsureDeclared(Permissions.PermissionType.NetworkState);
+            Permissions.EnsureDeclared(PermissionType.NetworkState);
 
             conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
-            Platform.Platform.AppContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
+            Platform.AppContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
         }
 
         static void StopListeners()
@@ -49,7 +49,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                 return;
             try
             {
-                Platform.Platform.AppContext.UnregisterReceiver(conectivityReceiver);
+                Platform.AppContext.UnregisterReceiver(conectivityReceiver);
             }
             catch (Java.Lang.IllegalArgumentException)
             {
@@ -66,14 +66,14 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
         {
             get
             {
-                Permissions.Permissions.EnsureDeclared(Permissions.PermissionType.NetworkState);
+                Permissions.EnsureDeclared(PermissionType.NetworkState);
 
                 try
                 {
                     var currentAccess = NetworkAccess.None;
-                    var manager = Platform.Platform.ConnectivityManager;
+                    var manager = Platform.ConnectivityManager;
 
-                    if (Platform.Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+                    if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                     {
                         foreach (var network in manager.GetAllNetworks())
                         {
@@ -140,10 +140,10 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
         {
             get
             {
-                Permissions.Permissions.EnsureDeclared(Permissions.PermissionType.NetworkState);
+                Permissions.EnsureDeclared(PermissionType.NetworkState);
 
-                var manager = Platform.Platform.ConnectivityManager;
-                if (Platform.Platform.HasApiLevel(BuildVersionCodes.Lollipop))
+                var manager = Platform.ConnectivityManager;
+                if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                 {
                     foreach (var network in manager.GetAllNetworks())
                     {
