@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
 using LaunchDarkly.EventSource;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class MobileStreamingProcessorTests
+    public class MobileStreamingProcessorTests : BaseTest
     {
         private const string initialFlagsJson = "{" +
             "\"int-flag\":{\"value\":15,\"version\":100}," +
@@ -41,7 +39,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private IMobileUpdateProcessor MobileStreamingProcessorStarted()
         {
-            var processor = Factory.CreateUpdateProcessor(config, user, mockFlagCacheMgr, TimeSpan.FromMinutes(5), eventSourceFactory.Create());
+            IMobileUpdateProcessor processor = new MobileStreamingProcessor(config, mockFlagCacheMgr, user, eventSourceFactory.Create());
             processor.Start();
             return processor;
         }

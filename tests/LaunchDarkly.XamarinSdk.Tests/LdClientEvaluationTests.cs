@@ -1,28 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using LaunchDarkly.Client;
-using Newtonsoft.Json;
+﻿using LaunchDarkly.Client;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class LdClientEvaluationTests
+    public class LdClientEvaluationTests : BaseTest
     {
         static readonly string appKey = "some app key";
         static readonly string nonexistentFlagKey = "some flag key";
         static readonly User user = User.WithKey("userkey");
-
-        public LdClientEvaluationTests()
-        {
-            TestUtil.ClearClient();
-        }
-
-        ~LdClientEvaluationTests()
-        {
-            TestUtil.ClearClient();
-        }
 
         private static LdClient ClientWithFlagsJson(string flagsJson)
         {
