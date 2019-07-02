@@ -3,6 +3,21 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0-beta18] - 2019-07-02
+### Added:
+- New `Configuration` property `PersistFlagValues` (default: true) allows you to turn off the SDK's normal behavior of storing flag values locally so they can be used offline.
+- Flag values are now stored locally in .NET Standard by default, on the filesystem, using the .NET `IsolatedStorageFile` mechanism.
+- Added CI unit test suites that exercise most of the SDK functionality in .NET Standard, Android, and iOS. The tests do not currently cover background-mode detection and network connectivity detection on mobile platforms.
+
+### Changed:
+- `Configuration.WithUpdateProcessor` has been replaced with `Configuration.WithUpdateProcessorFactory`. These methods are for testing purposes and will not normally be used.
+
+### Fixed:
+- In .NET Standard, if you specify a user with `Key == null` and `Anonymous == true`, the SDK now generates a GUID for a user key and caches it in local storage for future reuse. This is consistent with the other client-side SDKs. Previously, it caused an exception.
+
+### Removed:
+- Several low-level component interfaces such as `IDeviceInfo` which had been exposed for testing are now internal.
+
 # Note on future releases
 
 The LaunchDarkly SDK repositories are being renamed for consistency. This repository is now `xamarin-client-sdk` rather than `xamarin-client`.
