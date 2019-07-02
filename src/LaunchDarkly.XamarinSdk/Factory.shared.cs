@@ -81,7 +81,7 @@ namespace LaunchDarkly.Xamarin
 
         internal static IDeviceInfo CreateDeviceInfo(Configuration configuration)
         {
-            return configuration.DeviceInfo ?? new DeviceInfo();
+            return configuration.DeviceInfo ?? new DefaultDeviceInfo();
         }
 
         internal static IFeatureFlagListenerManager CreateFeatureFlagListenerManager(Configuration configuration)

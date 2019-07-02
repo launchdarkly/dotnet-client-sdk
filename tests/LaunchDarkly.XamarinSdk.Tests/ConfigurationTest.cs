@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Net.Http;
-using LaunchDarkly.Client;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class ConfigurationTest
+    public class ConfigurationTest : BaseTest
     {
         [Fact]
         public void CanOverrideConfiguration()

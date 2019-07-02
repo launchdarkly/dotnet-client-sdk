@@ -4,7 +4,7 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class FlagCacheManagerTests
+    public class FlagCacheManagerTests : BaseTest
     {
         private const string initialFlagsJson = "{" +
             "\"int-flag\":{\"value\":15}," +

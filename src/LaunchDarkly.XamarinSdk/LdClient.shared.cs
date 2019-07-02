@@ -193,29 +193,30 @@ namespace LaunchDarkly.Xamarin
         /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static Task<LdClient> InitAsync(Configuration config, User user)
         {
-            CreateInstance(config, user);
+            var c = CreateInstance(config, user);
 
-            if (Instance.Online)
+            if (c.Online)
             {
-                Task t = Instance.StartUpdateProcessorAsync();
-                return t.ContinueWith((result) => Instance);
+                Task t = c.StartUpdateProcessorAsync();
+                return t.ContinueWith((result) => c);
             }
             else
             {
-                return Task.FromResult(Instance);
+                return Task.FromResult(c);
             }
         }
 
-        static void CreateInstance(Configuration configuration, User user)
+        static LdClient CreateInstance(Configuration configuration, User user)
         {
             if (Instance != null)
             {
                 throw new Exception("LdClient instance already exists.");
             }
 
-            Instance = new LdClient(configuration, user);
-            Log.InfoFormat("Initialized LaunchDarkly Client {0}",
-                           Instance.Version);
+            var c = new LdClient(configuration, user);
+            Instance = c;
+            Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
+            return c;
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)

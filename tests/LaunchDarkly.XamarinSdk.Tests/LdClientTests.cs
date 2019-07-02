@@ -7,20 +7,10 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class DefaultLdClientTests
+    public class DefaultLdClientTests : BaseTest
     {
         static readonly string appKey = "some app key";
         static readonly User simpleUser = User.WithKey("user-key");
-
-        public DefaultLdClientTests()
-        {
-            TestUtil.ClearClient();
-        }
-
-        ~DefaultLdClientTests()
-        {
-            TestUtil.ClearClient();
-        }
 
         LdClient Client()
         {
@@ -63,7 +53,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 var updatedUser = User.WithKey("some new key");
                 client.Identify(updatedUser);
-                Assert.Equal(client.User, updatedUser);
+                Assert.Equal(client.User.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
             }
         }
 
