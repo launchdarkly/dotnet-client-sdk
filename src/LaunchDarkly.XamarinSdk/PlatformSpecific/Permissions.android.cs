@@ -30,7 +30,7 @@ using Android.OS;
 using Android.Support.V4.App;
 using Android.Support.V4.Content;
 
-namespace LaunchDarkly.Xamarin.Permissions
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     // All commented-out code in this file came from Xamarin Essentials but was removed because it is not used by this SDK.
     // Note that we are no longer using the shared Permissions abstraction at all; this Android code is being used directly

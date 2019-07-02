@@ -23,7 +23,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 
-namespace LaunchDarkly.Xamarin.Connectivity
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     internal static partial class Connectivity
     {

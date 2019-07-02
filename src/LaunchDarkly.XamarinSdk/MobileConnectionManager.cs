@@ -1,4 +1,5 @@
 ﻿using System;
+using LaunchDarkly.Xamarin.PlatformSpecific;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -9,7 +10,7 @@ namespace LaunchDarkly.Xamarin
         internal MobileConnectionManager()
         {
             UpdateConnectedStatus();
-            LaunchDarkly.Xamarin.Connectivity.Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
         bool isConnected;
@@ -22,7 +23,7 @@ namespace LaunchDarkly.Xamarin
             }
         }
         
-        void Connectivity_ConnectivityChanged(object sender, Connectivity.ConnectivityChangedEventArgs e)
+        void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
         {
             UpdateConnectedStatus();
             ConnectionChanged?.Invoke(isConnected);
@@ -30,7 +31,7 @@ namespace LaunchDarkly.Xamarin
 
         private void UpdateConnectedStatus()
         {
-            isConnected = LaunchDarkly.Xamarin.Connectivity.Connectivity.NetworkAccess == LaunchDarkly.Xamarin.Connectivity.NetworkAccess.Internet;
+            isConnected = Connectivity.NetworkAccess == NetworkAccess.Internet;
         }
     }
 }

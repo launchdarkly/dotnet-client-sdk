@@ -20,23 +20,11 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace LaunchDarkly.Xamarin.Connectivity
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
-    internal enum ConnectionProfile
+#if !NETSTANDARD
+    internal static partial class Platform
     {
-        Unknown = 0,
-        Bluetooth = 1,
-        Cellular = 2,
-        Ethernet = 3,
-        WiFi = 4
     }
-
-    internal enum NetworkAccess
-    {
-        Unknown = 0,
-        None = 1,
-        Local = 2,
-        ConstrainedInternet = 3,
-        Internet = 4
-    }
+#endif
 }

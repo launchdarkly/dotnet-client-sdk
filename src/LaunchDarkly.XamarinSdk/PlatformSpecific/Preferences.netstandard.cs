@@ -9,7 +9,7 @@ using Common.Logging;
 using LaunchDarkly.Common;
 #endif
 
-namespace LaunchDarkly.Xamarin.Preferences
+namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     // This code is not from Xamarin Essentials, though it implements the same Preferences abstraction.
     //

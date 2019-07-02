@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
+using LaunchDarkly.Xamarin.PlatformSpecific;
 using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
@@ -87,7 +88,7 @@ namespace LaunchDarkly.Xamarin
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(User));
 
             SetupConnectionManager();
-            BackgroundDetection.BackgroundDetection.BackgroundModeChanged += OnBackgroundModeChanged;
+            BackgroundDetection.BackgroundModeChanged += OnBackgroundModeChanged;
         }
 
         /// <summary>
@@ -521,7 +522,7 @@ namespace LaunchDarkly.Xamarin
             {
                 Log.InfoFormat("Shutting down the LaunchDarkly client");
 
-                BackgroundDetection.BackgroundDetection.BackgroundModeChanged -= OnBackgroundModeChanged;
+                BackgroundDetection.BackgroundModeChanged -= OnBackgroundModeChanged;
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
             }
@@ -548,12 +549,12 @@ namespace LaunchDarkly.Xamarin
             flagListenerManager.UnregisterListener(listener, flagKey);
         }
 
-        internal void OnBackgroundModeChanged(object sender, BackgroundDetection.BackgroundModeChangedEventArgs args)
+        internal void OnBackgroundModeChanged(object sender, BackgroundModeChangedEventArgs args)
         {
             AsyncUtils.WaitSafely(() => OnBackgroundModeChangedAsync(sender, args));
         }
 
-        internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundDetection.BackgroundModeChangedEventArgs args)
+        internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundModeChangedEventArgs args)
         {
             if (args.IsInBackground)
             {
