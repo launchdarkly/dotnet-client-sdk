@@ -6,7 +6,7 @@ set -e
 # msbuild expects word-capitalization of this parameter
 CONFIG=`echo $1 | awk '{print toupper(substr($0,0,1))tolower(substr($0,2))}'`
 if [[ -z "$CONFIG" ]]; then
-	CONFIG=Debug  # currently we're releasing debug builds by default
+  CONFIG=Debug  # currently we're releasing debug builds by default
 fi
 
 # Remove any existing build products.
