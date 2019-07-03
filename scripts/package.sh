@@ -3,6 +3,10 @@ set -e
 
 # Usage: ./scripts/package.sh [debug|release]
 
+# This script performs a clean build for all target platforms, which produces both the DLLs and the .nupkg,
+# and also runs the .NET Standard unit tests. It is used in the LaunchDarkly release process. It must be run
+# on MacOS, since iOS is one of the targets.
+
 # msbuild expects word-capitalization of this parameter
 CONFIG=`echo $1 | awk '{print toupper(substr($0,0,1))tolower(substr($0,2))}'`
 if [[ -z "$CONFIG" ]]; then
