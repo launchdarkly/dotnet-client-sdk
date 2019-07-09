@@ -22,7 +22,7 @@ rm -f ./src/LaunchDarkly.XamarinSdk/bin/Release/*.nupkg
 # Build the project for all target frameworks. This includes building the .nupkg, because of
 # the <GeneratePackageOnBuild> directive in our project file.
 
-msbuild /restore /p:Configuration:$CONFIG src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+msbuild /restore /p:Configuration=$CONFIG src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
 # Run the .NET Standard 2.0 unit tests. (Android and iOS tests are run by CI jobs in config.yml)
 
