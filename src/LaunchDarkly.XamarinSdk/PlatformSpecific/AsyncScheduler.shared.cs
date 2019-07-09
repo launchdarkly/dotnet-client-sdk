@@ -2,8 +2,7 @@
 
 namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
-    // This class and the rest of its partial class implementations are not derived from Xamarin Essentials.
-    // It provides a method for asynchronously starting tasks, such as event handlers, using a mechanism
+    // This provides a method for asynchronously starting tasks, such as event handlers, using a mechanism
     // that may vary by platform.
     internal static partial class AsyncScheduler
     {
