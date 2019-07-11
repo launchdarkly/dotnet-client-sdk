@@ -70,12 +70,15 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void UpdateFlagUpdatesTheFlagOnListenerManager()
         {
-            var listener = new TestListener();
+            var listener = new TestListener(1);
             listenerManager.RegisterListener(listener, "int-flag");
+
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
             updatedFeatureFlag.value = JToken.FromObject(7);
+
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
+            listener.Countdown.Wait();
 
             Assert.Equal(7, listener.FeatureFlags["int-flag"].ToObject<int>());
         }
@@ -83,15 +86,15 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void RemoveFlagTellsListenerManagerToTellListenersFlagWasDeleted()
         {
-            var listener = new TestListener();
-            listenerManager.RegisterListener(listener, "int-flag");
+            var listener = new TestListener(1);
             listener.FeatureFlags["int-flag"] = JToken.FromObject(1);
-            Assert.True(listener.FeatureFlags.ContainsKey("int-flag"));
+            listenerManager.RegisterListener(listener, "int-flag");
 
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
             updatedFeatureFlag.value = JToken.FromObject(7);
             flagCacheManager.RemoveFlagForUser("int-flag", user);
+            listener.Countdown.Wait();
 
             Assert.False(listener.FeatureFlags.ContainsKey("int-flag"));
         }
@@ -99,12 +102,13 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CacheFlagsFromServiceUpdatesListenersIfFlagValueChanged()
         {
-            var flagCacheManager = ManagerWithCachedFlags();
-            var listener = new TestListener();
+            var listener = new TestListener(1);
             listenerManager.RegisterListener(listener, "int-flag");
 
+            var flagCacheManager = ManagerWithCachedFlags();
             var newFlagsJson = "{\"int-flag\":{\"value\":5}}";
             flagCacheManager.CacheFlagsFromService(TestUtil.DecodeFlagsJson(newFlagsJson), user);
+            listener.Countdown.Wait();
 
             Assert.Equal(5, listener.FeatureFlags["int-flag"].ToObject<int>());
         }

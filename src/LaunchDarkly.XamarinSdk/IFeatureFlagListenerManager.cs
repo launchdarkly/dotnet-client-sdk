@@ -6,6 +6,7 @@ namespace LaunchDarkly.Xamarin
     {
         void RegisterListener(IFeatureFlagListener listener, string flagKey);
         void UnregisterListener(IFeatureFlagListener listener, string flagKey);
+        bool IsListenerRegistered(IFeatureFlagListener listener, string flagKey); // used for testing
     }
 
     internal interface IFlagListenerUpdater

@@ -152,9 +152,12 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// Registers an instance of <see cref="IFeatureFlagListener"/> for a given flag key to observe 
         /// flag value changes.
-        /// 
-        /// It is important to note that this callback scheme will need to be handled on the Main UI thread,
-        /// if you plan on updating UI components with flag values.
+        ///
+        /// On platforms that have a main UI thread (such as iOS and Android), the listener is guaranteed to
+        /// be called on that thread; on other platforms, the SDK uses a thread pool. Either way, the listener
+        /// is called asynchronously after whichever SDK action triggered the flag change has already completed--
+        /// so as to avoid deadlocks, in case the action was also on the main thread, or on a thread that was
+        /// holding a lock on some application resource that the listener also uses.
         /// 
         /// </summary>
         /// <param name="flagKey">The flag key you want to observe changes for.</param>

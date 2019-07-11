@@ -549,6 +549,12 @@ namespace LaunchDarkly.Xamarin
             flagListenerManager.UnregisterListener(listener, flagKey);
         }
 
+        // for tests only
+        internal bool IsFeatureFlagListenerRegistered(string flagKey, IFeatureFlagListener listener)
+        {
+            return flagListenerManager.IsListenerRegistered(listener, flagKey);
+        }
+
         internal void OnBackgroundModeChanged(object sender, BackgroundModeChangedEventArgs args)
         {
             AsyncUtils.WaitSafely(() => OnBackgroundModeChangedAsync(sender, args));

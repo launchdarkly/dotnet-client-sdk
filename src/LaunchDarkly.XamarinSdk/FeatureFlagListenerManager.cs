@@ -1,13 +1,17 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Common.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
     internal class FeatureFlagListenerManager : IFeatureFlagListenerManager, IFlagListenerUpdater
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(FeatureFlagListenerManager));
+
         private readonly IDictionary<string, List<IFeatureFlagListener>> _map = 
             new Dictionary<string, List<IFeatureFlagListener>>();
 
@@ -18,12 +22,11 @@ namespace LaunchDarkly.Xamarin
             readWriteLock.EnterWriteLock();
             try
             {
-                if (!_map.ContainsKey(flagKey))
+                if (!_map.TryGetValue(flagKey, out var list))
                 {
-                    _map[flagKey] = new List<IFeatureFlagListener>();
+                    list = new List<IFeatureFlagListener>();
+                    _map[flagKey] = list;
                 }
-
-                var list = _map[flagKey];
                 list.Add(listener);
             }
             finally
@@ -37,10 +40,9 @@ namespace LaunchDarkly.Xamarin
             readWriteLock.EnterWriteLock();
             try
             {
-                if (_map.ContainsKey(flagKey))
+                if (_map.TryGetValue(flagKey, out var list))
                 {
-                    var listOfListeners = _map[flagKey];
-                    listOfListeners.Remove(listener);
+                    list.Remove(listener);
                 }
             }
             finally
@@ -49,16 +51,16 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        public void FlagWasDeleted(string flagKey)
+        public bool IsListenerRegistered(IFeatureFlagListener listener, string flagKey)
         {
             readWriteLock.EnterReadLock();
             try
             {
-                if (_map.ContainsKey(flagKey))
+                if (_map.TryGetValue(flagKey, out var list))
                 {
-                    var listeners = _map[flagKey];
-                    listeners.ForEach((listener) => listener.FeatureFlagDeleted(flagKey));
+                    return list.Contains(listener);
                 }
+                return false;
             }
             finally
             {
@@ -66,20 +68,48 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
+        public void FlagWasDeleted(string flagKey)
+        {
+            FireAction(flagKey, (listener) => listener.FeatureFlagDeleted(flagKey));
+        }
+
         public void FlagWasUpdated(string flagKey, JToken value)
         {
+            FireAction(flagKey, (listener) => listener.FeatureFlagChanged(flagKey, value));
+        }
+
+        private void FireAction(string flagKey, Action<IFeatureFlagListener> a)
+        {
+            IFeatureFlagListener[] listeners = null;
             readWriteLock.EnterReadLock();
             try
             {
-                if (_map.ContainsKey(flagKey))
+                if (_map.TryGetValue(flagKey, out var mutableListOfListeners))
                 {
-                    var listeners = _map[flagKey];
-                    listeners.ForEach((listener) => listener.FeatureFlagChanged(flagKey, value));
+                    listeners = mutableListOfListeners.ToArray(); // this copies the list
                 }
             }
             finally
             {
                 readWriteLock.ExitReadLock();
+            }
+            if (listeners != null)
+            {
+                foreach (var l in listeners)
+                {
+                    // Note, this schedules the listeners separately, rather than scheduling a single task that runs them all.
+                    PlatformSpecific.AsyncScheduler.ScheduleAction(() =>
+                    {
+                        try
+                        {
+                            a(l);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Warn("Unexpected exception from feature flag listener", e);
+                        }
+                    });
+                }
             }
         }
     }
