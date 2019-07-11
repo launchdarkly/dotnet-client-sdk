@@ -115,6 +115,28 @@ namespace LaunchDarkly.Xamarin.Tests
 
             Assert.False(listener.FeatureFlags.ContainsKey(INT_FLAG));
         }
+
+        [Fact]
+        public void ListenerCallIsDeferred()
+        {
+            // This verifies that we are not making synchronous calls to listeners, so they cannot deadlock by trying to
+            // acquire some resource that is being held by the caller. There are three possible things that can happen:
+            // 1. We call the listener synchronously; listener.Called gets set to true before FlagWasUpdated returns. Fail.
+            // 2. The listener is queued somewhere for later execution, so it doesn't even start to run before the end of
+            //    the test. Pass.
+            // 3. The listener starts executing immediately on another thread; that's OK too, because the lock(locker) block
+            //    ensures it won't set Called until after we have checked it. Pass.
+            var manager = Manager();
+            var locker = new object();
+            var listener = new TestDeadlockListener(locker);
+
+            manager.RegisterListener(listener, INT_FLAG);
+            lock (locker)
+            {
+                manager.FlagWasUpdated(INT_FLAG, 2);
+                Assert.False(listener.Called);
+            }
+        }
     }
 
     public class TestListener : IFeatureFlagListener
@@ -152,6 +174,33 @@ namespace LaunchDarkly.Xamarin.Tests
         public void Reset()
         {
             Countdown = new CountdownEvent(ExpectedCalls);
+        }
+    }
+
+    public class TestDeadlockListener : IFeatureFlagListener
+    {
+        private readonly object _locker;
+        public volatile bool Called;
+
+        public TestDeadlockListener(object locker)
+        {
+            _locker = locker;
+        }
+
+        public void FeatureFlagChanged(string featureFlagKey, JToken value)
+        {
+            lock(_locker)
+            {
+                Called = true;
+            }
+        }
+
+        public void FeatureFlagDeleted(string featureFlagKey)
+        {
+            lock(_locker)
+            {
+                Called = true;
+            }
         }
     }
 }
