@@ -20,6 +20,7 @@ namespace LaunchDarkly.Xamarin
         private static readonly ILog Log = LogManager.GetLogger(typeof(LdClient));
 
         static volatile LdClient instance;
+        static readonly object createInstanceLock = new object();
 
         /// <summary>
         /// The singleton instance used by your application throughout its lifetime. Once this exists, you cannot
@@ -212,15 +213,18 @@ namespace LaunchDarkly.Xamarin
 
         static LdClient CreateInstance(Configuration configuration, User user)
         {
-            if (Instance != null)
+            lock (createInstanceLock)
             {
-                throw new Exception("LdClient instance already exists.");
-            }
+                if (Instance != null)
+                {
+                    throw new Exception("LdClient instance already exists.");
+                }
 
-            var c = new LdClient(configuration, user);
-            Interlocked.CompareExchange(ref instance, c, null);
-            Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
-            return c;
+                var c = new LdClient(configuration, user);
+                Interlocked.CompareExchange(ref instance, c, null);
+                Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
+                return c;
+            }
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
