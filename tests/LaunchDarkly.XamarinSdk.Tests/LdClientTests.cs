@@ -217,10 +217,9 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = Client())
             {
                 var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-                var listener = new TestListener();
+                var listener = new TestListener(1);
                 client.RegisterFeatureFlagListener("user1-flag", listener);
-                listenerMgr.FlagWasUpdated("user1-flag", 7);
-                Assert.Equal(7, listener.FeatureFlags["user1-flag"].ToObject<int>());
+                Assert.True(client.IsFeatureFlagListenerRegistered("user1-flag", listener));
             }
         }
 
@@ -230,14 +229,12 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = Client())
             {
                 var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-                var listener = new TestListener();
+                var listener = new TestListener(1);
                 client.RegisterFeatureFlagListener("user2-flag", listener);
-                listenerMgr.FlagWasUpdated("user2-flag", 7);
-                Assert.Equal(7, listener.FeatureFlags["user2-flag"]);
+                Assert.True(client.IsFeatureFlagListenerRegistered("user2-flag", listener));
 
                 client.UnregisterFeatureFlagListener("user2-flag", listener);
-                listenerMgr.FlagWasUpdated("user2-flag", 12);
-                Assert.NotEqual(12, listener.FeatureFlags["user2-flag"]);
+                Assert.False(client.IsFeatureFlagListenerRegistered("user2-flag", listener));
             }
         }
 
