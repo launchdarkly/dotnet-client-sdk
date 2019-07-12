@@ -19,14 +19,18 @@ namespace LaunchDarkly.Xamarin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LdClient));
 
+        static volatile LdClient instance;
+        static readonly object createInstanceLock = new object();
+
         /// <summary>
-        /// The singleton instance used by your application throughout its lifetime, can only be created once.
+        /// The singleton instance used by your application throughout its lifetime. Once this exists, you cannot
+        /// create a new client instance unless you first call <see cref="Dispose()"/> on this one.
         /// 
-        /// Use the designated static method <see cref="Init(Configuration, User)"/> 
-        /// to set this LdClient instance.
+        /// Use the designated static methods <see cref="Init(Configuration, User, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, User)"/> to set this LdClient instance.
         /// </summary>
         /// <value>The LdClient instance.</value>
-        public static LdClient Instance { get; internal set; }
+        public static LdClient Instance => instance;
 
         /// <summary>
         /// The Configuration instance used to setup the LdClient.
@@ -100,7 +104,7 @@ namespace LaunchDarkly.Xamarin
         /// If you would rather this happen in an async fashion you can use <see cref="InitAsync(string, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more specific
-        /// <see cref="Init(Configuration, User)"/> to instantiate the single instance of LdClient
+        /// <see cref="Init(Configuration, User, TimeSpan)"/> to instantiate the single instance of LdClient
         /// for the lifetime of your application.
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
@@ -164,18 +168,18 @@ namespace LaunchDarkly.Xamarin
                 throw new ArgumentOutOfRangeException(nameof(maxWaitTime));
             }
 
-            CreateInstance(config, user);
+            var c = CreateInstance(config, user);
 
-            if (Instance.Online)
+            if (c.Online)
             {
-                if (!Instance.StartUpdateProcessor(maxWaitTime))
+                if (!c.StartUpdateProcessor(maxWaitTime))
                 {
                     Log.WarnFormat("Client did not successfully initialize within {0} milliseconds.",
                         maxWaitTime.TotalMilliseconds);
                 }
             }
 
-            return Instance;
+            return c;
         }
 
         /// <summary>
@@ -209,15 +213,18 @@ namespace LaunchDarkly.Xamarin
 
         static LdClient CreateInstance(Configuration configuration, User user)
         {
-            if (Instance != null)
+            lock (createInstanceLock)
             {
-                throw new Exception("LdClient instance already exists.");
-            }
+                if (Instance != null)
+                {
+                    throw new Exception("LdClient instance already exists.");
+                }
 
-            var c = new LdClient(configuration, user);
-            Instance = c;
-            Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
-            return c;
+                var c = new LdClient(configuration, user);
+                Interlocked.CompareExchange(ref instance, c, null);
+                Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
+                return c;
+            }
         }
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
@@ -510,7 +517,7 @@ namespace LaunchDarkly.Xamarin
             return newUser;
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -525,7 +532,15 @@ namespace LaunchDarkly.Xamarin
                 BackgroundDetection.BackgroundModeChanged -= OnBackgroundModeChanged;
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
+
+                // Reset the static Instance to null *if* it was referring to this instance
+                DetachInstance();
             }
+        }
+
+        internal void DetachInstance() // exposed for testing
+        {
+            Interlocked.CompareExchange(ref instance, null, this);
         }
 
         /// <see cref="ILdCommonClient.Version"/>
