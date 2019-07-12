@@ -79,17 +79,31 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void SharedClientIsTheOnlyClientAvailable()
         {
-            lock (TestUtil.ClientInstanceLock)
+            TestUtil.WithClientLock(() =>
             {
                 var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
                 using (var client = LdClient.Init(config, simpleUser, TimeSpan.Zero))
                 {
                     Assert.Throws<Exception>(() => LdClient.Init(config, simpleUser, TimeSpan.Zero));
                 }
-            }
-            TestUtil.ClearClient();
+                TestUtil.ClearClient();
+            });
         }
-        
+
+        [Fact]
+        public void CanCreateNewClientAfterDisposingOfSharedInstance()
+        {
+            TestUtil.WithClientLock(() =>
+            {
+                TestUtil.ClearClient();
+                var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+                using (var client0 = LdClient.Init(config, simpleUser, TimeSpan.Zero)) { }
+                Assert.Null(LdClient.Instance);
+                // Dispose() is called automatically at end of "using" block
+                using (var client1 = LdClient.Init(config, simpleUser, TimeSpan.Zero)) { }
+            });
+        }
+
         [Fact]
         public void ConnectionManagerShouldKnowIfOnlineOrNot()
         {
