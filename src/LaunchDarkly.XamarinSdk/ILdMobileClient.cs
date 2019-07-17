@@ -155,8 +155,7 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <remarks>
         /// This could mean that the flag configuration was changed in LaunchDarkly, or that you have changed the current
-        /// user and the flag values are different for this user than for the previous user. The event is <i>not</i>
-        /// triggered for the flag values that are first obtained when the client is initialized. It is only triggered
+        /// user and the flag values are different for this user than for the previous user. The event is only triggered
         /// if the newly received flag value is actually different from the previous one.
         ///
         /// The <see cref="FlagChangedEventArgs"/> properties will indicate the key of the feature flag, the new value,
