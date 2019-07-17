@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using LaunchDarkly.Client;
+using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -8,18 +10,18 @@ namespace LaunchDarkly.Xamarin
     {
         private readonly IUserFlagCache inMemoryCache;
         private readonly IUserFlagCache deviceCache;
-        private readonly IFlagListenerUpdater flagListenerUpdater;
+        private readonly IFlagChangedEventManager flagChangedEventManager;
 
         private ReaderWriterLockSlim readWriteLock = new ReaderWriterLockSlim();
 
         public FlagCacheManager(IUserFlagCache inMemoryCache,
                                 IUserFlagCache deviceCache,
-                                IFlagListenerUpdater flagListenerUpdater,
+                                IFlagChangedEventManager flagChangedEventManager,
                                 User user)
         {
             this.inMemoryCache = inMemoryCache;
             this.deviceCache = deviceCache;
-            this.flagListenerUpdater = flagListenerUpdater;
+            this.flagChangedEventManager = flagChangedEventManager;
 
             var flagsFromDevice = deviceCache.RetrieveFlags(user);
             if (flagsFromDevice != null)
@@ -43,6 +45,7 @@ namespace LaunchDarkly.Xamarin
 
         public void CacheFlagsFromService(IDictionary<string, FeatureFlag> flags, User user)
         {
+            List<Tuple<string, JToken, JToken>> changes = null;
             readWriteLock.EnterWriteLock();
             try
             {
@@ -52,18 +55,16 @@ namespace LaunchDarkly.Xamarin
 
                 foreach (var flag in flags)
                 {
-                    bool flagAlreadyExisted = previousFlags.ContainsKey(flag.Key);
-                    bool flagValueChanged = false;
-                    if (flagAlreadyExisted)
+                    if (previousFlags.TryGetValue(flag.Key, out var originalFlag))
                     {
-                       var originalFlag = previousFlags[flag.Key];
-                       flagValueChanged = originalFlag.value != flag.Value.value;
-                    }
-
-                    // only update the Listeners if the flag value changed
-                    if (flagValueChanged)
-                    {
-                        flagListenerUpdater.FlagWasUpdated(flag.Key, flag.Value.value);
+                        if (!JToken.DeepEquals(originalFlag.value, flag.Value.value))
+                        {
+                            if (changes == null)
+                            {
+                                changes = new List<Tuple<string, JToken, JToken>>();
+                            }
+                            changes.Add(Tuple.Create(flag.Key, flag.Value.value, originalFlag.value));
+                        }
                     }
                 }
             }
@@ -71,54 +72,77 @@ namespace LaunchDarkly.Xamarin
             {
                 readWriteLock.ExitWriteLock();
             }
+            if (changes != null)
+            {
+                foreach (var c in changes)
+                {
+                    flagChangedEventManager.FlagWasUpdated(c.Item1, c.Item2, c.Item3);
+                }
+            }
         }
 
         public FeatureFlag FlagForUser(string flagKey, User user)
         {
             var flags = FlagsForUser(user);
-            FeatureFlag featureFlag;
-            if (flags.TryGetValue(flagKey, out featureFlag))
+            if (flags.TryGetValue(flagKey, out var featureFlag))
             {
                 return featureFlag;
             }
-
             return null;
         }
 
         public void RemoveFlagForUser(string flagKey, User user)
         {
+            JToken oldValue = null;
             readWriteLock.EnterWriteLock();
-
             try
             {
                 var flagsForUser = inMemoryCache.RetrieveFlags(user);
-                flagsForUser.Remove(flagKey);
-                deviceCache.CacheFlagsForUser(flagsForUser, user);
-                inMemoryCache.CacheFlagsForUser(flagsForUser, user);
-                flagListenerUpdater.FlagWasDeleted(flagKey);
+                if (flagsForUser.TryGetValue(flagKey, out var flag))
+                {
+                    oldValue = flag.value;
+                    flagsForUser.Remove(flagKey);
+                    deviceCache.CacheFlagsForUser(flagsForUser, user);
+                    inMemoryCache.CacheFlagsForUser(flagsForUser, user);
+                }
             }
             finally
             {
                 readWriteLock.ExitWriteLock();
             }
-
+            if (oldValue != null)
+            {
+                flagChangedEventManager.FlagWasDeleted(flagKey, oldValue);
+            }
         }
 
         public void UpdateFlagForUser(string flagKey, FeatureFlag featureFlag, User user)
         {
+            bool changed = false;
+            JToken oldValue = null;
             readWriteLock.EnterWriteLock();
-
             try
             {
                 var flagsForUser = inMemoryCache.RetrieveFlags(user);
+                if (flagsForUser.TryGetValue(flagKey, out var oldFlag))
+                {
+                    if (!JToken.DeepEquals(oldFlag.value, featureFlag.value))
+                    {
+                        oldValue = oldFlag.value;
+                        changed = true;
+                    }
+                }
                 flagsForUser[flagKey] = featureFlag;
                 deviceCache.CacheFlagsForUser(flagsForUser, user);
                 inMemoryCache.CacheFlagsForUser(flagsForUser, user);
-                flagListenerUpdater.FlagWasUpdated(flagKey, featureFlag.value);
             }
             finally
             {
                 readWriteLock.ExitWriteLock();
+            }
+            if (changed)
+            {
+                flagChangedEventManager.FlagWasUpdated(flagKey, featureFlag.value, oldValue);
             }
         }
     }
