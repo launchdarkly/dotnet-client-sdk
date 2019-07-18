@@ -38,8 +38,8 @@ jobs:
           command: |
             sudo apt -y install apt-transport-https dirmngr gnupg ca-certificates
             sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-            echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
-            sudo apt -y install mono-devel=5.20.1.19-0xamarin2+debian9b1 nuget=4.8.2.5835.bin-0xamarin1+debian9b1 libzip4 libpulse0
+            echo "deb https://download.mono-project.com/repo/debian stable-stretch/snapshots/5.20.1.19 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
+            sudo apt -y install mono-devel nuget libzip4 libpulse0
           # libpulse0 is required to run the emulator; the result are required to build the app
       
       - restore_cache:
