@@ -151,9 +151,6 @@
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\ConfigurationTest.cs">
           <Link>SharedTestCode\ConfigurationTest.cs</Link>
         </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagListenerTests.cs">
-          <Link>SharedTestCode\FeatureFlagListenerTests.cs</Link>
-        </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagRequestorTests.cs">
           <Link>SharedTestCode\FeatureFlagRequestorTests.cs</Link>
         </Compile>
@@ -162,6 +159,9 @@
         </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FlagCacheManagerTests.cs">
           <Link>SharedTestCode\FlagCacheManagerTests.cs</Link>
+        </Compile>
+        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FlagChangedEventTests.cs">
+          <Link>SharedTestCode\FlagChangedEventTests.cs</Link>
         </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LdClientEndToEndTests.cs">
           <Link>SharedTestCode\LdClientEndToEndTests.cs</Link>

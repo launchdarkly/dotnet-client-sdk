@@ -226,29 +226,18 @@ namespace LaunchDarkly.Xamarin.Tests
         }
         
         [Fact]
-        public void CanRegisterListener()
+        public void CanRegisterAndUnregisterFlagChangedHandlers()
         {
             using (var client = Client())
             {
-                var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-                var listener = new TestListener(1);
-                client.RegisterFeatureFlagListener("user1-flag", listener);
-                Assert.True(client.IsFeatureFlagListenerRegistered("user1-flag", listener));
-            }
-        }
-
-        [Fact]
-        public void UnregisterListenerUnregistersPassedInListenerForFlagKeyOnListenerManager()
-        {
-            using (var client = Client())
-            {
-                var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-                var listener = new TestListener(1);
-                client.RegisterFeatureFlagListener("user2-flag", listener);
-                Assert.True(client.IsFeatureFlagListenerRegistered("user2-flag", listener));
-
-                client.UnregisterFeatureFlagListener("user2-flag", listener);
-                Assert.False(client.IsFeatureFlagListenerRegistered("user2-flag", listener));
+                EventHandler<FlagChangedEventArgs> handler1 = (sender, args) => { };
+                EventHandler<FlagChangedEventArgs> handler2 = (sender, args) => { };
+                var eventManager = client.flagChangedEventManager as FlagChangedEventManager;
+                client.FlagChanged += handler1;
+                client.FlagChanged += handler2;
+                client.FlagChanged -= handler1;
+                Assert.False(eventManager.IsHandlerRegistered(handler1));
+                Assert.True(eventManager.IsHandlerRegistered(handler2));
             }
         }
 

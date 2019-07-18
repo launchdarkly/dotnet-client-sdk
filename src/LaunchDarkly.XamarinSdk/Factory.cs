@@ -12,7 +12,7 @@ namespace LaunchDarkly.Xamarin
 
         internal static IFlagCacheManager CreateFlagCacheManager(Configuration configuration, 
                                                                  IPersistentStorage persister,
-                                                                 IFlagListenerUpdater updater,
+                                                                 IFlagChangedEventManager flagChangedEventManager,
                                                                  User user)
         {
             if (configuration.FlagCacheManager != null)
@@ -23,7 +23,7 @@ namespace LaunchDarkly.Xamarin
             {
                 var inMemoryCache = new UserFlagInMemoryCache();
                 var deviceCache = configuration.PersistFlagValues ? new UserFlagDeviceCache(persister) as IUserFlagCache : new NullUserFlagCache();
-                return new FlagCacheManager(inMemoryCache, deviceCache, updater, user);
+                return new FlagCacheManager(inMemoryCache, deviceCache, flagChangedEventManager, user);
             }
         }
 
@@ -84,9 +84,9 @@ namespace LaunchDarkly.Xamarin
             return configuration.DeviceInfo ?? new DefaultDeviceInfo();
         }
 
-        internal static IFeatureFlagListenerManager CreateFeatureFlagListenerManager(Configuration configuration)
+        internal static IFlagChangedEventManager CreateFlagChangedEventManager(Configuration configuration)
         {
-            return configuration.FeatureFlagListenerManager ?? new FeatureFlagListenerManager();
+            return configuration.FlagChangedEventManager ?? new FlagChangedEventManager();
         }
     }
 }

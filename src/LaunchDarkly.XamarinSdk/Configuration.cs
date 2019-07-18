@@ -134,7 +134,7 @@ namespace LaunchDarkly.Xamarin
         internal Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> UpdateProcessorFactory { get; set; }
         internal IPersistentStorage PersistentStorage { get; set; }
         internal IDeviceInfo DeviceInfo { get; set; }
-        internal IFeatureFlagListenerManager FeatureFlagListenerManager { get; set; }
+        internal IFlagChangedEventManager FlagChangedEventManager { get; set; }
 
         /// <summary>
         /// Default value for <see cref="PollingInterval"/>.
@@ -207,7 +207,7 @@ namespace LaunchDarkly.Xamarin
         {
             if (String.IsNullOrEmpty(mobileKey))
             {
-                throw new ArgumentOutOfRangeException("mobileKey", "key is required");
+                throw new ArgumentOutOfRangeException(nameof(mobileKey), "key is required");
             }
             var defaultConfiguration = new Configuration
             {
@@ -647,9 +647,9 @@ namespace LaunchDarkly.Xamarin
             return configuration;
         }
 
-        internal static Configuration WithFeatureFlagListenerManager(this Configuration configuration, IFeatureFlagListenerManager featureFlagListenerManager)
+        internal static Configuration WithFlagChangedEventManager(this Configuration configuration, IFlagChangedEventManager flagChangedEventManager)
         {
-            configuration.FeatureFlagListenerManager = featureFlagListenerManager;
+            configuration.FlagChangedEventManager = flagChangedEventManager;
             return configuration;
         }
 
