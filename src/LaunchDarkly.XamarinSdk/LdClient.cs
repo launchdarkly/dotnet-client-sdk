@@ -55,22 +55,29 @@ namespace LaunchDarkly.Xamarin
 
         SemaphoreSlim connectionLock;
 
+        bool online;
+        /// <see cref="ILdMobileClient.Online"/>
+        public bool Online
+        {
+            get => online;
+            set
+            {
+                var doNotAwaitResult = SetOnlineAsync(value);
+            }
+        }
+
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
         LdClient() { }
 
         LdClient(Configuration configuration, User user)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException("configuration");
-            }
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
 
-            Config = configuration;
+            Config = configuration ?? throw new ArgumentNullException("configuration");
 
             connectionLock = new SemaphoreSlim(1, 1);
 
@@ -220,16 +227,6 @@ namespace LaunchDarkly.Xamarin
             return c;
         }
 
-        bool StartUpdateProcessor(TimeSpan maxWaitTime)
-        {
-            return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
-        }
-
-        Task StartUpdateProcessorAsync()
-        {
-            return updateProcessor.Start();
-        }
-
         void SetupConnectionManager()
         {
             if (connectionManager is MobileConnectionManager mobileConnectionManager)
@@ -239,17 +236,6 @@ namespace LaunchDarkly.Xamarin
                                connectionManager.IsConnected);
             }
             online = connectionManager.IsConnected;
-        }
-
-        bool online;
-        /// <see cref="ILdMobileClient.Online"/>
-        public bool Online
-        {
-            get => online;
-            set
-            {
-                var doNotAwaitResult = SetOnlineAsync(value);
-            }
         }
 
         public async Task SetOnlineAsync(bool value)
@@ -385,6 +371,7 @@ namespace LaunchDarkly.Xamarin
                     result = new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(EvaluationErrorKind.WRONG_TYPE));
                 }
             }
+
             var featureEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent, User,
                 new EvaluationDetail<JToken>(valueJson, flag.variation, flag.reason), defaultJson);
             eventProcessor.SendEvent(featureEvent);
@@ -424,7 +411,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            return Online && updateProcessor.Initialized();
+            return Online;
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
@@ -467,6 +454,19 @@ namespace LaunchDarkly.Xamarin
             }
 
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(newUser));
+        }
+
+        bool StartUpdateProcessor(TimeSpan maxWaitTime)
+        {
+            return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+        }
+
+        Task StartUpdateProcessorAsync()
+        {
+            if (Online)
+                return updateProcessor.Start();
+            else
+                return Task.FromResult(true);
         }
 
         async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)

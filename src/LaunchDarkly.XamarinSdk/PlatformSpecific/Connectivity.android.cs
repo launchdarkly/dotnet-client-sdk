@@ -86,9 +86,6 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
                                 var info = manager.GetNetworkInfo(network);
 
-                                if (info == null || !info.IsAvailable)
-                                    continue;
-
                                 // Check to see if it has the internet capability
                                 if (!capabilities.HasCapability(NetCapability.Internet))
                                 {
@@ -119,7 +116,6 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                     {
                         if (info == null || !info.IsAvailable)
                             return;
-
                         if (info.IsConnected)
                             currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
                         else if (info.IsConnectedOrConnecting)
