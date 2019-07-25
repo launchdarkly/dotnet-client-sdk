@@ -22,52 +22,18 @@ jobs:
 
   test-android:
     docker:
-      - image: circleci/android:api-27
+      - image: ldcircleci/ld-xamarin-android-linux
 
     steps:
       - checkout
 
-      - run:
-          name: Install Android SDK tools
-          command: |
-            sdkmanager "system-images;android-24;default;armeabi-v7a" || true
-            sdkmanager --licenses
-
-      - run:
-          name: Install Mono tools
-          command: |
-            sudo apt -y install apt-transport-https dirmngr gnupg ca-certificates
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-            echo "deb https://download.mono-project.com/repo/debian stable-stretch/snapshots/5.20.1.19 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list && sudo apt update
-            sudo apt -y install mono-devel nuget libzip4 libpulse0
-          # libpulse0 is required to run the emulator; the result are required to build the app
-      
-      - restore_cache:
-          key: xamarin-android-cache-v9-2-99-172
-      - run:
-          name: Download Xamarin Android tools if not already cached
-          command: ./scripts/check_xamarin_android_cache.sh
-      - save_cache:
-          key: xamarin-android-cache-v9-2-99-172
-          paths:
-              - ~/project/xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release  
-
-      - run:
-          name: Move tools to expected locations
-          command: |
-            sudo mkdir "/usr/lib/xamarin.android" && sudo mkdir "/usr/lib/mono/xbuild/Xamarin/"
-            cd ./xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release && sudo cp -a "bin/Debug/lib/xamarin.android/." "/usr/lib/xamarin.android/"
-            rm -rf "/usr/lib/mono/xbuild/Xamarin/Android" && rm -rf "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
-            sudo ln -s "/usr/lib/xamarin.android/xbuild/Xamarin/Android/" "/usr/lib/mono/xbuild/Xamarin/Android"
-            sudo ln -s "/usr/lib/xamarin.android/xbuild-frameworks/MonoAndroid/" "/usr/lib/mono/xbuild-frameworks/MonoAndroid"
- 
       - run:
           name: Build SDK
           command: msbuild /restore /p:TargetFramework=MonoAndroid81 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
       - run:
           name: Build test project
-          command: xamarin.android-oss_v9.2.99.172_Linux-x86_64_master_d33bbd8e-Release/bin/Debug/bin/xabuild /restore /t:SignAndroidPackage tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
+          command: ~/xamarin-android/bin/Debug/bin/xabuild /restore /t:SignAndroidPackage tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
           # Note, xabuild is just a wrapper for msbuild that adds various tools paths etc. necessary for building an
           # Android app. See: https://github.com/xamarin/xamarin-android/blob/master/tools/scripts/xabuild
 
