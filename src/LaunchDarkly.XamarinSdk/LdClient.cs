@@ -418,7 +418,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            return Online;
+            return Online && updateProcessor.Initialized();
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
