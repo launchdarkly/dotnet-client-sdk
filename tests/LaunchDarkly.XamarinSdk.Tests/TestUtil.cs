@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using Newtonsoft.Json;
@@ -11,20 +12,83 @@ namespace LaunchDarkly.Xamarin.Tests
     {
         // Any tests that are going to access the static LdClient.Instance must hold this lock,
         // to avoid interfering with tests that use CreateClient.
-        public static readonly object ClientInstanceLock = new object();
+        private static readonly SemaphoreSlim ClientInstanceLock = new SemaphoreSlim(1);
+
+        private static ThreadLocal<bool> InClientLock = new ThreadLocal<bool>();
+
+        public static T WithClientLock<T>(Func<T> f)
+        {
+            // This cumbersome combination of a ThreadLocal and a SemaphoreSlim is simply because 1. we have to use
+            // SemaphoreSlim (I think) since there's no way to wait on a regular lock in *async* code, and 2. SemaphoreSlim
+            // is not reentrant, so we need to make sure a thread can't block itself.
+            if (InClientLock.Value)
+            {
+                return f.Invoke();
+            }
+            ClientInstanceLock.Wait();
+            try
+            {
+                InClientLock.Value = true;
+                return f.Invoke();
+            }
+            finally
+            {
+                InClientLock.Value = false;
+                ClientInstanceLock.Release();
+            }
+        }
+
+        public static void WithClientLock(Action a)
+        {
+            if (InClientLock.Value)
+            {
+                a.Invoke();
+                return;
+            }
+            ClientInstanceLock.Wait();
+            try
+            {
+                InClientLock.Value = true;
+                a.Invoke();
+            }
+            finally
+            {
+                InClientLock.Value = false;
+                ClientInstanceLock.Release();
+            }
+        }
+
+        public static async Task<T> WithClientLockAsync<T>(Func<Task<T>> f)
+        {
+            if (InClientLock.Value)
+            {
+                return await f.Invoke();
+            }
+            await ClientInstanceLock.WaitAsync();
+            try
+            {
+                InClientLock.Value = true;
+                return await f.Invoke();
+            }
+            finally
+            {
+                InClientLock.Value = false;
+                ClientInstanceLock.Release();
+            }
+        }
 
         // Calls LdClient.Init, but then sets LdClient.Instance to null so other tests can
         // instantiate their own independent clients. Application code cannot do this because
         // the LdClient.Instance setter has internal scope.
         public static LdClient CreateClient(Configuration config, User user, TimeSpan? timeout = null)
         {
-            ClearClient();
-            lock (ClientInstanceLock)
+            return WithClientLock(() =>
             {
+                ClearClient();
                 LdClient client = LdClient.Init(config, user, timeout ?? TimeSpan.FromSeconds(1));
-                LdClient.Instance = null;
+                client.DetachInstance();
                 return client;
-            }
+            });
         }
 
         // Calls LdClient.Init, but then sets LdClient.Instance to null so other tests can
@@ -32,25 +96,21 @@ namespace LaunchDarkly.Xamarin.Tests
         // the LdClient.Instance setter has internal scope.
         public static async Task<LdClient> CreateClientAsync(Configuration config, User user)
         {
-            ClearClient();
-            LdClient client = await LdClient.InitAsync(config, user);
-            lock (ClientInstanceLock)
+            return await WithClientLockAsync(async () =>
             {
-                LdClient.Instance = null;
-            }
-            return client;
+                ClearClient();
+                LdClient client = await LdClient.InitAsync(config, user);
+                client.DetachInstance();
+                return client;
+            });
         }
 
         public static void ClearClient()
         {
-            lock (ClientInstanceLock)
+            WithClientLock(() =>
             {
-                if (LdClient.Instance != null)
-                {
-                    (LdClient.Instance as IDisposable).Dispose();
-                    LdClient.Instance = null;
-                }
-            }
+                LdClient.Instance?.Dispose();
+            });
         }
 
         public static string JsonFlagsWithSingleFlag(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
@@ -88,8 +148,7 @@ namespace LaunchDarkly.Xamarin.Tests
                                                        .WithEventProcessor(new MockEventProcessor())
                                                        .WithUpdateProcessorFactory(MockPollingProcessor.Factory(null))
                                                        .WithPersistentStorage(new MockPersistentStorage())
-                                                       .WithDeviceInfo(new MockDeviceInfo(""))
-                                                       .WithFeatureFlagListenerManager(new FeatureFlagListenerManager());
+                                                       .WithDeviceInfo(new MockDeviceInfo(""));
             return configuration;
         }
     }

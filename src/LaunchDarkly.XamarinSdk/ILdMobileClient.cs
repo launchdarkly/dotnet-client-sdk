@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using LaunchDarkly.Common;
 using System.Threading.Tasks;
@@ -150,25 +151,32 @@ namespace LaunchDarkly.Xamarin
         IDictionary<string, JToken> AllFlags();
 
         /// <summary>
-        /// Registers an instance of <see cref="IFeatureFlagListener"/> for a given flag key to observe 
-        /// flag value changes.
-        /// 
-        /// It is important to note that this callback scheme will need to be handled on the Main UI thread,
-        /// if you plan on updating UI components with flag values.
-        /// 
+        /// This event is triggered when the client has received an updated value for a feature flag.
         /// </summary>
-        /// <param name="flagKey">The flag key you want to observe changes for.</param>
-        /// <param name="listener">The instance of the IFeatureFlagListener.</param>
-        void RegisterFeatureFlagListener(string flagKey, IFeatureFlagListener listener);
-
-        /// <summary>
-        /// Unregisters an instance of <see cref="IFeatureFlagListener"/> for a given flag key to stop observing
-        /// flag value changes.
-        /// 
-        /// </summary>
-        /// <param name="flagKey">The flag key you want to observe changes for.</param>
-        /// <param name="listener">The instance of the IFeatureFlagListener.</param>
-        void UnregisterFeatureFlagListener(string flagKey, IFeatureFlagListener listener);
+        /// <remarks>
+        /// This could mean that the flag configuration was changed in LaunchDarkly, or that you have changed the current
+        /// user and the flag values are different for this user than for the previous user. The event is only triggered
+        /// if the newly received flag value is actually different from the previous one.
+        ///
+        /// The <see cref="FlagChangedEventArgs"/> properties will indicate the key of the feature flag, the new value,
+        /// and the previous value.
+        ///
+        /// On platforms that have a main UI thread (such as iOS and Android), handlers for this event are guaranteed to
+        /// be called on that thread; on other platforms, the SDK uses a thread pool. Either way, the handler is called
+        /// called asynchronously after whichever SDK action triggered the flag change has already completed. This is to
+        /// avoid deadlocks, in case the action was also on the main thread, or on a thread that was holding a lock on
+        /// some application resource that the handler also uses.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     client.FlagChanged += (sender, eventArgs) => {
+        ///         if (eventArgs.Key == "key-for-flag-i-am-watching") {
+        ///             DoSomethingWithNewFlagValue(eventArgs.NewBoolValue);
+        ///         }
+        ///     };
+        /// </code>
+        /// </example>
+        event EventHandler<FlagChangedEventArgs> FlagChanged;
 
         /// <summary>
         /// Registers the user.

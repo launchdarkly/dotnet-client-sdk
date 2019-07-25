@@ -79,17 +79,31 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void SharedClientIsTheOnlyClientAvailable()
         {
-            lock (TestUtil.ClientInstanceLock)
+            TestUtil.WithClientLock(() =>
             {
                 var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
                 using (var client = LdClient.Init(config, simpleUser, TimeSpan.Zero))
                 {
                     Assert.Throws<Exception>(() => LdClient.Init(config, simpleUser, TimeSpan.Zero));
                 }
-            }
-            TestUtil.ClearClient();
+                TestUtil.ClearClient();
+            });
         }
-        
+
+        [Fact]
+        public void CanCreateNewClientAfterDisposingOfSharedInstance()
+        {
+            TestUtil.WithClientLock(() =>
+            {
+                TestUtil.ClearClient();
+                var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}");
+                using (var client0 = LdClient.Init(config, simpleUser, TimeSpan.Zero)) { }
+                Assert.Null(LdClient.Instance);
+                // Dispose() is called automatically at end of "using" block
+                using (var client1 = LdClient.Init(config, simpleUser, TimeSpan.Zero)) { }
+            });
+        }
+
         [Fact]
         public void ConnectionManagerShouldKnowIfOnlineOrNot()
         {
@@ -212,32 +226,18 @@ namespace LaunchDarkly.Xamarin.Tests
         }
         
         [Fact]
-        public void CanRegisterListener()
+        public void CanRegisterAndUnregisterFlagChangedHandlers()
         {
             using (var client = Client())
             {
-                var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-                var listener = new TestListener();
-                client.RegisterFeatureFlagListener("user1-flag", listener);
-                listenerMgr.FlagWasUpdated("user1-flag", 7);
-                Assert.Equal(7, listener.FeatureFlags["user1-flag"].ToObject<int>());
-            }
-        }
-
-        [Fact]
-        public void UnregisterListenerUnregistersPassedInListenerForFlagKeyOnListenerManager()
-        {
-            using (var client = Client())
-            {
-                var listenerMgr = client.Config.FeatureFlagListenerManager as FeatureFlagListenerManager;
-                var listener = new TestListener();
-                client.RegisterFeatureFlagListener("user2-flag", listener);
-                listenerMgr.FlagWasUpdated("user2-flag", 7);
-                Assert.Equal(7, listener.FeatureFlags["user2-flag"]);
-
-                client.UnregisterFeatureFlagListener("user2-flag", listener);
-                listenerMgr.FlagWasUpdated("user2-flag", 12);
-                Assert.NotEqual(12, listener.FeatureFlags["user2-flag"]);
+                EventHandler<FlagChangedEventArgs> handler1 = (sender, args) => { };
+                EventHandler<FlagChangedEventArgs> handler2 = (sender, args) => { };
+                var eventManager = client.flagChangedEventManager as FlagChangedEventManager;
+                client.FlagChanged += handler1;
+                client.FlagChanged += handler2;
+                client.FlagChanged -= handler1;
+                Assert.False(eventManager.IsHandlerRegistered(handler1));
+                Assert.True(eventManager.IsHandlerRegistered(handler2));
             }
         }
 
