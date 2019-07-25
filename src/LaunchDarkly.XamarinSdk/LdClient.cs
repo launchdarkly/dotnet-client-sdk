@@ -81,7 +81,7 @@ namespace LaunchDarkly.Xamarin
                 throw new ArgumentNullException(nameof(user));
             }
 
-            Config = nameof(configuration) ?? throw new ArgumentNullException("configuration");
+            Config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             connectionLock = new SemaphoreSlim(1, 1);
 
