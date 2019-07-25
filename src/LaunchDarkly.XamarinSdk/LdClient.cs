@@ -77,7 +77,7 @@ namespace LaunchDarkly.Xamarin
                 throw new ArgumentNullException("user");
             }
 
-            Config = configuration ?? throw new ArgumentNullException("configuration");
+            Config = nameof(configuration) ?? throw new ArgumentNullException("configuration");
 
             connectionLock = new SemaphoreSlim(1, 1);
 
@@ -458,7 +458,10 @@ namespace LaunchDarkly.Xamarin
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
-            return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+            if (Online)
+                return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+            else
+                return true;
         }
 
         Task StartUpdateProcessorAsync()
