@@ -592,7 +592,7 @@ namespace LaunchDarkly.Xamarin
         void ResetProcessorForForeground()
         {
             string didBackground = persister.GetValue(Constants.BACKGROUNDED_WHILE_STREAMING);
-            if (didBackground.Equals("true"))
+            if (didBackground != null && didBackground.Equals("true"))
             {
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
                 ClearUpdateProcessor();
