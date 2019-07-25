@@ -59,7 +59,7 @@ namespace LaunchDarkly.Xamarin
 
         readonly SemaphoreSlim connectionLock;
 
-        bool online;
+        volatile bool online;
         /// <see cref="ILdMobileClient.Online"/>
         public bool Online
         {
