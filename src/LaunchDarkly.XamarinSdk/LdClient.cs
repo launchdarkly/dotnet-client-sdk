@@ -499,22 +499,33 @@ namespace LaunchDarkly.Xamarin
 
         User DecorateUser(User user)
         {
-            var newUser = new User(user);
+            IUserBuilder buildUser = null;
             if (UserMetadata.DeviceName != null)
             {
-                newUser = newUser.AndCustomAttribute("device", UserMetadata.DeviceName);
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Custom("device", UserMetadata.DeviceName);
             }
             if (UserMetadata.OSName != null)
             {
-                newUser = newUser.AndCustomAttribute("os", UserMetadata.OSName);
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Custom("os", UserMetadata.OSName);
             }
             // If you pass in a user with a null or blank key, one will be assigned to them.
             if (String.IsNullOrEmpty(user.Key))
             {
-                newUser.Key = deviceInfo.UniqueDeviceId();
-                newUser.Anonymous = true;
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Key(deviceInfo.UniqueDeviceId()).Anonymous(true);
             }
-            return newUser;
+            return buildUser is null ? user : buildUser.Build();
         }
 
         public void Dispose()
