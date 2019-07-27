@@ -22,7 +22,7 @@ jobs:
 
   test-android:
     docker:
-      - image: ldcircleci/ld-xamarin-android-linux
+      - image: ldcircleci/ld-xamarin-android-linux:api27
 
     steps:
       - checkout
