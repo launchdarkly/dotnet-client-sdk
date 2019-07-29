@@ -285,7 +285,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact(Skip = SkipIfCannotCreateHttpServer)]
-        public void BackgroundOfflineClientUsesCachedFlagsSync()
+        public void OfflineClientUsesCachedFlagsSyncAfterStartUpdateProcessor()
         {
             WithServer(server =>
             {
@@ -313,7 +313,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact(Skip = SkipIfCannotCreateHttpServer)]
-        public async Task BackgroundOfflineClientUsesCachedFlagsAsync()
+        public async Task OfflineClientUsesCachedFlagsAsyncAfterStartUpdateProcessorAsync()
         {
             await WithServerAsync(async server =>
             {
