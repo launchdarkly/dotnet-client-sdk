@@ -18,7 +18,7 @@ namespace LaunchDarkly.Xamarin.Tests
             "}";
 
         private readonly User user = User.WithKey("me");
-        private const string encodedUser = "eyJrZXkiOiJtZSIsImN1c3RvbSI6e319";
+        private const string encodedUser = "eyJrZXkiOiJtZSIsImFub255bW91cyI6ZmFsc2UsImN1c3RvbSI6e319";
 
         private EventSourceMock mockEventSource;
         private TestEventSourceFactory eventSourceFactory;
