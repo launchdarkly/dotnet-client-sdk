@@ -8,38 +8,37 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// The interval between feature flag updates when the app is running in the background.
         /// </summary>
-        /// <value>The background polling interval.</value>
         TimeSpan BackgroundPollingInterval { get; }
 
         /// <summary>
         /// When streaming mode is disabled, this is the interval between feature flag updates.
         /// </summary>
-        /// <value>The feature flag polling interval.</value>
         TimeSpan PollingInterval { get; }
 
         /// <summary>
-        /// Gets the connection timeout to the LaunchDarkly server
+        /// The connection timeout to the LaunchDarkly server.
         /// </summary>
-        /// <value>The connection timeout.</value>
         TimeSpan ConnectionTimeout { get; }
 
         /// <summary>
         /// Whether to enable feature flag updates when the app is running in the background.
         /// </summary>
-        /// <value><c>true</c> if disable background updating; otherwise, <c>false</c>.</value>
         bool EnableBackgroundUpdating { get; }
 
         /// <summary>
-        /// Whether to enable real-time streaming flag updates. When false, 
-        /// feature flags are updated via polling.
+        /// The time between flushes of the event buffer. Decreasing the flush interval means
+        /// that the event buffer is less likely to reach capacity. The default value is 5 seconds.
         /// </summary>
-        /// <value><c>true</c> if streaming; otherwise, <c>false</c>.</value>
+        TimeSpan EventFlushInterval { get; }
+
+        /// <summary>
+        /// Whether to enable real-time streaming flag updates. When false, feature flags are updated via polling.
+        /// </summary>
         bool IsStreamingEnabled { get; }
 
         /// <summary>
         /// Whether to use the REPORT HTTP verb when fetching flags from LaunchDarkly.
         /// </summary>
-        /// <value><c>true</c> if use report; otherwise, <c>false</c>.</value>
         bool UseReport { get; }
 
         /// <summary>
@@ -49,7 +48,6 @@ namespace LaunchDarkly.Xamarin
         /// increases the size of network requests, such information is not sent unless you set this option
         /// to true.
         /// </summary>
-        /// <value><c>true</c> if evaluation reasons are desired.</value>
         bool EvaluationReasons { get; }
 
         /// <summary>
@@ -63,7 +61,6 @@ namespace LaunchDarkly.Xamarin
         /// API, which stores file data under the current account's home directory at
         /// <c>~/.local/share/IsolateStorage/</c>.
         /// </remarks>
-        /// <value><c>true</c> if flag values should be stored locally (the default).</value>
         bool PersistFlagValues { get; }
     }
 }

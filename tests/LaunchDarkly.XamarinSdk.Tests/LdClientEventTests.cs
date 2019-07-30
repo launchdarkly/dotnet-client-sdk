@@ -11,9 +11,9 @@ namespace LaunchDarkly.Xamarin.Tests
 
         public LdClient MakeClient(User user, string flagsJson)
         {
-            Configuration config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);
-            config.WithEventProcessor(eventProcessor);
-            return TestUtil.CreateClient(config, user);
+            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);
+            config.EventProcessor(eventProcessor);
+            return TestUtil.CreateClient(config.Build(), user);
         }
 
         [Fact]

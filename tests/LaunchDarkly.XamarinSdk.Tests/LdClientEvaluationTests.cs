@@ -12,7 +12,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private static LdClient ClientWithFlagsJson(string flagsJson)
         {
-            var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson);
+            var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson).Build();
             return TestUtil.CreateClient(config, user);
         }
 
