@@ -14,7 +14,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         IUserFlagCache deviceCache = new UserFlagInMemoryCache();
         IUserFlagCache inMemoryCache = new UserFlagInMemoryCache();
-        FeatureFlagListenerManager listenerManager = new FeatureFlagListenerManager();
+        FlagChangedEventManager listenerManager = new FlagChangedEventManager();
 
         User user = User.WithKey("someKey");
 
@@ -47,7 +47,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void ShouldBeAbleToRemoveFlagForUser()
+        public void CanRemoveFlagForUser()
         {
             var manager = ManagerWithCachedFlags();
             manager.RemoveFlagForUser("int-key", user);
@@ -55,7 +55,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void ShouldBeAbleToUpdateFlagForUser()
+        public void CanUpdateFlagForUser()
         {
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
@@ -68,49 +68,53 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void UpdateFlagUpdatesTheFlagOnListenerManager()
+        public void UpdateFlagSendsFlagChangeEvent()
         {
-            var listener = new TestListener(1);
-            listenerManager.RegisterListener(listener, "int-flag");
+            var listener = new FlagChangedEventSink();
+            listenerManager.FlagChanged += listener.Handler;
 
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
             updatedFeatureFlag.value = JToken.FromObject(7);
 
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
-            listener.Countdown.Wait();
 
-            Assert.Equal(7, listener.FeatureFlags["int-flag"].ToObject<int>());
+            var e = listener.Await();
+            Assert.Equal("int-flag", e.Key);
+            Assert.Equal(7, e.NewIntValue);
+            Assert.False(e.FlagWasDeleted);
         }
 
         [Fact]
-        public void RemoveFlagTellsListenerManagerToTellListenersFlagWasDeleted()
+        public void RemoveFlagSendsFlagChangeEvent()
         {
-            var listener = new TestListener(1);
-            listener.FeatureFlags["int-flag"] = JToken.FromObject(1);
-            listenerManager.RegisterListener(listener, "int-flag");
+            var listener = new FlagChangedEventSink();
+            listenerManager.FlagChanged += listener.Handler;
 
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
             updatedFeatureFlag.value = JToken.FromObject(7);
             flagCacheManager.RemoveFlagForUser("int-flag", user);
-            listener.Countdown.Wait();
 
-            Assert.False(listener.FeatureFlags.ContainsKey("int-flag"));
+            var e = listener.Await();
+            Assert.Equal("int-flag", e.Key);
+            Assert.True(e.FlagWasDeleted);
         }
 
         [Fact]
         public void CacheFlagsFromServiceUpdatesListenersIfFlagValueChanged()
         {
-            var listener = new TestListener(1);
-            listenerManager.RegisterListener(listener, "int-flag");
+            var listener = new FlagChangedEventSink();
+            listenerManager.FlagChanged += listener.Handler;
 
             var flagCacheManager = ManagerWithCachedFlags();
             var newFlagsJson = "{\"int-flag\":{\"value\":5}}";
             flagCacheManager.CacheFlagsFromService(TestUtil.DecodeFlagsJson(newFlagsJson), user);
-            listener.Countdown.Wait();
 
-            Assert.Equal(5, listener.FeatureFlags["int-flag"].ToObject<int>());
+            var e = listener.Await();
+            Assert.Equal("int-flag", e.Key);
+            Assert.Equal(5, e.NewIntValue);
+            Assert.False(e.FlagWasDeleted);
         }
     }
 }

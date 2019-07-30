@@ -10,7 +10,7 @@ namespace LaunchDarkly.Xamarin.Tests
         private const string _mobileKey = "FAKE_KEY";
 
         private static readonly User _user = User.WithKey("foo");
-        private const string _encodedUser = "eyJrZXkiOiJmb28iLCJjdXN0b20iOnt9fQ==";
+        private const string _encodedUser = "eyJrZXkiOiJmb28iLCJhbm9ueW1vdXMiOmZhbHNlLCJjdXN0b20iOnt9fQ==";
         // Note that in a real use case, the user encoding may vary depending on the target platform, because the SDK adds custom
         // user attributes like "os". But the lower-level FeatureFlagRequestor component does not do that.
 

@@ -154,7 +154,8 @@ namespace LaunchDarkly.Xamarin.Tests
                 server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
 
                 var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(false);
-                var anonUser = User.WithKey(null).AndAnonymous(true);
+                var name = "Sue";
+                var anonUser = User.Builder((string)null).Name(name).Anonymous(true).Build();
 
                 // Note, on mobile platforms, the generated user key is the device ID and is stable; on other platforms,
                 // it's a GUID that is cached in local storage. Calling ClearCachedClientId() resets the latter.
@@ -165,6 +166,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 {
                     Assert.NotNull(client.User.Key);
                     generatedKey = client.User.Key;
+                    Assert.Equal(name, client.User.Name);
                 }
 
                 using (var client = await TestUtil.CreateClientAsync(config, anonUser))

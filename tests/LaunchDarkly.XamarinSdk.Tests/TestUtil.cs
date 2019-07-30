@@ -148,8 +148,7 @@ namespace LaunchDarkly.Xamarin.Tests
                                                        .WithEventProcessor(new MockEventProcessor())
                                                        .WithUpdateProcessorFactory(MockPollingProcessor.Factory(null))
                                                        .WithPersistentStorage(new MockPersistentStorage())
-                                                       .WithDeviceInfo(new MockDeviceInfo(""))
-                                                       .WithFeatureFlagListenerManager(new FeatureFlagListenerManager());
+                                                       .WithDeviceInfo(new MockDeviceInfo(""));
             return configuration;
         }
     }

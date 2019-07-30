@@ -44,20 +44,20 @@ namespace LaunchDarkly.Xamarin
         /// <value>The User.</value>
         public User User { get; private set; }
 
-        object myLockObjForConnectionChange = new object();
-        object myLockObjForUserUpdate = new object();
+        readonly object myLockObjForConnectionChange = new object();
+        readonly object myLockObjForUserUpdate = new object();
 
-        IFlagCacheManager flagCacheManager;
-        IConnectionManager connectionManager;
-        IMobileUpdateProcessor updateProcessor;
-        IEventProcessor eventProcessor;
-        IPersistentStorage persister;
-        IDeviceInfo deviceInfo;
+        readonly IFlagCacheManager flagCacheManager;
+        readonly IConnectionManager connectionManager;
+        IMobileUpdateProcessor updateProcessor; // not readonly - may need to be recreated
+        readonly IEventProcessor eventProcessor;
+        readonly IPersistentStorage persister;
+        readonly IDeviceInfo deviceInfo;
         readonly EventFactory eventFactoryDefault = EventFactory.Default;
         readonly EventFactory eventFactoryWithReasons = EventFactory.DefaultWithReasons;
-        IFeatureFlagListenerManager flagListenerManager;
+        internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
 
-        SemaphoreSlim connectionLock;
+        readonly SemaphoreSlim connectionLock;
 
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
@@ -67,11 +67,11 @@ namespace LaunchDarkly.Xamarin
         {
             if (configuration == null)
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             Config = configuration;
@@ -80,11 +80,11 @@ namespace LaunchDarkly.Xamarin
 
             persister = Factory.CreatePersistentStorage(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
-            flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
+            flagChangedEventManager = Factory.CreateFlagChangedEventManager(configuration);
 
             User = DecorateUser(user);
 
-            flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagListenerManager, User);
+            flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User);
             connectionManager = Factory.CreateConnectionManager(configuration);
             updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, null);
             eventProcessor = Factory.CreateEventProcessor(configuration);
@@ -463,7 +463,7 @@ namespace LaunchDarkly.Xamarin
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             User newUser = DecorateUser(user);
@@ -505,22 +505,33 @@ namespace LaunchDarkly.Xamarin
 
         User DecorateUser(User user)
         {
-            var newUser = new User(user);
+            IUserBuilder buildUser = null;
             if (UserMetadata.DeviceName != null)
             {
-                newUser = newUser.AndCustomAttribute("device", UserMetadata.DeviceName);
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Custom("device", UserMetadata.DeviceName);
             }
             if (UserMetadata.OSName != null)
             {
-                newUser = newUser.AndCustomAttribute("os", UserMetadata.OSName);
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Custom("os", UserMetadata.OSName);
             }
             // If you pass in a user with a null or blank key, one will be assigned to them.
             if (String.IsNullOrEmpty(user.Key))
             {
-                newUser.Key = deviceInfo.UniqueDeviceId();
-                newUser.Anonymous = true;
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Key(deviceInfo.UniqueDeviceId()).Anonymous(true);
             }
-            return newUser;
+            return buildUser is null ? user : buildUser.Build();
         }
 
         public void Dispose()
@@ -558,22 +569,17 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        /// <see cref="ILdMobileClient.RegisterFeatureFlagListener(string, IFeatureFlagListener)"/>
-        public void RegisterFeatureFlagListener(string flagKey, IFeatureFlagListener listener)
+        /// <see cref="ILdMobileClient.FlagChanged"/>
+        public event EventHandler<FlagChangedEventArgs> FlagChanged
         {
-            flagListenerManager.RegisterListener(listener, flagKey);
-        }
-
-        /// <see cref="ILdMobileClient.UnregisterFeatureFlagListener(string, IFeatureFlagListener)"/>
-        public void UnregisterFeatureFlagListener(string flagKey, IFeatureFlagListener listener)
-        {
-            flagListenerManager.UnregisterListener(listener, flagKey);
-        }
-
-        // for tests only
-        internal bool IsFeatureFlagListenerRegistered(string flagKey, IFeatureFlagListener listener)
-        {
-            return flagListenerManager.IsListenerRegistered(listener, flagKey);
+            add
+            {
+                flagChangedEventManager.FlagChanged += value;
+            }
+            remove
+            {
+                flagChangedEventManager.FlagChanged -= value;
+            }
         }
 
         internal void OnBackgroundModeChanged(object sender, BackgroundModeChangedEventArgs args)
@@ -603,7 +609,7 @@ namespace LaunchDarkly.Xamarin
         void ResetProcessorForForeground()
         {
             string didBackground = persister.GetValue(Constants.BACKGROUNDED_WHILE_STREAMING);
-            if (didBackground.Equals("true"))
+            if (didBackground != null && didBackground.Equals("true"))
             {
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
                 ClearUpdateProcessor();
