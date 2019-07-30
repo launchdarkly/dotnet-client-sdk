@@ -335,14 +335,14 @@ namespace LaunchDarkly.Xamarin
             return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryWithReasons);
         }
 
-        /// <see cref="ILdMobileClient.JsonVariation(string, JToken)"/>
-        public JToken JsonVariation(string key, JToken defaultValue)
+        /// <see cref="ILdMobileClient.JsonVariation(string, ImmutableJsonValue)"/>
+        public ImmutableJsonValue JsonVariation(string key, ImmutableJsonValue defaultValue)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.JsonVariationDetail(string, JToken)"/>
-        public EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue)
+        /// <see cref="ILdMobileClient.JsonVariationDetail(string, ImmutableJsonValue)"/>
+        public EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryWithReasons);
         }
@@ -416,16 +416,16 @@ namespace LaunchDarkly.Xamarin
                                     .ToDictionary(p => p.Key, p => p.Value.value);
         }
 
-        /// <see cref="ILdMobileClient.Track(string, JToken)"/>
-        public void Track(string eventName, JToken data)
+        /// <see cref="ILdMobileClient.Track(string, ImmutableJsonValue)"/>
+        public void Track(string eventName, ImmutableJsonValue data)
         {
-            eventProcessor.SendEvent(eventFactoryDefault.NewCustomEvent(eventName, User, data));
+            eventProcessor.SendEvent(eventFactoryDefault.NewCustomEvent(eventName, User, data.AsJToken()));
         }
 
         /// <see cref="ILdMobileClient.Track(string)"/>
         public void Track(string eventName)
         {
-            Track(eventName, null);
+            Track(eventName, ImmutableJsonValue.FromJToken(null));
         }
 
         /// <see cref="ILdMobileClient.Initialized"/>

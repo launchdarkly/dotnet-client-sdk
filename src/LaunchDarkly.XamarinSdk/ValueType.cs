@@ -1,4 +1,5 @@
 ﻿using System;
+using LaunchDarkly.Client;
 using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
@@ -72,10 +73,10 @@ namespace LaunchDarkly.Xamarin
             ValueToJson = value => value == null ? null : new JValue(value)
         };
 
-        public static ValueType<JToken> Json = new ValueType<JToken>
+        public static ValueType<ImmutableJsonValue> Json = new ValueType<ImmutableJsonValue>
         {
-            ValueFromJson = json => json,
-            ValueToJson = value => value
+            ValueFromJson = json => ImmutableJsonValue.FromJToken(json),
+            ValueToJson = value => value.AsJToken()
         };
     }
 }
