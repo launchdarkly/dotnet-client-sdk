@@ -15,7 +15,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 var user = client.User;
                 Assert.Equal(baseUser.Key, user.Key);
                 Assert.Contains("os", user.Custom.Keys);
-                Assert.StartsWith("iOs ", user.Custom["os"].AsString);
+                Assert.StartsWith("iOS ", user.Custom["os"].AsString);
                 Assert.Contains("device", user.Custom.Keys);
             }
         }
