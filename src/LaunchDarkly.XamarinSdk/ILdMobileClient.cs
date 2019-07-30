@@ -92,30 +92,30 @@ namespace LaunchDarkly.Xamarin
         EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0);
 
         /// <summary>
-        /// Returns the JToken value of a feature flag for a given flag key.
+        /// Returns the JSON value of a feature flag for a given flag key.
         /// </summary>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>the variation for the selected user, or <c>defaultValue</c> if the flag is
         /// disabled in the LaunchDarkly control panel</returns>
-        JToken JsonVariation(string key, JToken defaultValue);
+        ImmutableJsonValue JsonVariation(string key, ImmutableJsonValue defaultValue);
 
         /// <summary>
-        /// Returns the JToken value of a feature flag for a given flag key, in an object that also
+        /// Returns the JSON value of a feature flag for a given flag key, in an object that also
         /// describes the way the value was determined. The <c>Reason</c> property in the result will
         /// also be included in analytics events, if you are capturing detailed event data for this flag.
         /// </summary>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
-        EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue);
+        EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue);
 
         /// <summary>
         /// Tracks that current user performed an event for the given JToken value and given event name.
         /// </summary>
         /// <param name="eventName">the name of the event</param>
-        /// <param name="data">a JSON string containing additional data associated with the event</param>
-        void Track(string eventName, JToken data);
+        /// <param name="data">a JSON value containing additional data associated with the event</param>
+        void Track(string eventName, ImmutableJsonValue data);
 
         /// <summary>
         /// Tracks that current user performed an event for the given event name.

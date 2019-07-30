@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -65,18 +65,45 @@ namespace LaunchDarkly.Xamarin
         /// <value>The User.</value>
         public User User => _user;
 
+        /// <see cref="ILdMobileClient.Online"/>
+        public bool Online
+        {
+            get => online;
+            set
+            {
+                var doNotAwaitResult = SetOnlineAsync(value);
+            }
+        }
+
+        readonly object myLockObjForConnectionChange = new object();
+        readonly object myLockObjForUserUpdate = new object();
+
+        readonly IFlagCacheManager flagCacheManager;
+        readonly IConnectionManager connectionManager;
+        IMobileUpdateProcessor updateProcessor; // not readonly - may need to be recreated
+        readonly IEventProcessor eventProcessor;
+        readonly IPersistentStorage persister;
+        readonly IDeviceInfo deviceInfo;
+        readonly EventFactory eventFactoryDefault = EventFactory.Default;
+        readonly EventFactory eventFactoryWithReasons = EventFactory.DefaultWithReasons;
+        internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
+
+        readonly SemaphoreSlim connectionLock;
+
+        volatile bool online;
+
+        // private constructor prevents initialization of this class
+        // without using WithConfigAnduser(config, user)
+        LdClient() { }
+
         LdClient(Configuration configuration, User user)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            _config = configuration;
+            _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             _connectionLock = new SemaphoreSlim(1, 1);
 
@@ -229,16 +256,6 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        bool StartUpdateProcessor(TimeSpan maxWaitTime)
-        {
-            return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
-        }
-
-        Task StartUpdateProcessorAsync()
-        {
-            return updateProcessor.Start();
-        }
-
         void SetupConnectionManager()
         {
             if (connectionManager is MobileConnectionManager mobileConnectionManager)
@@ -248,17 +265,6 @@ namespace LaunchDarkly.Xamarin
                                connectionManager.IsConnected);
             }
             online = connectionManager.IsConnected;
-        }
-
-        bool online;
-        /// <see cref="ILdMobileClient.Online"/>
-        public bool Online
-        {
-            get => online;
-            set
-            {
-                var doNotAwaitResult = SetOnlineAsync(value);
-            }
         }
 
         public async Task SetOnlineAsync(bool value)
@@ -337,14 +343,14 @@ namespace LaunchDarkly.Xamarin
             return VariationInternal(key, defaultValue, ValueTypes.Int, _eventFactoryWithReasons);
         }
 
-        /// <see cref="ILdMobileClient.JsonVariation(string, JToken)"/>
-        public JToken JsonVariation(string key, JToken defaultValue)
+        /// <see cref="ILdMobileClient.JsonVariation(string, ImmutableJsonValue)"/>
+        public ImmutableJsonValue JsonVariation(string key, ImmutableJsonValue defaultValue)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.JsonVariationDetail(string, JToken)"/>
-        public EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue)
+        /// <see cref="ILdMobileClient.JsonVariationDetail(string, ImmutableJsonValue)"/>
+        public EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryWithReasons);
         }
@@ -418,16 +424,16 @@ namespace LaunchDarkly.Xamarin
                                     .ToDictionary(p => p.Key, p => p.Value.value);
         }
 
-        /// <see cref="ILdMobileClient.Track(string, JToken)"/>
-        public void Track(string eventName, JToken data)
+        /// <see cref="ILdMobileClient.Track(string, ImmutableJsonValue)"/>
+        public void Track(string eventName, ImmutableJsonValue data)
         {
-            eventProcessor.SendEvent(_eventFactoryDefault.NewCustomEvent(eventName, User, data));
+            eventProcessor.SendEvent(_eventFactoryDefault.NewCustomEvent(eventName, User, data.AsJToken()));
         }
 
         /// <see cref="ILdMobileClient.Track(string)"/>
         public void Track(string eventName)
         {
-            Track(eventName, null);
+            Track(eventName, ImmutableJsonValue.FromJToken(null));
         }
 
         /// <see cref="ILdMobileClient.Initialized"/>
@@ -476,6 +482,22 @@ namespace LaunchDarkly.Xamarin
             }
 
             eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(newUser));
+        }
+
+        bool StartUpdateProcessor(TimeSpan maxWaitTime)
+        {
+            if (Online)
+                return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+            else
+                return true;
+        }
+
+        Task StartUpdateProcessorAsync()
+        {
+            if (Online)
+                return updateProcessor.Start();
+            else
+                return Task.FromResult(true);
         }
 
         async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)

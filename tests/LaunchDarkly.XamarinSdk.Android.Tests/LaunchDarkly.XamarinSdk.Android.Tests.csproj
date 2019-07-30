@@ -108,6 +108,7 @@
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\WireMockExtensions.cs">
       <Link>SharedTestCode\WireMockExtensions.cs</Link>
     </Compile>
+    <Compile Include="AndroidSpecificTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
