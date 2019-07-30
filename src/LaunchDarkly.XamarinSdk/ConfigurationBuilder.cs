@@ -93,6 +93,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="eventflushInterval">the flush interval</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder EventFlushInterval(TimeSpan eventflushInterval);
+        
         /// <summary>
         /// Enables event sampling if non-zero. 
         /// </summary>
