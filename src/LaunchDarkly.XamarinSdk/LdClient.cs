@@ -42,6 +42,7 @@ namespace LaunchDarkly.Xamarin
         // These LdClient fields are not readonly because they change according to online status
         volatile IMobileUpdateProcessor updateProcessor;
         volatile bool _disableStreaming;
+        volatile bool _online;
 
         /// <summary>
         /// The singleton instance used by your application throughout its lifetime. Once this exists, you cannot

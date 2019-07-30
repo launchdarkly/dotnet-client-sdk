@@ -9,7 +9,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void UserHasOSAndDeviceAttributesForPlatform()
         {
             var baseUser = User.WithKey("key");
-            var config = TestUtil.ConfigWithFlagsJson(baseUser, "mobileKey", "{}");
+            var config = TestUtil.ConfigWithFlagsJson(baseUser, "mobileKey", "{}").build();
             using (var client = TestUtil.CreateClient(config, baseUser))
             {
                 var user = client.User;
