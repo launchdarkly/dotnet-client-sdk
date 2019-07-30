@@ -75,23 +75,6 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        readonly object myLockObjForConnectionChange = new object();
-        readonly object myLockObjForUserUpdate = new object();
-
-        readonly IFlagCacheManager flagCacheManager;
-        readonly IConnectionManager connectionManager;
-        IMobileUpdateProcessor updateProcessor; // not readonly - may need to be recreated
-        readonly IEventProcessor eventProcessor;
-        readonly IPersistentStorage persister;
-        readonly IDeviceInfo deviceInfo;
-        readonly EventFactory eventFactoryDefault = EventFactory.Default;
-        readonly EventFactory eventFactoryWithReasons = EventFactory.DefaultWithReasons;
-        internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
-
-        readonly SemaphoreSlim connectionLock;
-
-        volatile bool online;
-
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
         LdClient() { }
