@@ -68,7 +68,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Online"/>
         public bool Online
         {
-            get => online;
+            get => _online;
             set
             {
                 var doNotAwaitResult = SetOnlineAsync(value);
@@ -247,16 +247,16 @@ namespace LaunchDarkly.Xamarin
                 Log.InfoFormat("The mobile client connection changed online to {0}",
                                connectionManager.IsConnected);
             }
-            online = connectionManager.IsConnected;
+            _online = connectionManager.IsConnected;
         }
 
         public async Task SetOnlineAsync(bool value)
         {
             await _connectionLock.WaitAsync();
-            online = value;
+            _online = value;
             try
             {
-                if (online)
+                if (_online)
                 {
                     await RestartUpdateProcessorAsync(Config.PollingInterval);
                 }
@@ -428,7 +428,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdCommonClient.IsOffline()"/>
         public bool IsOffline()
         {
-            return !online;
+            return !_online;
         }
 
         /// <see cref="ILdCommonClient.Flush()"/>
