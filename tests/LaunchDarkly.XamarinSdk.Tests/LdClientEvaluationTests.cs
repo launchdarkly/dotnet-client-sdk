@@ -12,7 +12,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private static LdClient ClientWithFlagsJson(string flagsJson)
         {
-            var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson);
+            var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson).Build();
             return TestUtil.CreateClient(config, user);
         }
 
@@ -167,8 +167,7 @@ namespace LaunchDarkly.Xamarin.Tests
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
-                var defaultValue = new JValue(3);
-                Assert.Equal(jsonValue, client.JsonVariation("flag-key", defaultValue));
+                Assert.Equal(jsonValue, client.JsonVariation("flag-key", ImmutableJsonValue.FromJToken(3)).AsJToken());
             }
         }
 
@@ -177,7 +176,8 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var client = ClientWithFlagsJson("{}"))
             {
-                Assert.Null(client.JsonVariation(nonexistentFlagKey, null));
+                var defaultVal = ImmutableJsonValue.FromJToken(3);
+                Assert.Equal(defaultVal, client.JsonVariation(nonexistentFlagKey, defaultVal));
             }
         }
 
@@ -190,9 +190,9 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 var expected = new EvaluationDetail<JToken>(jsonValue, 1, reason);
-                var result = client.JsonVariationDetail("flag-key", new JValue(3));
+                var result = client.JsonVariationDetail("flag-key", ImmutableJsonValue.FromJToken(3));
                 // Note, JToken.Equals() doesn't work, so we need to test each property separately
-                Assert.True(JToken.DeepEquals(expected.Value, result.Value));
+                Assert.True(JToken.DeepEquals(expected.Value, result.Value.AsJToken()));
                 Assert.Equal(expected.VariationIndex, result.VariationIndex);
                 Assert.Equal(expected.Reason, result.Reason);
             }

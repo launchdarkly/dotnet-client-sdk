@@ -119,7 +119,6 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                     {
                         if (info == null || !info.IsAvailable)
                             return;
-
                         if (info.IsConnected)
                             currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
                         else if (info.IsConnectedOrConnecting)
