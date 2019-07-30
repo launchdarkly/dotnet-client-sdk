@@ -193,6 +193,7 @@
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\WireMockExtensions.cs">
           <Link>SharedTestCode\WireMockExtensions.cs</Link>
         </Compile>
+        <Compile Include="IOsSpecificTests.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
