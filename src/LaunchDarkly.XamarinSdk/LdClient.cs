@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -44,6 +44,16 @@ namespace LaunchDarkly.Xamarin
         /// <value>The User.</value>
         public User User { get; private set; }
 
+        /// <see cref="ILdMobileClient.Online"/>
+        public bool Online
+        {
+            get => online;
+            set
+            {
+                var doNotAwaitResult = SetOnlineAsync(value);
+            }
+        }
+
         readonly object myLockObjForConnectionChange = new object();
         readonly object myLockObjForUserUpdate = new object();
 
@@ -59,22 +69,20 @@ namespace LaunchDarkly.Xamarin
 
         readonly SemaphoreSlim connectionLock;
 
+        volatile bool online;
+
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
         LdClient() { }
 
         LdClient(Configuration configuration, User user)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            Config = configuration;
+            Config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             connectionLock = new SemaphoreSlim(1, 1);
 
@@ -227,16 +235,6 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        bool StartUpdateProcessor(TimeSpan maxWaitTime)
-        {
-            return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
-        }
-
-        Task StartUpdateProcessorAsync()
-        {
-            return updateProcessor.Start();
-        }
-
         void SetupConnectionManager()
         {
             if (connectionManager is MobileConnectionManager mobileConnectionManager)
@@ -246,17 +244,6 @@ namespace LaunchDarkly.Xamarin
                                connectionManager.IsConnected);
             }
             online = connectionManager.IsConnected;
-        }
-
-        bool online;
-        /// <see cref="ILdMobileClient.Online"/>
-        public bool Online
-        {
-            get => online;
-            set
-            {
-                var doNotAwaitResult = SetOnlineAsync(value);
-            }
         }
 
         public async Task SetOnlineAsync(bool value)
@@ -474,6 +461,22 @@ namespace LaunchDarkly.Xamarin
             }
 
             eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(newUser));
+        }
+
+        bool StartUpdateProcessor(TimeSpan maxWaitTime)
+        {
+            if (Online)
+                return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+            else
+                return true;
+        }
+
+        Task StartUpdateProcessorAsync()
+        {
+            if (Online)
+                return updateProcessor.Start();
+            else
+                return Task.FromResult(true);
         }
 
         async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)
