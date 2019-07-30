@@ -9,25 +9,27 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CanOverrideConfiguration()
         {
-            var config = Configuration.Default("AnyOtherSdkKey")
-                .WithBaseUri("https://app.AnyOtherEndpoint.com")
-                .WithEventQueueCapacity(99)
-                .WithPollingInterval(TimeSpan.FromMinutes(45));
+            var config = Configuration.Builder("AnyOtherSdkKey")
+                .BaseUri(new Uri("https://app.AnyOtherEndpoint.com"))
+                .EventCapacity(99)
+                .PollingInterval(TimeSpan.FromMinutes(45))
+                .Build();
 
             Assert.Equal(new Uri("https://app.AnyOtherEndpoint.com"), config.BaseUri);
             Assert.Equal("AnyOtherSdkKey", config.MobileKey);
-            Assert.Equal(99, config.EventQueueCapacity);
+            Assert.Equal(99, config.EventCapacity);
             Assert.Equal(TimeSpan.FromMinutes(45), config.PollingInterval);
         }
 
         [Fact]
         public void CanOverrideStreamConfiguration()
         {
-            var config = Configuration.Default("AnyOtherSdkKey")
-                .WithStreamUri("https://stream.AnyOtherEndpoint.com")
-                .WithIsStreamingEnabled(false)
-                .WithReadTimeout(TimeSpan.FromDays(1))
-                .WithReconnectTime(TimeSpan.FromDays(1));
+            var config = Configuration.Builder("AnyOtherSdkKey")
+                .StreamUri(new Uri("https://stream.AnyOtherEndpoint.com"))
+                .IsStreamingEnabled(false)
+                .ReadTimeout(TimeSpan.FromDays(1))
+                .ReconnectTime(TimeSpan.FromDays(1))
+                .Build();
 
             Assert.Equal(new Uri("https://stream.AnyOtherEndpoint.com"), config.StreamUri);
             Assert.False(config.IsStreamingEnabled);
@@ -50,7 +52,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CannotSetTooSmallPollingInterval()
         {
-            var config = Configuration.Default("AnyOtherSdkKey").WithPollingInterval(TimeSpan.FromSeconds(299));
+            var config = Configuration.Builder("AnyOtherSdkKey").PollingInterval(TimeSpan.FromSeconds(299)).Build();
 
             Assert.Equal(TimeSpan.FromSeconds(300), config.PollingInterval);
         }
@@ -58,7 +60,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CannotSetTooSmallBackgroundPollingInterval()
         {
-            var config = Configuration.Default("SdkKey").WithBackgroundPollingInterval(TimeSpan.FromSeconds(899));
+            var config = Configuration.Builder("SdkKey").BackgroundPollingInterval(TimeSpan.FromSeconds(899)).Build();
 
             Assert.Equal(TimeSpan.FromSeconds(900), config.BackgroundPollingInterval);
         }
@@ -67,8 +69,9 @@ namespace LaunchDarkly.Xamarin.Tests
         public void CanSetHttpClientHandler()
         {
             var handler = new HttpClientHandler();
-            var config = Configuration.Default("AnyOtherSdkKey")
-                .WithHttpClientHandler(handler);
+            var config = Configuration.Builder("AnyOtherSdkKey")
+                .HttpClientHandler(handler)
+                .Build();
 
             Assert.Equal(handler, config.HttpClientHandler);
         }

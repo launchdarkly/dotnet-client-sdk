@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using Xunit;
 
@@ -23,8 +24,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(false);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(false).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {
@@ -49,8 +50,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(false).WithEvaluationReasons(true);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(false).EvaluationReasons(true).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {
@@ -75,8 +76,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(true);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(true).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {
@@ -104,8 +105,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(true).WithEvaluationReasons(true);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(true).EvaluationReasons(true).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {

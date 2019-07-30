@@ -133,7 +133,7 @@ namespace LaunchDarkly.Xamarin.Tests
             return JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsJson);
         }
 
-        public static Configuration ConfigWithFlagsJson(User user, string appKey, string flagsJson)
+        internal static ConfigurationBuilder ConfigWithFlagsJson(User user, string appKey, string flagsJson)
         {
             var flags = DecodeFlagsJson(flagsJson);
             IUserFlagCache stubbedFlagCache = new UserFlagInMemoryCache();
@@ -142,14 +142,13 @@ namespace LaunchDarkly.Xamarin.Tests
                 stubbedFlagCache.CacheFlagsForUser(flags, user);
             }
 
-            Configuration configuration = Configuration.Default(appKey)
-                                                       .WithFlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
-                                                       .WithConnectionManager(new MockConnectionManager(true))
-                                                       .WithEventProcessor(new MockEventProcessor())
-                                                       .WithUpdateProcessorFactory(MockPollingProcessor.Factory(null))
-                                                       .WithPersistentStorage(new MockPersistentStorage())
-                                                       .WithDeviceInfo(new MockDeviceInfo(""));
-            return configuration;
+            return Configuration.BuilderInternal(appKey)
+                                .FlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
+                                .ConnectionManager(new MockConnectionManager(true))
+                                .EventProcessor(new MockEventProcessor())
+                                .UpdateProcessorFactory(MockPollingProcessor.Factory(null))
+                                .PersistentStorage(new MockPersistentStorage())
+                                .DeviceInfo(new MockDeviceInfo(""));
         }
     }
 }

@@ -48,7 +48,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(mode.IsStreaming);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -65,7 +65,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(mode.IsStreaming);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -82,7 +82,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 using (var log = new LogSinkScope())
                 {
-                    var config = BaseConfig(server).WithIsStreamingEnabled(false);
+                    var config = BaseConfig(server).IsStreamingEnabled(false).Build();
                     using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                     {
                         Assert.False(client.Initialized());
@@ -106,7 +106,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 {
                     try
                     {
-                        var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(mode.IsStreaming);
+                        var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
                         using (var client = TestUtil.CreateClient(config, _user)) { }
                     }
                     catch (Exception e)
@@ -132,7 +132,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 using (var log = new LogSinkScope())
                 {
-                    var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(mode.IsStreaming);
+                    var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
 
                     // Currently the behavior of LdClient.InitAsync is somewhat inconsistent with LdClient.Init if there is
                     // an unrecoverable error: LdClient.Init throws an exception, but LdClient.InitAsync returns a task that
@@ -153,7 +153,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(false);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
                 var name = "Sue";
                 var anonUser = User.Builder((string)null).Name(name).Anonymous(true).Build();
 
@@ -184,7 +184,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(mode.IsStreaming);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -212,7 +212,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(mode.IsStreaming);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -239,7 +239,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(false);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyFlagValues(client, _flagData1);
@@ -250,7 +250,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 // out, we should still see the earlier flag values.
 
                 server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                var offlineConfig = Configuration.Default(_mobileKey).WithOffline(true);
+                var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
                 using (var client = TestUtil.CreateClient(offlineConfig, _user))
                 {
                     VerifyFlagValues(client, _flagData1);
@@ -265,7 +265,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(false);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyFlagValues(client, _flagData1);
@@ -276,7 +276,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 // out, we should still see the earlier flag values.
 
                 server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                var offlineConfig = Configuration.Default(_mobileKey).WithOffline(true);
+                var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
                 using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
                 {
                     VerifyFlagValues(client, _flagData1);
@@ -291,7 +291,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(false);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     BackgroundDetection.UpdateBackgroundMode(false);
@@ -303,7 +303,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 // out, we should still see the earlier flag values.
 
                 server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                var offlineConfig = Configuration.Default(_mobileKey).WithOffline(true);
+                var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
                 using (var client = TestUtil.CreateClient(offlineConfig, _user))
                 {
                     BackgroundDetection.UpdateBackgroundMode(false);
@@ -319,7 +319,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
 
-                var config = BaseConfig(server).WithUseReport(false).WithIsStreamingEnabled(false);
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     BackgroundDetection.UpdateBackgroundMode(false);
@@ -331,7 +331,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 // out, we should still see the earlier flag values.
 
                 server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                var offlineConfig = Configuration.Default(_mobileKey).WithOffline(true);
+                var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
                 using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
                 {
                     BackgroundDetection.UpdateBackgroundMode(false);
@@ -340,12 +340,12 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        private Configuration BaseConfig(FluentMockServer server)
+        private IConfigurationBuilder BaseConfig(FluentMockServer server)
         {
-            return Configuration.Default(_mobileKey)
-                .WithBaseUri(server.GetUrl())
-                .WithStreamUri(server.GetUrl())
-                .WithEventProcessor(new MockEventProcessor());
+            return Configuration.BuilderInternal(_mobileKey)
+                .EventProcessor(new MockEventProcessor())
+                .BaseUri(new Uri(server.GetUrl()))
+                .StreamUri(new Uri(server.GetUrl()));
         }
 
         private void SetupResponse(FluentMockServer server, IDictionary<string, string> data, UpdateMode mode)
