@@ -276,6 +276,7 @@ namespace LaunchDarkly.Xamarin
 
         void MobileConnectionManager_ConnectionChanged(bool isOnline)
         {
+            Log.DebugFormat("Setting online to {0} due to a connectivity change event", isOnline);
             Online = isOnline;
         }
 
