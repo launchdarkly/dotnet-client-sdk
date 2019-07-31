@@ -391,7 +391,7 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <see cref="ILdMobileClient.AllFlags()"/>
-        public IDictionary<string, JToken> AllFlags()
+        public IDictionary<string, ImmutableJsonValue> AllFlags()
         {
             if (IsOffline())
             {
@@ -405,7 +405,10 @@ namespace LaunchDarkly.Xamarin
             }
 
             return flagCacheManager.FlagsForUser(User)
-                                    .ToDictionary(p => p.Key, p => p.Value.value);
+                                    .ToDictionary(p => p.Key, p => new ImmutableJsonValue(p.Value.value));
+            // Note that we are calling the ImmutableJsonValue constructor directly instead of using FromJToken()
+            // because we do not need it to deep-copy mutable values immediately - we know that *we* won't be
+            // modifying those values. It will deep-copy them if and when the application tries to access them.
         }
 
         /// <see cref="ILdMobileClient.Track(string, ImmutableJsonValue)"/>
@@ -571,6 +574,15 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
+        /// <see cref="ILdMobileClient.PlatformType"/>
+        public PlatformType PlatformType
+        {
+            get
+            {
+                return PlatformSpecific.UserMetadata.PlatformType;
+            }
+        }
+
         /// <see cref="ILdMobileClient.FlagChanged"/>
         public event EventHandler<FlagChangedEventArgs> FlagChanged
         {
@@ -591,13 +603,19 @@ namespace LaunchDarkly.Xamarin
 
         internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundModeChangedEventArgs args)
         {
+            Log.DebugFormat("Background mode is changing to {0}", args.IsInBackground);
             if (args.IsInBackground)
             {
                 ClearUpdateProcessor();
                 _disableStreaming = true;
                 if (Config.EnableBackgroundUpdating)
                 {
+                    Log.Debug("Background updating is enabled, starting polling processor");
                     await RestartUpdateProcessorAsync(Config.BackgroundPollingInterval);
+                }
+                else
+                {
+                    Log.Debug("Background updating is disabled");
                 }
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
             }

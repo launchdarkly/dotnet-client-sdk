@@ -140,12 +140,12 @@ namespace LaunchDarkly.Xamarin
 
         /// <summary>
         /// Gets or sets the online status of the client.
-        /// 
-        /// The setter is equivalent to calling <see cref="SetOnlineAsync(bool)"/>. If you are going from offline
-        /// to online, and you want to wait until the connection has been established, call
-        /// <see cref="SetOnlineAsync(bool)"/> and then use <c>await</c> or call <c>Wait()</c> on
-        /// its return value.
         /// </summary>
+        /// <remarks>
+        /// The setter is equivalent to calling <see cref="SetOnlineAsync(bool)"/>; if you are going from offline to
+        /// online, it does <i>not</i> wait until the connection has been established. If you want to wait for the
+        /// connection, call <see cref="SetOnlineAsync(bool)"/> and then use <c>await</c>.
+        /// </remarks>
         /// <value><c>true</c> if online; otherwise, <c>false</c>.</value>
         bool Online { get; set; }
 
@@ -153,17 +153,20 @@ namespace LaunchDarkly.Xamarin
         /// Sets the client to be online or not.
         /// </summary>
         /// <returns>a Task</returns>
-        /// <param name="value">If set to <c>true</c> value.</param>
+        /// <param name="value">true if the client should be online</param>
         Task SetOnlineAsync(bool value);
 
         /// <summary>
         /// Returns a map from feature flag keys to <see cref="JToken"/> feature flag values for the current user.
-        /// If the result of a flag's value would have returned the default variation, it will have a
-        /// null entry in the map. If the client is offline or has not been initialized, a <c>null</c> map will be returned. 
-        /// This method will not send analytics events back to LaunchDarkly.
         /// </summary>
-        /// <returns>a map from feature flag keys to {@code JToken} for the current user</returns>
-        IDictionary<string, JToken> AllFlags();
+        /// <remarks>
+        /// If the result of a flag's value would have returned the default variation, the value in the map will contain
+        /// null instead of a JToken. If the client is offline or has not been initialized, a <c>null</c> map will be returned.
+        /// 
+        /// This method will not send analytics events back to LaunchDarkly.
+        /// </remarks>
+        /// <returns>a map from feature flag keys to values for the current user</returns>
+        IDictionary<string, ImmutableJsonValue> AllFlags();
 
         /// <summary>
         /// This event is triggered when the client has received an updated value for a feature flag.

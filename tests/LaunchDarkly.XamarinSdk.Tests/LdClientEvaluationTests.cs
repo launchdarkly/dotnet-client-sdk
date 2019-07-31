@@ -206,8 +206,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 var result = client.AllFlags();
                 Assert.Equal(2, result.Count);
-                Assert.Equal(new JValue("a"), result["flag1"]);
-                Assert.Equal(new JValue("b"), result["flag2"]);
+                Assert.Equal("a", result["flag1"].AsString);
+                Assert.Equal("b", result["flag2"].AsString);
             }
         }
         
