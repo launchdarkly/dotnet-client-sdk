@@ -75,8 +75,11 @@ namespace LaunchDarkly.Xamarin
 
         public static ValueType<ImmutableJsonValue> Json = new ValueType<ImmutableJsonValue>
         {
-            ValueFromJson = json => ImmutableJsonValue.FromJToken(json),
+            ValueFromJson = json => new ImmutableJsonValue(json),
             ValueToJson = value => value.AsJToken()
+            // Note that we are calling the ImmutableJsonValue constructor directly instead of using FromJToken()
+            // because we do not need it to deep-copy mutable values immediately - we know that *we* won't be
+            // modifying those values. It will deep-copy them if and when the application tries to access them.
         };
     }
 }

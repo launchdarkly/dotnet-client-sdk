@@ -143,6 +143,7 @@ namespace LaunchDarkly.Xamarin
                         catch (Exception e)
                         {
                             Log.Warn("Unexpected exception from FlagChanged event handler", e);
+                            Log.Debug(e, e);
                         }
                     });
                 }

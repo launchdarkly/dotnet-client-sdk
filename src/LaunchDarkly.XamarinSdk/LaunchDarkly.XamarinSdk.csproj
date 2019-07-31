@@ -13,6 +13,7 @@
     <PackOnBuild>true</PackOnBuild>
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <DesignTimeBuild>False</DesignTimeBuild>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">

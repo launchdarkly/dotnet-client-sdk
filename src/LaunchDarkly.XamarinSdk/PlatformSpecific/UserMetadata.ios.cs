@@ -26,5 +26,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
         private static string PlatformOS =>
             "iOS " + UIDevice.CurrentDevice.SystemVersion;
+
+        private static PlatformType PlatformPlatformType => PlatformType.IOs;
     }
 }
