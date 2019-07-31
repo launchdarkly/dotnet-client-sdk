@@ -11,9 +11,9 @@ namespace LaunchDarkly.Xamarin.Tests
 
         public LdClient MakeClient(User user, string flagsJson)
         {
-            Configuration config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);
-            config.WithEventProcessor(eventProcessor);
-            return TestUtil.CreateClient(config, user);
+            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);
+            config.EventProcessor(eventProcessor);
+            return TestUtil.CreateClient(config.Build(), user);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (LdClient client = MakeClient(user, "{}"))
             {
                 JToken data = new JValue("hi");
-                client.Track("eventkey", data);
+                client.Track("eventkey", ImmutableJsonValue.FromJToken(data));
                 Assert.Collection(eventProcessor.Events, 
                     e => CheckIdentifyEvent(e, user),
                     e => {

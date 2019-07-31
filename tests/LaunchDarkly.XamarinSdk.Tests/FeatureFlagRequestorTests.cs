@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace LaunchDarkly.Xamarin.Tests
         private const string _mobileKey = "FAKE_KEY";
 
         private static readonly User _user = User.WithKey("foo");
-        private const string _encodedUser = "eyJrZXkiOiJmb28iLCJjdXN0b20iOnt9fQ==";
+        private const string _encodedUser = "eyJrZXkiOiJmb28iLCJhbm9ueW1vdXMiOmZhbHNlLCJjdXN0b20iOnt9fQ==";
         // Note that in a real use case, the user encoding may vary depending on the target platform, because the SDK adds custom
         // user attributes like "os". But the lower-level FeatureFlagRequestor component does not do that.
 
@@ -23,8 +24,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(false);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(false).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {
@@ -49,8 +50,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(false).WithEvaluationReasons(true);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(false).EvaluationReasons(true).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {
@@ -75,8 +76,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(true);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(true).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {
@@ -104,8 +105,8 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Default(_mobileKey).WithBaseUri(server.GetUrl())
-                    .WithUseReport(true).WithEvaluationReasons(true);
+                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                    .UseReport(true).EvaluationReasons(true).Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
                 {

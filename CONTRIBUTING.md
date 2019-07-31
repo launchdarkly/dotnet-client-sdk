@@ -18,11 +18,13 @@ The .NET Standard 1.6 and 2.0 targets require only the .NET Core 2.0 SDK, while 
 
 ### Building
 
-To build the SDK (for all platforms) without running any tests:
+To build the SDK (for all target platforms) without running any tests:
 
 ```
 msbuild /restore src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 ```
+
+Currently this command can only be run on MacOS, because that is the only platform that allows building for all of the targets (.NET Standard, Android, and iOS).
 
 To build the SDK for only one of the supported platforms, add `-f X` where `X` is one of the items in the `<TargetFrameworks>` list of `LaunchDarkly.XamarinSdk.csproj`: `netstandard2.0` for .NET Standard 2.0, `MonoAndroid80` for Android 8.0, etc.:
 
@@ -46,3 +48,5 @@ The equivalent test suites in Android or iOS must be run in an Android or iOS em
 You can run the mobile test projects from Visual Studio (the iOS tests require MacOS); there is also a somewhat complicated process for running them from the command line, which is what the CI build does (see `.circleci/config.yml`).
 
 Note that the mobile unit tests currently do not cover background-mode behavior or connectivity detection.
+
+### Packaging/releasing

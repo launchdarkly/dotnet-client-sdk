@@ -12,27 +12,29 @@ namespace LaunchDarkly.Xamarin
 
         internal static IFlagCacheManager CreateFlagCacheManager(Configuration configuration, 
                                                                  IPersistentStorage persister,
-                                                                 IFlagListenerUpdater updater,
+                                                                 IFlagChangedEventManager flagChangedEventManager,
                                                                  User user)
         {
-            if (configuration.FlagCacheManager != null)
+            if (configuration._flagCacheManager != null)
             {
-                return configuration.FlagCacheManager;
+                return configuration._flagCacheManager;
             }
             else
             {
                 var inMemoryCache = new UserFlagInMemoryCache();
                 var deviceCache = configuration.PersistFlagValues ? new UserFlagDeviceCache(persister) as IUserFlagCache : new NullUserFlagCache();
-                return new FlagCacheManager(inMemoryCache, deviceCache, updater, user);
+                return new FlagCacheManager(inMemoryCache, deviceCache, flagChangedEventManager, user);
             }
         }
 
         internal static IConnectionManager CreateConnectionManager(Configuration configuration)
         {
-            return configuration.ConnectionManager ?? new MobileConnectionManager();
+            return configuration._connectionManager ?? new MobileConnectionManager();
         }
 
-        internal static IMobileUpdateProcessor CreateUpdateProcessor(Configuration configuration, User user, IFlagCacheManager flagCacheManager, TimeSpan? overridePollingInterval)
+        internal static IMobileUpdateProcessor CreateUpdateProcessor(Configuration configuration, User user,
+            IFlagCacheManager flagCacheManager, TimeSpan? overridePollingInterval,
+            bool disableStreaming)
         {
             if (configuration.Offline)
             {
@@ -40,12 +42,12 @@ namespace LaunchDarkly.Xamarin
                 return new NullUpdateProcessor();
             }
 
-            if (configuration.UpdateProcessorFactory != null)
+            if (configuration._updateProcessorFactory != null)
             {
-                return configuration.UpdateProcessorFactory(configuration, flagCacheManager, user);
+                return configuration._updateProcessorFactory(configuration, flagCacheManager, user);
             }
 
-            if (configuration.IsStreamingEnabled)
+            if (configuration.IsStreamingEnabled && !disableStreaming)
             {
                 return new MobileStreamingProcessor(configuration, flagCacheManager, user, null);
             }
@@ -61,9 +63,9 @@ namespace LaunchDarkly.Xamarin
 
         internal static IEventProcessor CreateEventProcessor(Configuration configuration)
         {
-            if (configuration.EventProcessor != null)
+            if (configuration._eventProcessor != null)
             {
-                return configuration.EventProcessor;
+                return configuration._eventProcessor;
             }
             if (configuration.Offline)
             {
@@ -76,17 +78,17 @@ namespace LaunchDarkly.Xamarin
 
         internal static IPersistentStorage CreatePersistentStorage(Configuration configuration)
         {
-            return configuration.PersistentStorage ?? new DefaultPersistentStorage();
+            return configuration._persistentStorage ?? new DefaultPersistentStorage();
         }
 
         internal static IDeviceInfo CreateDeviceInfo(Configuration configuration)
         {
-            return configuration.DeviceInfo ?? new DefaultDeviceInfo();
+            return configuration._deviceInfo ?? new DefaultDeviceInfo();
         }
 
-        internal static IFeatureFlagListenerManager CreateFeatureFlagListenerManager(Configuration configuration)
+        internal static IFlagChangedEventManager CreateFlagChangedEventManager(Configuration configuration)
         {
-            return configuration.FeatureFlagListenerManager ?? new FeatureFlagListenerManager();
+            return configuration._flagChangedEventManager ?? new FlagChangedEventManager();
         }
     }
 }

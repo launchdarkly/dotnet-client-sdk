@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,41 +19,88 @@ namespace LaunchDarkly.Xamarin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LdClient));
 
+        static volatile LdClient _instance;
+        static volatile User _user;
+
+        static readonly object _createInstanceLock = new object();
+        static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
+        static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
+ 
+        readonly object _myLockObjForConnectionChange = new object();
+        readonly object _myLockObjForUserUpdate = new object();
+
+        readonly Configuration _config;
+        readonly SemaphoreSlim _connectionLock;
+
+        readonly IDeviceInfo deviceInfo;
+        readonly IConnectionManager connectionManager;
+        readonly IEventProcessor eventProcessor;
+        readonly IFlagCacheManager flagCacheManager;
+        internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
+        readonly IPersistentStorage persister;
+
+        // These LdClient fields are not readonly because they change according to online status
+        volatile IMobileUpdateProcessor updateProcessor;
+        volatile bool _disableStreaming;
+        volatile bool _online;
+
         /// <summary>
-        /// The singleton instance used by your application throughout its lifetime, can only be created once.
+        /// The singleton instance used by your application throughout its lifetime. Once this exists, you cannot
+        /// create a new client instance unless you first call <see cref="Dispose()"/> on this one.
         /// 
-        /// Use the designated static method <see cref="Init(Configuration, User)"/> 
-        /// to set this LdClient instance.
+        /// Use the designated static methods <see cref="Init(Configuration, User, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, User)"/> to set this LdClient instance.
         /// </summary>
         /// <value>The LdClient instance.</value>
-        public static LdClient Instance { get; internal set; }
+        public static LdClient Instance => _instance;
 
         /// <summary>
         /// The Configuration instance used to setup the LdClient.
         /// </summary>
         /// <value>The Configuration instance.</value>
-        public Configuration Config { get; private set; }
+        public Configuration Config => _config;
 
         /// <summary>
         /// The User for the LdClient operations.
         /// </summary>
         /// <value>The User.</value>
-        public User User { get; private set; }
+        public User User => _user;
 
-        object myLockObjForConnectionChange = new object();
-        object myLockObjForUserUpdate = new object();
+        /// <see cref="ILdMobileClient.Online"/>
+        public bool Online
+        {
+            get => _online;
+            set
+            {
+                var doNotAwaitResult = SetOnlineAsync(value);
+            }
+        }
 
-        IFlagCacheManager flagCacheManager;
-        IConnectionManager connectionManager;
-        IMobileUpdateProcessor updateProcessor;
-        IEventProcessor eventProcessor;
-        IPersistentStorage persister;
-        IDeviceInfo deviceInfo;
-        readonly EventFactory eventFactoryDefault = EventFactory.Default;
-        readonly EventFactory eventFactoryWithReasons = EventFactory.DefaultWithReasons;
-        IFeatureFlagListenerManager flagListenerManager;
-
-        SemaphoreSlim connectionLock;
+        /// <summary>
+        /// Indicates which platform the SDK is built for.
+        /// </summary>
+        /// <remarks>
+        /// This property is mainly useful for debugging. It does not indicate which platform you are actually running on,
+        /// but rather which variant of the SDK is currently in use.
+        /// 
+        /// The <c>LaunchDarkly.XamarinSdk</c> package contains assemblies for multiple target platforms. In an Android
+        /// or iOS application, you will normally be using the Android or iOS variant of the SDK; that is done
+        /// automatically when you install the NuGet package. On all other platforms, you will get the .NET Standard
+        /// variant.
+        ///
+        /// The basic features of the SDK are the same in all of these variants; the difference is in platform-specific
+        /// behavior such as detecting when an application has gone into the background, detecting network connectivity,
+        /// and ensuring that code is executed on the UI thread if applicable for that platform. Therefore, if you find
+        /// that these platform-specific behaviors are not working correctly, you may want to check this property to
+        /// make sure you are not for some reason running the .NET Standard SDK on a phone.
+        /// </remarks>
+        public static PlatformType PlatformType
+        {
+            get
+            {
+                return PlatformSpecific.UserMetadata.PlatformType;
+            }
+        }
 
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
@@ -61,38 +108,34 @@ namespace LaunchDarkly.Xamarin
 
         LdClient(Configuration configuration, User user)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException("configuration");
-            }
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
-            Config = configuration;
+            _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            connectionLock = new SemaphoreSlim(1, 1);
+            _connectionLock = new SemaphoreSlim(1, 1);
 
             persister = Factory.CreatePersistentStorage(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
-            flagListenerManager = Factory.CreateFeatureFlagListenerManager(configuration);
+            flagChangedEventManager = Factory.CreateFlagChangedEventManager(configuration);
 
-            User = DecorateUser(user);
+            _user = DecorateUser(user);
 
-            flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagListenerManager, User);
+            flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User);
             connectionManager = Factory.CreateConnectionManager(configuration);
-            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, null);
+            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, null, false);
             eventProcessor = Factory.CreateEventProcessor(configuration);
 
-            eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(User));
+            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
 
             SetupConnectionManager();
             BackgroundDetection.BackgroundModeChanged += OnBackgroundModeChanged;
         }
 
         /// <summary>
-        /// Creates and returns new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
         /// fetching feature flags.
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
@@ -100,7 +143,7 @@ namespace LaunchDarkly.Xamarin
         /// If you would rather this happen in an async fashion you can use <see cref="InitAsync(string, User)"/>.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more specific
-        /// <see cref="Init(Configuration, User)"/> to instantiate the single instance of LdClient
+        /// <see cref="Init(Configuration, User, TimeSpan)"/> to instantiate the single instance of LdClient
         /// for the lifetime of your application.
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
@@ -118,7 +161,7 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <summary>
-        /// Creates and returns new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
         /// fetching feature flags. This constructor should be used if you do not want to wait 
         /// for the client to finish initializing and receive the first response
         /// from the LaunchDarkly service.
@@ -139,7 +182,7 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <summary>
-        /// Creates and returns new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
         /// fetching Feature Flags.
         /// 
         /// This constructor will wait and block on the current thread until initialization and the
@@ -164,22 +207,22 @@ namespace LaunchDarkly.Xamarin
                 throw new ArgumentOutOfRangeException(nameof(maxWaitTime));
             }
 
-            CreateInstance(config, user);
+            var c = CreateInstance(config, user);
 
-            if (Instance.Online)
+            if (c.Online)
             {
-                if (!Instance.StartUpdateProcessor(maxWaitTime))
+                if (!c.StartUpdateProcessor(maxWaitTime))
                 {
                     Log.WarnFormat("Client did not successfully initialize within {0} milliseconds.",
                         maxWaitTime.TotalMilliseconds);
                 }
             }
 
-            return Instance;
+            return c;
         }
 
         /// <summary>
-        /// Creates and returns new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
         /// fetching Feature Flags. This constructor should be used if you do not want to wait 
         /// for the IUpdateProcessor instance to finish initializing and receive the first response
         /// from the LaunchDarkly service.
@@ -209,25 +252,18 @@ namespace LaunchDarkly.Xamarin
 
         static LdClient CreateInstance(Configuration configuration, User user)
         {
-            if (Instance != null)
+            lock (_createInstanceLock)
             {
-                throw new Exception("LdClient instance already exists.");
+                if (_instance != null)
+                {
+                    throw new Exception("LdClient instance already exists.");
+                }
+
+                var c = new LdClient(configuration, user);
+                _instance = c;
+                Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
+                return c;
             }
-
-            var c = new LdClient(configuration, user);
-            Instance = c;
-            Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
-            return c;
-        }
-
-        bool StartUpdateProcessor(TimeSpan maxWaitTime)
-        {
-            return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
-        }
-
-        Task StartUpdateProcessorAsync()
-        {
-            return updateProcessor.Start();
         }
 
         void SetupConnectionManager()
@@ -238,27 +274,16 @@ namespace LaunchDarkly.Xamarin
                 Log.InfoFormat("The mobile client connection changed online to {0}",
                                connectionManager.IsConnected);
             }
-            online = connectionManager.IsConnected;
-        }
-
-        bool online;
-        /// <see cref="ILdMobileClient.Online"/>
-        public bool Online
-        {
-            get => online;
-            set
-            {
-                var doNotAwaitResult = SetOnlineAsync(value);
-            }
+            _online = connectionManager.IsConnected;
         }
 
         public async Task SetOnlineAsync(bool value)
         {
-            await connectionLock.WaitAsync();
-            online = value;
+            await _connectionLock.WaitAsync();
+            _online = value;
             try
             {
-                if (online)
+                if (_online)
                 {
                     await RestartUpdateProcessorAsync(Config.PollingInterval);
                 }
@@ -269,7 +294,7 @@ namespace LaunchDarkly.Xamarin
             }
             finally
             {
-                connectionLock.Release();
+                _connectionLock.Release();
             }
 
             return;
@@ -277,67 +302,68 @@ namespace LaunchDarkly.Xamarin
 
         void MobileConnectionManager_ConnectionChanged(bool isOnline)
         {
+            Log.DebugFormat("Setting online to {0} due to a connectivity change event", isOnline);
             Online = isOnline;
         }
 
         /// <see cref="ILdMobileClient.BoolVariation(string, bool)"/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryDefault).Value;
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, _eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>
         public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, eventFactoryWithReasons);
+            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, _eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.StringVariation(string, string)"/>
         public string StringVariation(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryDefault).Value;
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, _eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.StringVariationDetail(string, string)"/>
         public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueTypes.String, eventFactoryWithReasons);
+            return VariationInternal<string>(key, defaultValue, ValueTypes.String, _eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.FloatVariation(string, float)"/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryDefault).Value;
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, _eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.FloatVariationDetail(string, float)"/>
         public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, eventFactoryWithReasons);
+            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, _eventFactoryWithReasons);
         }
 
         /// <see cref="ILdMobileClient.IntVariation(string, int)"/>
         public int IntVariation(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryDefault).Value;
+            return VariationInternal(key, defaultValue, ValueTypes.Int, _eventFactoryDefault).Value;
         }
 
         /// <see cref="ILdMobileClient.IntVariationDetail(string, int)"/>
         public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Int, eventFactoryWithReasons);
+            return VariationInternal(key, defaultValue, ValueTypes.Int, _eventFactoryWithReasons);
         }
 
-        /// <see cref="ILdMobileClient.JsonVariation(string, JToken)"/>
-        public JToken JsonVariation(string key, JToken defaultValue)
+        /// <see cref="ILdMobileClient.JsonVariation(string, ImmutableJsonValue)"/>
+        public ImmutableJsonValue JsonVariation(string key, ImmutableJsonValue defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryDefault).Value;
+            return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.JsonVariationDetail(string, JToken)"/>
-        public EvaluationDetail<JToken> JsonVariationDetail(string key, JToken defaultValue)
+        /// <see cref="ILdMobileClient.JsonVariationDetail(string, ImmutableJsonValue)"/>
+        public EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Json, eventFactoryWithReasons);
+            return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryWithReasons);
         }
 
         EvaluationDetail<T> VariationInternal<T>(string featureKey, T defaultValue, ValueType<T> desiredType, EventFactory eventFactory)
@@ -392,7 +418,7 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <see cref="ILdMobileClient.AllFlags()"/>
-        public IDictionary<string, JToken> AllFlags()
+        public IDictionary<string, ImmutableJsonValue> AllFlags()
         {
             if (IsOffline())
             {
@@ -406,19 +432,22 @@ namespace LaunchDarkly.Xamarin
             }
 
             return flagCacheManager.FlagsForUser(User)
-                                    .ToDictionary(p => p.Key, p => p.Value.value);
+                                    .ToDictionary(p => p.Key, p => new ImmutableJsonValue(p.Value.value));
+            // Note that we are calling the ImmutableJsonValue constructor directly instead of using FromJToken()
+            // because we do not need it to deep-copy mutable values immediately - we know that *we* won't be
+            // modifying those values. It will deep-copy them if and when the application tries to access them.
         }
 
-        /// <see cref="ILdMobileClient.Track(string, JToken)"/>
-        public void Track(string eventName, JToken data)
+        /// <see cref="ILdMobileClient.Track(string, ImmutableJsonValue)"/>
+        public void Track(string eventName, ImmutableJsonValue data)
         {
-            eventProcessor.SendEvent(eventFactoryDefault.NewCustomEvent(eventName, User, data));
+            eventProcessor.SendEvent(_eventFactoryDefault.NewCustomEvent(eventName, User, data.AsJToken()));
         }
 
         /// <see cref="ILdMobileClient.Track(string)"/>
         public void Track(string eventName)
         {
-            Track(eventName, null);
+            Track(eventName, ImmutableJsonValue.FromJToken(null));
         }
 
         /// <see cref="ILdMobileClient.Initialized"/>
@@ -430,7 +459,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdCommonClient.IsOffline()"/>
         public bool IsOffline()
         {
-            return !online;
+            return !_online;
         }
 
         /// <see cref="ILdCommonClient.Flush()"/>
@@ -450,23 +479,39 @@ namespace LaunchDarkly.Xamarin
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             User newUser = DecorateUser(user);
 
-            await connectionLock.WaitAsync();
+            await _connectionLock.WaitAsync();
             try
             {
-                User = newUser;
+                _user = newUser;
                 await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
             finally
             {
-                connectionLock.Release();
+                _connectionLock.Release();
             }
 
-            eventProcessor.SendEvent(eventFactoryDefault.NewIdentifyEvent(newUser));
+            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(newUser));
+        }
+
+        bool StartUpdateProcessor(TimeSpan maxWaitTime)
+        {
+            if (Online)
+                return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+            else
+                return true;
+        }
+
+        Task StartUpdateProcessorAsync()
+        {
+            if (Online)
+                return updateProcessor.Start();
+            else
+                return Task.FromResult(true);
         }
 
         async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)
@@ -478,7 +523,7 @@ namespace LaunchDarkly.Xamarin
         void ClearAndSetUpdateProcessor(TimeSpan pollingInterval)
         {
             ClearUpdateProcessor();
-            updateProcessor = Factory.CreateUpdateProcessor(Config, User, flagCacheManager, pollingInterval);
+            updateProcessor = Factory.CreateUpdateProcessor(Config, User, flagCacheManager, pollingInterval, _disableStreaming);
         }
 
         void ClearUpdateProcessor()
@@ -492,25 +537,36 @@ namespace LaunchDarkly.Xamarin
 
         User DecorateUser(User user)
         {
-            var newUser = new User(user);
+            IUserBuilder buildUser = null;
             if (UserMetadata.DeviceName != null)
             {
-                newUser = newUser.AndCustomAttribute("device", UserMetadata.DeviceName);
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Custom("device", UserMetadata.DeviceName);
             }
             if (UserMetadata.OSName != null)
             {
-                newUser = newUser.AndCustomAttribute("os", UserMetadata.OSName);
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Custom("os", UserMetadata.OSName);
             }
             // If you pass in a user with a null or blank key, one will be assigned to them.
             if (String.IsNullOrEmpty(user.Key))
             {
-                newUser.Key = deviceInfo.UniqueDeviceId();
-                newUser.Anonymous = true;
+                if (buildUser is null)
+                {
+                    buildUser = User.Builder(user);
+                }
+                buildUser.Key(deviceInfo.UniqueDeviceId()).Anonymous(true);
             }
-            return newUser;
+            return buildUser is null ? user : buildUser.Build();
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -525,7 +581,15 @@ namespace LaunchDarkly.Xamarin
                 BackgroundDetection.BackgroundModeChanged -= OnBackgroundModeChanged;
                 updateProcessor.Dispose();
                 eventProcessor.Dispose();
+
+                // Reset the static Instance to null *if* it was referring to this instance
+                DetachInstance();
             }
+        }
+
+        internal void DetachInstance() // exposed for testing
+        {
+            Interlocked.CompareExchange(ref _instance, null, this);
         }
 
         /// <see cref="ILdCommonClient.Version"/>
@@ -537,16 +601,17 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        /// <see cref="ILdMobileClient.RegisterFeatureFlagListener(string, IFeatureFlagListener)"/>
-        public void RegisterFeatureFlagListener(string flagKey, IFeatureFlagListener listener)
+        /// <see cref="ILdMobileClient.FlagChanged"/>
+        public event EventHandler<FlagChangedEventArgs> FlagChanged
         {
-            flagListenerManager.RegisterListener(listener, flagKey);
-        }
-
-        /// <see cref="ILdMobileClient.UnregisterFeatureFlagListener(string, IFeatureFlagListener)"/>
-        public void UnregisterFeatureFlagListener(string flagKey, IFeatureFlagListener listener)
-        {
-            flagListenerManager.UnregisterListener(listener, flagKey);
+            add
+            {
+                flagChangedEventManager.FlagChanged += value;
+            }
+            remove
+            {
+                flagChangedEventManager.FlagChanged -= value;
+            }
         }
 
         internal void OnBackgroundModeChanged(object sender, BackgroundModeChangedEventArgs args)
@@ -556,13 +621,19 @@ namespace LaunchDarkly.Xamarin
 
         internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundModeChangedEventArgs args)
         {
+            Log.DebugFormat("Background mode is changing to {0}", args.IsInBackground);
             if (args.IsInBackground)
             {
                 ClearUpdateProcessor();
-                Config.IsStreamingEnabled = false;
+                _disableStreaming = true;
                 if (Config.EnableBackgroundUpdating)
                 {
+                    Log.Debug("Background updating is enabled, starting polling processor");
                     await RestartUpdateProcessorAsync(Config.BackgroundPollingInterval);
+                }
+                else
+                {
+                    Log.Debug("Background updating is disabled");
                 }
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
             }
@@ -576,11 +647,11 @@ namespace LaunchDarkly.Xamarin
         void ResetProcessorForForeground()
         {
             string didBackground = persister.GetValue(Constants.BACKGROUNDED_WHILE_STREAMING);
-            if (didBackground.Equals("true"))
+            if (didBackground != null && didBackground.Equals("true"))
             {
                 persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
                 ClearUpdateProcessor();
-                Config.IsStreamingEnabled = true;
+                _disableStreaming = false;
             }
         }
     }

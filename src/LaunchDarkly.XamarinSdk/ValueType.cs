@@ -1,4 +1,5 @@
 ﻿using System;
+using LaunchDarkly.Client;
 using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
@@ -72,10 +73,13 @@ namespace LaunchDarkly.Xamarin
             ValueToJson = value => value == null ? null : new JValue(value)
         };
 
-        public static ValueType<JToken> Json = new ValueType<JToken>
+        public static ValueType<ImmutableJsonValue> Json = new ValueType<ImmutableJsonValue>
         {
-            ValueFromJson = json => json,
-            ValueToJson = value => value
+            ValueFromJson = json => new ImmutableJsonValue(json),
+            ValueToJson = value => value.AsJToken()
+            // Note that we are calling the ImmutableJsonValue constructor directly instead of using FromJToken()
+            // because we do not need it to deep-copy mutable values immediately - we know that *we* won't be
+            // modifying those values. It will deep-copy them if and when the application tries to access them.
         };
     }
 }
