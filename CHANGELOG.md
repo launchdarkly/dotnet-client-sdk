@@ -3,6 +3,30 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0-beta19] - 2019-07-31
+### Added:
+- `User.Builder` provides a fluent builder pattern for constructing `User` objects. This is now the only method for building a user if you want to set properties other than `Key`.
+- The `ImmutableJsonValue` type provides a wrapper for the Newtonsoft.Json types that prevents accidentally modifying JSON object properties or array values that are shared by other objects.
+- `LdClient.PlatformType` allows you to verify that you have loaded the correct target platform version of the SDK.
+ 
+### Changed:
+- `User` objects are now immutable.
+- In `User`, `IpAddress` has been renamed to `IPAddress` (standard .NET capitalization for two-letter acronyms).
+- Custom attribute values in `User.Custom` are now returned as `ImmutableJsonValue` rather than `JToken`.
+- JSON flag variations returned by `JsonVariation`, `JsonVariationDetail`, and `AllFlags`, are now `ImmutableJsonValue` rather than `JToken`.
+- Setting additional data in a custom event with `Track` now uses `ImmutableJsonValue` rather than `JToken`.
+- The mechanism for specifying a flag change listener has been changed to use the standard .NET event pattern. Instead of `client.RegisterFeatureFlagListener("flag-key", handler)` (where `handler` is an instance of some class that implements a particular interface), it is now `client.FlagChanged += handler` (where `handler` is an event handler method or function that will receive the flag key as part of `FlagChangedEventArgs`).
+- Flag change listeners are now invoked asynchronously. This is to avoid the possibility of a deadlock if, for instance, application code triggers an action (such as Identify) that causes flags to be updated, which causes a flag change listener to be called, which then tries to access some resource that is being held by that same application code (e.g. trying to do an action on the main thread). On Android and iOS, these listeners are now guaranteed to be executed on the main thread, but only after any other current action on the main thread has completed. On .NET Standard, they are executed asynchronously with `Task.Run()`.
+ 
+### Fixed:
+- Previously, if you created a client with `LdClient.Init` and then called `Dispose()` on the client, it would fail because the SDK would think a singleton instance already exists. Now, disposing of the singleton returns the SDK to a state where you can create a client again.
+- Fixed a `NullReferenceException` that could sometimes be thrown when transitioning from background to foreground in Android.
+ 
+### Removed:
+- `User` constructors (use `User.WithKey` or `User.Builder`).
+- `User.IpAddress` (use `IPAddress`).
+- `User` property setters, and the `UserExtension` methods for modifying properties (`AndName()`, etc.).
+
 ## [1.0.0-beta18] - 2019-07-02
 ### Added:
 - New `Configuration` property `PersistFlagValues` (default: true) allows you to turn off the SDK's normal behavior of storing flag values locally so they can be used offline.
