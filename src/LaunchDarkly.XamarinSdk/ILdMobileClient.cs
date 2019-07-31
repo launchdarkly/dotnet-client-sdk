@@ -26,9 +26,12 @@ namespace LaunchDarkly.Xamarin
 
         /// <summary>
         /// Returns the boolean value of a feature flag for a given flag key, in an object that also
-        /// describes the way the value was determined. The <c>Reason</c> property in the result will
-        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// describes the way the value was determined.
         /// </summary>
+        /// <remarks>
+        /// The <c>Reason</c> property in the result will also be included in analytics events, if you are
+        /// capturing detailed event data for this flag.
+        /// </remarks>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
@@ -45,9 +48,12 @@ namespace LaunchDarkly.Xamarin
 
         /// <summary>
         /// Returns the string value of a feature flag for a given flag key, in an object that also
-        /// describes the way the value was determined. The <c>Reason</c> property in the result will
-        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// describes the way the value was determined.
         /// </summary>
+        /// <remarks>
+        /// The <c>Reason</c> property in the result will also be included in analytics events, if you are
+        /// capturing detailed event data for this flag.
+        /// </remarks>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
@@ -64,9 +70,12 @@ namespace LaunchDarkly.Xamarin
 
         /// <summary>
         /// Returns the float value of a feature flag for a given flag key, in an object that also
-        /// describes the way the value was determined. The <c>Reason</c> property in the result will
-        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// describes the way the value was determined.
         /// </summary>
+        /// <remarks>
+        /// The <c>Reason</c> property in the result will also be included in analytics events, if you are
+        /// capturing detailed event data for this flag.
+        /// </remarks>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
@@ -83,9 +92,12 @@ namespace LaunchDarkly.Xamarin
 
         /// <summary>
         /// Returns the integer value of a feature flag for a given flag key, in an object that also
-        /// describes the way the value was determined. The <c>Reason</c> property in the result will
-        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// describes the way the value was determined.
         /// </summary>
+        /// <remarks>
+        /// The <c>Reason</c> property in the result will also be included in analytics events, if you are
+        /// capturing detailed event data for this flag.
+        /// </remarks>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
@@ -102,23 +114,26 @@ namespace LaunchDarkly.Xamarin
 
         /// <summary>
         /// Returns the JSON value of a feature flag for a given flag key, in an object that also
-        /// describes the way the value was determined. The <c>Reason</c> property in the result will
-        /// also be included in analytics events, if you are capturing detailed event data for this flag.
+        /// describes the way the value was determined.
         /// </summary>
+        /// <remarks>
+        /// The <c>Reason</c> property in the result will also be included in analytics events, if you are
+        /// capturing detailed event data for this flag.
+        /// </remarks>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
         EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue);
 
         /// <summary>
-        /// Tracks that current user performed an event for the given JToken value and given event name.
+        /// Tracks that the current user performed an event for the given event name, with additional JSON data.
         /// </summary>
         /// <param name="eventName">the name of the event</param>
         /// <param name="data">a JSON value containing additional data associated with the event</param>
         void Track(string eventName, ImmutableJsonValue data);
 
         /// <summary>
-        /// Tracks that current user performed an event for the given event name.
+        /// Tracks that the current user performed an event for the given event name.
         /// </summary>
         /// <param name="eventName">the name of the event</param>
         void Track(string eventName);
@@ -179,18 +194,56 @@ namespace LaunchDarkly.Xamarin
         event EventHandler<FlagChangedEventArgs> FlagChanged;
 
         /// <summary>
-        /// Registers the user.
-        /// 
-        /// This method will wait and block the current thread until the update processor has finished
-        /// initializing and received a response from the LaunchDarkly service.
+        /// Changes the current user.
         /// </summary>
-        /// <param name="user">the user to register</param>
+        /// <remarks>
+        /// This both sets the current user for the purpose of flag evaluations and also generates an analytics event to
+        /// tell LaunchDarkly about the user.
+        /// 
+        /// <c>Identify</c> waits and blocks the current thread until the SDK has received feature flag values for the
+        /// new user from LaunchDarkly. If you do not want to wait, consider <see cref="IdentifyAsync(User)"/>.
+        /// </remarks>
+        /// <param name="user">the new user</param>
         void Identify(User user);
 
         /// <summary>
-        /// Registers the user.
+        /// Changes the current user.
         /// </summary>
+        /// <remarks>
+        /// This both sets the current user for the purpose of flag evaluations and also generates an analytics event to
+        /// tell LaunchDarkly about the user.
+        /// 
+        /// <c>IdentifyAsync</c> is meant to be used from asynchronous code. It returns a Task that is resolved once the
+        /// SDK has received feature flag values for the new user from LaunchDarkly.
+        /// </remarks>
+        /// <example>
+        ///     // Within asynchronous code, use await to wait for the task to be resolved
+        ///     await client.IdentifyAsync(user);
+        ///
+        ///     // Or, if you want to let the flag values be retrieved in the background instead of waiting:
+        ///     Task.Run(() => client.IdentifyAsync(user));
+        /// </example>
         /// <param name="user">the user to register</param>
         Task IdentifyAsync(User user);
+
+        /// <summary>
+        /// Indicates which platform the SDK is built for.
+        /// </summary>
+        /// <remarks>
+        /// This property is mainly useful for debugging. It does not indicate which platform you are actually running on,
+        /// but rather which variant of the SDK is currently in use.
+        /// 
+        /// The <c>LaunchDarkly.XamarinSdk</c> package contains assemblies for multiple target platforms. In an Android
+        /// or iOS application, you will normally be using the Android or iOS variant of the SDK; that is done
+        /// automatically when you install the NuGet package. On all other platforms, you will get the .NET Standard
+        /// variant.
+        ///
+        /// The basic features of the SDK are the same in all of these variants; the difference is in platform-specific
+        /// behavior such as detecting when an application has gone into the background, detecting network connectivity,
+        /// and ensuring that code is executed on the UI thread if applicable for that platform. Therefore, if you find
+        /// that these platform-specific behaviors are not working correctly, you may want to check this property to
+        /// make sure you are not for some reason running the .NET Standard SDK on a phone.
+        /// </remarks>
+        PlatformType PlatformType { get; }
     }
 }
