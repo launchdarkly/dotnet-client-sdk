@@ -20,9 +20,9 @@ namespace LaunchDarkly.Xamarin
         /// The updated value of the flag for the current user.
         /// </summary>
         /// <remarks>
-        /// Since flag values can be of any JSON type, this property is an <see cref="ImmutableJsonValue"/>. The properties
-        /// <see cref="NewBoolValue"/>, <see cref="NewIntValue"/>, etc. are shortcuts for accessing its value with a
-        /// specific data type.
+        /// Since flag values can be of any JSON type, this property is an <see cref="ImmutableJsonValue"/>. You
+        /// can use convenience properties of <c>ImmutableJsonValue</c> such as <c>AsBool</c> to convert it to a
+        /// primitive type, or <c>AsJToken()</c> for complex types.
         ///
         /// Flag evaluations always produce non-null values, but this property could still be null if the flag was
         /// completely deleted or if it could not be evaluated due to an error of some kind.
@@ -33,12 +33,12 @@ namespace LaunchDarkly.Xamarin
         /// in the method call:
         ///
         /// <code>
-        /// client.StringVariation("feature1", "xyz");
+        ///     client.StringVariation("feature1", "xyz");
         /// </code>
         ///
         /// But when a <c>FlagChangedEvent</c> is sent for the deletion of the flag, it has no way to know that you
         /// would have specified "xyz" as a default value when evaluating the flag, so <c>NewValue</c> will simply
-        /// be null.
+        /// contain a null.
         /// </remarks>
         public ImmutableJsonValue NewValue { get; private set; }
 
@@ -51,44 +51,6 @@ namespace LaunchDarkly.Xamarin
         /// True if the flag was completely removed from the environment.
         /// </summary>
         public bool FlagWasDeleted { get; private set; }
-
-        /// <summary>
-        /// Shortcut for converting <see cref="NewValue"/> to a bool. Returns false if the value is null or is not a
-        /// boolean (will never throw an exception).
-        /// </summary>
-        public bool NewBoolValue => AsType(ValueTypes.Bool, false);
-
-        /// <summary>
-        /// Shortcut for converting <see cref="NewValue"/> to a string. Returns null if the value is null or is not a
-        /// string (will never throw an exception).
-        /// </summary>
-        public string NewStringValue => AsType(ValueTypes.String, null);
-
-        /// <summary>
-        /// Shortcut for converting <see cref="NewValue"/> to an int. Returns 0 if the value is null or is not
-        /// numeric (will never throw an exception).
-        /// </summary>
-        public int NewIntValue => AsType(ValueTypes.Int, 0);
-
-        /// <summary>
-        /// Shortcut for converting <see cref="NewValue"/> to a float. Returns 0 if the value is null or is not
-        /// numeric (will never throw an exception).
-        /// </summary>
-        public float NewFloatValue => AsType(ValueTypes.Float, 0);
-
-        private T AsType<T>(ValueType<T> valueType, T defaultValue)
-        {
-            var jt = NewValue.AsJToken();
-            if (jt != null)
-            {
-                try
-                {
-                    return valueType.ValueFromJson(jt);
-                }
-                catch (ArgumentException) {}
-            }
-            return defaultValue;
-        }
 
         internal FlagChangedEventArgs(string key, JToken newValue, JToken oldValue, bool flagWasDeleted)
         {
