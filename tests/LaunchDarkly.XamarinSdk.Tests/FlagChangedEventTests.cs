@@ -33,8 +33,8 @@ namespace LaunchDarkly.Xamarin.Tests
 
             Assert.Equal(INT_FLAG, event1a.Key);
             Assert.Equal(INT_FLAG, event2a.Key);
-            Assert.Equal(7, event1a.NewIntValue);
-            Assert.Equal(7, event2a.NewIntValue);
+            Assert.Equal(7, event1a.NewValue.AsInt);
+            Assert.Equal(7, event2a.NewValue.AsInt);
             Assert.Equal(6, event1a.OldValue.AsInt);
             Assert.Equal(6, event2a.OldValue.AsInt);
             Assert.False(event1a.FlagWasDeleted);
@@ -42,8 +42,8 @@ namespace LaunchDarkly.Xamarin.Tests
 
             Assert.Equal(DOUBLE_FLAG, event1b.Key);
             Assert.Equal(DOUBLE_FLAG, event2b.Key);
-            Assert.Equal(10.5, event1b.NewFloatValue);
-            Assert.Equal(10.5, event2b.NewFloatValue);
+            Assert.Equal(10.5, event1b.NewValue.AsFloat);
+            Assert.Equal(10.5, event2b.NewValue.AsFloat);
             Assert.Equal(9.5, event1b.OldValue.AsFloat);
             Assert.Equal(9.5, event2b.OldValue.AsFloat);
             Assert.False(event1b.FlagWasDeleted);
@@ -65,7 +65,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var e = listener2.Await();
             Assert.Equal(INT_FLAG, e.Key);
-            Assert.Equal(7, e.NewIntValue);
+            Assert.Equal(7, e.NewValue.AsInt);
             Assert.Equal(6, e.OldValue.AsInt);
 
             // This is pretty hacky, but since we're testing for the *lack* of a call, there's no signal we can wait on.
