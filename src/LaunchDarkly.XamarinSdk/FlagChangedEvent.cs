@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Common.Logging;
+using LaunchDarkly.Client;
 using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
@@ -19,7 +20,7 @@ namespace LaunchDarkly.Xamarin
         /// The updated value of the flag for the current user.
         /// </summary>
         /// <remarks>
-        /// Since flag values can be of any JSON type, this property is a <see cref="JToken"/>. The properties
+        /// Since flag values can be of any JSON type, this property is an <see cref="ImmutableJsonValue"/>. The properties
         /// <see cref="NewBoolValue"/>, <see cref="NewIntValue"/>, etc. are shortcuts for accessing its value with a
         /// specific data type.
         ///
@@ -39,12 +40,12 @@ namespace LaunchDarkly.Xamarin
         /// would have specified "xyz" as a default value when evaluating the flag, so <c>NewValue</c> will simply
         /// be null.
         /// </remarks>
-        public JToken NewValue { get; private set; }
+        public ImmutableJsonValue NewValue { get; private set; }
 
         /// <summary>
         /// The last known value of the flag for the current user prior to the update.
         /// </summary>
-        public JToken OldValue { get; private set; }
+        public ImmutableJsonValue OldValue { get; private set; }
 
         /// <summary>
         /// True if the flag was completely removed from the environment.
@@ -77,11 +78,12 @@ namespace LaunchDarkly.Xamarin
 
         private T AsType<T>(ValueType<T> valueType, T defaultValue)
         {
-            if (NewValue != null)
+            var jt = NewValue.AsJToken();
+            if (jt != null)
             {
                 try
                 {
-                    return valueType.ValueFromJson(NewValue);
+                    return valueType.ValueFromJson(jt);
                 }
                 catch (ArgumentException) {}
             }
@@ -91,8 +93,11 @@ namespace LaunchDarkly.Xamarin
         internal FlagChangedEventArgs(string key, JToken newValue, JToken oldValue, bool flagWasDeleted)
         {
             Key = key;
-            NewValue = newValue;
-            OldValue = oldValue;
+            // Note that we're calling the ImmutableJsonValue constructor directly instead of using FromJToken(),
+            // because this is an internal value that we know we will not be modifying even if it is mutable.
+            // ImmutableJsonValue will take care of deep-copying the value if the application requests it.
+            NewValue = new ImmutableJsonValue(newValue);
+            OldValue = new ImmutableJsonValue(oldValue);
             FlagWasDeleted = flagWasDeleted;
         }
     }
