@@ -35,7 +35,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (LdClient client = MakeClient(user, "{}"))
             {
                 JToken data = new JValue("hi");
-                client.Track("eventkey", ImmutableJsonValue.FromJToken(data));
+                client.Track("eventkey", ImmutableJsonValue.Of(data));
                 Assert.Collection(eventProcessor.Events, 
                     e => CheckIdentifyEvent(e, user),
                     e => {

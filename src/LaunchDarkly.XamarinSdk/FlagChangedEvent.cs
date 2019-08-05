@@ -55,11 +55,8 @@ namespace LaunchDarkly.Xamarin
         internal FlagChangedEventArgs(string key, JToken newValue, JToken oldValue, bool flagWasDeleted)
         {
             Key = key;
-            // Note that we're calling the ImmutableJsonValue constructor directly instead of using FromJToken(),
-            // because this is an internal value that we know we will not be modifying even if it is mutable.
-            // ImmutableJsonValue will take care of deep-copying the value if the application requests it.
-            NewValue = new ImmutableJsonValue(newValue);
-            OldValue = new ImmutableJsonValue(oldValue);
+            NewValue = ImmutableJsonValue.FromSafeValue(newValue);
+            OldValue = ImmutableJsonValue.FromSafeValue(oldValue);
             FlagWasDeleted = flagWasDeleted;
         }
     }

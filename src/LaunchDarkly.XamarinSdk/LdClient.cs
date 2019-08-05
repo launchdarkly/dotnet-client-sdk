@@ -15,7 +15,7 @@ namespace LaunchDarkly.Xamarin
     /// A client for the LaunchDarkly API. Client instances are thread-safe. Your application should instantiate
     /// a single <c>LdClient</c> for the lifetime of their application.
     /// </summary>
-    public sealed class LdClient : ILdMobileClient
+    public sealed class LdClient : ILdClient
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LdClient));
 
@@ -432,10 +432,7 @@ namespace LaunchDarkly.Xamarin
             }
 
             return flagCacheManager.FlagsForUser(User)
-                                    .ToDictionary(p => p.Key, p => new ImmutableJsonValue(p.Value.value));
-            // Note that we are calling the ImmutableJsonValue constructor directly instead of using FromJToken()
-            // because we do not need it to deep-copy mutable values immediately - we know that *we* won't be
-            // modifying those values. It will deep-copy them if and when the application tries to access them.
+                                    .ToDictionary(p => p.Key, p => ImmutableJsonValue.FromSafeValue(p.Value.value));
         }
 
         /// <see cref="ILdMobileClient.Track(string, ImmutableJsonValue)"/>
@@ -447,7 +444,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Track(string)"/>
         public void Track(string eventName)
         {
-            Track(eventName, ImmutableJsonValue.FromJToken(null));
+            Track(eventName, ImmutableJsonValue.Null);
         }
 
         /// <see cref="ILdMobileClient.Initialized"/>

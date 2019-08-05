@@ -35,15 +35,15 @@ namespace LaunchDarkly.Xamarin
         private static readonly ILog Log = LogManager.GetLogger(typeof(FeatureFlagRequestor));
         private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
-        private readonly IMobileConfiguration _configuration;
+        private readonly Configuration _configuration;
         private readonly User _currentUser;
         private readonly HttpClient _httpClient;
         private volatile EntityTagHeaderValue _etag;
 
-        internal FeatureFlagRequestor(IMobileConfiguration configuration, User user)
+        internal FeatureFlagRequestor(Configuration configuration, User user)
         {
             this._configuration = configuration;
-            this._httpClient = Util.MakeHttpClient(configuration, MobileClientEnvironment.Instance);
+            this._httpClient = Util.MakeHttpClient(configuration.HttpRequestConfiguration, MobileClientEnvironment.Instance);
             this._currentUser = user;
         }
 
