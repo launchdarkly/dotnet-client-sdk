@@ -3,7 +3,7 @@ using LaunchDarkly.Common;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class MobileClientEnvironment : ClientEnvironment
+    internal sealed class MobileClientEnvironment : ClientEnvironment
     {
         internal static readonly MobileClientEnvironment Instance =
             new MobileClientEnvironment();

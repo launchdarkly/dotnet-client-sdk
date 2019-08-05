@@ -3,7 +3,7 @@ using LaunchDarkly.Xamarin.PlatformSpecific;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class MobileConnectionManager : IConnectionManager
+    internal sealed class MobileConnectionManager : IConnectionManager
     {
         internal Action<bool> ConnectionChanged;
 

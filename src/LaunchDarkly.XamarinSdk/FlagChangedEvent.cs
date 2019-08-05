@@ -9,7 +9,7 @@ namespace LaunchDarkly.Xamarin
     /// <summary>
     /// An event object that is sent to handlers for the <see cref="ILdMobileClient.FlagChanged"/> event.
     /// </summary>
-    public class FlagChangedEventArgs
+    public sealed class FlagChangedEventArgs
     {
         /// <summary>
         /// The unique key of the feature flag whose value has changed.
@@ -68,7 +68,7 @@ namespace LaunchDarkly.Xamarin
         void FlagWasUpdated(string flagKey, JToken newValue, JToken oldValue);
     }
 
-    internal class FlagChangedEventManager : IFlagChangedEventManager
+    internal sealed class FlagChangedEventManager : IFlagChangedEventManager
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(IFlagChangedEventManager));
 

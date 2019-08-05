@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class UserFlagInMemoryCache : IUserFlagCache
+    internal sealed class UserFlagInMemoryCache : IUserFlagCache
     {
         // A map of the key (user.Key) and their featureFlags
         readonly ConcurrentDictionary<string, string> JSONMap =
