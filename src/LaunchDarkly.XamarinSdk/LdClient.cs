@@ -22,6 +22,8 @@ namespace LaunchDarkly.Xamarin
         static volatile LdClient _instance;
         static volatile User _user;
 
+        static bool backgroundedWhileStreaming;
+
         static readonly object _createInstanceLock = new object();
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
         static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
@@ -497,7 +499,7 @@ namespace LaunchDarkly.Xamarin
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
-            if (Online && !Config.Offline)
+            if (Online)
                 return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
             else
                 return true;
@@ -505,7 +507,7 @@ namespace LaunchDarkly.Xamarin
 
         Task StartUpdateProcessorAsync()
         {
-            if (Online && !Config.Offline)
+            if (Online)
                 return updateProcessor.Start();
             else
                 return Task.FromResult(true);
@@ -633,7 +635,7 @@ namespace LaunchDarkly.Xamarin
                     Log.Debug("Background updating is disabled");
                 }
                 if (Config.IsStreamingEnabled)
-                    persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
+                    backgroundedWhileStreaming = true;
             }
             else
             {
@@ -644,10 +646,9 @@ namespace LaunchDarkly.Xamarin
 
         void ResetProcessorForForeground()
         {
-            string didBackground = persister.GetValue(Constants.BACKGROUNDED_WHILE_STREAMING);
-            if (didBackground != null && didBackground.Equals("true"))
+            if (backgroundedWhileStreaming)
             {
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
+                backgroundedWhileStreaming = false;
                 ClearUpdateProcessor();
                 _disableStreaming = false;
             }
