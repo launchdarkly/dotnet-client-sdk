@@ -497,7 +497,7 @@ namespace LaunchDarkly.Xamarin
 
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
-            if (Online)
+            if (Online && !Config.Offline)
                 return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
             else
                 return true;
@@ -505,7 +505,7 @@ namespace LaunchDarkly.Xamarin
 
         Task StartUpdateProcessorAsync()
         {
-            if (Online)
+            if (Online && !Config.Offline)
                 return updateProcessor.Start();
             else
                 return Task.FromResult(true);
@@ -632,7 +632,8 @@ namespace LaunchDarkly.Xamarin
                 {
                     Log.Debug("Background updating is disabled");
                 }
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
+                if (Config.IsStreamingEnabled)
+                    persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
             }
             else
             {
