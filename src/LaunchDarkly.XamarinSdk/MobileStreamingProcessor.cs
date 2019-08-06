@@ -11,17 +11,17 @@ using Common.Logging;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class MobileStreamingProcessor : IMobileUpdateProcessor, IStreamProcessor
+    internal sealed class MobileStreamingProcessor : IMobileUpdateProcessor, IStreamProcessor
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MobileStreamingProcessor));
         private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
-        private readonly IMobileConfiguration _configuration;
+        private readonly Configuration _configuration;
         private readonly IFlagCacheManager _cacheManager;
         private readonly User _user;
         private readonly StreamManager _streamManager;
 
-        internal MobileStreamingProcessor(IMobileConfiguration configuration,
+        internal MobileStreamingProcessor(Configuration configuration,
                                           IFlagCacheManager cacheManager,
                                           User user,
                                           StreamManager.EventSourceCreator eventSourceCreator)
@@ -34,7 +34,7 @@ namespace LaunchDarkly.Xamarin
 
             _streamManager = new StreamManager(this,
                                                streamProperties,
-                                               _configuration,
+                                               _configuration.StreamManagerConfiguration,
                                                MobileClientEnvironment.Instance,
                                                eventSourceCreator);
         }

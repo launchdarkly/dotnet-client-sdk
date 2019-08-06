@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Net.Http;
 using Common.Logging;
 using LaunchDarkly.Client;
@@ -36,7 +35,9 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <remarks>
         /// If this is true, all of the user attributes will be private, not just the attributes specified with
-        /// <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/> on the <see cref="User"/> object.
+        /// <see cref="PrivateAttribute(string)"/> or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
+        /// method with <see cref="UserBuilder"/>.
+        ///
         /// By default, this is false.
         /// </remarks>
         /// <param name="allAttributesPrivate">true if all attributes should be private</param>
@@ -44,8 +45,11 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder AllAttributesPrivate(bool allAttributesPrivate);
 
         /// <summary>
-        /// Sets the interval for background polling.
+        /// Sets the interval between feature flag updates when the application is running in the background.
         /// </summary>
+        /// <remarks>
+        /// This is only relevant on mobile platforms.
+        /// </remarks>
         /// <param name="backgroundPollingInterval">the background polling interval</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder BackgroundPollingInterval(TimeSpan backgroundPollingInterval);
@@ -63,7 +67,7 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <remarks>
         /// The additional information will then be available through the client's "detail"
-        /// methods such as <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>. Since this
+        /// methods such as <see cref="ILdClient.BoolVariationDetail(string, bool)"/>. Since this
         /// increases the size of network requests, such information is not sent unless you set this option
         /// to true.
         /// </remarks>
@@ -94,18 +98,6 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the same builder</returns>
         IConfigurationBuilder EventFlushInterval(TimeSpan eventflushInterval);
         
-        /// <summary>
-        /// Enables event sampling if non-zero. 
-        /// </summary>
-        /// <remarks>
-        /// When set to the default of zero, all analytics events are sent back to LaunchDarkly. When greater
-        /// than zero, there is a 1 in <c>EventSamplingInterval</c> chance that events will be sent (example:
-        /// if the interval is 20, on average 5% of events will be sent).
-        /// </remarks>
-        /// <param name="eventSamplingInterval">the sampling interval</param>
-        /// <returns>the same builder</returns>
-        IConfigurationBuilder EventSamplingInterval(int eventSamplingInterval);
-
         /// <summary>
         /// Sets the base URL of the LaunchDarkly analytics event server.
         /// </summary>
@@ -147,9 +139,13 @@ namespace LaunchDarkly.Xamarin
         /// <param name="isStreamingEnabled">true if the streaming API should be used</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder IsStreamingEnabled(bool isStreamingEnabled);
+
         /// <summary>
-        /// 
+        /// Sets the key for your LaunchDarkly environment.
         /// </summary>
+        /// <remarks>
+        /// This should be the "mobile key" field for the environment on your LaunchDarkly dashboard.
+        /// </remarks>
         /// <param name="mobileKey"></param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder MobileKey(string mobileKey);
@@ -163,8 +159,11 @@ namespace LaunchDarkly.Xamarin
 
         /// <summary>
         /// Sets whether the SDK should save flag values for each user in persistent storage, so they will be
-        /// immediately available the next time the SDK is started for the same user. The default is <see langword="true"/>.
+        /// immediately available the next time the SDK is started for the same user.
         /// </summary>
+        /// <remarks>
+        /// The default is <c>true</c>.
+        /// </remarks>
         /// <param name="persistFlagValues">true to save flag values</param>
         /// <returns>the same <c>Configuration</c> instance</returns>
         /// <returns>the same builder</returns>
@@ -181,16 +180,18 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder PollingInterval(TimeSpan pollingInterval);
 
         /// <summary>
-        /// Marks an attribute name as private.
+        /// Marks an attribute name as private for all users.
         /// </summary>
         /// <remarks>
         /// Any users sent to LaunchDarkly with this configuration active will have attributes with this name
-        /// removed, even if you did not use the <c>AndPrivate...</c> methods on the <see cref="User"/> object.
+        /// removed, even if you did not use the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
+        /// method in <see cref="UserBuilder"/>.
+        /// 
         /// You may call this method repeatedly to mark multiple attributes as private.
         /// </remarks>
-        /// <param name="privateAtributeName">the attribute name</param>
+        /// <param name="privateAttributeName">the attribute name</param>
         /// <returns>the same builder</returns>
-        IConfigurationBuilder PrivateAttribute(string privateAtributeName);
+        IConfigurationBuilder PrivateAttribute(string privateAttributeName);
 
         /// <summary>
         /// Sets the timeout when reading data from the streaming connection.
@@ -221,8 +222,13 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder StreamUri(Uri streamUri);
 
         /// <summary>
-        /// Determines whether to use the REPORT method for networking requests.
+        /// Sets whether to use the HTTP REPORT method for feature flag requests.
         /// </summary>
+        /// <remarks>
+        /// By default, polling and streaming connections are made with the GET method, witht the user data
+        /// encoded into the request URI. Using REPORT allows the user data to be sent in the request body instead.
+        /// However, some network gateways do not support REPORT.
+        /// </remarks>
         /// <param name="useReport">whether to use REPORT mode</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder UseReport(bool useReport);
@@ -249,7 +255,7 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder UserKeysFlushInterval(TimeSpan userKeysFlushInterval);
     }
 
-    internal class ConfigurationBuilder : IConfigurationBuilder
+    internal sealed class ConfigurationBuilder : IConfigurationBuilder
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ConfigurationBuilder));
 
@@ -261,7 +267,6 @@ namespace LaunchDarkly.Xamarin
         internal bool _evaluationReasons = false;
         internal int _eventCapacity = Configuration.DefaultEventCapacity;
         internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
-        internal int _eventSamplingInterval = 0;
         internal Uri _eventsUri = Configuration.DefaultEventsUri;
         internal HttpClientHandler _httpClientHandler = new HttpClientHandler();
         internal TimeSpan _httpClientTimeout = Configuration.DefaultHttpClientTimeout;
@@ -303,7 +308,6 @@ namespace LaunchDarkly.Xamarin
             _evaluationReasons = copyFrom.EvaluationReasons;
             _eventCapacity = copyFrom.EventCapacity;
             _eventFlushInterval = copyFrom.EventFlushInterval;
-            _eventSamplingInterval = copyFrom.EventSamplingInterval;
             _eventsUri = copyFrom.EventsUri;
             _httpClientHandler = copyFrom.HttpClientHandler;
             _httpClientTimeout = copyFrom.HttpClientTimeout;
@@ -381,12 +385,6 @@ namespace LaunchDarkly.Xamarin
         public IConfigurationBuilder EventFlushInterval(TimeSpan eventflushInterval)
         {
             _eventFlushInterval = eventflushInterval;
-            return this;
-        }
-
-        public IConfigurationBuilder EventSamplingInterval(int eventSamplingInterval)
-        {
-            _eventSamplingInterval = eventSamplingInterval;
             return this;
         }
 

@@ -9,7 +9,7 @@ namespace LaunchDarkly.Xamarin
     /// <summary>
     /// An event object that is sent to handlers for the <see cref="ILdMobileClient.FlagChanged"/> event.
     /// </summary>
-    public class FlagChangedEventArgs
+    public sealed class FlagChangedEventArgs
     {
         /// <summary>
         /// The unique key of the feature flag whose value has changed.
@@ -55,11 +55,8 @@ namespace LaunchDarkly.Xamarin
         internal FlagChangedEventArgs(string key, JToken newValue, JToken oldValue, bool flagWasDeleted)
         {
             Key = key;
-            // Note that we're calling the ImmutableJsonValue constructor directly instead of using FromJToken(),
-            // because this is an internal value that we know we will not be modifying even if it is mutable.
-            // ImmutableJsonValue will take care of deep-copying the value if the application requests it.
-            NewValue = new ImmutableJsonValue(newValue);
-            OldValue = new ImmutableJsonValue(oldValue);
+            NewValue = ImmutableJsonValue.FromSafeValue(newValue);
+            OldValue = ImmutableJsonValue.FromSafeValue(oldValue);
             FlagWasDeleted = flagWasDeleted;
         }
     }
@@ -71,7 +68,7 @@ namespace LaunchDarkly.Xamarin
         void FlagWasUpdated(string flagKey, JToken newValue, JToken oldValue);
     }
 
-    internal class FlagChangedEventManager : IFlagChangedEventManager
+    internal sealed class FlagChangedEventManager : IFlagChangedEventManager
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(IFlagChangedEventManager));
 

@@ -167,7 +167,7 @@ namespace LaunchDarkly.Xamarin.Tests
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
-                Assert.Equal(jsonValue, client.JsonVariation("flag-key", ImmutableJsonValue.FromJToken(3)).AsJToken());
+                Assert.Equal(jsonValue, client.JsonVariation("flag-key", ImmutableJsonValue.Of(3)).AsJToken());
             }
         }
 
@@ -176,7 +176,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var client = ClientWithFlagsJson("{}"))
             {
-                var defaultVal = ImmutableJsonValue.FromJToken(3);
+                var defaultVal = ImmutableJsonValue.Of(3);
                 Assert.Equal(defaultVal, client.JsonVariation(nonexistentFlagKey, defaultVal));
             }
         }
@@ -190,8 +190,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 var expected = new EvaluationDetail<JToken>(jsonValue, 1, reason);
-                var result = client.JsonVariationDetail("flag-key", ImmutableJsonValue.FromJToken(3));
-                // Note, JToken.Equals() doesn't work, so we need to test each property separately
+                var result = client.JsonVariationDetail("flag-key", ImmutableJsonValue.Of(3));
                 Assert.True(JToken.DeepEquals(expected.Value, result.Value.AsJToken()));
                 Assert.Equal(expected.VariationIndex, result.VariationIndex);
                 Assert.Equal(expected.Reason, result.Reason);

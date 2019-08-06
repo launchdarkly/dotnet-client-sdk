@@ -26,7 +26,7 @@ namespace LaunchDarkly.Xamarin
     /// <summary>
     /// Used when the client is offline or in LDD mode.
     /// </summary>
-    internal class NullUpdateProcessor : IMobileUpdateProcessor
+    internal sealed class NullUpdateProcessor : IMobileUpdateProcessor
     {
         Task<bool> IMobileUpdateProcessor.Start()
         {

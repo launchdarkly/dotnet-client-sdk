@@ -374,7 +374,7 @@ namespace LaunchDarkly.Xamarin.Tests
             Assert.Null(req.Body);
         }
 
-        private void VerifyFlagValues(ILdMobileClient client, IDictionary<string, string> flags)
+        private void VerifyFlagValues(ILdClient client, IDictionary<string, string> flags)
         {
             Assert.True(client.Initialized());
             foreach (var e in flags)

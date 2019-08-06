@@ -128,7 +128,7 @@ namespace LaunchDarkly.Xamarin.Tests
             return JsonConvert.SerializeObject(o);
         }
 
-        public static IDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
+        internal static IDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
         {
             return JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsJson);
         }

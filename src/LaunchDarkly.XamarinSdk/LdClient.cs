@@ -15,7 +15,7 @@ namespace LaunchDarkly.Xamarin
     /// A client for the LaunchDarkly API. Client instances are thread-safe. Your application should instantiate
     /// a single <c>LdClient</c> for the lifetime of their application.
     /// </summary>
-    public sealed class LdClient : ILdMobileClient
+    public sealed class LdClient : ILdClient
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LdClient));
 
@@ -430,7 +430,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Track(string)"/>
         public void Track(string eventName)
         {
-            Track(eventName, ImmutableJsonValue.FromJToken(null));
+            Track(eventName, ImmutableJsonValue.Null);
         }
 
         /// <see cref="ILdMobileClient.Initialized"/>

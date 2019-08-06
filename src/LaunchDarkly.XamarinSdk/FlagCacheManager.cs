@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class FlagCacheManager : IFlagCacheManager
+    internal sealed class FlagCacheManager : IFlagCacheManager
     {
         private readonly IUserFlagCache inMemoryCache;
         private readonly IUserFlagCache deviceCache;
