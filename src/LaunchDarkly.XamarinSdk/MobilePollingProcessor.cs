@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class MobilePollingProcessor : IMobileUpdateProcessor
+    internal sealed class MobilePollingProcessor : IMobileUpdateProcessor
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MobilePollingProcessor));
 

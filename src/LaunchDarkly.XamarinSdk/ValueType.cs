@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class ValueType<T>
+    internal sealed class ValueType<T>
     {
         public Func<JToken, T> ValueFromJson { get; internal set; }
         public Func<T, JToken> ValueToJson { get; internal set; }

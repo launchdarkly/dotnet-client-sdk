@@ -5,7 +5,7 @@ using LaunchDarkly.Common;
 
 namespace LaunchDarkly.Xamarin
 {
-    public class FeatureFlag : IEquatable<FeatureFlag>
+    internal sealed class FeatureFlag : IEquatable<FeatureFlag>
     {
         public JToken value;
         public int version;

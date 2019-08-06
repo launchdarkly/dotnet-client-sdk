@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class UserFlagDeviceCache : IUserFlagCache
+    internal sealed class UserFlagDeviceCache : IUserFlagCache
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(UserFlagDeviceCache));
         private readonly IPersistentStorage persister;
