@@ -25,9 +25,6 @@ namespace LaunchDarkly.Xamarin
         static readonly object _createInstanceLock = new object();
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
         static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
- 
-        readonly object _myLockObjForConnectionChange = new object();
-        readonly object _myLockObjForUserUpdate = new object();
 
         readonly Configuration _config;
         readonly SemaphoreSlim _connectionLock;
@@ -374,7 +371,7 @@ namespace LaunchDarkly.Xamarin
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
                 new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(kind));
 
-            if (!Initialized())
+            if (flagCacheManager is null || eventProcessor is null)
             {
                 Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
                 return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
@@ -420,22 +417,8 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.AllFlags()"/>
         public IDictionary<string, ImmutableJsonValue> AllFlags()
         {
-            if (IsOffline())
-            {
-                Log.Warn("AllFlags() was called when client is in offline mode. Returning null.");
-                return null;
-            }
-            if (!Initialized())
-            {
-                Log.Warn("AllFlags() was called before client has finished initializing. Returning null.");
-                return null;
-            }
-
             return flagCacheManager.FlagsForUser(User)
-                                    .ToDictionary(p => p.Key, p => new ImmutableJsonValue(p.Value.value));
-            // Note that we are calling the ImmutableJsonValue constructor directly instead of using FromJToken()
-            // because we do not need it to deep-copy mutable values immediately - we know that *we* won't be
-            // modifying those values. It will deep-copy them if and when the application tries to access them.
+                                    .ToDictionary(p => p.Key, p => ImmutableJsonValue.FromSafeValue(p.Value.value));
         }
 
         /// <see cref="ILdMobileClient.Track(string, ImmutableJsonValue)"/>

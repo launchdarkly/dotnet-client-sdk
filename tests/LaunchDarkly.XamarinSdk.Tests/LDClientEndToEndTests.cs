@@ -86,7 +86,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                     {
                         Assert.False(client.Initialized());
-                        Assert.Null(client.StringVariation(_flagData1.First().Key, null));
+                        Assert.Equal("value1", client.StringVariation(_flagData1.First().Key, null));
                         Assert.Contains(log.Messages, m => m.Level == LogLevel.Warn &&
                             m.Text == "Client did not successfully initialize within 200 milliseconds.");
                     }
