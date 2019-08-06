@@ -3,7 +3,7 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
-## [1.0.0-beta20] - 2019-08-06
+## [1.0.0-beta21] - 2019-08-06
 ### Added:
 - `Configuration.Builder` provides a fluent builder pattern for constructing `Configuration` objects. This is now the only method for building a configuration if you want to set properties other than the SDK key.
 - `ImmutableJsonValue.Null` (equivalent to `ImmutableJsonValue.Of(null)`).
@@ -27,6 +27,9 @@ This project adheres to [Semantic Versioning](http://semver.org).
 - `User` constructors (use `User.WithKey` or `User.Builder`).
 - `User` property setters.
 - `IBaseConfiguration` and `ICommonLdClient` interfaces.
+
+## [1.0.0-beta20] - 2019-08-06
+Incomplete release, replaced by beta21.
 
 ## [1.0.0-beta19] - 2019-07-31
 ### Added:
