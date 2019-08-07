@@ -22,8 +22,6 @@ namespace LaunchDarkly.Xamarin
         static volatile LdClient _instance;
         static volatile User _user;
 
-        private bool backgroundedWhileStreaming;
-
         static readonly object _createInstanceLock = new object();
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
         static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
@@ -634,18 +632,10 @@ namespace LaunchDarkly.Xamarin
                 {
                     Log.Debug("Background updating is disabled");
                 }
-                if (Config.IsStreamingEnabled)
-                {
-                    backgroundedWhileStreaming = true;
-                }
             }
             else
             {
-                if (backgroundedWhileStreaming)
-                {
-                    backgroundedWhileStreaming = false;
-                    _disableStreaming = false;
-                }
+                _disableStreaming = false;
                 await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
         }
