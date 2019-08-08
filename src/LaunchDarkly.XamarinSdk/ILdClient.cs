@@ -1,19 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using LaunchDarkly.Common;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 
 namespace LaunchDarkly.Xamarin
 {
-    public interface ILdMobileClient : ILdCommonClient
+    public interface ILdClient : IDisposable
     {
+        /// <summary>
+        /// Returns the current version number of the LaunchDarkly client.
+        /// </summary>
+        Version Version { get; }
+
         /// <summary>
         /// Tests whether the client is ready to be used.
         /// </summary>
         /// <returns>true if the client is ready, or false if it is still initializing</returns>
         bool Initialized();
+
+        /// <summary>
+        /// Tests whether the client is being used in offline mode.
+        /// </summary>
+        /// <returns>true if the client is offline</returns>
+        bool IsOffline();
 
         /// <summary>
         /// Returns the boolean value of a feature flag for a given flag key.
@@ -228,5 +238,10 @@ namespace LaunchDarkly.Xamarin
         /// </example>
         /// <param name="user">the user to register</param>
         Task IdentifyAsync(User user);
+
+        /// <summary>
+        /// Flushes all pending events.
+        /// </summary>
+        void Flush();
     }
 }

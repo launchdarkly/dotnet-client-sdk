@@ -72,8 +72,8 @@ namespace LaunchDarkly.Xamarin
                 return new NullEventProcessor();
             }
 
-            HttpClient httpClient = Util.MakeHttpClient(configuration, MobileClientEnvironment.Instance);
-            return new DefaultEventProcessor(configuration, null, httpClient, Constants.EVENTS_PATH);
+            HttpClient httpClient = Util.MakeHttpClient(configuration.HttpRequestConfiguration, MobileClientEnvironment.Instance);
+            return new DefaultEventProcessor(configuration.EventProcessorConfiguration, null, httpClient, Constants.EVENTS_PATH);
         }
 
         internal static IPersistentStorage CreatePersistentStorage(Configuration configuration)

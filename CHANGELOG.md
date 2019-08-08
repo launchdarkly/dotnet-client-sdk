@@ -3,6 +3,34 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0-beta21] - 2019-08-06
+### Added:
+- `Configuration.Builder` provides a fluent builder pattern for constructing `Configuration` objects. This is now the only method for building a configuration if you want to set properties other than the SDK key.
+- `ImmutableJsonValue.Null` (equivalent to `ImmutableJsonValue.Of(null)`).
+- `LdClient.PlatformType`.
+- Verbose debug logging for stream connections.
+ 
+### Changed:
+- `Configuration` objects are now immutable.
+- In `Configuration`, `EventQueueCapacity` and `EventQueueFrency` have been renamed to `EventCapacity` and `EventFlushInterval`, for consistency with other LaunchDarkly SDKs.
+- `ImmutableJsonValue.FromJToken()` was renamed to `ImmutableJsonValue.Of()`.
+- In `FlagChangedEventArgs`, `NewValue` and `OldValue` now have the type `ImmutableJsonValue` instead of `JToken`.
+- `ILdMobileClient` is now named `ILdClient`.
+ 
+### Fixed:
+- Fixed a bug where setting a user's custom attribute to a null value could cause an exception during JSON serialization of event data.
+ 
+### Removed:
+- `ConfigurationExtensions` (use `Configuration.Builder`).
+- `Configuration.SamplingInterval`.
+- `UserExtensions` (use `User.Builder`).
+- `User` constructors (use `User.WithKey` or `User.Builder`).
+- `User` property setters.
+- `IBaseConfiguration` and `ICommonLdClient` interfaces.
+
+## [1.0.0-beta20] - 2019-08-06
+Incomplete release, replaced by beta21.
+
 ## [1.0.0-beta19] - 2019-07-31
 ### Added:
 - `User.Builder` provides a fluent builder pattern for constructing `User` objects. This is now the only method for building a user if you want to set properties other than `Key`.
