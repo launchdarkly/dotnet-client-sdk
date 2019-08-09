@@ -642,7 +642,6 @@ namespace LaunchDarkly.Xamarin
                 {
                     Log.Debug("Background updating is disabled");
                 }
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
             }
             else
             {
