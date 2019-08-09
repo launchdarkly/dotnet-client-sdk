@@ -35,12 +35,12 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
             public void OnActivityPaused(Activity activity)
             {
-                BackgroundDetection.UpdateBackgroundMode(true);
+                UpdateBackgroundMode(true);
             }
 
             public void OnActivityResumed(Activity activity)
             {
-                BackgroundDetection.UpdateBackgroundMode(false);
+                UpdateBackgroundMode(false);
             }
 
             public void OnActivitySaveInstanceState(Activity activity, Bundle outState)

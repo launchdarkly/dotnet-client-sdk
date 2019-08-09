@@ -646,19 +646,8 @@ namespace LaunchDarkly.Xamarin
             }
             else
             {
-                ResetProcessorForForeground();
-                await RestartUpdateProcessorAsync(Config.PollingInterval);
-            }
-        }
-
-        void ResetProcessorForForeground()
-        {
-            string didBackground = persister.GetValue(Constants.BACKGROUNDED_WHILE_STREAMING);
-            if (didBackground != null && didBackground.Equals("true"))
-            {
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
-                ClearUpdateProcessor();
                 _disableStreaming = false;
+                await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
         }
     }

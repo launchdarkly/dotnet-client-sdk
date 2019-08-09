@@ -349,6 +349,70 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             return client.Online && client.updateProcessor.Initialized();
         }
+         
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        public void BackgroundOfflineClientUsesCachedFlagsSyncAfterStartUpdateProcessor()
+        {
+            WithServer(server =>
+            {
+                SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
+
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
+                using (var client = TestUtil.CreateClient(config, _user))
+                {
+                    BackgroundDetection.UpdateBackgroundMode(true);
+                    VerifyFlagValues(client, _flagData1);
+                    BackgroundDetection.UpdateBackgroundMode(false);
+                    VerifyFlagValues(client, _flagData1);
+                }
+
+                // At this point the SDK should have written the flags to persistent storage for this user key.
+                // We'll now start over, but with a server that doesn't respond immediately. When the client times
+                // out, we should still see the earlier flag values.
+
+                server.Reset(); // the offline client shouldn't be making any requests, but just in case
+                var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
+                using (var client = TestUtil.CreateClient(offlineConfig, _user))
+                {
+                    BackgroundDetection.UpdateBackgroundMode(false);
+                    VerifyFlagValues(client, _flagData1);
+                    BackgroundDetection.UpdateBackgroundMode(true);
+                    VerifyFlagValues(client, _flagData1);
+                }
+            });
+        }
+
+        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        public async Task BackgroundOfflineClientUsesCachedFlagsAsyncAfterStartUpdateProcessorAsync()
+        {
+            await WithServerAsync(async server =>
+            {
+                SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
+
+                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
+                using (var client = await TestUtil.CreateClientAsync(config, _user))
+                {
+                    BackgroundDetection.UpdateBackgroundMode(true);
+                    VerifyFlagValues(client, _flagData1);
+                    BackgroundDetection.UpdateBackgroundMode(false);
+                    VerifyFlagValues(client, _flagData1);
+                }
+
+                // At this point the SDK should have written the flags to persistent storage for this user key.
+                // We'll now start over, but with a server that doesn't respond immediately. When the client times
+                // out, we should still see the earlier flag values.
+
+                server.Reset(); // the offline client shouldn't be making any requests, but just in case
+                var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
+                using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
+                {
+                    BackgroundDetection.UpdateBackgroundMode(true);
+                    VerifyFlagValues(client, _flagData1);
+                    BackgroundDetection.UpdateBackgroundMode(false);
+                    VerifyFlagValues(client, _flagData1);
+                }
+            });
+        }
 
         private IConfigurationBuilder BaseConfig(FluentMockServer server)
         {
