@@ -22,6 +22,8 @@ namespace LaunchDarkly.Xamarin
         static volatile LdClient _instance;
         static volatile User _user;
 
+        static bool initialized;
+
         static readonly object _createInstanceLock = new object();
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
         static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
@@ -37,7 +39,7 @@ namespace LaunchDarkly.Xamarin
         readonly IPersistentStorage persister;
 
         // These LdClient fields are not readonly because they change according to online status
-        volatile IMobileUpdateProcessor updateProcessor;
+        internal volatile IMobileUpdateProcessor updateProcessor;
         volatile bool _disableStreaming;
         volatile bool _online;
 
@@ -95,7 +97,7 @@ namespace LaunchDarkly.Xamarin
         {
             get
             {
-                return PlatformSpecific.UserMetadata.PlatformType;
+                return UserMetadata.PlatformType;
             }
         }
 
@@ -113,6 +115,11 @@ namespace LaunchDarkly.Xamarin
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             _connectionLock = new SemaphoreSlim(1, 1);
+
+            if (configuration.Offline)
+            {
+                initialized = true;
+            }
 
             persister = Factory.CreatePersistentStorage(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
@@ -371,12 +378,6 @@ namespace LaunchDarkly.Xamarin
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
                 new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(kind));
 
-            if (flagCacheManager is null || eventProcessor is null)
-            {
-                Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
-                return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
-            }
-
             var flag = flagCacheManager.FlagForUser(featureKey, User);
             if (flag == null)
             {
@@ -436,7 +437,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            return Online && updateProcessor.Initialized();
+            return initialized;
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
@@ -471,6 +472,7 @@ namespace LaunchDarkly.Xamarin
             try
             {
                 _user = newUser;
+                initialized = false;
                 await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
             finally
@@ -484,17 +486,39 @@ namespace LaunchDarkly.Xamarin
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
             if (Online)
-                return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+            {
+                var successfulConnection = AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+                if (successfulConnection)
+                {
+                    initialized = true;
+                } 
+                else
+                {
+                    initialized = false;
+                }
+                return successfulConnection;
+            }
             else
+            {
                 return true;
+            }
         }
 
         Task StartUpdateProcessorAsync()
         {
             if (Online)
-                return updateProcessor.Start();
+            {
+                var successfulConnection = updateProcessor.Start();
+                if (successfulConnection.IsCompleted)
+                {
+                    initialized = true;
+                }
+                return successfulConnection;
+            }
             else
+            { 
                 return Task.FromResult(true);
+            }
         }
 
         async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)

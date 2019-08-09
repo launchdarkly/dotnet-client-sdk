@@ -85,6 +85,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     var config = BaseConfig(server).IsStreamingEnabled(false).Build();
                     using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                     {
+                        Assert.False(Initialized(client));
                         Assert.False(client.Initialized());
                         Assert.Equal("value1", client.StringVariation(_flagData1.First().Key, null));
                         Assert.Contains(log.Messages, m => m.Level == LogLevel.Warn &&
@@ -139,6 +140,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     // will complete successfully with an uninitialized client.
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
                     {
+                        Assert.False(Initialized(client));
                         Assert.False(client.Initialized());
                     }
                 }
@@ -243,6 +245,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyFlagValues(client, _flagData1);
+                    Assert.True(client.Initialized());
                 }
 
                 // At this point the SDK should have written the flags to persistent storage for this user key.
@@ -254,6 +257,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 using (var client = TestUtil.CreateClient(offlineConfig, _user))
                 {
                     VerifyFlagValues(client, _flagData1);
+                    Assert.True(client.Initialized());
                 }
             });
         }
@@ -280,6 +284,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
                 {
                     VerifyFlagValues(client, _flagData1);
+                    Assert.True(client.Initialized());
                 }
             });
         }
@@ -340,6 +345,11 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
+        private bool Initialized(LdClient client)
+        {
+            return client.Online && client.updateProcessor.Initialized();
+        }
+
         private IConfigurationBuilder BaseConfig(FluentMockServer server)
         {
             return Configuration.BuilderInternal(_mobileKey)
@@ -376,7 +386,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private void VerifyFlagValues(ILdClient client, IDictionary<string, string> flags)
         {
-            Assert.True(client.Initialized());
+            Assert.True(Initialized((LdClient) client));
             foreach (var e in flags)
             {
                 Assert.Equal(e.Value, client.StringVariation(e.Key, null));
