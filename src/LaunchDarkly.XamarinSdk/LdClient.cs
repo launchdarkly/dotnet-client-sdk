@@ -22,7 +22,7 @@ namespace LaunchDarkly.Xamarin
         static volatile LdClient _instance;
         static volatile User _user;
 
-        static bool initialized;
+        bool initialized;
 
         static readonly object _createInstanceLock = new object();
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
@@ -488,14 +488,7 @@ namespace LaunchDarkly.Xamarin
             if (Online)
             {
                 var successfulConnection = AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
-                if (successfulConnection)
-                {
-                    initialized = true;
-                } 
-                else
-                {
-                    initialized = false;
-                }
+                initialized = successfulConnection;
                 return successfulConnection;
             }
             else
