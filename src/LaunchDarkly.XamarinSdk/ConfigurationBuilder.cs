@@ -106,11 +106,18 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder EventsUri(Uri eventsUri);
 
         /// <summary>
-        /// Sets the object to be used for sending HTTP requests. This is exposed for testing purposes.
+        /// Sets the object to be used for sending HTTP requests, if a specific implementation is desired.
         /// </summary>
-        /// <param name="httpClientHandler">the <c>HttpClientHandler</c> to use</param>
+        /// <remarks>
+        /// This is exposed mainly for testing purposes; you should not normally need to change it.
+        /// By default, on mobile platforms it will use the appropriate native HTTP handler for the
+        /// current platform, if any (e.g. <c>Xamarin.Android.Net.AndroidClientHandler</c>). If this is
+        /// <c>null</c>, the SDK will call the default <see cref="HttpClient"/> constructor without
+        /// specifying a handler, which may or may not result in using a native HTTP handler.
+        /// </remarks>
+        /// <param name="httpMessageHandler">the <c>HttpMessageHandler</c> to use</param>
         /// <returns>the same builder</returns>
-        IConfigurationBuilder HttpClientHandler(HttpClientHandler httpClientHandler);
+        IConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler);
 
         /// <summary>
         /// Sets the connection timeout. The default value is 10 seconds.
@@ -268,7 +275,7 @@ namespace LaunchDarkly.Xamarin
         internal int _eventCapacity = Configuration.DefaultEventCapacity;
         internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
         internal Uri _eventsUri = Configuration.DefaultEventsUri;
-        internal HttpClientHandler _httpClientHandler = new HttpClientHandler();
+        internal HttpMessageHandler _httpMessageHandler = PlatformSpecific.Http.GetHttpMessageHandler(); // see Http.shared.cs
         internal TimeSpan _httpClientTimeout = Configuration.DefaultHttpClientTimeout;
         internal bool _inlineUsersInEvents = false;
         internal bool _isStreamingEnabled = true;
@@ -309,7 +316,7 @@ namespace LaunchDarkly.Xamarin
             _eventCapacity = copyFrom.EventCapacity;
             _eventFlushInterval = copyFrom.EventFlushInterval;
             _eventsUri = copyFrom.EventsUri;
-            _httpClientHandler = copyFrom.HttpClientHandler;
+            _httpMessageHandler = copyFrom.HttpMessageHandler;
             _httpClientTimeout = copyFrom.HttpClientTimeout;
             _inlineUsersInEvents = copyFrom.InlineUsersInEvents;
             _isStreamingEnabled = copyFrom.IsStreamingEnabled;
@@ -394,9 +401,9 @@ namespace LaunchDarkly.Xamarin
             return this;
         }
 
-        public IConfigurationBuilder HttpClientHandler(HttpClientHandler httpClientHandler)
+        public IConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler)
         {
-            _httpClientHandler = httpClientHandler;
+            _httpMessageHandler = httpMessageHandler;
             return this;
         }
 
