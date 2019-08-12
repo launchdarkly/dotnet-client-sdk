@@ -381,10 +381,18 @@ namespace LaunchDarkly.Xamarin
             var flag = flagCacheManager.FlagForUser(featureKey, User);
             if (flag == null)
             {
-                Log.InfoFormat("Unknown feature flag {0}; returning default value", featureKey);
-                eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
-                    EvaluationErrorKind.FLAG_NOT_FOUND));
-                return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
+                if (!Initialized())
+                {
+                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
+                    return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
+                }
+                else
+                {
+                    Log.InfoFormat("Unknown feature flag {0}; returning default value", featureKey);
+                    eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
+                        EvaluationErrorKind.FLAG_NOT_FOUND));
+                    return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
+                }
             }
 
             featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
@@ -393,6 +401,10 @@ namespace LaunchDarkly.Xamarin
             if (flag.value == null || flag.value.Type == JTokenType.Null)
             {
                 valueJson = defaultJson;
+                if (!Initialized())
+                {
+                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
+                }
                 result = new EvaluationDetail<T>(defaultValue, flag.variation, flag.reason);
             }
             else
