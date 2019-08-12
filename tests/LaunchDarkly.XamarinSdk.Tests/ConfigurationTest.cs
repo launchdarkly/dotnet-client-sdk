@@ -66,14 +66,14 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void CanSetHttpClientHandler()
+        public void CanSetHttpMessageHandler()
         {
             var handler = new HttpClientHandler();
             var config = Configuration.Builder("AnyOtherSdkKey")
-                .HttpClientHandler(handler)
+                .HttpMessageHandler(handler)
                 .Build();
 
-            Assert.Equal(handler, config.HttpClientHandler);
+            Assert.Equal(handler, config.HttpMessageHandler);
         }
     }
 }
