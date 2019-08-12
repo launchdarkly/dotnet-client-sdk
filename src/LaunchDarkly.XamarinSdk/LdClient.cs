@@ -383,7 +383,7 @@ namespace LaunchDarkly.Xamarin
             {
                 if (!Initialized())
                 {
-                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
+                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
                     return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
                 }
                 else
@@ -394,6 +394,13 @@ namespace LaunchDarkly.Xamarin
                     return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
                 }
             }
+            else
+            {
+                if (!Initialized())
+                {
+                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning cached value");
+                }
+            }
 
             featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
             EvaluationDetail<T> result;
@@ -401,10 +408,6 @@ namespace LaunchDarkly.Xamarin
             if (flag.value == null || flag.value.Type == JTokenType.Null)
             {
                 valueJson = defaultJson;
-                if (!Initialized())
-                {
-                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
-                }
                 result = new EvaluationDetail<T>(defaultValue, flag.variation, flag.reason);
             }
             else
