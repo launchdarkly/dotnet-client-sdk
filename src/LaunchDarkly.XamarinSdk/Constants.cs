@@ -21,6 +21,5 @@ namespace LaunchDarkly.Xamarin
         public const string PING = "ping";
         public const string EVENTS_PATH = "/mobile/events/bulk";
         public const string UNIQUE_ID_KEY = "unique_id_key";
-        public const string BACKGROUNDED_WHILE_STREAMING = "didEnterBackgroundKey";
     }
 }

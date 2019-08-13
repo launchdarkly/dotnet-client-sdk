@@ -22,12 +22,11 @@ namespace LaunchDarkly.Xamarin
         static volatile LdClient _instance;
         static volatile User _user;
 
+        bool initialized;
+
         static readonly object _createInstanceLock = new object();
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
         static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
- 
-        readonly object _myLockObjForConnectionChange = new object();
-        readonly object _myLockObjForUserUpdate = new object();
 
         readonly Configuration _config;
         readonly SemaphoreSlim _connectionLock;
@@ -40,7 +39,7 @@ namespace LaunchDarkly.Xamarin
         readonly IPersistentStorage persister;
 
         // These LdClient fields are not readonly because they change according to online status
-        volatile IMobileUpdateProcessor updateProcessor;
+        internal volatile IMobileUpdateProcessor updateProcessor;
         volatile bool _disableStreaming;
         volatile bool _online;
 
@@ -98,7 +97,7 @@ namespace LaunchDarkly.Xamarin
         {
             get
             {
-                return PlatformSpecific.UserMetadata.PlatformType;
+                return UserMetadata.PlatformType;
             }
         }
 
@@ -116,6 +115,11 @@ namespace LaunchDarkly.Xamarin
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             _connectionLock = new SemaphoreSlim(1, 1);
+
+            if (configuration.Offline)
+            {
+                initialized = true;
+            }
 
             persister = Factory.CreatePersistentStorage(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
@@ -374,19 +378,28 @@ namespace LaunchDarkly.Xamarin
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
                 new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(kind));
 
-            if (!Initialized())
-            {
-                Log.Warn("LaunchDarkly client has not yet been initialized. Returning default");
-                return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
-            }
-
             var flag = flagCacheManager.FlagForUser(featureKey, User);
             if (flag == null)
             {
-                Log.InfoFormat("Unknown feature flag {0}; returning default value", featureKey);
-                eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
-                    EvaluationErrorKind.FLAG_NOT_FOUND));
-                return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
+                if (!Initialized())
+                {
+                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
+                    return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
+                }
+                else
+                {
+                    Log.InfoFormat("Unknown feature flag {0}; returning default value", featureKey);
+                    eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
+                        EvaluationErrorKind.FLAG_NOT_FOUND));
+                    return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
+                }
+            }
+            else
+            {
+                if (!Initialized())
+                {
+                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning cached value");
+                }
             }
 
             featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
@@ -420,17 +433,6 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.AllFlags()"/>
         public IDictionary<string, ImmutableJsonValue> AllFlags()
         {
-            if (IsOffline())
-            {
-                Log.Warn("AllFlags() was called when client is in offline mode. Returning null.");
-                return null;
-            }
-            if (!Initialized())
-            {
-                Log.Warn("AllFlags() was called before client has finished initializing. Returning null.");
-                return null;
-            }
-
             return flagCacheManager.FlagsForUser(User)
                                     .ToDictionary(p => p.Key, p => ImmutableJsonValue.FromSafeValue(p.Value.value));
         }
@@ -450,7 +452,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdMobileClient.Initialized"/>
         public bool Initialized()
         {
-            return Online && updateProcessor.Initialized();
+            return initialized;
         }
 
         /// <see cref="ILdCommonClient.IsOffline()"/>
@@ -485,6 +487,7 @@ namespace LaunchDarkly.Xamarin
             try
             {
                 _user = newUser;
+                initialized = false;
                 await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
             finally
@@ -498,17 +501,32 @@ namespace LaunchDarkly.Xamarin
         bool StartUpdateProcessor(TimeSpan maxWaitTime)
         {
             if (Online)
-                return AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+            {
+                var successfulConnection = AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
+                initialized = successfulConnection;
+                return successfulConnection;
+            }
             else
+            {
                 return true;
+            }
         }
 
         Task StartUpdateProcessorAsync()
         {
             if (Online)
-                return updateProcessor.Start();
+            {
+                var successfulConnection = updateProcessor.Start();
+                if (successfulConnection.IsCompleted)
+                {
+                    initialized = true;
+                }
+                return successfulConnection;
+            }
             else
+            { 
                 return Task.FromResult(true);
+            }
         }
 
         async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)
@@ -632,23 +650,11 @@ namespace LaunchDarkly.Xamarin
                 {
                     Log.Debug("Background updating is disabled");
                 }
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "true");
             }
             else
             {
-                ResetProcessorForForeground();
-                await RestartUpdateProcessorAsync(Config.PollingInterval);
-            }
-        }
-
-        void ResetProcessorForForeground()
-        {
-            string didBackground = persister.GetValue(Constants.BACKGROUNDED_WHILE_STREAMING);
-            if (didBackground != null && didBackground.Equals("true"))
-            {
-                persister.Save(Constants.BACKGROUNDED_WHILE_STREAMING, "false");
-                ClearUpdateProcessor();
                 _disableStreaming = false;
+                await RestartUpdateProcessorAsync(Config.PollingInterval);
             }
         }
     }

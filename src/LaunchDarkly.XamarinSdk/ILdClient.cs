@@ -14,9 +14,22 @@ namespace LaunchDarkly.Xamarin
         Version Version { get; }
 
         /// <summary>
-        /// Tests whether the client is ready to be used.
+        /// Returns a boolean value indicating LaunchDarkly connection and flag state within the client.
         /// </summary>
-        /// <returns>true if the client is ready, or false if it is still initializing</returns>
+        /// <remarks>
+        /// When you first start the client, once Init or InitAsync has returned, 
+        /// Initialized() should be true if and only if either 1. it connected to LaunchDarkly 
+        /// and successfully retrieved flags, or 2. it started in offline mode so 
+        /// there's no need to connect to LaunchDarkly. So if the client timed out trying to 
+        /// connect to LD, then Initialized is false (even if we do have cached flags). 
+        /// If the client connected and got a 401 error, Initialized is false. 
+        /// This serves the purpose of letting the app know that 
+        /// there was a problem of some kind. Initialized() will be temporarily false during the 
+        /// time in between calling Identify and receiving the new user's flags. It will also be false 
+        /// if you switch users with Identify and the client is unable 
+        /// to get the new user's flags from LaunchDarkly. 
+        /// </remarks>
+        /// <returns>true if the client has connected to LaunchDarkly and has flags or if the config is set offline, or false if it couldn't connect.</returns>
         bool Initialized();
 
         /// <summary>

@@ -26,7 +26,7 @@ namespace LaunchDarkly.Xamarin
         private readonly TimeSpan _eventFlushInterval;
         private readonly int _eventCapacity;
         private readonly Uri _eventsUri;
-        private readonly HttpClientHandler _httpClientHandler;
+        private readonly HttpMessageHandler _httpMessageHandler;
         private readonly TimeSpan _httpClientTimeout;
         private readonly bool _inlineUsersInEvents;
         private readonly bool _isStreamingEnabled;
@@ -126,9 +126,9 @@ namespace LaunchDarkly.Xamarin
         public Uri EventsUri => _eventsUri;
         
         /// <summary>
-        /// The object to be used for sending HTTP requests. This is exposed for testing purposes.
+        /// The object to be used for sending HTTP requests, if a specific implementation is desired.
         /// </summary>
-        public HttpClientHandler HttpClientHandler => _httpClientHandler;
+        public HttpMessageHandler HttpMessageHandler => _httpMessageHandler;
 
         /// <summary>
         /// The connection timeout. The default value is 10 seconds.
@@ -187,7 +187,7 @@ namespace LaunchDarkly.Xamarin
         /// removed, even if you did not use the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
         /// method in <see cref="UserBuilder"/>.
         /// </remarks>
-        public ISet<string> PrivateAttributeNames => _privateAttributeNames;
+        public IImmutableSet<string> PrivateAttributeNames => _privateAttributeNames;
 
         /// <summary>
         /// The timeout when reading data from the streaming connection.
@@ -267,13 +267,33 @@ namespace LaunchDarkly.Xamarin
             return Builder(mobileKey).Build();
         }
 
-        /// <summary>        /// Creates a <c>ConfigurationBuilder</c> for constructing a configuration object using a fluent syntax.        /// </summary>        /// <remarks>        /// This is the only method for building a <c>Configuration</c> if you are setting properties        /// besides the <c>MobileKey</c>. The <c>ConfigurationBuilder</c> has methods for setting any number of        /// properties, after which you call <see cref="ConfigurationBuilder.Build"/> to get the resulting        /// <c>Configuration</c> instance.        /// </remarks>        /// <example>        /// <code><pre>        ///     var config = Configuration.Builder("my-sdk-key")        ///         .EventQueueFrequency(TimeSpan.FromSeconds(90))        ///         .StartWaitTime(TimeSpan.FromSeconds(5))        ///         .Build();        /// </pre></code>        /// </example>        /// <param name="mobileKey">the mobile SDK key for your LaunchDarkly environment</param>
-        /// <returns>a builder object</returns>        public static IConfigurationBuilder Builder(string mobileKey)        {
+        /// <summary>
+        /// Creates a <c>ConfigurationBuilder</c> for constructing a configuration object using a fluent syntax.
+        /// </summary>
+        /// <remarks>
+        /// This is the only method for building a <c>Configuration</c> if you are setting properties
+        /// besides the <c>MobileKey</c>. The <c>ConfigurationBuilder</c> has methods for setting any number of
+        /// properties, after which you call <see cref="ConfigurationBuilder.Build"/> to get the resulting
+        /// <c>Configuration</c> instance.
+        /// </remarks>
+        /// <example>
+        /// <code><pre>
+        ///     var config = Configuration.Builder("my-sdk-key")
+        ///         .EventQueueFrequency(TimeSpan.FromSeconds(90))
+        ///         .StartWaitTime(TimeSpan.FromSeconds(5))
+        ///         .Build();
+        /// </pre></code>
+        /// </example>
+        /// <param name="mobileKey">the mobile SDK key for your LaunchDarkly environment</param>
+        /// <returns>a builder object</returns>
+        public static IConfigurationBuilder Builder(string mobileKey)
+        {
             if (String.IsNullOrEmpty(mobileKey))
             {
                 throw new ArgumentOutOfRangeException(nameof(mobileKey), "key is required");
             }
-            return new ConfigurationBuilder(mobileKey);        }
+            return new ConfigurationBuilder(mobileKey);
+        }
 
         /// <summary>
         /// Exposed for test code that needs to access the internal methods of <c>ConfigurationBuilder</c> that
@@ -281,8 +301,10 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <param name="mobileKey">the mobile SDK key</param>
         /// <returns>a builder object</returns>
-        internal static ConfigurationBuilder BuilderInternal(string mobileKey)        {
-            return new ConfigurationBuilder(mobileKey);        }
+        internal static ConfigurationBuilder BuilderInternal(string mobileKey)
+        {
+            return new ConfigurationBuilder(mobileKey);
+        }
 
         /// <summary>
         /// Creates a <c>ConfigurationBuilder</c> starting with the properties of an existing <c>Configuration</c>.
@@ -296,7 +318,31 @@ namespace LaunchDarkly.Xamarin
 
         internal Configuration(ConfigurationBuilder builder)
         {
-            _allAttributesPrivate = builder._allAttributesPrivate;            _backgroundPollingInterval = builder._backgroundPollingInterval;            _baseUri = builder._baseUri;            _connectionTimeout = builder._connectionTimeout;            _enableBackgroundUpdating = builder._enableBackgroundUpdating;            _evaluationReasons = builder._evaluationReasons;            _eventFlushInterval = builder._eventFlushInterval;            _eventCapacity = builder._eventCapacity;            _eventsUri = builder._eventsUri;            _httpClientHandler = builder._httpClientHandler;            _httpClientTimeout = builder._httpClientTimeout;            _inlineUsersInEvents = builder._inlineUsersInEvents;            _isStreamingEnabled = builder._isStreamingEnabled;            _mobileKey = builder._mobileKey;            _offline = builder._offline;            _persistFlagValues = builder._persistFlagValues;            _pollingInterval = builder._pollingInterval;            _privateAttributeNames = builder._privateAttributeNames is null ? null :                builder._privateAttributeNames.ToImmutableHashSet();            _readTimeout = builder._readTimeout;            _reconnectTime = builder._reconnectTime;            _streamUri = builder._streamUri;            _useReport = builder._useReport;            _userKeysCapacity = builder._userKeysCapacity;            _userKeysFlushInterval = builder._userKeysFlushInterval;
+            _allAttributesPrivate = builder._allAttributesPrivate;
+            _backgroundPollingInterval = builder._backgroundPollingInterval;
+            _baseUri = builder._baseUri;
+            _connectionTimeout = builder._connectionTimeout;
+            _enableBackgroundUpdating = builder._enableBackgroundUpdating;
+            _evaluationReasons = builder._evaluationReasons;
+            _eventFlushInterval = builder._eventFlushInterval;
+            _eventCapacity = builder._eventCapacity;
+            _eventsUri = builder._eventsUri;
+            _httpMessageHandler = builder._httpMessageHandler;
+            _httpClientTimeout = builder._httpClientTimeout;
+            _inlineUsersInEvents = builder._inlineUsersInEvents;
+            _isStreamingEnabled = builder._isStreamingEnabled;
+            _mobileKey = builder._mobileKey;
+            _offline = builder._offline;
+            _persistFlagValues = builder._persistFlagValues;
+            _pollingInterval = builder._pollingInterval;
+            _privateAttributeNames = builder._privateAttributeNames is null ? null :
+                builder._privateAttributeNames.ToImmutableHashSet();
+            _readTimeout = builder._readTimeout;
+            _reconnectTime = builder._reconnectTime;
+            _streamUri = builder._streamUri;
+            _useReport = builder._useReport;
+            _userKeysCapacity = builder._userKeysCapacity;
+            _userKeysFlushInterval = builder._userKeysFlushInterval;
 
             _connectionManager = builder._connectionManager;
             _deviceInfo = builder._deviceInfo;
@@ -320,7 +366,7 @@ namespace LaunchDarkly.Xamarin
             public Uri EventsUri => Config.EventsUri;
             public TimeSpan HttpClientTimeout => Config.HttpClientTimeout;
             public bool InlineUsersInEvents => Config.InlineUsersInEvents;
-            public ISet<string> PrivateAttributeNames => Config.PrivateAttributeNames;
+            public IImmutableSet<string> PrivateAttributeNames => Config.PrivateAttributeNames;
             public TimeSpan ReadTimeout => Config.ReadTimeout;
             public TimeSpan ReconnectTime => Config.ReconnectTime;
             public int UserKeysCapacity => Config.UserKeysCapacity;
@@ -331,14 +377,14 @@ namespace LaunchDarkly.Xamarin
         {
             internal Configuration Config { get; set; }
             public string HttpAuthorizationKey => Config.MobileKey;
-            public HttpClientHandler HttpClientHandler => Config.HttpClientHandler;
+            public HttpMessageHandler HttpMessageHandler => Config.HttpMessageHandler;
         }
 
         private class StreamManagerAdapter : IStreamManagerConfiguration
         {
             internal Configuration Config { get; set; }
             public string HttpAuthorizationKey => Config.MobileKey;
-            public HttpClientHandler HttpClientHandler => Config.HttpClientHandler;
+            public HttpMessageHandler HttpMessageHandler => Config.HttpMessageHandler;
             public TimeSpan HttpClientTimeout => Config.HttpClientTimeout;
             public TimeSpan ReadTimeout => Config.ReadTimeout;
             public TimeSpan ReconnectTime => Config.ReconnectTime;
