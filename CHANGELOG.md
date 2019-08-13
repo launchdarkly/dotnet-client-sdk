@@ -3,6 +3,12 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0-beta22] - 2019-08-12
+### Changed:
+- By default, on Android and iOS the SDK now uses Xamarin's platform-specific implementations of `HttpMessageHandler` that are based on native APIs, rather than the basic `System.Net.Http.HttpClientHandler`. This improves performance and stability on mobile platforms.
+- The behavior of the `Initialized()` method has changed to be more consistent with the other SDKs. Rather than only being true if there is currently an active connection to LaunchDarkly, it is now also true if you configured it in offline mode so that it will not attempt to connect to LaunchDarkly; in other words, it is only false if it has tried to connect and not yet succeeded.
+- Also, instead of always returning default values whenever `Initialized()` is false, the SDK now returns a default value only if it does not already have a cached value for the flag. It will always use cached values if it has obtained any (for the current user).
+
 ## [1.0.0-beta21] - 2019-08-06
 ### Added:
 - `Configuration.Builder` provides a fluent builder pattern for constructing `Configuration` objects. This is now the only method for building a configuration if you want to set properties other than the SDK key.
