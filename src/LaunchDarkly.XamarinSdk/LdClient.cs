@@ -283,11 +283,11 @@ namespace LaunchDarkly.Xamarin
 
         public async Task SetOnlineAsync(bool value)
         {
+            await _connectionLock.WaitAsync();
             if (value == _online)
             {
                 return;
             }
-            await _connectionLock.WaitAsync();
             _online = value;
             try
             {
