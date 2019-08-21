@@ -209,6 +209,32 @@ namespace LaunchDarkly.Xamarin.Tests
         }
     }
 
+    internal class MockUpdateProcessorFromLambda : IMobileUpdateProcessor
+    {
+        private readonly User _user;
+        private readonly Func<Task> _startFn;
+        private bool _initialized;
+
+        public MockUpdateProcessorFromLambda(User user, Func<Task> startFn)
+        {
+            _user = user;
+            _startFn = startFn;
+        }
+
+        public Task<bool> Start()
+        {
+            return _startFn().ContinueWith<bool>(t =>
+            {
+                _initialized = true;
+                return true;
+            });
+        }
+
+        public bool Initialized() => _initialized;
+
+        public void Dispose() { }
+    }
+
     internal class MockUpdateProcessorThatNeverInitializes : IMobileUpdateProcessor
     {
         public static Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> Factory()

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,7 +9,7 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class DefaultLdClientTests : BaseTest
+    public class LdClientTests : BaseTest
     {
         static readonly string appKey = "some app key";
         static readonly User simpleUser = User.WithKey("user-key");
@@ -54,6 +56,75 @@ namespace LaunchDarkly.Xamarin.Tests
                 var updatedUser = User.WithKey("some new key");
                 client.Identify(updatedUser);
                 Assert.Equal(client.User.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
+            }
+        }
+
+        [Fact]
+        public Task IdentifyAsyncCompletesOnlyWhenNewFlagsAreAvailable()
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => client.IdentifyAsync(user));
+
+        [Fact]
+        public Task IdentifySyncCompletesOnlyWhenNewFlagsAreAvailable()
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user)));
+
+        private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, User, Task> identifyTask)
+        {
+            var userA = User.WithKey("a");
+            var userB = User.WithKey("b");
+
+            var flagKey = "flag";
+            var userAFlags = TestUtil.MakeSingleFlagData(flagKey, "a-value");
+            var userBFlags = TestUtil.MakeSingleFlagData(flagKey, "b-value");
+
+            var startedIdentifyUserB = new SemaphoreSlim(0, 1);
+            var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
+            var finishedIdentifyUserB = new SemaphoreSlim(0, 1);
+
+            Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> updateProcessorFactory = (c, flags, user) =>
+                new MockUpdateProcessorFromLambda(user, async () =>
+                {
+                    switch (user.Key)
+                    {
+                        case "a":
+                            flags.CacheFlagsFromService(userAFlags, user);
+                            break;
+
+                        case "b":
+                            startedIdentifyUserB.Release();
+                            await canFinishIdentifyUserB.WaitAsync();
+                            flags.CacheFlagsFromService(userBFlags, user);
+                            break;
+                    }
+                });
+
+            var config = TestUtil.ConfigWithFlagsJson(userA, appKey, "{}")
+                .UpdateProcessorFactory(updateProcessorFactory)
+                .Build();
+
+            ClearCachedFlags(userA);
+            ClearCachedFlags(userB);
+
+            using (var client = await LdClient.InitAsync(config, userA))
+            {
+                Assert.True(client.Initialized());
+                Assert.Equal("a-value", client.StringVariation(flagKey, null));
+
+                var identifyUserBTask = Task.Run(async () =>
+                {
+                    await identifyTask(client, userB);
+                    finishedIdentifyUserB.Release();
+                });
+
+                await startedIdentifyUserB.WaitAsync();
+
+                Assert.False(client.Initialized());
+                Assert.Null(client.StringVariation(flagKey, null));
+
+                canFinishIdentifyUserB.Release();
+                await finishedIdentifyUserB.WaitAsync();
+
+                Assert.True(client.Initialized());
+                Assert.Equal("b-value", client.StringVariation(flagKey, null));
             }
         }
 

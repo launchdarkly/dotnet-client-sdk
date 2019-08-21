@@ -514,20 +514,20 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        Task StartUpdateProcessorAsync()
+        async Task<bool> StartUpdateProcessorAsync()
         {
             if (Online)
             {
-                var successfulConnection = updateProcessor.Start();
-                if (successfulConnection.IsCompleted)
+                var successfulConnection = await updateProcessor.Start();
+                if (successfulConnection)
                 {
                     initialized = true;
                 }
                 return successfulConnection;
             }
             else
-            { 
-                return Task.FromResult(true);
+            {
+                return true;
             }
         }
 
