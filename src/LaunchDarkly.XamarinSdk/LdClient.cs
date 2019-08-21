@@ -71,7 +71,7 @@ namespace LaunchDarkly.Xamarin
             get => _online;
             set
             {
-                var doNotAwaitResult = SetOnlineAsync(value);
+                AsyncUtils.WaitSafely(() => SetOnlineAsync(value));
             }
         }
 
