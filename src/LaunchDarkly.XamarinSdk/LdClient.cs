@@ -71,6 +71,10 @@ namespace LaunchDarkly.Xamarin
             get => _online;
             set
             {
+                if (value == _online)
+                {
+                    return;
+                }
                 AsyncUtils.WaitSafely(() => SetOnlineAsync(value));
             }
         }
@@ -284,9 +288,13 @@ namespace LaunchDarkly.Xamarin
         public async Task SetOnlineAsync(bool value)
         {
             await _connectionLock.WaitAsync();
-            _online = value;
             try
             {
+                if (value == _online)
+                {
+                    return;
+                }
+                _online = value;
                 if (_online)
                 {
                     await RestartUpdateProcessorAsync(Config.PollingInterval);
