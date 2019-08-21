@@ -81,7 +81,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var e = listener.Await();
             Assert.Equal("int-flag", e.Key);
-            Assert.Equal(7, e.NewIntValue);
+            Assert.Equal(7, e.NewValue.AsInt);
             Assert.False(e.FlagWasDeleted);
         }
 
@@ -113,7 +113,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var e = listener.Await();
             Assert.Equal("int-flag", e.Key);
-            Assert.Equal(5, e.NewIntValue);
+            Assert.Equal(5, e.NewValue.AsInt);
             Assert.False(e.FlagWasDeleted);
         }
     }

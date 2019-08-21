@@ -180,6 +180,33 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
+        public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
+        {
+            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "")
+                .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
+                .EventProcessor(eventProcessor);
+            config.EventProcessor(eventProcessor);
+
+            using (LdClient client = TestUtil.CreateClient(config.Build(), user))
+            {
+                string result = client.StringVariation("flag", "b");
+                Assert.Equal("b", result);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e =>
+                    {
+                        FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
+                        Assert.Equal("flag", fe.Key);
+                        Assert.Equal("b", fe.Value);
+                        Assert.Null(fe.Variation);
+                        Assert.Null(fe.Version);
+                        Assert.Equal("b", fe.Default);
+                        Assert.Null(fe.Reason);
+                    });
+            }
+        }
+
+        [Fact]
         public void VariationSendsFeatureEventWithTrackingAndReasonIfTrackReasonIsTrue()
         {
             string flagsJson = @"{""flag"":{
@@ -242,6 +269,36 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
                 var expectedReason = new EvaluationReason.Error(EvaluationErrorKind.FLAG_NOT_FOUND);
+                Assert.Equal("b", result.Value);
+                Assert.Equal(expectedReason, result.Reason);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
+                        Assert.Equal("flag", fe.Key);
+                        Assert.Equal("b", fe.Value);
+                        Assert.Null(fe.Variation);
+                        Assert.Null(fe.Version);
+                        Assert.Equal("b", fe.Default);
+                        Assert.False(fe.TrackEvents);
+                        Assert.Null(fe.DebugEventsUntilDate);
+                        Assert.Equal(expectedReason, fe.Reason);
+                    });
+            }
+        }
+
+        [Fact]
+        public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
+        {
+            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "")
+                .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
+                .EventProcessor(eventProcessor);
+            config.EventProcessor(eventProcessor);
+
+            using (LdClient client = TestUtil.CreateClient(config.Build(), user))
+            {
+                EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
+                var expectedReason = new EvaluationReason.Error(EvaluationErrorKind.CLIENT_NOT_READY);
                 Assert.Equal("b", result.Value);
                 Assert.Equal(expectedReason, result.Reason);
                 Assert.Collection(eventProcessor.Events,

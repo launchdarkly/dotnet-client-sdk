@@ -2,7 +2,7 @@
 
 namespace LaunchDarkly.Xamarin
 {
-    internal class DefaultPersistentStorage : IPersistentStorage
+    internal sealed class DefaultPersistentStorage : IPersistentStorage
     {
         public void Save(string key, string value)
         {

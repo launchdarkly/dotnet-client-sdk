@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Common.Logging;
+using LaunchDarkly.Client;
 using WireMock.Server;
 using Xunit;
 
@@ -28,6 +29,11 @@ namespace LaunchDarkly.Xamarin.Tests
         public void Dispose()
         {
             TestUtil.ClearClient();
+        }
+
+        protected void ClearCachedFlags(User user)
+        {
+            PlatformSpecific.Preferences.Clear(Constants.FLAGS_KEY_PREFIX + user.Key);
         }
 
         protected void WithServer(Action<FluentMockServer> a)

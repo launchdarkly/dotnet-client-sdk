@@ -9,5 +9,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
         private static string PlatformOS =>
             "Android " + Build.VERSION.SdkInt;
+
+        private static PlatformType PlatformPlatformType => PlatformType.Android;
     }
 }

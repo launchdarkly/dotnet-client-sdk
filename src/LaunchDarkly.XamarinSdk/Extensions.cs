@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
-    public static class Extensions
+    internal static class Extensions
     {
         public static string Base64Encode(this string plainText)
         {

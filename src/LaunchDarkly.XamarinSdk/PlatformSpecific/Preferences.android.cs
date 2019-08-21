@@ -95,7 +95,6 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
         {
             lock (locker)
             {
-                object value = null;
                 using (var sharedPreferences = GetSharedPreferences(sharedName))
                 {
                     return sharedPreferences.GetString(key, defaultValue);

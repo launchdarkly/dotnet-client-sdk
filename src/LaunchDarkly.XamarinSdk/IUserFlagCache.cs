@@ -9,7 +9,7 @@ namespace LaunchDarkly.Xamarin
         IDictionary<string, FeatureFlag> RetrieveFlags(User user);
     }
 
-    internal class NullUserFlagCache : IUserFlagCache
+    internal sealed class NullUserFlagCache : IUserFlagCache
     {
         public void CacheFlagsForUser(IDictionary<string, FeatureFlag> flags, User user) { }
         public IDictionary<string, FeatureFlag> RetrieveFlags(User user) => null;

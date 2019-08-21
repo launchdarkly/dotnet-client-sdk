@@ -6,6 +6,12 @@ namespace LaunchDarkly.Xamarin.Tests
     public class AndroidSpecificTests
     {
         [Fact]
+        public void SdkReturnsAndroidPlatformType()
+        {
+            Assert.Equal(PlatformType.Android, LdClient.PlatformType);
+        }
+
+        [Fact]
         public void UserHasOSAndDeviceAttributesForPlatform()
         {
             var baseUser = User.WithKey("key");
