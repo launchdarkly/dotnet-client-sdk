@@ -113,19 +113,15 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        public static string JsonFlagsWithSingleFlag(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
+        internal static Dictionary<string, FeatureFlag> MakeSingleFlagData(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
         {
-            JObject fo = new JObject { { "value", value } };
-            if (variation != null)
-            {
-                fo["variation"] = new JValue(variation.Value);
-            }
-            if (reason != null)
-            {
-                fo["reason"] = JToken.FromObject(reason);
-            }
-            JObject o = new JObject { { flagKey, fo } };
-            return JsonConvert.SerializeObject(o);
+            var flag = new FeatureFlag { value = value, variation = variation, reason = reason };
+            return new Dictionary<string, FeatureFlag> { { flagKey, flag } };
+        }
+
+        internal static string JsonFlagsWithSingleFlag(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
+        {
+            return JsonConvert.SerializeObject(MakeSingleFlagData(flagKey, value, variation, reason));
         }
 
         internal static IDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
