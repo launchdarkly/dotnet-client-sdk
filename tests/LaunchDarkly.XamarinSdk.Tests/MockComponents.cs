@@ -104,7 +104,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             var flags = FlagsForUser(user);
             FeatureFlag featureFlag;
-            if (flags.TryGetValue(flagKey, out featureFlag))
+            if (flags != null && flags.TryGetValue(flagKey, out featureFlag))
             {
                 return featureFlag;
             }
@@ -206,6 +206,30 @@ namespace LaunchDarkly.Xamarin.Tests
                 _cacheManager.CacheFlagsFromService(JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(_flagsJson), _user);
             }
             return Task.FromResult(true);
+        }
+    }
+
+    internal class MockUpdateProcessorThatNeverInitializes : IMobileUpdateProcessor
+    {
+        public static Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> Factory()
+        {
+            return (config, manager, user) => new MockUpdateProcessorThatNeverInitializes();
+        }
+
+        public bool IsRunning => false;
+
+        public void Dispose()
+        {
+        }
+
+        public bool Initialized()
+        {
+            return false;
+        }
+
+        public Task<bool> Start()
+        {
+            return new TaskCompletionSource<bool>().Task; // will never be completed
         }
     }
 }
