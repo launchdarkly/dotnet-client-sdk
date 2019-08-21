@@ -384,6 +384,8 @@ namespace LaunchDarkly.Xamarin
                 if (!Initialized())
                 {
                     Log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
+                    eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
+                        EvaluationErrorKind.CLIENT_NOT_READY));
                     return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
                 }
                 else
