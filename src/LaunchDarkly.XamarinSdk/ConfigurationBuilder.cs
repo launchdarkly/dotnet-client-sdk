@@ -229,18 +229,6 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder StreamUri(Uri streamUri);
 
         /// <summary>
-        /// Sets whether to use the HTTP REPORT method for feature flag requests.
-        /// </summary>
-        /// <remarks>
-        /// By default, polling and streaming connections are made with the GET method, witht the user data
-        /// encoded into the request URI. Using REPORT allows the user data to be sent in the request body instead.
-        /// However, some network gateways do not support REPORT.
-        /// </remarks>
-        /// <param name="useReport">whether to use REPORT mode</param>
-        /// <returns>the same builder</returns>
-        IConfigurationBuilder UseReport(bool useReport);
-
-        /// <summary>
         /// Sets the number of user keys that the event processor can remember at any one time.
         /// </summary>
         /// <remarks>
@@ -482,12 +470,6 @@ namespace LaunchDarkly.Xamarin
         public IConfigurationBuilder StreamUri(Uri streamUri)
         {
             _streamUri = streamUri;
-            return this;
-        }
-
-        public IConfigurationBuilder UseReport(bool useReport)
-        {
-            _useReport = useReport;
             return this;
         }
 

@@ -49,7 +49,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void StreamUriInGetModeHasUser()
         {
-            var config = configBuilder.UseReport(false).Build();
+            var config = configBuilder.Build();
             MobileStreamingProcessorStarted();
             var props = eventSourceFactory.ReceivedProperties;
             Assert.Equal(HttpMethod.Get, props.Method);
@@ -59,41 +59,42 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void StreamUriInGetModeHasReasonsParameterIfConfigured()
         {
-            var config = configBuilder.UseReport(false).EvaluationReasons(true).Build();
+            var config = configBuilder.EvaluationReasons(true).Build();
             MobileStreamingProcessorStarted();
             var props = eventSourceFactory.ReceivedProperties;
             Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + encodedUser + "?withReasons=true"), props.StreamUri);
         }
 
-        [Fact]
-        public void StreamUriInReportModeHasNoUser()
-        {
-            var config = configBuilder.UseReport(true).Build();
-            MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            Assert.Equal(new HttpMethod("REPORT"), props.Method);
-            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH), props.StreamUri);
-        }
+        // Report mode is currently disabled - ch47341
+        //[Fact]
+        //public void StreamUriInReportModeHasNoUser()
+        //{
+        //    var config = configBuilder.UseReport(true).Build();
+        //    MobileStreamingProcessorStarted();
+        //    var props = eventSourceFactory.ReceivedProperties;
+        //    Assert.Equal(new HttpMethod("REPORT"), props.Method);
+        //    Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH), props.StreamUri);
+        //}
 
-        [Fact]
-        public void StreamUriInReportModeHasReasonsParameterIfConfigured()
-        {
-            var config = configBuilder.UseReport(true).EvaluationReasons(true).Build();
-            MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + "?withReasons=true"), props.StreamUri);
-        }
+        //[Fact]
+        //public void StreamUriInReportModeHasReasonsParameterIfConfigured()
+        //{
+        //    var config = configBuilder.UseReport(true).EvaluationReasons(true).Build();
+        //    MobileStreamingProcessorStarted();
+        //    var props = eventSourceFactory.ReceivedProperties;
+        //    Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + "?withReasons=true"), props.StreamUri);
+        //}
 
-        [Fact]
-        public async Task StreamRequestBodyInReportModeHasUser()
-        {
-            configBuilder.UseReport(true);
-            MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            var body = Assert.IsType<StringContent>(props.RequestBody);
-            var s = await body.ReadAsStringAsync();
-            Assert.Equal(user.AsJson(), s);
-        }
+        //[Fact]
+        //public async Task StreamRequestBodyInReportModeHasUser()
+        //{
+        //    configBuilder.UseReport(true);
+        //    MobileStreamingProcessorStarted();
+        //    var props = eventSourceFactory.ReceivedProperties;
+        //    var body = Assert.IsType<StringContent>(props.RequestBody);
+        //    var s = await body.ReadAsStringAsync();
+        //    Assert.Equal(user.AsJson(), s);
+        //}
 
         [Fact]
         public void PUTstoresFeatureFlags()
