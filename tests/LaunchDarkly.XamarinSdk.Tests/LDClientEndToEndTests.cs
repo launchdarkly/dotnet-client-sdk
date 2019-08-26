@@ -48,7 +48,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode).Build();
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -65,7 +65,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode).Build();
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -107,7 +107,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 {
                     try
                     {
-                        var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                        var config = BaseConfig(server, mode).Build();
                         using (var client = TestUtil.CreateClient(config, _user)) { }
                     }
                     catch (Exception e)
@@ -133,7 +133,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 using (var log = new LogSinkScope())
                 {
-                    var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                    var config = BaseConfig(server, mode).Build();
 
                     // Currently the behavior of LdClient.InitAsync is somewhat inconsistent with LdClient.Init if there is
                     // an unrecoverable error: LdClient.Init throws an exception, but LdClient.InitAsync returns a task that
@@ -155,7 +155,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
+                var config = BaseConfig(server).IsStreamingEnabled(false).Build();
                 var name = "Sue";
                 var anonUser = User.Builder((string)null).Name(name).Anonymous(true).Build();
 
@@ -186,7 +186,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode).Build();
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -214,7 +214,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode).Build();
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -245,7 +245,6 @@ namespace LaunchDarkly.Xamarin.Tests
                 try
                 {
                     var config = BaseConfig(server)
-                        .UseReport(false)
                         .IsStreamingEnabled(false)
                         .PersistFlagValues(true)
                         .Build();
@@ -285,7 +284,6 @@ namespace LaunchDarkly.Xamarin.Tests
                 try
                 {
                     var config = BaseConfig(server)
-                        .UseReport(false)
                         .IsStreamingEnabled(false)
                         .PersistFlagValues(true)
                         .Build();
@@ -324,7 +322,6 @@ namespace LaunchDarkly.Xamarin.Tests
                 try
                 {
                     var config = BaseConfig(server)
-                        .UseReport(false)
                         .IsStreamingEnabled(false)
                         .PersistFlagValues(true)
                         .Build();
@@ -364,7 +361,6 @@ namespace LaunchDarkly.Xamarin.Tests
                 try
                 {
                     var config = BaseConfig(server)
-                        .UseReport(false)
                         .IsStreamingEnabled(false)
                         .PersistFlagValues(true)
                         .Build();
@@ -409,7 +405,6 @@ namespace LaunchDarkly.Xamarin.Tests
                 try
                 {
                     var config = BaseConfig(server)
-                        .UseReport(false)
                         .IsStreamingEnabled(false)
                         .PersistFlagValues(true)
                         .Build();
@@ -453,7 +448,6 @@ namespace LaunchDarkly.Xamarin.Tests
                 try
                 {
                     var config = BaseConfig(server)
-                        .UseReport(false)
                         .IsStreamingEnabled(false)
                         .PersistFlagValues(true)
                         .Build();
@@ -493,6 +487,12 @@ namespace LaunchDarkly.Xamarin.Tests
                 .BaseUri(new Uri(server.GetUrl()))
                 .StreamUri(new Uri(server.GetUrl()))
                 .PersistFlagValues(false); // unless we're specifically testing flag caching, this helps to prevent test state contamination
+        }
+
+        private IConfigurationBuilder BaseConfig(FluentMockServer server, UpdateMode mode)
+        {
+            return BaseConfig(server)
+                .IsStreamingEnabled(mode.IsStreaming);
         }
 
         private void SetupResponse(FluentMockServer server, IDictionary<string, string> data, UpdateMode mode)

@@ -216,7 +216,8 @@ namespace LaunchDarkly.Xamarin
         /// encoded into the request URI. Using REPORT allows the user data to be sent in the request body instead.
         /// However, some network gateways do not support REPORT.
         /// </remarks>
-        public bool UseReport => _useReport;
+        internal bool UseReport => _useReport;
+        // UseReport is currently disabled due to Android HTTP issues (ch47341), but it's still implemented internally
 
         /// <summary>
         /// The number of user keys that the event processor can remember at any one time.
