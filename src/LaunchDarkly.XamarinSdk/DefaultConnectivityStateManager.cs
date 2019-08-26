@@ -3,18 +3,18 @@ using LaunchDarkly.Xamarin.PlatformSpecific;
 
 namespace LaunchDarkly.Xamarin
 {
-    internal sealed class MobileConnectionManager : IConnectionManager
+    internal sealed class DefaultConnectivityStateManager : IConnectivityStateManager
     {
-        internal Action<bool> ConnectionChanged;
+        public Action<bool> ConnectionChanged { get; set; }
 
-        internal MobileConnectionManager()
+        internal DefaultConnectivityStateManager()
         {
             UpdateConnectedStatus();
             Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
         bool isConnected;
-        bool IConnectionManager.IsConnected
+        bool IConnectivityStateManager.IsConnected
         {
             get { return isConnected; }
             set

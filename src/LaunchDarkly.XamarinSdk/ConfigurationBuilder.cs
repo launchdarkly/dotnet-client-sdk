@@ -280,7 +280,7 @@ namespace LaunchDarkly.Xamarin
         internal TimeSpan _userKeysFlushInterval = Configuration.DefaultUserKeysFlushInterval;
 
         // Internal properties only settable for testing
-        internal IConnectionManager _connectionManager;
+        internal IConnectivityStateManager _connectivityStateManager;
         internal IDeviceInfo _deviceInfo;
         internal IEventProcessor _eventProcessor;
         internal IFlagCacheManager _flagCacheManager;
@@ -491,9 +491,9 @@ namespace LaunchDarkly.Xamarin
         // and then call these methods before you have called any of the public methods (since
         // only these methods return ConfigurationBuilder rather than IConfigurationBuilder).
 
-        internal ConfigurationBuilder ConnectionManager(IConnectionManager connectionManager)
+        internal ConfigurationBuilder ConnectivityStateManager(IConnectivityStateManager connectivityStateManager)
         {
-            _connectionManager = connectionManager;
+            _connectivityStateManager = connectivityStateManager;
             return this;
         }
 

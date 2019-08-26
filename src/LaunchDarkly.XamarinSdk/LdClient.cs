@@ -19,65 +19,62 @@ namespace LaunchDarkly.Xamarin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(LdClient));
 
-        static volatile LdClient _instance;
-        static volatile User _user;
-
-        bool initialized;
-
-        static readonly object _createInstanceLock = new object();
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
         static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
 
-        readonly Configuration _config;
-        readonly SemaphoreSlim _connectionLock;
+        static readonly object _createInstanceLock = new object();
+        static volatile LdClient _instance;
 
+        // Immutable client state
+        readonly Configuration _config;
+        readonly ConnectionManager _connectionManager;
         readonly IDeviceInfo deviceInfo;
-        readonly IConnectionManager connectionManager;
+        readonly IConnectivityStateManager _connectivityStateManager;
         readonly IEventProcessor eventProcessor;
         readonly IFlagCacheManager flagCacheManager;
         internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
         readonly IPersistentStorage persister;
 
-        // These LdClient fields are not readonly because they change according to online status
-        internal volatile IMobileUpdateProcessor updateProcessor;
-        volatile bool _disableStreaming;
-        volatile bool _online;
+        // Mutable client state (some state is also in the ConnectionManager)
+        readonly ReaderWriterLockSlim _userLock = new ReaderWriterLockSlim();
+        volatile User _user;
+        volatile bool _inBackground;
 
         /// <summary>
         /// The singleton instance used by your application throughout its lifetime. Once this exists, you cannot
         /// create a new client instance unless you first call <see cref="Dispose()"/> on this one.
-        /// 
-        /// Use the designated static methods <see cref="Init(Configuration, User, TimeSpan)"/> or
-        /// <see cref="InitAsync(Configuration, User)"/> to set this LdClient instance.
         /// </summary>
-        /// <value>The LdClient instance.</value>
+        /// <remarks>
+        /// Use the static factory methods <see cref="Init(Configuration, User, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, User)"/> to set this <c>LdClient</c> instance.
+        /// </remarks>
         public static LdClient Instance => _instance;
+
+        /// <summary>
+        /// Returns the current version number of the LaunchDarkly client.
+        /// </summary>
+        public static Version Version => MobileClientEnvironment.Instance.Version;
 
         /// <summary>
         /// The Configuration instance used to setup the LdClient.
         /// </summary>
-        /// <value>The Configuration instance.</value>
         public Configuration Config => _config;
 
         /// <summary>
-        /// The User for the LdClient operations.
+        /// The current user for all SDK operations.
         /// </summary>
-        /// <value>The User.</value>
-        public User User => _user;
+        /// <remarks>
+        /// This is initially the user specified for <see cref="Init(Configuration, User, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, User)"/>, but can be changed later with <see cref="Identify(User, TimeSpan)"/>
+        /// or <see cref="IdentifyAsync(User)"/>.
+        /// </remarks>
+        public User User => LockUtils.WithReadLock(_userLock, () => _user);
 
-        /// <see cref="ILdMobileClient.Online"/>
-        public bool Online
-        {
-            get => _online;
-            set
-            {
-                if (value == _online)
-                {
-                    return;
-                }
-                AsyncUtils.WaitSafely(() => SetOnlineAsync(value));
-            }
-        }
+        /// <see cref="ILdClient.Offline"/>
+        public bool Offline => _connectionManager.ForceOffline;
+
+        /// <see cref="ILdClient.Initialized"/>
+        public bool Initialized => _connectionManager.Initialized;
 
         /// <summary>
         /// Indicates which platform the SDK is built for.
@@ -97,11 +94,18 @@ namespace LaunchDarkly.Xamarin
         /// that these platform-specific behaviors are not working correctly, you may want to check this property to
         /// make sure you are not for some reason running the .NET Standard SDK on a phone.
         /// </remarks>
-        public static PlatformType PlatformType
+        public static PlatformType PlatformType => UserMetadata.PlatformType;
+
+        /// <see cref="ILdClient.FlagChanged"/>
+        public event EventHandler<FlagChangedEventArgs> FlagChanged
         {
-            get
+            add
             {
-                return UserMetadata.PlatformType;
+                flagChangedEventManager.FlagChanged += value;
+            }
+            remove
+            {
+                flagChangedEventManager.FlagChanged -= value;
             }
         }
 
@@ -118,13 +122,6 @@ namespace LaunchDarkly.Xamarin
 
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            _connectionLock = new SemaphoreSlim(1, 1);
-
-            if (configuration.Offline)
-            {
-                initialized = true;
-            }
-
             persister = Factory.CreatePersistentStorage(configuration);
             deviceInfo = Factory.CreateDeviceInfo(configuration);
             flagChangedEventManager = Factory.CreateFlagChangedEventManager(configuration);
@@ -132,14 +129,45 @@ namespace LaunchDarkly.Xamarin
             _user = DecorateUser(user);
 
             flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User);
-            connectionManager = Factory.CreateConnectionManager(configuration);
-            updateProcessor = Factory.CreateUpdateProcessor(configuration, User, flagCacheManager, null, false);
             eventProcessor = Factory.CreateEventProcessor(configuration);
+
+            _connectionManager = new ConnectionManager();
+            _connectionManager.SetForceOffline(configuration.Offline);
+            if (configuration.Offline)
+            {
+                Log.InfoFormat("Starting LaunchDarkly client in offline mode");
+            }
+            _connectionManager.SetUpdateProcessorFactory(
+                Factory.CreateUpdateProcessorFactory(configuration, User, flagCacheManager, _inBackground),
+                true
+            );
 
             eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
 
-            SetupConnectionManager();
+            _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
+            _connectivityStateManager.ConnectionChanged += networkAvailable =>
+            {
+                Log.DebugFormat("Setting online to {0} due to a connectivity change event", networkAvailable);
+                _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
+            };
+            _connectionManager.SetNetworkEnabled(_connectivityStateManager.IsConnected);
+
             BackgroundDetection.BackgroundModeChanged += OnBackgroundModeChanged;
+        }
+
+        void Start(TimeSpan maxWaitTime)
+        {
+            var success = AsyncUtils.WaitSafely(() => _connectionManager.Start(), maxWaitTime);
+            if (!success)
+            {
+                Log.WarnFormat("Client did not successfully initialize within {0} milliseconds.",
+                    maxWaitTime.TotalMilliseconds);
+            }
+        }
+
+        async Task StartAsync()
+        {
+            await _connectionManager.Start();
         }
 
         /// <summary>
@@ -216,16 +244,7 @@ namespace LaunchDarkly.Xamarin
             }
 
             var c = CreateInstance(config, user);
-
-            if (c.Online)
-            {
-                if (!c.StartUpdateProcessor(maxWaitTime))
-                {
-                    Log.WarnFormat("Client did not successfully initialize within {0} milliseconds.",
-                        maxWaitTime.TotalMilliseconds);
-                }
-            }
-
+            c.Start(maxWaitTime);
             return c;
         }
 
@@ -243,19 +262,11 @@ namespace LaunchDarkly.Xamarin
         /// <param name="config">The client configuration object</param>
         /// <param name="user">The user needed for client operations. Must not be null.
         /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
-        public static Task<LdClient> InitAsync(Configuration config, User user)
+        public static async Task<LdClient> InitAsync(Configuration config, User user)
         {
             var c = CreateInstance(config, user);
-
-            if (c.Online)
-            {
-                Task t = c.StartUpdateProcessorAsync();
-                return t.ContinueWith((result) => c);
-            }
-            else
-            {
-                return Task.FromResult(c);
-            }
+            await c.StartAsync();
+            return c;
         }
 
         static LdClient CreateInstance(Configuration configuration, User user)
@@ -269,110 +280,78 @@ namespace LaunchDarkly.Xamarin
 
                 var c = new LdClient(configuration, user);
                 _instance = c;
-                Log.InfoFormat("Initialized LaunchDarkly Client {0}", c.Version);
+                Log.InfoFormat("Initialized LaunchDarkly Client {0}", Version);
                 return c;
             }
         }
 
-        void SetupConnectionManager()
+        /// <see cref="ILdClient.SetOffline(bool, TimeSpan)"/>
+        public bool SetOffline(bool value, TimeSpan maxWaitTime)
         {
-            if (connectionManager is MobileConnectionManager mobileConnectionManager)
-            {
-                mobileConnectionManager.ConnectionChanged += MobileConnectionManager_ConnectionChanged;
-                Log.InfoFormat("The mobile client connection changed online to {0}",
-                               connectionManager.IsConnected);
-            }
-            _online = connectionManager.IsConnected;
+            return AsyncUtils.WaitSafely(() => SetOfflineAsync(value), maxWaitTime);
         }
 
-        public async Task SetOnlineAsync(bool value)
+        /// <see cref="ILdClient.SetOfflineAsync(bool)"/>
+        public async Task SetOfflineAsync(bool value)
         {
-            await _connectionLock.WaitAsync();
-            try
-            {
-                if (value == _online)
-                {
-                    return;
-                }
-                _online = value;
-                if (_online)
-                {
-                    await RestartUpdateProcessorAsync(Config.PollingInterval);
-                }
-                else
-                {
-                    ClearUpdateProcessor();
-                }
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-
-            return;
+            await _connectionManager.SetForceOffline(value);
         }
 
-        void MobileConnectionManager_ConnectionChanged(bool isOnline)
-        {
-            Log.DebugFormat("Setting online to {0} due to a connectivity change event", isOnline);
-            Online = isOnline;
-        }
-
-        /// <see cref="ILdMobileClient.BoolVariation(string, bool)"/>
+        /// <see cref="ILdClient.BoolVariation(string, bool)"/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
             return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, _eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.BoolVariationDetail(string, bool)"/>
+        /// <see cref="ILdClient.BoolVariationDetail(string, bool)"/>
         public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
         {
             return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, _eventFactoryWithReasons);
         }
 
-        /// <see cref="ILdMobileClient.StringVariation(string, string)"/>
+        /// <see cref="ILdClient.StringVariation(string, string)"/>
         public string StringVariation(string key, string defaultValue)
         {
             return VariationInternal<string>(key, defaultValue, ValueTypes.String, _eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.StringVariationDetail(string, string)"/>
+        /// <see cref="ILdClient.StringVariationDetail(string, string)"/>
         public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
         {
             return VariationInternal<string>(key, defaultValue, ValueTypes.String, _eventFactoryWithReasons);
         }
 
-        /// <see cref="ILdMobileClient.FloatVariation(string, float)"/>
+        /// <see cref="ILdClient.FloatVariation(string, float)"/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
             return VariationInternal<float>(key, defaultValue, ValueTypes.Float, _eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.FloatVariationDetail(string, float)"/>
+        /// <see cref="ILdClient.FloatVariationDetail(string, float)"/>
         public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
         {
             return VariationInternal<float>(key, defaultValue, ValueTypes.Float, _eventFactoryWithReasons);
         }
 
-        /// <see cref="ILdMobileClient.IntVariation(string, int)"/>
+        /// <see cref="ILdClient.IntVariation(string, int)"/>
         public int IntVariation(string key, int defaultValue = 0)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Int, _eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.IntVariationDetail(string, int)"/>
+        /// <see cref="ILdClient.IntVariationDetail(string, int)"/>
         public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Int, _eventFactoryWithReasons);
         }
 
-        /// <see cref="ILdMobileClient.JsonVariation(string, ImmutableJsonValue)"/>
+        /// <see cref="ILdClient.JsonVariation(string, ImmutableJsonValue)"/>
         public ImmutableJsonValue JsonVariation(string key, ImmutableJsonValue defaultValue)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryDefault).Value;
         }
 
-        /// <see cref="ILdMobileClient.JsonVariationDetail(string, ImmutableJsonValue)"/>
+        /// <see cref="ILdClient.JsonVariationDetail(string, ImmutableJsonValue)"/>
         public EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue)
         {
             return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryWithReasons);
@@ -389,7 +368,7 @@ namespace LaunchDarkly.Xamarin
             var flag = flagCacheManager.FlagForUser(featureKey, User);
             if (flag == null)
             {
-                if (!Initialized())
+                if (!Initialized)
                 {
                     Log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
                     eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
@@ -406,7 +385,7 @@ namespace LaunchDarkly.Xamarin
             }
             else
             {
-                if (!Initialized())
+                if (!Initialized)
                 {
                     Log.Warn("LaunchDarkly client has not yet been initialized. Returning cached value");
                 }
@@ -440,51 +419,44 @@ namespace LaunchDarkly.Xamarin
             return result;
         }
 
-        /// <see cref="ILdMobileClient.AllFlags()"/>
+        /// <see cref="ILdClient.AllFlags()"/>
         public IDictionary<string, ImmutableJsonValue> AllFlags()
         {
             return flagCacheManager.FlagsForUser(User)
                                     .ToDictionary(p => p.Key, p => ImmutableJsonValue.FromSafeValue(p.Value.value));
         }
 
-        /// <see cref="ILdMobileClient.Track(string, ImmutableJsonValue)"/>
+        /// <see cref="ILdClient.Track(string, ImmutableJsonValue)"/>
         public void Track(string eventName, ImmutableJsonValue data)
         {
             eventProcessor.SendEvent(_eventFactoryDefault.NewCustomEvent(eventName, User, data.AsJToken()));
         }
 
-        /// <see cref="ILdMobileClient.Track(string)"/>
+        /// <see cref="ILdClient.Track(string)"/>
         public void Track(string eventName)
         {
             Track(eventName, ImmutableJsonValue.Null);
         }
 
-        /// <see cref="ILdMobileClient.Initialized"/>
-        public bool Initialized()
-        {
-            return initialized;
-        }
-
-        /// <see cref="ILdCommonClient.IsOffline()"/>
-        public bool IsOffline()
-        {
-            return !_online;
-        }
-
-        /// <see cref="ILdCommonClient.Flush()"/>
+        /// <see cref="ILdClient.Flush()"/>
         public void Flush()
         {
             eventProcessor.Flush();
         }
 
-        /// <see cref="ILdMobileClient.Identify(User)"/>
-        public void Identify(User user)
+        /// <see cref="ILdClient.Identify(User, TimeSpan)"/>
+        public bool Identify(User user, TimeSpan maxWaitTime)
         {
-            AsyncUtils.WaitSafely(() => IdentifyAsync(user));
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            return AsyncUtils.WaitSafely(() => IdentifyAsync(user), maxWaitTime);
         }
 
-        /// <see cref="ILdMobileClient.IdentifyAsync(User)"/>
-        public async Task IdentifyAsync(User user)
+        /// <see cref="ILdClient.IdentifyAsync(User)"/>
+        public async Task<bool> IdentifyAsync(User user)
         {
             if (user == null)
             {
@@ -493,71 +465,17 @@ namespace LaunchDarkly.Xamarin
 
             User newUser = DecorateUser(user);
 
-            await _connectionLock.WaitAsync();
-            try
+            LockUtils.WithWriteLock(_userLock, () =>
             {
                 _user = newUser;
-                initialized = false;
-                await RestartUpdateProcessorAsync(Config.PollingInterval);
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
+            });
 
             eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(newUser));
-        }
 
-        bool StartUpdateProcessor(TimeSpan maxWaitTime)
-        {
-            if (Online)
-            {
-                var successfulConnection = AsyncUtils.WaitSafely(() => updateProcessor.Start(), maxWaitTime);
-                initialized = successfulConnection;
-                return successfulConnection;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        async Task<bool> StartUpdateProcessorAsync()
-        {
-            if (Online)
-            {
-                var successfulConnection = await updateProcessor.Start();
-                if (successfulConnection)
-                {
-                    initialized = true;
-                }
-                return successfulConnection;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        async Task RestartUpdateProcessorAsync(TimeSpan pollingInterval)
-        {
-            ClearAndSetUpdateProcessor(pollingInterval);
-            await StartUpdateProcessorAsync();
-        }
-
-        void ClearAndSetUpdateProcessor(TimeSpan pollingInterval)
-        {
-            ClearUpdateProcessor();
-            updateProcessor = Factory.CreateUpdateProcessor(Config, User, flagCacheManager, pollingInterval, _disableStreaming);
-        }
-
-        void ClearUpdateProcessor()
-        {
-            if (updateProcessor != null)
-            {
-                updateProcessor.Dispose();
-                updateProcessor = new NullUpdateProcessor();
-            }
+            return await _connectionManager.SetUpdateProcessorFactory(
+                Factory.CreateUpdateProcessorFactory(_config, user, flagCacheManager, _inBackground),
+                true
+            );
         }
 
         User DecorateUser(User user)
@@ -604,7 +522,7 @@ namespace LaunchDarkly.Xamarin
                 Log.InfoFormat("Shutting down the LaunchDarkly client");
 
                 BackgroundDetection.BackgroundModeChanged -= OnBackgroundModeChanged;
-                updateProcessor.Dispose();
+                _connectionManager.Dispose();
                 eventProcessor.Dispose();
 
                 // Reset the static Instance to null *if* it was referring to this instance
@@ -617,31 +535,9 @@ namespace LaunchDarkly.Xamarin
             Interlocked.CompareExchange(ref _instance, null, this);
         }
 
-        /// <see cref="ILdCommonClient.Version"/>
-        public Version Version
-        {
-            get
-            {
-                return MobileClientEnvironment.Instance.Version;
-            }
-        }
-
-        /// <see cref="ILdMobileClient.FlagChanged"/>
-        public event EventHandler<FlagChangedEventArgs> FlagChanged
-        {
-            add
-            {
-                flagChangedEventManager.FlagChanged += value;
-            }
-            remove
-            {
-                flagChangedEventManager.FlagChanged -= value;
-            }
-        }
-
         internal void OnBackgroundModeChanged(object sender, BackgroundModeChangedEventArgs args)
         {
-            AsyncUtils.WaitSafely(() => OnBackgroundModeChangedAsync(sender, args));
+            _ = OnBackgroundModeChangedAsync(sender, args); // do not wait for the result
         }
 
         internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundModeChangedEventArgs args)
@@ -649,23 +545,23 @@ namespace LaunchDarkly.Xamarin
             Log.DebugFormat("Background mode is changing to {0}", args.IsInBackground);
             if (args.IsInBackground)
             {
-                ClearUpdateProcessor();
-                _disableStreaming = true;
-                if (Config.EnableBackgroundUpdating)
-                {
-                    Log.Debug("Background updating is enabled, starting polling processor");
-                    await RestartUpdateProcessorAsync(Config.BackgroundPollingInterval);
-                }
-                else
+                _inBackground = true;
+                if (!Config.EnableBackgroundUpdating)
                 {
                     Log.Debug("Background updating is disabled");
+                    await _connectionManager.SetUpdateProcessorFactory(null, false);
+                    return;
                 }
+                Log.Debug("Background updating is enabled, starting polling processor");
             }
             else
             {
-                _disableStreaming = false;
-                await RestartUpdateProcessorAsync(Config.PollingInterval);
+                _inBackground = false;
             }
+            await _connectionManager.SetUpdateProcessorFactory(
+                Factory.CreateUpdateProcessorFactory(_config, User, flagCacheManager, _inBackground),
+                false  // don't reset initialized state because the user is still the same
+            );
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using LaunchDarkly.Client;
+﻿using System;
+using LaunchDarkly.Client;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -22,7 +23,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (LdClient client = MakeClient(user, "{}"))
             {
                 User user1 = User.WithKey("userkey1");
-                client.Identify(user1);
+                client.Identify(user1, TimeSpan.FromSeconds(1));
                 Assert.Collection(eventProcessor.Events,
                     e => CheckIdentifyEvent(e, user), // there's always an initial identify event
                     e => CheckIdentifyEvent(e, user1));

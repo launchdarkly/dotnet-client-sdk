@@ -140,7 +140,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             return Configuration.BuilderInternal(appKey)
                                 .FlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
-                                .ConnectionManager(new MockConnectionManager(true))
+                                .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                 .EventProcessor(new MockEventProcessor())
                                 .UpdateProcessorFactory(MockPollingProcessor.Factory(null))
                                 .PersistentStorage(new MockPersistentStorage())

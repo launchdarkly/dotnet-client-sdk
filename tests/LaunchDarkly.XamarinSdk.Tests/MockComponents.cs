@@ -6,11 +6,11 @@ using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    internal class MockConnectionManager : IConnectionManager
+    internal class MockConnectivityStateManager : IConnectivityStateManager
     {
-        public Action<bool> ConnectionChanged;
+        public Action<bool> ConnectionChanged { get; set; }
 
-        public MockConnectionManager(bool isOnline)
+        public MockConnectivityStateManager(bool isOnline)
         {
             isConnected = isOnline;
         }

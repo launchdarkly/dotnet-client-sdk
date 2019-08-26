@@ -85,8 +85,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     var config = BaseConfig(server).IsStreamingEnabled(false).Build();
                     using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                     {
-                        Assert.False(Initialized(client));
-                        Assert.False(client.Initialized());
+                        Assert.False(client.Initialized);
                         Assert.Null(client.StringVariation(_flagData1.First().Key, null));
                         Assert.Contains(log.Messages, m => m.Level == LogLevel.Warn &&
                             m.Text == "Client did not successfully initialize within 200 milliseconds.");
@@ -105,20 +104,11 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 using (var log = new LogSinkScope())
                 {
-                    try
+                    var config = BaseConfig(server, mode).Build();
+                    using (var client = TestUtil.CreateClient(config, _user))
                     {
-                        var config = BaseConfig(server, mode).Build();
-                        using (var client = TestUtil.CreateClient(config, _user)) { }
+                        Assert.False(client.Initialized);
                     }
-                    catch (Exception e)
-                    {
-                        // Currently the exact class of this exception is undefined: the polling processor throws
-                        // LaunchDarkly.Client.UnsuccessfulResponseException, while the streaming processor throws
-                        // a lower-level exception that is defined by LaunchDarkly.EventSource.
-                        Assert.Contains("401", e.Message);
-                        return;
-                    }
-                    throw new Exception("Expected exception from LdClient.Init");
                 }
             });
         }
@@ -140,8 +130,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     // will complete successfully with an uninitialized client.
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
                     {
-                        Assert.False(Initialized(client));
-                        Assert.False(client.Initialized());
+                        Assert.False(client.Initialized);
                     }
                 }
             });
@@ -155,7 +144,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
 
-                var config = BaseConfig(server).IsStreamingEnabled(false).Build();
+                var config = BaseConfig(server, UpdateMode.Polling).Build();
                 var name = "Sue";
                 var anonUser = User.Builder((string)null).Name(name).Anonymous(true).Build();
 
@@ -196,7 +185,9 @@ namespace LaunchDarkly.Xamarin.Tests
                     server.Reset();
                     SetupResponse(server, _flagData2, mode);
 
-                    client.Identify(_otherUser);
+                    var success = client.Identify(_otherUser, TimeSpan.FromSeconds(5));
+                    Assert.True(success);
+                    Assert.True(client.Initialized);
                     Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     VerifyRequest(server, mode);
@@ -224,12 +215,40 @@ namespace LaunchDarkly.Xamarin.Tests
                     server.Reset();
                     SetupResponse(server, _flagData2, mode);
 
-                    await client.IdentifyAsync(_otherUser);
+                    var success = await client.IdentifyAsync(_otherUser);
+                    Assert.True(success);
+                    Assert.True(client.Initialized);
                     Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     VerifyRequest(server, mode);
                     Assert.NotEqual(user1RequestPath, server.GetLastRequest().Path);
                     VerifyFlagValues(client, _flagData2);
+                }
+            });
+        }
+
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [MemberData(nameof(PollingAndStreaming))]
+        public void IdentifyCanTimeOutSync(UpdateMode mode)
+        {
+            WithServer(server =>
+            {
+                SetupResponse(server, _flagData1, mode);
+
+                var config = BaseConfig(server, mode).Build();
+                using (var client = TestUtil.CreateClient(config, _user))
+                {
+                    VerifyRequest(server, mode);
+                    VerifyFlagValues(client, _flagData1);
+                    var user1RequestPath = server.GetLastRequest().Path;
+
+                    server.Reset();
+                    server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
+
+                    var success = client.Identify(_otherUser, TimeSpan.FromMilliseconds(100));
+                    Assert.False(success);
+                    Assert.False(client.Initialized);
+                    Assert.Null(client.StringVariation(_flagData1.First().Key, null));
                 }
             });
         }
@@ -244,14 +263,13 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .IsStreamingEnabled(false)
+                    var config = BaseConfig(server, UpdateMode.Polling)
                         .PersistFlagValues(true)
                         .Build();
                     using (var client = TestUtil.CreateClient(config, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
-                        Assert.True(client.Initialized());
+                        Assert.True(client.Initialized);
                     }
 
                     // At this point the SDK should have written the flags to persistent storage for this user key.
@@ -263,7 +281,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     using (var client = TestUtil.CreateClient(offlineConfig, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
-                        Assert.True(client.Initialized());
+                        Assert.True(client.Initialized);
                     }
                 }
                 finally
@@ -283,8 +301,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .IsStreamingEnabled(false)
+                    var config = BaseConfig(server, UpdateMode.Polling)
                         .PersistFlagValues(true)
                         .Build();
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -301,7 +318,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
-                        Assert.True(client.Initialized());
+                        Assert.True(client.Initialized);
                     }
                 }
                 finally
@@ -321,8 +338,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .IsStreamingEnabled(false)
+                    var config = BaseConfig(server, UpdateMode.Polling)
                         .PersistFlagValues(true)
                         .Build();
                     using (var client = TestUtil.CreateClient(config, _user))
@@ -360,8 +376,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .IsStreamingEnabled(false)
+                    var config = BaseConfig(server, UpdateMode.Polling)
                         .PersistFlagValues(true)
                         .Build();
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -389,11 +404,6 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        private bool Initialized(LdClient client)
-        {
-            return client.Online && client.updateProcessor.Initialized();
-        }
-         
         [Fact(Skip = SkipIfCannotCreateHttpServer)]
         public void BackgroundOfflineClientUsesCachedFlagsSyncAfterStartUpdateProcessor()
         {
@@ -404,8 +414,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .IsStreamingEnabled(false)
+                    var config = BaseConfig(server, UpdateMode.Polling)
                         .PersistFlagValues(true)
                         .Build();
                     using (var client = TestUtil.CreateClient(config, _user))
@@ -447,8 +456,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .IsStreamingEnabled(false)
+                    var config = BaseConfig(server, UpdateMode.Polling)
                         .PersistFlagValues(true)
                         .Build();
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -476,6 +484,30 @@ namespace LaunchDarkly.Xamarin.Tests
                 finally
                 {
                     ClearCachedFlags(_user);
+                }
+            });
+        }
+
+        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [MemberData(nameof(PollingAndStreaming))]
+        public async Task OfflineClientGoesOnlineAndGetsFlagsAsync(UpdateMode mode)
+        {
+            await WithServerAsync(async server =>
+            {
+                ClearCachedFlags(_user);
+                var config = BaseConfig(server, mode)
+                    .Offline(true)
+                    .PersistFlagValues(false)
+                    .Build();
+                using (var client = await TestUtil.CreateClientAsync(config, _user))
+                {
+                    VerifyNoFlagValues(client, _flagData1);
+
+                    SetupResponse(server, _flagData1, mode);
+
+                    await client.SetOfflineAsync(false);
+
+                    VerifyFlagValues(client, _flagData1);
                 }
             });
         }
@@ -523,10 +555,19 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private void VerifyFlagValues(ILdClient client, IDictionary<string, string> flags)
         {
-            Assert.True(Initialized((LdClient) client));
+            Assert.True(client.Initialized);
             foreach (var e in flags)
             {
                 Assert.Equal(e.Value, client.StringVariation(e.Key, null));
+            }
+        }
+
+        private void VerifyNoFlagValues(ILdClient client, IDictionary<string, string> flags)
+        {
+            Assert.True(client.Initialized);
+            foreach (var e in flags)
+            {
+                Assert.Null(client.StringVariation(e.Key, null));
             }
         }
 

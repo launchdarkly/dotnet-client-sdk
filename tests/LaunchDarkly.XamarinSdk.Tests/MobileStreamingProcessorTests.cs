@@ -31,7 +31,7 @@ namespace LaunchDarkly.Xamarin.Tests
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
             mockFlagCacheMgr = new MockFlagCacheManager(new UserFlagInMemoryCache());
             configBuilder = Configuration.BuilderInternal("someKey")
-                                         .ConnectionManager(new MockConnectionManager(true))
+                                         .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                          .FlagCacheManager(mockFlagCacheMgr)
                                          .IsStreamingEnabled(true);
                                   

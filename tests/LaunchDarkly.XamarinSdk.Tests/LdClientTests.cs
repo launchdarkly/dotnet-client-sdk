@@ -54,7 +54,8 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = Client())
             {
                 var updatedUser = User.WithKey("some new key");
-                client.Identify(updatedUser);
+                var success = client.Identify(updatedUser, TimeSpan.FromSeconds(1));
+                Assert.True(success);
                 Assert.Equal(client.User.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
             }
         }
@@ -65,7 +66,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         [Fact]
         public Task IdentifySyncCompletesOnlyWhenNewFlagsAreAvailable()
-            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user)));
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user, TimeSpan.FromSeconds(1))));
 
         private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, User, Task> identifyTask)
         {
@@ -106,7 +107,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             using (var client = await LdClient.InitAsync(config, userA))
             {
-                Assert.True(client.Initialized());
+                Assert.True(client.Initialized);
                 Assert.Equal("a-value", client.StringVariation(flagKey, null));
 
                 var identifyUserBTask = Task.Run(async () =>
@@ -117,13 +118,13 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 await startedIdentifyUserB.WaitAsync();
 
-                Assert.False(client.Initialized());
+                Assert.False(client.Initialized);
                 Assert.Null(client.StringVariation(flagKey, null));
 
                 canFinishIdentifyUserB.Release();
                 await finishedIdentifyUserB.WaitAsync();
 
-                Assert.True(client.Initialized());
+                Assert.True(client.Initialized);
                 Assert.Equal("b-value", client.StringVariation(flagKey, null));
             }
         }
@@ -133,7 +134,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var client = Client())
             {
-                Assert.Throws<ArgumentNullException>(() => client.Identify(null));
+                Assert.Throws<ArgumentNullException>(() => client.Identify(null, TimeSpan.Zero));
             }
         }
 
@@ -176,30 +177,17 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void ConnectionManagerShouldKnowIfOnlineOrNot()
-        {
-            using (var client = Client())
-            {
-                var connMgr = client.Config._connectionManager as MockConnectionManager;
-                connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
-                connMgr.Connect(true);
-                Assert.False(client.IsOffline());
-                connMgr.Connect(false);
-                Assert.False(client.Online);
-            }
-        }
-
-        [Fact]
         public void ConnectionChangeShouldStopUpdateProcessor()
         {
             var mockUpdateProc = new MockPollingProcessor(null);
+            var mockConnectivityStateManager = new MockConnectivityStateManager(true);
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .UpdateProcessorFactory(mockUpdateProc.AsFactory()).Build();
+                .UpdateProcessorFactory(mockUpdateProc.AsFactory())
+                .ConnectivityStateManager(mockConnectivityStateManager)
+                .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
-                var connMgr = client.Config._connectionManager as MockConnectionManager;
-                connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
-                connMgr.Connect(false);
+                mockConnectivityStateManager.Connect(false);
                 Assert.False(mockUpdateProc.IsRunning);
             }
         }
@@ -241,7 +229,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
-                client.Identify(userWithNullKey);
+                client.Identify(userWithNullKey, TimeSpan.FromSeconds(1));
                 Assert.Equal(uniqueId, client.User.Key);
                 Assert.True(client.User.Anonymous);
             }
@@ -256,7 +244,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
-                client.Identify(userWithEmptyKey);
+                client.Identify(userWithEmptyKey, TimeSpan.FromSeconds(1));
                 Assert.Equal(uniqueId, client.User.Key);
                 Assert.True(client.User.Anonymous);
             }
@@ -281,7 +269,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             { 
-                client.Identify(user);
+                client.Identify(user, TimeSpan.FromSeconds(1));
                 User newUser = client.User;
                 Assert.NotEqual(user.Key, newUser.Key);
                 Assert.Equal(user.Avatar, newUser.Avatar);

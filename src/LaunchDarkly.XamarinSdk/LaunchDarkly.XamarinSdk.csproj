@@ -74,6 +74,6 @@
     <Reference Include="System.Numerics.Vectors" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
   </ItemGroup>
-
+  
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>
