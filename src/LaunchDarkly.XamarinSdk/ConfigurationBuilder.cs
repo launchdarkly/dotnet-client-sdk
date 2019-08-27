@@ -62,6 +62,16 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder BaseUri(Uri baseUri);
 
         /// <summary>
+        /// Sets the connection timeout for all HTTP requests.
+        /// </summary>
+        /// <remarks>
+        /// The default value is 10 seconds.
+        /// </remarks>
+        /// <param name="connectionTimeout">the connection timeout</param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder ConnectionTimeout(TimeSpan connectionTimeout);
+
+        /// <summary>
         /// Set to true if LaunchDarkly should provide additional information about how flag values were
         /// calculated.
         /// </summary>
@@ -118,13 +128,6 @@ namespace LaunchDarkly.Xamarin
         /// <param name="httpMessageHandler">the <c>HttpMessageHandler</c> to use</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler);
-
-        /// <summary>
-        /// Sets the connection timeout. The default value is 10 seconds.
-        /// </summary>
-        /// <param name="httpClientTimeout">the connection timeout</param>
-        /// <returns>the same builder</returns>
-        IConfigurationBuilder HttpClientTimeout(TimeSpan httpClientTimeout);
 
         /// <summary>
         /// Sets whether to include full user details in every analytics event.
@@ -257,14 +260,13 @@ namespace LaunchDarkly.Xamarin
         internal bool _allAttributesPrivate = false;
         internal TimeSpan _backgroundPollingInterval;
         internal Uri _baseUri = Configuration.DefaultUri;
-        internal TimeSpan _connectionTimeout;
+        internal TimeSpan _connectionTimeout = Configuration.DefaultConnectionTimeout;
         internal bool _enableBackgroundUpdating;
         internal bool _evaluationReasons = false;
         internal int _eventCapacity = Configuration.DefaultEventCapacity;
         internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
         internal Uri _eventsUri = Configuration.DefaultEventsUri;
         internal HttpMessageHandler _httpMessageHandler = PlatformSpecific.Http.GetHttpMessageHandler(); // see Http.shared.cs
-        internal TimeSpan _httpClientTimeout = Configuration.DefaultHttpClientTimeout;
         internal bool _inlineUsersInEvents = false;
         internal bool _isStreamingEnabled = true;
         internal string _mobileKey;
@@ -305,7 +307,6 @@ namespace LaunchDarkly.Xamarin
             _eventFlushInterval = copyFrom.EventFlushInterval;
             _eventsUri = copyFrom.EventsUri;
             _httpMessageHandler = copyFrom.HttpMessageHandler;
-            _httpClientTimeout = copyFrom.HttpClientTimeout;
             _inlineUsersInEvents = copyFrom.InlineUsersInEvents;
             _isStreamingEnabled = copyFrom.IsStreamingEnabled;
             _mobileKey = copyFrom.MobileKey;
@@ -392,12 +393,6 @@ namespace LaunchDarkly.Xamarin
         public IConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler)
         {
             _httpMessageHandler = httpMessageHandler;
-            return this;
-        }
-
-        public IConfigurationBuilder HttpClientTimeout(TimeSpan httpClientTimeout)
-        {
-            _httpClientTimeout = httpClientTimeout;
             return this;
         }
 

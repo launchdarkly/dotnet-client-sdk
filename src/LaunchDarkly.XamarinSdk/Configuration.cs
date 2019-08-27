@@ -27,7 +27,6 @@ namespace LaunchDarkly.Xamarin
         private readonly int _eventCapacity;
         private readonly Uri _eventsUri;
         private readonly HttpMessageHandler _httpMessageHandler;
-        private readonly TimeSpan _httpClientTimeout;
         private readonly bool _inlineUsersInEvents;
         private readonly bool _isStreamingEnabled;
         private readonly string _mobileKey;
@@ -80,7 +79,7 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// The connection timeout to the LaunchDarkly server.
         /// </summary>
-        public TimeSpan ConnectionTimeout { get; internal set; }
+        public TimeSpan ConnectionTimeout => _connectionTimeout;
 
         /// <summary>
         /// Whether to enable feature flag updates when the application is running in the background.
@@ -129,11 +128,6 @@ namespace LaunchDarkly.Xamarin
         /// The object to be used for sending HTTP requests, if a specific implementation is desired.
         /// </summary>
         public HttpMessageHandler HttpMessageHandler => _httpMessageHandler;
-
-        /// <summary>
-        /// The connection timeout. The default value is 10 seconds.
-        /// </summary>
-        public TimeSpan HttpClientTimeout => _httpClientTimeout;
 
         /// <summary>
         /// Sets whether to include full user details in every analytics event.
@@ -250,7 +244,6 @@ namespace LaunchDarkly.Xamarin
         internal static readonly TimeSpan DefaultEventFlushInterval = TimeSpan.FromSeconds(5);
         internal static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromMinutes(5);
         internal  static readonly TimeSpan DefaultReconnectTime = TimeSpan.FromSeconds(1);
-        internal static readonly TimeSpan DefaultHttpClientTimeout = TimeSpan.FromSeconds(10);
         internal static readonly int DefaultUserKeysCapacity = 1000;
         internal static readonly TimeSpan DefaultUserKeysFlushInterval = TimeSpan.FromMinutes(5);
         internal static readonly TimeSpan DefaultBackgroundPollingInterval = TimeSpan.FromMinutes(60);
@@ -329,7 +322,6 @@ namespace LaunchDarkly.Xamarin
             _eventCapacity = builder._eventCapacity;
             _eventsUri = builder._eventsUri;
             _httpMessageHandler = builder._httpMessageHandler;
-            _httpClientTimeout = builder._httpClientTimeout;
             _inlineUsersInEvents = builder._inlineUsersInEvents;
             _isStreamingEnabled = builder._isStreamingEnabled;
             _mobileKey = builder._mobileKey;
@@ -365,7 +357,7 @@ namespace LaunchDarkly.Xamarin
             public int EventCapacity => Config.EventCapacity;
             public TimeSpan EventFlushInterval => Config.EventFlushInterval;
             public Uri EventsUri => Config.EventsUri;
-            public TimeSpan HttpClientTimeout => Config.HttpClientTimeout;
+            public TimeSpan HttpClientTimeout => Config.ConnectionTimeout;
             public bool InlineUsersInEvents => Config.InlineUsersInEvents;
             public IImmutableSet<string> PrivateAttributeNames => Config.PrivateAttributeNames;
             public TimeSpan ReadTimeout => Config.ReadTimeout;
@@ -386,7 +378,7 @@ namespace LaunchDarkly.Xamarin
             internal Configuration Config { get; set; }
             public string HttpAuthorizationKey => Config.MobileKey;
             public HttpMessageHandler HttpMessageHandler => Config.HttpMessageHandler;
-            public TimeSpan HttpClientTimeout => Config.HttpClientTimeout;
+            public TimeSpan HttpClientTimeout => Config.ConnectionTimeout;
             public TimeSpan ReadTimeout => Config.ReadTimeout;
             public TimeSpan ReconnectTime => Config.ReconnectTime;
         }
