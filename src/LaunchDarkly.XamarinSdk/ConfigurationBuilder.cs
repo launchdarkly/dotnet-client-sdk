@@ -71,6 +71,19 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the same builder</returns>
         IConfigurationBuilder ConnectionTimeout(TimeSpan connectionTimeout);
 
+        /// Sets whether to enable feature flag polling when the application is in the background.
+        /// </summary>
+        /// <remarks>
+        /// By default, on Android and iOS the SDK can still receive feature flag updates when an application
+        /// is in the background, but it will use polling rather than maintaining a streaming connection (and
+        /// will use <see cref="BackgroundPollingInterval(TimeSpan)"/> rather than <see cref="PollingInterval(TimeSpan)"/>).
+        /// If you set <c>EnableBackgroundUpdating</c> to false, it will not check for feature flag updates
+        /// until the application returns to the foreground.
+        /// </remarks>
+        /// <param name="enableBackgroundUpdating">true if background updating should be allowed</param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder EnableBackgroundUpdating(bool enableBackgroundUpdating);
+
         /// <summary>
         /// Set to true if LaunchDarkly should provide additional information about how flag values were
         /// calculated.
@@ -261,7 +274,7 @@ namespace LaunchDarkly.Xamarin
         internal TimeSpan _backgroundPollingInterval;
         internal Uri _baseUri = Configuration.DefaultUri;
         internal TimeSpan _connectionTimeout = Configuration.DefaultConnectionTimeout;
-        internal bool _enableBackgroundUpdating;
+        internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
         internal int _eventCapacity = Configuration.DefaultEventCapacity;
         internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
@@ -282,6 +295,7 @@ namespace LaunchDarkly.Xamarin
         internal TimeSpan _userKeysFlushInterval = Configuration.DefaultUserKeysFlushInterval;
 
         // Internal properties only settable for testing
+        internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
         internal IDeviceInfo _deviceInfo;
         internal IEventProcessor _eventProcessor;
@@ -485,6 +499,18 @@ namespace LaunchDarkly.Xamarin
         // Configuration.BuilderInternal() which exposes the internal ConfigurationBuilder,
         // and then call these methods before you have called any of the public methods (since
         // only these methods return ConfigurationBuilder rather than IConfigurationBuilder).
+
+        internal ConfigurationBuilder BackgroundModeManager(IBackgroundModeManager backgroundModeManager)
+        {
+            _backgroundModeManager = backgroundModeManager;
+            return this;
+        }
+
+        internal IConfigurationBuilder BackgroundPollingIntervalWithoutMinimum(TimeSpan backgroundPollingInterval)
+        {
+            _backgroundPollingInterval = backgroundPollingInterval;
+            return this;
+        }
 
         internal ConfigurationBuilder ConnectivityStateManager(IConnectivityStateManager connectivityStateManager)
         {

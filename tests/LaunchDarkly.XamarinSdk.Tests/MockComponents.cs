@@ -2,10 +2,21 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
+using LaunchDarkly.Xamarin.PlatformSpecific;
 using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
+    internal class MockBackgroundModeManager : IBackgroundModeManager
+    {
+        public event EventHandler<BackgroundModeChangedEventArgs> BackgroundModeChanged;
+
+        public void UpdateBackgroundMode(bool isInBackground)
+        {
+            BackgroundModeChanged?.Invoke(this, new BackgroundModeChangedEventArgs(isInBackground));
+        }
+    }
+
     internal class MockConnectivityStateManager : IConnectivityStateManager
     {
         public Action<bool> ConnectionChanged { get; set; }

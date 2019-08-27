@@ -15,8 +15,9 @@ namespace LaunchDarkly.Xamarin
 
         private readonly IFeatureFlagRequestor _featureFlagRequestor;
         private readonly IFlagCacheManager _flagCacheManager;
-        private readonly User user;
-        private readonly TimeSpan pollingInterval;
+        private readonly User _user;
+        private readonly TimeSpan _pollingInterval;
+        private readonly TimeSpan _initialDelay;
         private readonly TaskCompletionSource<bool> _startTask;
         private readonly TaskCompletionSource<bool> _stopTask;
         private const int UNINITIALIZED = 0;
@@ -27,23 +28,32 @@ namespace LaunchDarkly.Xamarin
         internal MobilePollingProcessor(IFeatureFlagRequestor featureFlagRequestor,
                                       IFlagCacheManager cacheManager,
                                       User user,
-                                      TimeSpan pollingInterval)
+                                      TimeSpan pollingInterval,
+                                      TimeSpan initialDelay)
         {
             this._featureFlagRequestor = featureFlagRequestor;
             this._flagCacheManager = cacheManager;
-            this.user = user;
-            this.pollingInterval = pollingInterval;
+            this._user = user;
+            this._pollingInterval = pollingInterval;
+            this._initialDelay = initialDelay;
             _startTask = new TaskCompletionSource<bool>();
             _stopTask = new TaskCompletionSource<bool>();
         }
 
         Task<bool> IMobileUpdateProcessor.Start()
         {
-            if (pollingInterval.Equals(TimeSpan.Zero))
+            if (_pollingInterval.Equals(TimeSpan.Zero))
                 throw new Exception("Timespan for polling can't be zero");
 
-            Log.InfoFormat("Starting LaunchDarkly PollingProcessor with interval: {0}", pollingInterval);
-            
+            if (_initialDelay > TimeSpan.Zero)
+            {
+                Log.InfoFormat("Starting LaunchDarkly PollingProcessor with interval: {0} (waiting {1} first)", _pollingInterval, _initialDelay);
+            }
+            else
+            {
+                Log.InfoFormat("Starting LaunchDarkly PollingProcessor with interval: {0}", _pollingInterval);
+            }
+
             Task.Run(() => UpdateTaskLoopAsync());
             return _startTask.Task;
         }
@@ -55,10 +65,14 @@ namespace LaunchDarkly.Xamarin
 
         private async Task UpdateTaskLoopAsync()
         {
+            if (_initialDelay > TimeSpan.Zero)
+            {
+                await Task.Delay(_initialDelay);
+            }
             while (!_disposed)
             {
                 await UpdateTaskAsync();
-                await Task.Delay(pollingInterval);
+                await Task.Delay(_pollingInterval);
             }
         }
 
@@ -71,9 +85,9 @@ namespace LaunchDarkly.Xamarin
                 {
                     var flagsAsJsonString = response.jsonResponse;
                     var flagsDictionary = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsAsJsonString);
-                    _flagCacheManager.CacheFlagsFromService(flagsDictionary, user);
+                    _flagCacheManager.CacheFlagsFromService(flagsDictionary, _user);
 
-                    //We can't use bool in CompareExchange because it is not a reference type.
+                    // We can't use bool in CompareExchange because it is not a reference type.
                     if (Interlocked.CompareExchange(ref _initialized, INITIALIZED, UNINITIALIZED) == UNINITIALIZED)
                     {
                         _startTask.SetResult(true);

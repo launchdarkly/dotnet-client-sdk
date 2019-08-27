@@ -28,6 +28,7 @@ namespace LaunchDarkly.Xamarin
         // Immutable client state
         readonly Configuration _config;
         readonly ConnectionManager _connectionManager;
+        readonly IBackgroundModeManager _backgroundModeManager;
         readonly IDeviceInfo deviceInfo;
         readonly IConnectivityStateManager _connectivityStateManager;
         readonly IEventProcessor eventProcessor;
@@ -36,7 +37,7 @@ namespace LaunchDarkly.Xamarin
         readonly IPersistentStorage persister;
 
         // Mutable client state (some state is also in the ConnectionManager)
-        readonly ReaderWriterLockSlim _userLock = new ReaderWriterLockSlim();
+        readonly ReaderWriterLockSlim _stateLock = new ReaderWriterLockSlim();
         volatile User _user;
         volatile bool _inBackground;
 
@@ -68,7 +69,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="InitAsync(Configuration, User)"/>, but can be changed later with <see cref="Identify(User, TimeSpan)"/>
         /// or <see cref="IdentifyAsync(User)"/>.
         /// </remarks>
-        public User User => LockUtils.WithReadLock(_userLock, () => _user);
+        public User User => LockUtils.WithReadLock(_stateLock, () => _user);
 
         /// <see cref="ILdClient.Offline"/>
         public bool Offline => _connectionManager.ForceOffline;
@@ -152,7 +153,8 @@ namespace LaunchDarkly.Xamarin
             };
             _connectionManager.SetNetworkEnabled(_connectivityStateManager.IsConnected);
 
-            BackgroundDetection.BackgroundModeChanged += OnBackgroundModeChanged;
+            _backgroundModeManager = _config._backgroundModeManager ?? new DefaultBackgroundModeManager();
+            _backgroundModeManager.BackgroundModeChanged += OnBackgroundModeChanged;
         }
 
         void Start(TimeSpan maxWaitTime)
@@ -465,7 +467,7 @@ namespace LaunchDarkly.Xamarin
 
             User newUser = DecorateUser(user);
 
-            LockUtils.WithWriteLock(_userLock, () =>
+            LockUtils.WithWriteLock(_stateLock, () =>
             {
                 _user = newUser;
             });
@@ -521,7 +523,7 @@ namespace LaunchDarkly.Xamarin
             {
                 Log.InfoFormat("Shutting down the LaunchDarkly client");
 
-                BackgroundDetection.BackgroundModeChanged -= OnBackgroundModeChanged;
+                _backgroundModeManager.BackgroundModeChanged -= OnBackgroundModeChanged;
                 _connectionManager.Dispose();
                 eventProcessor.Dispose();
 
@@ -542,10 +544,20 @@ namespace LaunchDarkly.Xamarin
 
         internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundModeChangedEventArgs args)
         {
-            Log.DebugFormat("Background mode is changing to {0}", args.IsInBackground);
-            if (args.IsInBackground)
+            var goingIntoBackground = args.IsInBackground;
+            var wasInBackground = LockUtils.WithWriteLock(_stateLock, () =>
             {
-                _inBackground = true;
+                var oldValue = _inBackground;
+                _inBackground = goingIntoBackground;
+                return oldValue;
+            });
+            if (goingIntoBackground == wasInBackground)
+            {
+                return;
+            }
+            Log.DebugFormat("Background mode is changing to {0}", goingIntoBackground);
+            if (goingIntoBackground)
+            {
                 if (!Config.EnableBackgroundUpdating)
                 {
                     Log.Debug("Background updating is disabled");
@@ -554,12 +566,8 @@ namespace LaunchDarkly.Xamarin
                 }
                 Log.Debug("Background updating is enabled, starting polling processor");
             }
-            else
-            {
-                _inBackground = false;
-            }
             await _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(_config, User, flagCacheManager, _inBackground),
+                Factory.CreateUpdateProcessorFactory(_config, User, flagCacheManager, goingIntoBackground),
                 false  // don't reset initialized state because the user is still the same
             );
         }

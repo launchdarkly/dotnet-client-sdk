@@ -42,6 +42,7 @@ namespace LaunchDarkly.Xamarin
         private readonly TimeSpan _userKeysFlushInterval;
 
         // Settable only for testing
+        internal readonly IBackgroundModeManager _backgroundModeManager;
         internal readonly IConnectivityStateManager _connectivityStateManager;
         internal readonly IDeviceInfo _deviceInfo;
         internal readonly IEventProcessor _eventProcessor;
@@ -337,6 +338,7 @@ namespace LaunchDarkly.Xamarin
             _userKeysCapacity = builder._userKeysCapacity;
             _userKeysFlushInterval = builder._userKeysFlushInterval;
 
+            _backgroundModeManager = builder._backgroundModeManager;
             _connectivityStateManager = builder._connectivityStateManager;
             _deviceInfo = builder._deviceInfo;
             _eventProcessor = builder._eventProcessor;

@@ -52,7 +52,8 @@ namespace LaunchDarkly.Xamarin
                     return new MobilePollingProcessor(featureFlagRequestor,
                                                       flagCacheManager,
                                                       user,
-                                                      inBackground ? configuration.BackgroundPollingInterval : configuration.PollingInterval);
+                                                      inBackground ? configuration.BackgroundPollingInterval : configuration.PollingInterval,
+                                                      inBackground ? configuration.BackgroundPollingInterval : TimeSpan.Zero);
                 }
             };
         }
