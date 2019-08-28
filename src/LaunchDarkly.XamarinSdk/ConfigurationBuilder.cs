@@ -48,7 +48,8 @@ namespace LaunchDarkly.Xamarin
         /// Sets the interval between feature flag updates when the application is running in the background.
         /// </summary>
         /// <remarks>
-        /// This is only relevant on mobile platforms.
+        /// This is only relevant on mobile platforms. The default is <see cref="Configuration.DefaultBackgroundPollingInterval"/>;
+        /// the minimum is <see cref="Configuration.MinimumPollingInterval"/>.
         /// </remarks>
         /// <param name="backgroundPollingInterval">the background polling interval</param>
         /// <returns>the same builder</returns>
@@ -71,6 +72,7 @@ namespace LaunchDarkly.Xamarin
         /// <returns>the same builder</returns>
         IConfigurationBuilder ConnectionTimeout(TimeSpan connectionTimeout);
 
+        /// <summary>
         /// Sets whether to enable feature flag polling when the application is in the background.
         /// </summary>
         /// <remarks>
@@ -196,7 +198,8 @@ namespace LaunchDarkly.Xamarin
         /// Sets the polling interval (when streaming is disabled).
         /// </summary>
         /// <remarks>
-        /// Values less than the default of 30 seconds will be changed to the default.
+        /// The default is <see cref="Configuration.DefaultPollingInterval"/>; the minimum is
+        /// <see cref="Configuration.MinimumPollingInterval"/>.
         /// </remarks>
         /// <param name="pollingInterval">the rule update polling interval</param>
         /// <returns>the same builder</returns>
