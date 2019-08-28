@@ -66,7 +66,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         [Fact]
         public Task IdentifySyncCompletesOnlyWhenNewFlagsAreAvailable()
-            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user, TimeSpan.FromSeconds(1))));
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user, TimeSpan.FromSeconds(4))));
 
         private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, User, Task> identifyTask)
         {

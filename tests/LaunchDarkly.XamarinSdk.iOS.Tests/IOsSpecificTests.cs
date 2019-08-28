@@ -3,7 +3,7 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class IOsSpecificTests
+    public class IOsSpecificTests : BaseTest
     {
         [Fact]
         public void SdkReturnsIOsPlatformType()
