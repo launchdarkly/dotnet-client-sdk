@@ -44,7 +44,7 @@ namespace LaunchDarkly.Xamarin.Tests
             { new object[] { UpdateMode.Streaming } }
         };
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitGetsFlagsSync(UpdateMode mode)
         {
@@ -61,7 +61,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitGetsFlagsAsync(UpdateMode mode)
         {
@@ -77,7 +77,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public void InitCanTimeOutSync()
         {
             WithServer(server =>
@@ -98,7 +98,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitFailsOn401Sync(UpdateMode mode)
         {
@@ -117,7 +117,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitFailsOn401Async(UpdateMode mode)
         {
@@ -140,7 +140,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task InitWithKeylessAnonUserAddsKeyAndReusesIt()
         {
             // Note, we don't care about polling mode vs. streaming mode for this functionality.
@@ -171,7 +171,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void IdentifySwitchesUserAndGetsFlagsSync(UpdateMode mode)
         {
@@ -201,7 +201,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode mode)
         {
@@ -231,7 +231,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void IdentifyCanTimeOutSync(UpdateMode mode)
         {
@@ -257,7 +257,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public void OfflineClientUsesCachedFlagsSync()
         {
             WithServer(server =>
@@ -291,7 +291,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task OfflineClientUsesCachedFlagsAsync()
         {
             await WithServerAsync(async server =>
@@ -325,7 +325,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task BackgroundModeForcesPollingAsync()
         {
             var mockBackgroundModeManager = new MockBackgroundModeManager();
@@ -370,7 +370,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task BackgroundModePollingCanBeDisabledAsync()
         {
             var mockBackgroundModeManager = new MockBackgroundModeManager();
@@ -411,7 +411,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task OfflineClientGoesOnlineAndGetsFlagsAsync(UpdateMode mode)
         {

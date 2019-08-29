@@ -83,7 +83,7 @@
         <Version>4.0.0.497661</Version>
       </PackageReference>
       <PackageReference Include="WireMock.Net">
-        <Version>1.0.20</Version>
+        <Version>1.0.22</Version>
       </PackageReference>
     </ItemGroup>
     <ItemGroup>
@@ -194,6 +194,7 @@
           <Link>SharedTestCode\WireMockExtensions.cs</Link>
         </Compile>
         <Compile Include="IOsSpecificTests.cs" />
+        <Compile Include="AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">

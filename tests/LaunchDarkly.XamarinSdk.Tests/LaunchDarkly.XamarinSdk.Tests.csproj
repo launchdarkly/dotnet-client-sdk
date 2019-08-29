@@ -11,7 +11,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="LaunchDarkly.CommonSdk" Version="3.0.0" />
-    <PackageReference Include="WireMock.Net" Version="1.0.20" />
+    <PackageReference Include="WireMock.Net" Version="1.0.22" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.3.1" />

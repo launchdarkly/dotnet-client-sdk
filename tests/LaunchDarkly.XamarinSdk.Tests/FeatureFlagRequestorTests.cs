@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -11,13 +13,14 @@ namespace LaunchDarkly.Xamarin.Tests
         private const string _mobileKey = "FAKE_KEY";
 
         private static readonly User _user = User.WithKey("foo");
+        private const string _userJson = "{\"key\":\"foo\",\"anonymous\":false}";
         private const string _encodedUser = "eyJrZXkiOiJmb28iLCJhbm9ueW1vdXMiOmZhbHNlLCJjdXN0b20iOnt9fQ==";
         // Note that in a real use case, the user encoding may vary depending on the target platform, because the SDK adds custom
         // user attributes like "os". But the lower-level FeatureFlagRequestor component does not do that.
 
         private const string _allDataJson = "{}"; // Note that in this implementation, unlike the .NET SDK, FeatureFlagRequestor does not unmarshal the response
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task GetFlagsUsesCorrectUriAndMethodInGetModeAsync()
         {
             await WithServerAsync(async server =>
@@ -43,7 +46,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task GetFlagsUsesCorrectUriAndMethodInGetModeWithReasonsAsync()
         {
             await WithServerAsync(async server =>
@@ -70,7 +73,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         // Report mode is currently disabled - ch47341
-        //[Fact(Skip = SkipIfCannotCreateHttpServer)]
+        //[Fact]
         //public async Task GetFlagsUsesCorrectUriAndMethodInReportModeAsync()
         //{
         //    await WithServerAsync(async server =>
@@ -91,15 +94,12 @@ namespace LaunchDarkly.Xamarin.Tests
         //            Assert.Equal($"/msdk/evalx/user", req.Path);
         //            Assert.Equal("", req.RawQuery);
         //            Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
-
-        //            //Assert.Equal("{\"key\":\"foo\"}", req.Body);
-        //            // Here, ideally, we would verify that the request body contained the expected user data. Unfortunately, WireMock.Net
-        //            // is not currently able to detect the body for REPORT requests: https://github.com/WireMock-Net/WireMock.Net/issues/290
+        //            TestUtil.AssertJsonEquals(JToken.Parse(_userJson), TestUtil.NormalizeJsonUser(JToken.Parse(req.Body)));
         //        }
         //    });
         //}
 
-        //[Fact(Skip = SkipIfCannotCreateHttpServer)]
+        //[Fact]
         //public async Task GetFlagsUsesCorrectUriAndMethodInReportModeWithReasonsAsync()
         //{
         //    await WithServerAsync(async server =>
@@ -120,6 +120,7 @@ namespace LaunchDarkly.Xamarin.Tests
         //            Assert.Equal($"/msdk/evalx/user", req.Path);
         //            Assert.Equal("?withReasons=true", req.RawQuery);
         //            Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
+        //            TestUtil.AssertJsonEquals(JToken.Parse(_userJson), TestUtil.NormalizeJsonUser(JToken.Parse(req.Body)));
         //        }
         //    });
         //}

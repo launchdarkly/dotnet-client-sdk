@@ -147,7 +147,7 @@
       <Version>3.4.1</Version>
     </PackageReference>
     <PackageReference Include="WireMock.Net">
-      <Version>1.0.20</Version>
+      <Version>1.0.22</Version>
     </PackageReference>
     <PackageReference Include="xunit">
       <Version>2.4.1</Version>
