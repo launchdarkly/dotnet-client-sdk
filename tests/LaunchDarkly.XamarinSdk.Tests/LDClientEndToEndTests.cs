@@ -330,7 +330,6 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             var mockBackgroundModeManager = new MockBackgroundModeManager();
             var backgroundInterval = TimeSpan.FromMilliseconds(50);
-            var hackyUpdateDelay = TimeSpan.FromMilliseconds(200);
 
             ClearCachedFlags(_user);
             await WithServerAsync(async server =>
@@ -346,25 +345,26 @@ namespace LaunchDarkly.Xamarin.Tests
                 {
                     VerifyFlagValues(client, _flagData1);
 
-                    // SetupResponse makes the server *only* respond to the right endpoint for the update mode that we
-                    // specified, so here we only want it to succeed if it gets a polling request, not streaming.
-                    var requestReceivedSignal = SetupResponse(server, _flagData2, UpdateMode.Polling);
+                    // Set it up so that when the client switches to background mode and does a polling request, it will
+                    // receive _flagData2, and we will be notified of that via a change event. SetupResponse will only
+                    // configure the polling endpoint, so if the client makes a streaming request here it'll fail.
+                    SetupResponse(server, _flagData2, UpdateMode.Polling);
+                    var receivedChangeSignal = new SemaphoreSlim(0, 1);
+                    client.FlagChanged += (sender, args) =>
+                    {
+                        receivedChangeSignal.Release();
+                    };
+
                     mockBackgroundModeManager.UpdateBackgroundMode(true);
 
-                    // There's no way for us to directly observe when the new update processor has finished both doing the
-                    // request and updating the flag store; we can only detect, via requestReceivedSignal, when the server
-                    // has received the request. So we need to add a hacky delay here.
-                    await requestReceivedSignal.WaitAsync();
-                    await Task.Delay(hackyUpdateDelay);
+                    await receivedChangeSignal.WaitAsync();
                     VerifyFlagValues(client, _flagData2);
 
                     // Now switch back to streaming
-                    requestReceivedSignal = SetupResponse(server, _flagData1, UpdateMode.Streaming);
+                    SetupResponse(server, _flagData1, UpdateMode.Streaming);
                     mockBackgroundModeManager.UpdateBackgroundMode(false);
 
-                    // Again, we have no way to really guarantee how long this state change will take
-                    await requestReceivedSignal.WaitAsync();
-                    await Task.Delay(hackyUpdateDelay);
+                    await receivedChangeSignal.WaitAsync();
                     VerifyFlagValues(client, _flagData1);
                 }
             });
@@ -400,13 +400,18 @@ namespace LaunchDarkly.Xamarin.Tests
                     await Task.Delay(hackyUpdateDelay);
                     VerifyFlagValues(client, _flagData1);  // we should *not* have done a poll
 
+                    var receivedChangeSignal = new SemaphoreSlim(0, 1);
+                    client.FlagChanged += (sender, args) =>
+                    {
+                        receivedChangeSignal.Release();
+                    };
+
                     // Now switch back to streaming
-                    var requestReceivedSignal = SetupResponse(server, _flagData1, UpdateMode.Streaming);
+                    SetupResponse(server, _flagData2, UpdateMode.Streaming);
                     mockBackgroundModeManager.UpdateBackgroundMode(false);
 
-                    await requestReceivedSignal.WaitAsync();
-                    await Task.Delay(hackyUpdateDelay);
-                    VerifyFlagValues(client, _flagData1);
+                    await receivedChangeSignal.WaitAsync();
+                    VerifyFlagValues(client, _flagData2);
                 }
             });
         }
