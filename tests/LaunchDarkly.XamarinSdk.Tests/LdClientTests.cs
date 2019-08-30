@@ -353,5 +353,75 @@ namespace LaunchDarkly.Xamarin.Tests
                 Assert.Equal(new JValue(100), flags["flag"].value);
             }
         }
+
+        [Fact]
+        public void EventProcessorIsOnlineByDefault()
+        {
+            var eventProcessor = new MockEventProcessor();
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .EventProcessor(eventProcessor)
+                .Build();
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.False(eventProcessor.Offline);
+            }
+        }
+
+        [Fact]
+        public void EventProcessorIsOfflineWhenClientIsConfiguredOffline()
+        {
+            var connectivityStateManager = new MockConnectivityStateManager(true);
+            var eventProcessor = new MockEventProcessor();
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .ConnectivityStateManager(connectivityStateManager)
+                .EventProcessor(eventProcessor)
+                .Offline(true)
+                .Build();
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.True(eventProcessor.Offline);
+
+                client.SetOffline(false, TimeSpan.FromSeconds(1));
+                Assert.False(eventProcessor.Offline);
+
+                client.SetOffline(true, TimeSpan.FromSeconds(1));
+                Assert.True(eventProcessor.Offline);
+
+                // If the network is unavailable...
+                connectivityStateManager.Connect(false);
+
+                // ...then even if Offline is set to false, events stay off
+                client.SetOffline(false, TimeSpan.FromSeconds(1));
+                Assert.True(eventProcessor.Offline);
+            }
+        }
+
+        [Fact]
+        public void EventProcessorIsOfflineWhenNetworkIsUnavailable()
+        {
+            var connectivityStateManager = new MockConnectivityStateManager(false);
+            var eventProcessor = new MockEventProcessor();
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .ConnectivityStateManager(connectivityStateManager)
+                .EventProcessor(eventProcessor)
+                .Build();
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.True(eventProcessor.Offline);
+
+                connectivityStateManager.Connect(true);
+                Assert.False(eventProcessor.Offline);
+
+                connectivityStateManager.Connect(false);
+                Assert.True(eventProcessor.Offline);
+
+                // If client is configured offline...
+                client.SetOffline(true, TimeSpan.FromSeconds(1));
+
+                // ...then even if the network comes back on, events stay off
+                connectivityStateManager.Connect(true);
+                Assert.True(eventProcessor.Offline);
+            }
+        }
     }
 }

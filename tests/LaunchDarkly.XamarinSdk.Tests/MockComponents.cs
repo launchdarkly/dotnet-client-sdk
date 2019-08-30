@@ -65,6 +65,12 @@ namespace LaunchDarkly.Xamarin.Tests
     internal class MockEventProcessor : IEventProcessor
     {
         public List<Event> Events = new List<Event>();
+        public bool Offline = false;
+
+        public void SetOffline(bool offline)
+        {
+            Offline = offline;
+        }
 
         public void SendEvent(Event e)
         {
