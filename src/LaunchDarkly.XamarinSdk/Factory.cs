@@ -27,38 +27,35 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        internal static IConnectionManager CreateConnectionManager(Configuration configuration)
+        internal static IConnectivityStateManager CreateConnectivityStateManager(Configuration configuration)
         {
-            return configuration._connectionManager ?? new MobileConnectionManager();
+            return configuration._connectivityStateManager ?? new DefaultConnectivityStateManager();
         }
 
-        internal static IMobileUpdateProcessor CreateUpdateProcessor(Configuration configuration, User user,
-            IFlagCacheManager flagCacheManager, TimeSpan? overridePollingInterval,
-            bool disableStreaming)
+        internal static Func<IMobileUpdateProcessor> CreateUpdateProcessorFactory(Configuration configuration, User user,
+            IFlagCacheManager flagCacheManager, bool inBackground)
         {
-            if (configuration.Offline)
+            return () =>
             {
-                Log.InfoFormat("Starting LaunchDarkly client in offline mode");
-                return new NullUpdateProcessor();
-            }
+                if (configuration._updateProcessorFactory != null)
+                {
+                    return configuration._updateProcessorFactory(configuration, flagCacheManager, user);
+                }
 
-            if (configuration._updateProcessorFactory != null)
-            {
-                return configuration._updateProcessorFactory(configuration, flagCacheManager, user);
-            }
-
-            if (configuration.IsStreamingEnabled && !disableStreaming)
-            {
-                return new MobileStreamingProcessor(configuration, flagCacheManager, user, null);
-            }
-            else
-            {
-                var featureFlagRequestor = new FeatureFlagRequestor(configuration, user);
-                return new MobilePollingProcessor(featureFlagRequestor,
-                                                  flagCacheManager,
-                                                  user,
-                                                  overridePollingInterval ?? configuration.PollingInterval);
-            }
+                if (configuration.IsStreamingEnabled && !inBackground)
+                {
+                    return new MobileStreamingProcessor(configuration, flagCacheManager, user, null);
+                }
+                else
+                {
+                    var featureFlagRequestor = new FeatureFlagRequestor(configuration, user);
+                    return new MobilePollingProcessor(featureFlagRequestor,
+                                                      flagCacheManager,
+                                                      user,
+                                                      inBackground ? configuration.BackgroundPollingInterval : configuration.PollingInterval,
+                                                      inBackground ? configuration.BackgroundPollingInterval : TimeSpan.Zero);
+                }
+            };
         }
 
         internal static IEventProcessor CreateEventProcessor(Configuration configuration)
@@ -67,11 +64,6 @@ namespace LaunchDarkly.Xamarin
             {
                 return configuration._eventProcessor;
             }
-            if (configuration.Offline)
-            {
-                return new NullEventProcessor();
-            }
-
             HttpClient httpClient = Util.MakeHttpClient(configuration.HttpRequestConfiguration, MobileClientEnvironment.Instance);
             return new DefaultEventProcessor(configuration.EventProcessorConfiguration, null, httpClient, Constants.EVENTS_PATH);
         }

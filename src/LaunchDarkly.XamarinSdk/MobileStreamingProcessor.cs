@@ -46,9 +46,9 @@ namespace LaunchDarkly.Xamarin
             return _streamManager.Initialized;
         }
 
-        Task<bool> IMobileUpdateProcessor.Start()
+        async Task<bool> IMobileUpdateProcessor.Start()
         {
-            return _streamManager.Start();
+            return await _streamManager.Start();
         }
 
         #endregion
@@ -100,8 +100,7 @@ namespace LaunchDarkly.Xamarin
                         }
                         catch (Exception ex)
                         {
-                            Log.ErrorFormat("Error parsing PATCH message {0}: '{1}'",
-                                            ex, messageData, Util.ExceptionMessage(ex));
+                            Log.ErrorFormat("Error parsing PATCH message {0}: {1}", messageData, Util.ExceptionMessage(ex));
                         }
                         break;
                     }
@@ -116,8 +115,7 @@ namespace LaunchDarkly.Xamarin
                         }
                         catch (Exception ex)
                         {
-                            Log.ErrorFormat("Error parsing DELETE message {0}: '{1}'",
-                                            ex, messageData, Util.ExceptionMessage(ex));
+                            Log.ErrorFormat("Error parsing DELETE message {0}: {1}", messageData, Util.ExceptionMessage(ex));
                         }
                         break;
                     }

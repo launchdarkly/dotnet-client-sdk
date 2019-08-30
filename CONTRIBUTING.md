@@ -50,3 +50,13 @@ You can run the mobile test projects from Visual Studio (the iOS tests require M
 Note that the mobile unit tests currently do not cover background-mode behavior or connectivity detection.
 
 ### Packaging/releasing
+
+Run `./scripts/update-version.sh <VERSION>` to set the project version.
+
+Run `./scripts/release.sh` to build the project for all target frameworks and upload the package to NuGet. You must have already configured the necessary NuGet key locally.
+
+To verify that the package can be built without uploading it, run `./scripts/package.sh`.
+
+### Building a temporary package
+
+If you need to build a `.nupkg` for testing another application (in cases where linking directly to this project is not an option), run `./scripts/build-test-package.sh`. This will create a package with a unique version string in `./test-packages`. You can then set your other project to use `test-packages` as a NuGet package source.

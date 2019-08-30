@@ -3,6 +3,29 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0-beta23] - 2019-08-30
+### Added:
+- XML documentation comments are now included in the package, so they should be visible in Visual Studio for all LaunchDarkly types and methods.
+
+### Changed:
+- The `Online` property of `LdClient` was not useful because it could reflect either a deliberate change to whether the client is allowed to go online (that is, it would be false if you had set `Offline` to true in the configuration), _or_ a change in network availability. It has been removed and replaced with `Offline`, which is only used for explicitly forcing the client to be offline. This is a read-only property; to set it, use `SetOffline` or `SetOfflineAsync`.
+- The synchronous `Identify` method now requires a timeout parameter, and returns false if it times out.
+- `LdClient.Initialized` is now a property, not a method.
+- `LdClient.Version` is now static, since it describes the entire package rather than a client instance.
+- In `Configuration` and `IConfigurationBuilder`, `HttpClientTimeout` is now `ConnectionTimeout`.
+- There is now more debug-level logging for stream connection state changes.
+
+### Fixed:
+- Network availability changes are now detected in both Android and iOS. The SDK should not attempt to connect to LaunchDarkly if the OS has told it that the network is unavailable.
+- Background polling was never enabled, even if `Configuration.EnableBackgroundUpdating` was true.
+- When changing from offline to online by setting `client.Online = true`, or calling `await client.SetOnlineAsync(true)` (the equivalent now would be `client.Offline = false`, etc.), the SDK was returning too soon before it had acquired flags from LaunchDarkly. The known issues in 1.0.0-beta22 have been fixed.
+- If the SDK was online and then was explicitly set to be offline, or if network connectivity was lost, the SDK was still attempting to send analytics events. It will no longer do so.
+- If the SDK was originally set to be offline and then was put online, the SDK was _not_ sending analytics events. Now it will.
+
+### Removed:
+- `ConfigurationBuilder.UseReport`. Due to [an issue](https://github.com/xamarin/xamarin-android/issues/3544) with the Android implementation of HTTP, the HTTP REPORT method is not currently usable in the Xamarin SDK.
+- `IConnectionManager` interface. The SDK now always uses a platform-appropriate implementation of this logic.
+
 ## [1.0.0-beta22] - 2019-08-12
 ### Changed:
 - By default, on Android and iOS the SDK now uses Xamarin's platform-specific implementations of `HttpMessageHandler` that are based on native APIs, rather than the basic `System.Net.Http.HttpClientHandler`. This improves performance and stability on mobile platforms.

@@ -2,15 +2,26 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
+using LaunchDarkly.Xamarin.PlatformSpecific;
 using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    internal class MockConnectionManager : IConnectionManager
+    internal class MockBackgroundModeManager : IBackgroundModeManager
     {
-        public Action<bool> ConnectionChanged;
+        public event EventHandler<BackgroundModeChangedEventArgs> BackgroundModeChanged;
 
-        public MockConnectionManager(bool isOnline)
+        public void UpdateBackgroundMode(bool isInBackground)
+        {
+            BackgroundModeChanged?.Invoke(this, new BackgroundModeChangedEventArgs(isInBackground));
+        }
+    }
+
+    internal class MockConnectivityStateManager : IConnectivityStateManager
+    {
+        public Action<bool> ConnectionChanged { get; set; }
+
+        public MockConnectivityStateManager(bool isOnline)
         {
             isConnected = isOnline;
         }
@@ -54,6 +65,12 @@ namespace LaunchDarkly.Xamarin.Tests
     internal class MockEventProcessor : IEventProcessor
     {
         public List<Event> Events = new List<Event>();
+        public bool Offline = false;
+
+        public void SetOffline(bool offline)
+        {
+            Offline = offline;
+        }
 
         public void SendEvent(Event e)
         {
@@ -104,7 +121,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             var flags = FlagsForUser(user);
             FeatureFlag featureFlag;
-            if (flags.TryGetValue(flagKey, out featureFlag))
+            if (flags != null && flags.TryGetValue(flagKey, out featureFlag))
             {
                 return featureFlag;
             }
@@ -206,6 +223,56 @@ namespace LaunchDarkly.Xamarin.Tests
                 _cacheManager.CacheFlagsFromService(JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(_flagsJson), _user);
             }
             return Task.FromResult(true);
+        }
+    }
+
+    internal class MockUpdateProcessorFromLambda : IMobileUpdateProcessor
+    {
+        private readonly User _user;
+        private readonly Func<Task> _startFn;
+        private bool _initialized;
+
+        public MockUpdateProcessorFromLambda(User user, Func<Task> startFn)
+        {
+            _user = user;
+            _startFn = startFn;
+        }
+
+        public Task<bool> Start()
+        {
+            return _startFn().ContinueWith<bool>(t =>
+            {
+                _initialized = true;
+                return true;
+            });
+        }
+
+        public bool Initialized() => _initialized;
+
+        public void Dispose() { }
+    }
+
+    internal class MockUpdateProcessorThatNeverInitializes : IMobileUpdateProcessor
+    {
+        public static Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> Factory()
+        {
+            return (config, manager, user) => new MockUpdateProcessorThatNeverInitializes();
+        }
+
+        public bool IsRunning => false;
+
+        public void Dispose()
+        {
+        }
+
+        public bool Initialized()
+        {
+            return false;
+        }
+
+        public Task<bool> Start()
+        {
+            return new TaskCompletionSource<bool>().Task; // will never be completed
         }
     }
 }

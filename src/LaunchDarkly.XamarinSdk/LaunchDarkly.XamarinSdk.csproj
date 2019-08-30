@@ -4,7 +4,7 @@
     <TargetFrameworks></TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.6;netstandard2.0;net45;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.6;netstandard2.0;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
-    <Version>1.0.0-beta22</Version>
+    <Version>1.0.0-beta23</Version>
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.XamarinSdk</AssemblyName>
     <PackageId>LaunchDarkly.XamarinSdk</PackageId>
@@ -16,6 +16,13 @@
     <DesignTimeBuild>False</DesignTimeBuild>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' and '$(LD_SKIP_XML_DOCS)' == '' ">
+    <DocumentationFile>bin\Debug\$(TargetFramework)\LaunchDarkly.XamarinSdk.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' and '$(LD_SKIP_XML_DOCS)' == '' ">
+    <DocumentationFile>bin\Release\$(TargetFramework)\LaunchDarkly.XamarinSdk.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
@@ -24,7 +31,7 @@
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="Common.Logging" Version="3.4.1" />
-    <PackageReference Include="LaunchDarkly.CommonSdk" Version="3.0.0" />
+    <PackageReference Include="LaunchDarkly.CommonSdk" Version="3.1.0" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.60" PrivateAssets="All" />
     <Compile Include="*.cs" />
     <Compile Include="Properties\*.cs" />
@@ -74,6 +81,6 @@
     <Reference Include="System.Numerics.Vectors" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.0.0.13" />
   </ItemGroup>
-
+  
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>

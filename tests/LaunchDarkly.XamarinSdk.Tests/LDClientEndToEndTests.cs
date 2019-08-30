@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Xamarin.PlatformSpecific;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
 using WireMock.Server;
 using Xunit;
 
@@ -40,7 +44,7 @@ namespace LaunchDarkly.Xamarin.Tests
             { new object[] { UpdateMode.Streaming } }
         };
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitGetsFlagsSync(UpdateMode mode)
         {
@@ -48,7 +52,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode);
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -57,7 +61,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitGetsFlagsAsync(UpdateMode mode)
         {
@@ -65,7 +69,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode);
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -73,7 +77,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public void InitCanTimeOutSync()
         {
             WithServer(server =>
@@ -82,11 +86,10 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 using (var log = new LogSinkScope())
                 {
-                    var config = BaseConfig(server).IsStreamingEnabled(false).Build();
+                    var config = BaseConfig(server, builder => builder.IsStreamingEnabled(false));
                     using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                     {
-                        Assert.False(Initialized(client));
-                        Assert.False(client.Initialized());
+                        Assert.False(client.Initialized);
                         Assert.Null(client.StringVariation(_flagData1.First().Key, null));
                         Assert.Contains(log.Messages, m => m.Level == LogLevel.Warn &&
                             m.Text == "Client did not successfully initialize within 200 milliseconds.");
@@ -95,7 +98,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitFailsOn401Sync(UpdateMode mode)
         {
@@ -105,25 +108,16 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 using (var log = new LogSinkScope())
                 {
-                    try
+                    var config = BaseConfig(server, mode);
+                    using (var client = TestUtil.CreateClient(config, _user))
                     {
-                        var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
-                        using (var client = TestUtil.CreateClient(config, _user)) { }
+                        Assert.False(client.Initialized);
                     }
-                    catch (Exception e)
-                    {
-                        // Currently the exact class of this exception is undefined: the polling processor throws
-                        // LaunchDarkly.Client.UnsuccessfulResponseException, while the streaming processor throws
-                        // a lower-level exception that is defined by LaunchDarkly.EventSource.
-                        Assert.Contains("401", e.Message);
-                        return;
-                    }
-                    throw new Exception("Expected exception from LdClient.Init");
                 }
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitFailsOn401Async(UpdateMode mode)
         {
@@ -133,21 +127,20 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 using (var log = new LogSinkScope())
                 {
-                    var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                    var config = BaseConfig(server, mode);
 
                     // Currently the behavior of LdClient.InitAsync is somewhat inconsistent with LdClient.Init if there is
                     // an unrecoverable error: LdClient.Init throws an exception, but LdClient.InitAsync returns a task that
                     // will complete successfully with an uninitialized client.
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
                     {
-                        Assert.False(Initialized(client));
-                        Assert.False(client.Initialized());
+                        Assert.False(client.Initialized);
                     }
                 }
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task InitWithKeylessAnonUserAddsKeyAndReusesIt()
         {
             // Note, we don't care about polling mode vs. streaming mode for this functionality.
@@ -155,7 +148,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(false).Build();
+                var config = BaseConfig(server, UpdateMode.Polling);
                 var name = "Sue";
                 var anonUser = User.Builder((string)null).Name(name).Anonymous(true).Build();
 
@@ -178,7 +171,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void IdentifySwitchesUserAndGetsFlagsSync(UpdateMode mode)
         {
@@ -186,7 +179,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode);
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -196,7 +189,9 @@ namespace LaunchDarkly.Xamarin.Tests
                     server.Reset();
                     SetupResponse(server, _flagData2, mode);
 
-                    client.Identify(_otherUser);
+                    var success = client.Identify(_otherUser, TimeSpan.FromSeconds(5));
+                    Assert.True(success);
+                    Assert.True(client.Initialized);
                     Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     VerifyRequest(server, mode);
@@ -206,7 +201,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Theory(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public async Task IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode mode)
         {
@@ -214,7 +209,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 SetupResponse(server, _flagData1, mode);
 
-                var config = BaseConfig(server).UseReport(false).IsStreamingEnabled(mode.IsStreaming).Build();
+                var config = BaseConfig(server, mode);
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyRequest(server, mode);
@@ -224,7 +219,9 @@ namespace LaunchDarkly.Xamarin.Tests
                     server.Reset();
                     SetupResponse(server, _flagData2, mode);
 
-                    await client.IdentifyAsync(_otherUser);
+                    var success = await client.IdentifyAsync(_otherUser);
+                    Assert.True(success);
+                    Assert.True(client.Initialized);
                     Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     VerifyRequest(server, mode);
@@ -234,7 +231,33 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public void IdentifyCanTimeOutSync(UpdateMode mode)
+        {
+            WithServer(server =>
+            {
+                SetupResponse(server, _flagData1, mode);
+
+                var config = BaseConfig(server, mode);
+                using (var client = TestUtil.CreateClient(config, _user))
+                {
+                    VerifyRequest(server, mode);
+                    VerifyFlagValues(client, _flagData1);
+                    var user1RequestPath = server.GetLastRequest().Path;
+
+                    server.Reset();
+                    server.ForAllRequests(r => r.WithDelay(TimeSpan.FromSeconds(2)).WithJsonBody(PollingData(_flagData1)));
+
+                    var success = client.Identify(_otherUser, TimeSpan.FromMilliseconds(100));
+                    Assert.False(success);
+                    Assert.False(client.Initialized);
+                    Assert.Null(client.StringVariation(_flagData1.First().Key, null));
+                }
+            });
+        }
+
+        [Fact]
         public void OfflineClientUsesCachedFlagsSync()
         {
             WithServer(server =>
@@ -244,15 +267,10 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .UseReport(false)
-                        .IsStreamingEnabled(false)
-                        .PersistFlagValues(true)
-                        .Build();
+                    var config = BaseConfig(server, UpdateMode.Polling, builder => builder.PersistFlagValues(true));
                     using (var client = TestUtil.CreateClient(config, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
-                        Assert.True(client.Initialized());
                     }
 
                     // At this point the SDK should have written the flags to persistent storage for this user key.
@@ -264,7 +282,6 @@ namespace LaunchDarkly.Xamarin.Tests
                     using (var client = TestUtil.CreateClient(offlineConfig, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
-                        Assert.True(client.Initialized());
                     }
                 }
                 finally
@@ -274,7 +291,7 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
+        [Fact]
         public async Task OfflineClientUsesCachedFlagsAsync()
         {
             await WithServerAsync(async server =>
@@ -284,11 +301,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server)
-                        .UseReport(false)
-                        .IsStreamingEnabled(false)
-                        .PersistFlagValues(true)
-                        .Build();
+                    var config = BaseConfig(server, UpdateMode.Polling, builder => builder.PersistFlagValues(true));
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
@@ -303,7 +316,6 @@ namespace LaunchDarkly.Xamarin.Tests
                     using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
-                        Assert.True(client.Initialized());
                     }
                 }
                 finally
@@ -313,196 +325,161 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
-        public void OfflineClientUsesCachedFlagsSyncAfterStartUpdateProcessor()
+        [Fact]
+        public async Task BackgroundModeForcesPollingAsync()
         {
-            WithServer(server =>
+            var mockBackgroundModeManager = new MockBackgroundModeManager();
+            var backgroundInterval = TimeSpan.FromMilliseconds(50);
+
+            ClearCachedFlags(_user);
+            await WithServerAsync(async server =>
             {
-                SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
+                var config = BaseConfig(server, UpdateMode.Streaming, builder => builder
+                    .BackgroundModeManager(mockBackgroundModeManager)
+                    .BackgroundPollingIntervalWithoutMinimum(backgroundInterval)
+                    .PersistFlagValues(false));
 
-                ClearCachedFlags(_user);
-                try
+                SetupResponse(server, _flagData1, UpdateMode.Streaming);
+
+                using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
-                    var config = BaseConfig(server)
-                        .UseReport(false)
-                        .IsStreamingEnabled(false)
-                        .PersistFlagValues(true)
-                        .Build();
-                    using (var client = TestUtil.CreateClient(config, _user))
-                    {
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                    }
+                    VerifyFlagValues(client, _flagData1);
 
-                    // At this point the SDK should have written the flags to persistent storage for this user key.
-                    // We'll now start over, but with a server that doesn't respond immediately. When the client times
-                    // out, we should still see the earlier flag values.
-
-                    server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                    var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
-                    using (var client = TestUtil.CreateClient(offlineConfig, _user))
+                    // Set it up so that when the client switches to background mode and does a polling request, it will
+                    // receive _flagData2, and we will be notified of that via a change event. SetupResponse will only
+                    // configure the polling endpoint, so if the client makes a streaming request here it'll fail.
+                    SetupResponse(server, _flagData2, UpdateMode.Polling);
+                    var receivedChangeSignal = new SemaphoreSlim(0, 1);
+                    client.FlagChanged += (sender, args) =>
                     {
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                    }
-                }
-                finally
-                {
-                    ClearCachedFlags(_user);
+                        receivedChangeSignal.Release();
+                    };
+
+                    mockBackgroundModeManager.UpdateBackgroundMode(true);
+
+                    await receivedChangeSignal.WaitAsync();
+                    VerifyFlagValues(client, _flagData2);
+
+                    // Now switch back to streaming
+                    SetupResponse(server, _flagData1, UpdateMode.Streaming);
+                    mockBackgroundModeManager.UpdateBackgroundMode(false);
+
+                    await receivedChangeSignal.WaitAsync();
+                    VerifyFlagValues(client, _flagData1);
                 }
             });
         }
 
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
-        public async Task OfflineClientUsesCachedFlagsAsyncAfterStartUpdateProcessorAsync()
+        [Fact]
+        public async Task BackgroundModePollingCanBeDisabledAsync()
+        {
+            var mockBackgroundModeManager = new MockBackgroundModeManager();
+            var backgroundInterval = TimeSpan.FromMilliseconds(50);
+            var hackyUpdateDelay = TimeSpan.FromMilliseconds(200);
+
+            ClearCachedFlags(_user);
+            await WithServerAsync(async server =>
+            {
+                var config = BaseConfig(server, UpdateMode.Streaming, builder => builder
+                    .BackgroundModeManager(mockBackgroundModeManager)
+                    .EnableBackgroundUpdating(false)
+                    .BackgroundPollingInterval(backgroundInterval)
+                    .PersistFlagValues(false));
+
+                SetupResponse(server, _flagData1, UpdateMode.Streaming);
+
+                using (var client = await TestUtil.CreateClientAsync(config, _user))
+                {
+                    VerifyFlagValues(client, _flagData1);
+
+                    // The SDK should *not* hit this polling endpoint, but we're providing some data there so we can
+                    // detect whether it does.
+                    SetupResponse(server, _flagData2, UpdateMode.Polling);
+                    mockBackgroundModeManager.UpdateBackgroundMode(true);
+
+                    await Task.Delay(hackyUpdateDelay);
+                    VerifyFlagValues(client, _flagData1);  // we should *not* have done a poll
+
+                    var receivedChangeSignal = new SemaphoreSlim(0, 1);
+                    client.FlagChanged += (sender, args) =>
+                    {
+                        receivedChangeSignal.Release();
+                    };
+
+                    // Now switch back to streaming
+                    SetupResponse(server, _flagData2, UpdateMode.Streaming);
+                    mockBackgroundModeManager.UpdateBackgroundMode(false);
+
+                    await receivedChangeSignal.WaitAsync();
+                    VerifyFlagValues(client, _flagData2);
+                }
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public async Task OfflineClientGoesOnlineAndGetsFlagsAsync(UpdateMode mode)
         {
             await WithServerAsync(async server =>
             {
-                SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
-
                 ClearCachedFlags(_user);
-                try
+                var config = BaseConfig(server, mode, builder => builder.Offline(true).PersistFlagValues(false));
+                using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
-                    var config = BaseConfig(server)
-                        .UseReport(false)
-                        .IsStreamingEnabled(false)
-                        .PersistFlagValues(true)
-                        .Build();
-                    using (var client = await TestUtil.CreateClientAsync(config, _user))
-                    {
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                    }
+                    VerifyNoFlagValues(client, _flagData1);
 
-                    // At this point the SDK should have written the flags to persistent storage for this user key.
-                    // We'll now start over, but with a server that doesn't respond immediately. When the client times
-                    // out, we should still see the earlier flag values.
+                    SetupResponse(server, _flagData1, mode);
 
-                    server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                    var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
-                    using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
-                    {
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                    }
-                }
-                finally
-                {
-                    ClearCachedFlags(_user);
+                    await client.SetOfflineAsync(false);
+
+                    VerifyFlagValues(client, _flagData1);
                 }
             });
         }
 
-        private bool Initialized(LdClient client)
+        private Configuration BaseConfig(FluentMockServer server, Func<ConfigurationBuilder, IConfigurationBuilder> extraConfig = null)
         {
-            return client.Online && client.updateProcessor.Initialized();
-        }
-         
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
-        public void BackgroundOfflineClientUsesCachedFlagsSyncAfterStartUpdateProcessor()
-        {
-            WithServer(server =>
-            {
-                SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
-
-                ClearCachedFlags(_user);
-                try
-                {
-                    var config = BaseConfig(server)
-                        .UseReport(false)
-                        .IsStreamingEnabled(false)
-                        .PersistFlagValues(true)
-                        .Build();
-                    using (var client = TestUtil.CreateClient(config, _user))
-                    {
-                        BackgroundDetection.UpdateBackgroundMode(true);
-                        VerifyFlagValues(client, _flagData1);
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                    }
-
-                    // At this point the SDK should have written the flags to persistent storage for this user key.
-                    // We'll now start over, but with a server that doesn't respond immediately. When the client times
-                    // out, we should still see the earlier flag values.
-
-                    server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                    var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
-                    using (var client = TestUtil.CreateClient(offlineConfig, _user))
-                    {
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                        BackgroundDetection.UpdateBackgroundMode(true);
-                        VerifyFlagValues(client, _flagData1);
-                    }
-                }
-                finally
-                {
-                    ClearCachedFlags(_user);
-                }
-            });
-        }
-
-        [Fact(Skip = SkipIfCannotCreateHttpServer)]
-        public async Task BackgroundOfflineClientUsesCachedFlagsAsyncAfterStartUpdateProcessorAsync()
-        {
-            await WithServerAsync(async server =>
-            {
-                SetupResponse(server, _flagData1, UpdateMode.Polling); // streaming vs. polling should make no difference for this
-
-                ClearCachedFlags(_user);
-                try
-                {
-                    var config = BaseConfig(server)
-                        .UseReport(false)
-                        .IsStreamingEnabled(false)
-                        .PersistFlagValues(true)
-                        .Build();
-                    using (var client = await TestUtil.CreateClientAsync(config, _user))
-                    {
-                        BackgroundDetection.UpdateBackgroundMode(true);
-                        VerifyFlagValues(client, _flagData1);
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                    }
-
-                    // At this point the SDK should have written the flags to persistent storage for this user key.
-                    // We'll now start over, but with a server that doesn't respond immediately. When the client times
-                    // out, we should still see the earlier flag values.
-
-                    server.Reset(); // the offline client shouldn't be making any requests, but just in case
-                    var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
-                    using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
-                    {
-                        BackgroundDetection.UpdateBackgroundMode(true);
-                        VerifyFlagValues(client, _flagData1);
-                        BackgroundDetection.UpdateBackgroundMode(false);
-                        VerifyFlagValues(client, _flagData1);
-                    }
-                }
-                finally
-                {
-                    ClearCachedFlags(_user);
-                }
-            });
-        }
-
-        private IConfigurationBuilder BaseConfig(FluentMockServer server)
-        {
-            return Configuration.BuilderInternal(_mobileKey)
-                .EventProcessor(new MockEventProcessor())
+            var builderInternal = Configuration.BuilderInternal(_mobileKey)
+                .EventProcessor(new MockEventProcessor());
+            builderInternal
                 .BaseUri(new Uri(server.GetUrl()))
                 .StreamUri(new Uri(server.GetUrl()))
-                .PersistFlagValues(false); // unless we're specifically testing flag caching, this helps to prevent test state contamination
+                .PersistFlagValues(false);  // unless we're specifically testing flag caching, this helps to prevent test state contamination
+            var builder = extraConfig == null ? builderInternal : extraConfig(builderInternal);
+            return builder.Build();
         }
 
-        private void SetupResponse(FluentMockServer server, IDictionary<string, string> data, UpdateMode mode)
+        private Configuration BaseConfig(FluentMockServer server, UpdateMode mode, Func<ConfigurationBuilder, IConfigurationBuilder> extraConfig = null)
         {
-            server.ForAllRequests(r =>
-                mode.IsStreaming ? r.WithEventsBody(StreamingData(data)) : r.WithJsonBody(PollingData(data)));
+            return BaseConfig(server, builder =>
+            {
+                builder.IsStreamingEnabled(mode.IsStreaming);
+                return extraConfig == null ? builder : extraConfig(builder);
+            });
+        }
+
+        // 
+        private SemaphoreSlim SetupResponse(FluentMockServer server, IDictionary<string, string> data, UpdateMode mode)
+        {
+            var signal = new SemaphoreSlim(0, 1);
+            server.ResetMappings();
+            var resp = Response.Create().WithCallback(req =>
+            {
+                signal.Release();
+                var respBuilder = mode.IsStreaming ?
+                    Response.Create().WithEventsBody(StreamingData(data)) :
+                    Response.Create().WithJsonBody(PollingData(data));
+                return ((Response)respBuilder).ResponseMessage;
+            });
+
             // Note: in streaming mode, since WireMock.Net doesn't seem to support streaming responses, the fake response will close
             // after the end of the data-- so the SDK will enter retry mode and we may get another identical streaming request. For
             // the purposes of these tests, that doesn't matter. The correct processing of a chunked stream is tested in the
             // LaunchDarkly.EventSource tests, and the retry logic is tested in LaunchDarkly.CommonSdk.
+
+            server.Given(Request.Create().WithPath(path => Regex.IsMatch(path, mode.FlagsPathRegex)))
+                .RespondWith(resp);
+            return signal;
         }
 
         private void VerifyRequest(FluentMockServer server, UpdateMode mode)
@@ -523,10 +500,19 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private void VerifyFlagValues(ILdClient client, IDictionary<string, string> flags)
         {
-            Assert.True(Initialized((LdClient) client));
+            Assert.True(client.Initialized);
             foreach (var e in flags)
             {
                 Assert.Equal(e.Value, client.StringVariation(e.Key, null));
+            }
+        }
+
+        private void VerifyNoFlagValues(ILdClient client, IDictionary<string, string> flags)
+        {
+            Assert.True(client.Initialized);
+            foreach (var e in flags)
+            {
+                Assert.Null(client.StringVariation(e.Key, null));
             }
         }
 
@@ -570,5 +556,7 @@ namespace LaunchDarkly.Xamarin.Tests
             IsStreaming = false,
             FlagsPathRegex = "^/msdk/evalx/users/[^/?]+"
         };
+
+        public override string ToString() => IsStreaming ? "Streaming" : "Polling";
     }
 }

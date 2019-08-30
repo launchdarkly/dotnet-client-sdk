@@ -48,7 +48,8 @@ namespace LaunchDarkly.Xamarin
         /// Sets the interval between feature flag updates when the application is running in the background.
         /// </summary>
         /// <remarks>
-        /// This is only relevant on mobile platforms.
+        /// This is only relevant on mobile platforms. The default is <see cref="Configuration.DefaultBackgroundPollingInterval"/>;
+        /// the minimum is <see cref="Configuration.MinimumPollingInterval"/>.
         /// </remarks>
         /// <param name="backgroundPollingInterval">the background polling interval</param>
         /// <returns>the same builder</returns>
@@ -60,6 +61,30 @@ namespace LaunchDarkly.Xamarin
         /// <param name="baseUri">the base URI</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder BaseUri(Uri baseUri);
+
+        /// <summary>
+        /// Sets the connection timeout for all HTTP requests.
+        /// </summary>
+        /// <remarks>
+        /// The default value is 10 seconds.
+        /// </remarks>
+        /// <param name="connectionTimeout">the connection timeout</param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder ConnectionTimeout(TimeSpan connectionTimeout);
+
+        /// <summary>
+        /// Sets whether to enable feature flag polling when the application is in the background.
+        /// </summary>
+        /// <remarks>
+        /// By default, on Android and iOS the SDK can still receive feature flag updates when an application
+        /// is in the background, but it will use polling rather than maintaining a streaming connection (and
+        /// will use <see cref="BackgroundPollingInterval(TimeSpan)"/> rather than <see cref="PollingInterval(TimeSpan)"/>).
+        /// If you set <c>EnableBackgroundUpdating</c> to false, it will not check for feature flag updates
+        /// until the application returns to the foreground.
+        /// </remarks>
+        /// <param name="enableBackgroundUpdating">true if background updating should be allowed</param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder EnableBackgroundUpdating(bool enableBackgroundUpdating);
 
         /// <summary>
         /// Set to true if LaunchDarkly should provide additional information about how flag values were
@@ -120,13 +145,6 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler);
 
         /// <summary>
-        /// Sets the connection timeout. The default value is 10 seconds.
-        /// </summary>
-        /// <param name="httpClientTimeout">the connection timeout</param>
-        /// <returns>the same builder</returns>
-        IConfigurationBuilder HttpClientTimeout(TimeSpan httpClientTimeout);
-
-        /// <summary>
         /// Sets whether to include full user details in every analytics event.
         /// </summary>
         /// <remarks>
@@ -180,7 +198,8 @@ namespace LaunchDarkly.Xamarin
         /// Sets the polling interval (when streaming is disabled).
         /// </summary>
         /// <remarks>
-        /// Values less than the default of 30 seconds will be changed to the default.
+        /// The default is <see cref="Configuration.DefaultPollingInterval"/>; the minimum is
+        /// <see cref="Configuration.MinimumPollingInterval"/>.
         /// </remarks>
         /// <param name="pollingInterval">the rule update polling interval</param>
         /// <returns>the same builder</returns>
@@ -229,18 +248,6 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder StreamUri(Uri streamUri);
 
         /// <summary>
-        /// Sets whether to use the HTTP REPORT method for feature flag requests.
-        /// </summary>
-        /// <remarks>
-        /// By default, polling and streaming connections are made with the GET method, witht the user data
-        /// encoded into the request URI. Using REPORT allows the user data to be sent in the request body instead.
-        /// However, some network gateways do not support REPORT.
-        /// </remarks>
-        /// <param name="useReport">whether to use REPORT mode</param>
-        /// <returns>the same builder</returns>
-        IConfigurationBuilder UseReport(bool useReport);
-
-        /// <summary>
         /// Sets the number of user keys that the event processor can remember at any one time.
         /// </summary>
         /// <remarks>
@@ -269,14 +276,13 @@ namespace LaunchDarkly.Xamarin
         internal bool _allAttributesPrivate = false;
         internal TimeSpan _backgroundPollingInterval;
         internal Uri _baseUri = Configuration.DefaultUri;
-        internal TimeSpan _connectionTimeout;
-        internal bool _enableBackgroundUpdating;
+        internal TimeSpan _connectionTimeout = Configuration.DefaultConnectionTimeout;
+        internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
         internal int _eventCapacity = Configuration.DefaultEventCapacity;
         internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
         internal Uri _eventsUri = Configuration.DefaultEventsUri;
         internal HttpMessageHandler _httpMessageHandler = PlatformSpecific.Http.GetHttpMessageHandler(); // see Http.shared.cs
-        internal TimeSpan _httpClientTimeout = Configuration.DefaultHttpClientTimeout;
         internal bool _inlineUsersInEvents = false;
         internal bool _isStreamingEnabled = true;
         internal string _mobileKey;
@@ -292,7 +298,8 @@ namespace LaunchDarkly.Xamarin
         internal TimeSpan _userKeysFlushInterval = Configuration.DefaultUserKeysFlushInterval;
 
         // Internal properties only settable for testing
-        internal IConnectionManager _connectionManager;
+        internal IBackgroundModeManager _backgroundModeManager;
+        internal IConnectivityStateManager _connectivityStateManager;
         internal IDeviceInfo _deviceInfo;
         internal IEventProcessor _eventProcessor;
         internal IFlagCacheManager _flagCacheManager;
@@ -317,7 +324,6 @@ namespace LaunchDarkly.Xamarin
             _eventFlushInterval = copyFrom.EventFlushInterval;
             _eventsUri = copyFrom.EventsUri;
             _httpMessageHandler = copyFrom.HttpMessageHandler;
-            _httpClientTimeout = copyFrom.HttpClientTimeout;
             _inlineUsersInEvents = copyFrom.InlineUsersInEvents;
             _isStreamingEnabled = copyFrom.IsStreamingEnabled;
             _mobileKey = copyFrom.MobileKey;
@@ -407,12 +413,6 @@ namespace LaunchDarkly.Xamarin
             return this;
         }
 
-        public IConfigurationBuilder HttpClientTimeout(TimeSpan httpClientTimeout)
-        {
-            _httpClientTimeout = httpClientTimeout;
-            return this;
-        }
-
         public IConfigurationBuilder InlineUsersInEvents(bool inlineUsersInEvents)
         {
             _inlineUsersInEvents = inlineUsersInEvents;
@@ -485,12 +485,6 @@ namespace LaunchDarkly.Xamarin
             return this;
         }
 
-        public IConfigurationBuilder UseReport(bool useReport)
-        {
-            _useReport = useReport;
-            return this;
-        }
-
         public  IConfigurationBuilder UserKeysCapacity(int userKeysCapacity)
         {
             _userKeysCapacity = userKeysCapacity;
@@ -509,9 +503,21 @@ namespace LaunchDarkly.Xamarin
         // and then call these methods before you have called any of the public methods (since
         // only these methods return ConfigurationBuilder rather than IConfigurationBuilder).
 
-        internal ConfigurationBuilder ConnectionManager(IConnectionManager connectionManager)
+        internal ConfigurationBuilder BackgroundModeManager(IBackgroundModeManager backgroundModeManager)
         {
-            _connectionManager = connectionManager;
+            _backgroundModeManager = backgroundModeManager;
+            return this;
+        }
+
+        internal IConfigurationBuilder BackgroundPollingIntervalWithoutMinimum(TimeSpan backgroundPollingInterval)
+        {
+            _backgroundPollingInterval = backgroundPollingInterval;
+            return this;
+        }
+
+        internal ConfigurationBuilder ConnectivityStateManager(IConnectivityStateManager connectivityStateManager)
+        {
+            _connectivityStateManager = connectivityStateManager;
             return this;
         }
 

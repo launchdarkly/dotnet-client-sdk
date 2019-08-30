@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
@@ -113,19 +114,15 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        public static string JsonFlagsWithSingleFlag(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
+        internal static Dictionary<string, FeatureFlag> MakeSingleFlagData(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
         {
-            JObject fo = new JObject { { "value", value } };
-            if (variation != null)
-            {
-                fo["variation"] = new JValue(variation.Value);
-            }
-            if (reason != null)
-            {
-                fo["reason"] = JToken.FromObject(reason);
-            }
-            JObject o = new JObject { { flagKey, fo } };
-            return JsonConvert.SerializeObject(o);
+            var flag = new FeatureFlag { value = value, variation = variation, reason = reason };
+            return new Dictionary<string, FeatureFlag> { { flagKey, flag } };
+        }
+
+        internal static string JsonFlagsWithSingleFlag(string flagKey, JToken value, int? variation = null, EvaluationReason reason = null)
+        {
+            return JsonConvert.SerializeObject(MakeSingleFlagData(flagKey, value, variation, reason));
         }
 
         internal static IDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
@@ -144,11 +141,34 @@ namespace LaunchDarkly.Xamarin.Tests
 
             return Configuration.BuilderInternal(appKey)
                                 .FlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
-                                .ConnectionManager(new MockConnectionManager(true))
+                                .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                 .EventProcessor(new MockEventProcessor())
                                 .UpdateProcessorFactory(MockPollingProcessor.Factory(null))
                                 .PersistentStorage(new MockPersistentStorage())
                                 .DeviceInfo(new MockDeviceInfo(""));
+        }
+
+        public static void AssertJsonEquals(JToken expected, JToken actual)
+        {
+            if (!JToken.DeepEquals(expected, actual))
+            {
+                Assert.Equal(expected.ToString(), actual.ToString()); // will print the values with the failure
+            }
+        }
+
+        public static JToken NormalizeJsonUser(JToken json)
+        {
+            // It's undefined whether a user with no custom attributes will have "custom":{} or not
+            if (json is JObject o && o.ContainsKey("custom") && o["custom"] is JObject co)
+            {
+                if (co.Count == 0)
+                {
+                    JObject o1 = new JObject(o);
+                    o1.Remove("custom");
+                    return o1;
+                }
+            }
+            return json;
         }
     }
 }

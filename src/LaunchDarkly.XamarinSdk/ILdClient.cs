@@ -6,37 +6,87 @@ using LaunchDarkly.Client;
 
 namespace LaunchDarkly.Xamarin
 {
+    /// <summary>
+    /// Interface for the standard SDK client methods and properties. The only implementation of this is <see cref="LdClient"/>.
+    /// </summary>
     public interface ILdClient : IDisposable
     {
-        /// <summary>
-        /// Returns the current version number of the LaunchDarkly client.
-        /// </summary>
-        Version Version { get; }
-
         /// <summary>
         /// Returns a boolean value indicating LaunchDarkly connection and flag state within the client.
         /// </summary>
         /// <remarks>
-        /// When you first start the client, once Init or InitAsync has returned, 
-        /// Initialized() should be true if and only if either 1. it connected to LaunchDarkly 
+        /// When you first start the client, once <c>Init</c> or <c>InitAsync</c> has returned, 
+        /// <c>Initialized</c> should be true if and only if either 1. it connected to LaunchDarkly 
         /// and successfully retrieved flags, or 2. it started in offline mode so 
         /// there's no need to connect to LaunchDarkly. So if the client timed out trying to 
-        /// connect to LD, then Initialized is false (even if we do have cached flags). 
+        /// connect to LD, then <c>Initialized</c> is false (even if we do have cached flags). 
         /// If the client connected and got a 401 error, Initialized is false. 
         /// This serves the purpose of letting the app know that 
-        /// there was a problem of some kind. Initialized() will be temporarily false during the 
-        /// time in between calling Identify and receiving the new user's flags. It will also be false 
-        /// if you switch users with Identify and the client is unable 
+        /// there was a problem of some kind. <c>Initialized</c> will be temporarily false during the 
+        /// time in between calling <c>Identify</c> and receiving the new user's flags. It will also be false 
+        /// if you switch users with <c>Identify</c> and the client is unable 
         /// to get the new user's flags from LaunchDarkly. 
         /// </remarks>
-        /// <returns>true if the client has connected to LaunchDarkly and has flags or if the config is set offline, or false if it couldn't connect.</returns>
-        bool Initialized();
+        bool Initialized { get; }
 
         /// <summary>
-        /// Tests whether the client is being used in offline mode.
+        /// Indicates whether the SDK is configured to be always offline.
         /// </summary>
-        /// <returns>true if the client is offline</returns>
-        bool IsOffline();
+        /// <remarks>
+        /// This is initially true if you set it to true in the configuration with <see cref="ConfigurationBuilder.Offline(bool)"/>.
+        /// However, you can change it at any time to allow the client to go online, or force it to go offline,
+        /// using <see cref="SetOffline(bool, TimeSpan)"/> or <see cref="SetOfflineAsync(bool)"/>.
+        /// 
+        /// When <c>Offline</c> is false, the SDK connects to LaunchDarkly if possible, but this does not guarantee
+        /// that the connection is successful. There is currently no mechanism to detect whether the SDK is currently
+        /// connected to LaunchDarkly.
+        /// </remarks>
+        bool Offline { get; }
+
+        /// <summary>
+        /// Sets whether the SDK should be always offline.
+        /// </summary>
+        /// <remarks>
+        /// This is equivalent to <see cref="SetOfflineAsync(bool)"/>, but as a synchronous method.
+        ///
+        /// If you set the property to true, any existing connection will be dropped, and the method immediately
+        /// returns false.
+        ///
+        /// If you set it to false when it was previously true, but no connection can be made because the network
+        /// is not available, the method immediately returns false, but the SDK will attempt to connect later if
+        /// the network becomes available.
+        ///
+        /// If you set it to false when it was previously true, and the network is available, the SDK will attempt
+        /// to connect to LaunchDarkly. If the connection succeeds within the interval <c>maxWaitTime</c>, the
+        /// method returns true. If the connection permanently fails (e.g. if the mobile key is invalid), the
+        /// method returns false. If the connection attempt is still in progress after <c>maxWaitTime</c> elapses,
+        /// the method returns false, but the connection might succeed later.
+        /// </remarks>
+        /// <param name="value">true if the client should be always offline</param>
+        /// <param name="maxWaitTime">the maximum length of time to wait for a connection</param>
+        /// <returns>true if a new connection was successfully made</returns>
+        bool SetOffline(bool value, TimeSpan maxWaitTime);
+
+        /// <summary>
+        /// Sets whether the SDK should be always offline.
+        /// </summary>
+        /// <remarks>
+        /// This is equivalent to <see cref="SetOffline(bool, TimeSpan)"/>, but as an asynchronous method.
+        ///
+        /// If you set the property to true, any existing connection will be dropped, and the task immediately
+        /// yields false.
+        ///
+        /// If you set it to false when it was previously true, but no connection can be made because the network
+        /// is not available, the task immediately yields false, but the SDK will attempt to connect later if
+        /// the network becomes available.
+        ///
+        /// If you set it to false when it was previously true, and the network is available, the SDK will attempt
+        /// to connect to LaunchDarkly. If and when the connection succeeds, the task yields true. If and when the
+        /// connection permanently fails (e.g. if the mobile key is invalid), the task yields false.
+        /// </remarks>
+        /// <param name="value">true if the client should be always offline</param>
+        /// <returns>a task that yields true if a new connection was successfully made</returns>
+        Task SetOfflineAsync(bool value);
 
         /// <summary>
         /// Returns the boolean value of a feature flag for a given flag key.
@@ -162,24 +212,6 @@ namespace LaunchDarkly.Xamarin
         void Track(string eventName);
 
         /// <summary>
-        /// Gets or sets the online status of the client.
-        /// </summary>
-        /// <remarks>
-        /// The setter is equivalent to calling <see cref="SetOnlineAsync(bool)"/>; if you are going from offline to
-        /// online, it does <i>not</i> wait until the connection has been established. If you want to wait for the
-        /// connection, call <see cref="SetOnlineAsync(bool)"/> and then use <c>await</c>.
-        /// </remarks>
-        /// <value><c>true</c> if online; otherwise, <c>false</c>.</value>
-        bool Online { get; set; }
-
-        /// <summary>
-        /// Sets the client to be online or not.
-        /// </summary>
-        /// <returns>a Task</returns>
-        /// <param name="value">true if the client should be online</param>
-        Task SetOnlineAsync(bool value);
-
-        /// <summary>
         /// Returns a map from feature flag keys to <see cref="JToken"/> feature flag values for the current user.
         /// </summary>
         /// <remarks>
@@ -220,37 +252,38 @@ namespace LaunchDarkly.Xamarin
         event EventHandler<FlagChangedEventArgs> FlagChanged;
 
         /// <summary>
-        /// Changes the current user.
+        /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
+        /// an analytics event to tell LaunchDarkly about the user.
         /// </summary>
         /// <remarks>
-        /// This both sets the current user for the purpose of flag evaluations and also generates an analytics event to
-        /// tell LaunchDarkly about the user.
-        /// 
-        /// <c>Identify</c> waits and blocks the current thread until the SDK has received feature flag values for the
-        /// new user from LaunchDarkly. If you do not want to wait, consider <see cref="IdentifyAsync(User)"/>.
+        /// This is equivalent to <see cref="IdentifyAsync(User)"/>, but as a synchronous method.
+        ///
+        /// If the SDK is online, <c>Identify</c> waits to receive feature flag values for the new user from
+        /// LaunchDarkly. If it receives the new flag values before <c>maxWaitTime</c> has elapsed, it returns true.
+        /// If the timeout elapses, it returns false (although the SDK might still receive the flag values later).
+        /// If we do not need to request flags from LaunchDarkly because we are in offline mode, it returns true.
+        ///
+        /// If you do not want to wait, you can either set <c>maxWaitTime</c> to zero or call <see cref="IdentifyAsync(User)"/>.
         /// </remarks>
         /// <param name="user">the new user</param>
-        void Identify(User user);
+        /// <param name="maxWaitTime">the maximum time to wait for the new flag values</param>
+        /// <returns>true if new flag values were obtained</returns>
+        bool Identify(User user, TimeSpan maxWaitTime);
 
         /// <summary>
-        /// Changes the current user.
+        /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
+        /// an analytics event to tell LaunchDarkly about the user.
         /// </summary>
         /// <remarks>
-        /// This both sets the current user for the purpose of flag evaluations and also generates an analytics event to
-        /// tell LaunchDarkly about the user.
-        /// 
-        /// <c>IdentifyAsync</c> is meant to be used from asynchronous code. It returns a Task that is resolved once the
-        /// SDK has received feature flag values for the new user from LaunchDarkly.
-        /// </remarks>
-        /// <example>
-        ///     // Within asynchronous code, use await to wait for the task to be resolved
-        ///     await client.IdentifyAsync(user);
+        /// This is equivalent to <see cref="Identify(User, TimeSpan)"/>, but as an asynchronous method.
         ///
-        ///     // Or, if you want to let the flag values be retrieved in the background instead of waiting:
-        ///     Task.Run(() => client.IdentifyAsync(user));
-        /// </example>
-        /// <param name="user">the user to register</param>
-        Task IdentifyAsync(User user);
+        /// If the SDK is online, the returned task is completed once the SDK has received feature flag values for the
+        /// new user from LaunchDarkly, or received an unrecoverable error; it yields true for success or false for an
+        /// error. If the SDK is offline, the returned task is completed immediately and yields true.
+        /// </remarks>
+        /// <param name="user">the new user</param>
+        /// <returns>a task that yields true if new flag values were obtained</returns>
+        Task<bool> IdentifyAsync(User user);
 
         /// <summary>
         /// Flushes all pending events.
