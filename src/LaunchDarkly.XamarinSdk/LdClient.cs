@@ -154,8 +154,11 @@ namespace LaunchDarkly.Xamarin
 
             eventProcessor = Factory.CreateEventProcessor(configuration);
             eventProcessor.SetOffline(configuration.Offline || !isConnected);
-            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
 
+            // Send an initial identify event - we will do this even if we're in offline mode, because if you later
+            // put the client online again, we do want the user to be identified.
+            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
+            
             _backgroundModeManager = _config._backgroundModeManager ?? new DefaultBackgroundModeManager();
             _backgroundModeManager.BackgroundModeChanged += OnBackgroundModeChanged;
         }
@@ -377,14 +380,14 @@ namespace LaunchDarkly.Xamarin
                 if (!Initialized)
                 {
                     Log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
-                    eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
+                    SendEventIfOnline(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
                         EvaluationErrorKind.CLIENT_NOT_READY));
                     return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
                 }
                 else
                 {
                     Log.InfoFormat("Unknown feature flag {0}; returning default value", featureKey);
-                    eventProcessor.SendEvent(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
+                    SendEventIfOnline(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
                         EvaluationErrorKind.FLAG_NOT_FOUND));
                     return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
                 }
@@ -421,8 +424,16 @@ namespace LaunchDarkly.Xamarin
             }
             var featureEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent, User,
                 new EvaluationDetail<JToken>(valueJson, flag.variation, flag.reason), defaultJson);
-            eventProcessor.SendEvent(featureEvent);
+            SendEventIfOnline(featureEvent);
             return result;
+        }
+
+        private void SendEventIfOnline(Event e)
+        {
+            if (!_connectionManager.ForceOffline)
+            {
+                eventProcessor.SendEvent(e);
+            }
         }
 
         /// <see cref="ILdClient.AllFlags()"/>
@@ -435,7 +446,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdClient.Track(string, ImmutableJsonValue)"/>
         public void Track(string eventName, ImmutableJsonValue data)
         {
-            eventProcessor.SendEvent(_eventFactoryDefault.NewCustomEvent(eventName, User, data.AsJToken()));
+            SendEventIfOnline(_eventFactoryDefault.NewCustomEvent(eventName, User, data.AsJToken()));
         }
 
         /// <see cref="ILdClient.Track(string)"/>
@@ -447,7 +458,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdClient.Flush()"/>
         public void Flush()
         {
-            eventProcessor.Flush();
+            eventProcessor.Flush(); // eventProcessor will ignore this if it is offline
         }
 
         /// <see cref="ILdClient.Identify(User, TimeSpan)"/>
@@ -476,7 +487,7 @@ namespace LaunchDarkly.Xamarin
                 _user = newUser;
             });
 
-            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(newUser));
+            SendEventIfOnline(_eventFactoryDefault.NewIdentifyEvent(newUser));
 
             return await _connectionManager.SetUpdateProcessorFactory(
                 Factory.CreateUpdateProcessorFactory(_config, user, flagCacheManager, _inBackground),
