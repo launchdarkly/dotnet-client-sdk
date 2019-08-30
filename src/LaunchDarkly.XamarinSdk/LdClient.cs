@@ -155,9 +155,11 @@ namespace LaunchDarkly.Xamarin
             eventProcessor = Factory.CreateEventProcessor(configuration);
             eventProcessor.SetOffline(configuration.Offline || !isConnected);
 
-            // Send an initial identify event - we will do this even if we're in offline mode, because if you later
-            // put the client online again, we do want the user to be identified.
-            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
+            // Send an initial identify event, but only if we weren't explicitly set to be offline
+            if (!configuration.Offline)
+            {
+                eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
+            }
             
             _backgroundModeManager = _config._backgroundModeManager ?? new DefaultBackgroundModeManager();
             _backgroundModeManager.BackgroundModeChanged += OnBackgroundModeChanged;
