@@ -528,6 +528,16 @@ namespace LaunchDarkly.Xamarin
             return buildUser is null ? user : buildUser.Build();
         }
 
+        /// <summary>
+        /// Permanently shuts down the SDK client.
+        /// </summary>
+        /// <remarks>
+        /// This method closes all network collections, shuts down all background tasks, and releases any other
+        /// resources being held by the SDK.
+        ///
+        /// If there are any pending analytics events, and if the SDK is online, it attempts to deliver the events
+        /// to LaunchDarkly before closing.
+        /// </remarks>
         public void Dispose()
         {
             Dispose(true);

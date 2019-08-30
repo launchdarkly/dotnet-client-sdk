@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace LaunchDarkly.Xamarin
 {
     /// <summary>
-    /// An event object that is sent to handlers for the <see cref="ILdMobileClient.FlagChanged"/> event.
+    /// An event object that is sent to handlers for the <see cref="ILdClient.FlagChanged"/> event.
     /// </summary>
     public sealed class FlagChangedEventArgs
     {

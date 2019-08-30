@@ -2,7 +2,7 @@
 namespace LaunchDarkly.Xamarin
 {
     /// <summary>
-    /// Values returned by <see cref="ILdMobileClient.PlatformType"/>.
+    /// Values returned by <see cref="LdClient.PlatformType"/>.
     /// </summary>
     public enum PlatformType
     {

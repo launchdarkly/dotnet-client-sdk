@@ -11,7 +11,7 @@ namespace LaunchDarkly.Xamarin
     internal interface IMobileUpdateProcessor : IDisposable
     {
         /// <summary>
-        /// Initializes the processor. This is called once from the <see cref="Common.ILdCommonClient"/> constructor.
+        /// Initializes the processor. This is called once from the <see cref="LdClient"/> constructor.
         /// </summary>
         /// <returns>a <c>Task</c> which is completed once the processor has finished starting up</returns>
         Task<bool> Start();
