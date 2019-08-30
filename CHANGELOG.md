@@ -10,6 +10,8 @@ This project adheres to [Semantic Versioning](http://semver.org).
 ### Changed:
 - The `Online` property of `LdClient` was not useful because it could reflect either a deliberate change to whether the client is allowed to go online (that is, it would be false if you had set `Offline` to true in the configuration), _or_ a change in network availability. It has been removed and replaced with `Offline`, which is only used for explicitly forcing the client to be offline. This is a read-only property; to set it, use `SetOffline` or `SetOfflineAsync`.
 - The synchronous `Identify` method now requires a timeout parameter, and returns false if it times out.
+- `LdClient.Initialized` is now a property, not a method.
+- `LdClient.Version` is now static, since it describes the entire package rather than a client instance.
 - In `Configuration` and `IConfigurationBuilder`, `HttpClientTimeout` is now `ConnectionTimeout`.
 - There is now more debug-level logging for stream connection state changes.
 
