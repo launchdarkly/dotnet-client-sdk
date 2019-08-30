@@ -130,7 +130,6 @@ namespace LaunchDarkly.Xamarin
             _user = DecorateUser(user);
 
             flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User);
-            eventProcessor = Factory.CreateEventProcessor(configuration);
 
             _connectionManager = new ConnectionManager();
             _connectionManager.SetForceOffline(configuration.Offline);
@@ -143,15 +142,19 @@ namespace LaunchDarkly.Xamarin
                 true
             );
 
-            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
-
             _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
             _connectivityStateManager.ConnectionChanged += networkAvailable =>
             {
                 Log.DebugFormat("Setting online to {0} due to a connectivity change event", networkAvailable);
                 _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
+                eventProcessor.SetOffline(!networkAvailable || _connectionManager.ForceOffline);
             };
-            _connectionManager.SetNetworkEnabled(_connectivityStateManager.IsConnected);
+            var isConnected = _connectivityStateManager.IsConnected;
+            _connectionManager.SetNetworkEnabled(isConnected);
+
+            eventProcessor = Factory.CreateEventProcessor(configuration);
+            eventProcessor.SetOffline(configuration.Offline || !isConnected);
+            eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
 
             _backgroundModeManager = _config._backgroundModeManager ?? new DefaultBackgroundModeManager();
             _backgroundModeManager.BackgroundModeChanged += OnBackgroundModeChanged;
@@ -296,6 +299,7 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdClient.SetOfflineAsync(bool)"/>
         public async Task SetOfflineAsync(bool value)
         {
+            eventProcessor.SetOffline(value || !_connectionManager.NetworkEnabled);
             await _connectionManager.SetForceOffline(value);
         }
 

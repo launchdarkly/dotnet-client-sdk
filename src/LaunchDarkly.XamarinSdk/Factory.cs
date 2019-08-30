@@ -64,11 +64,6 @@ namespace LaunchDarkly.Xamarin
             {
                 return configuration._eventProcessor;
             }
-            if (configuration.Offline)
-            {
-                return new NullEventProcessor();
-            }
-
             HttpClient httpClient = Util.MakeHttpClient(configuration.HttpRequestConfiguration, MobileClientEnvironment.Instance);
             return new DefaultEventProcessor(configuration.EventProcessorConfiguration, null, httpClient, Constants.EVENTS_PATH);
         }
