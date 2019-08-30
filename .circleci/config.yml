@@ -24,6 +24,9 @@ jobs:
     docker:
       - image: ldcircleci/ld-xamarin-android-linux:api27
 
+    environment:
+      LD_SKIP_XML_DOCS: 1  # there seems to be a bug in Xamarin Android builds on Linux that makes the XML build step fail
+
     steps:
       - checkout
 
