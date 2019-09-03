@@ -13,7 +13,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
         private static readonly ILog Log = LogManager.GetLogger(typeof(ClientIdentifier));
         private static JniPeerMembers buildMembers = new XAPeerMembers("android/os/Build", typeof(Build));
 
-        public static string PlatformGetOrCreateClientId()
+        private static string PlatformGetOrCreateClientId()
         {
             // Based on: https://github.com/jamesmontemagno/DeviceInfoPlugin/blob/master/src/DeviceInfo.Plugin/DeviceInfo.android.cs
             string serialField;
