@@ -177,7 +177,7 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder MobileKey(string mobileKey);
 
         /// <summary>
-        /// Sets whether or not this client is offline. If <see langword="true"/>, no calls to Launchdarkly will be made.
+        /// Sets whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
         /// <param name="offline"><see langword="true"/> if the client should remain offline</param>
         /// <returns>the same builder</returns>

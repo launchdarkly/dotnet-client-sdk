@@ -154,7 +154,7 @@ namespace LaunchDarkly.Xamarin
         public string MobileKey => _mobileKey;
 
         /// <summary>
-        /// Whether or not this client is offline. If <see langword="true"/>, no calls to Launchdarkly will be made.
+        /// Whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
         public bool Offline => _offline;
 
