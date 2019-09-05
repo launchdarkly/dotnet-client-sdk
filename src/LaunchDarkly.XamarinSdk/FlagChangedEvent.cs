@@ -23,7 +23,7 @@ namespace LaunchDarkly.Xamarin
         /// <para>
         /// Since flag values can be of any JSON type, this property is an <see cref="ImmutableJsonValue"/>. You
         /// can use convenience properties of <see cref="ImmutableJsonValue"/> such as <see cref="ImmutableJsonValue.AsBool"/>
-        /// to convert it to a primitive type, or to access it as a complex Newtonsoft.Json type.
+        /// to convert it to a primitive type, or to access it as a complex <see cref="Newtonsoft.Json"/> type.
         /// </para>
         /// <para>
         /// Flag evaluations always produce non-null values, but this property could still be <see langword="null"/> if the flag was
