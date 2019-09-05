@@ -20,25 +20,29 @@ namespace LaunchDarkly.Xamarin
         /// The updated value of the flag for the current user.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Since flag values can be of any JSON type, this property is an <see cref="ImmutableJsonValue"/>. You
-        /// can use convenience properties of <c>ImmutableJsonValue</c> such as <c>AsBool</c> to convert it to a
-        /// primitive type, or <c>AsJToken()</c> for complex types.
-        ///
-        /// Flag evaluations always produce non-null values, but this property could still be null if the flag was
+        /// can use convenience properties of <see cref="ImmutableJsonValue"/> such as <see cref="ImmutableJsonValue.AsBool"/>
+        /// to convert it to a primitive type, or to access it as a complex Newtonsoft.Json type.
+        /// </para>
+        /// <para>
+        /// Flag evaluations always produce non-null values, but this property could still be <see langword="null"/> if the flag was
         /// completely deleted or if it could not be evaluated due to an error of some kind.
-        ///
-        /// Note that in those cases, the <c>Variation</c> methods may return a different result from this property,
+        /// </para>
+        /// <para>
+        /// Note that in those cases, the Variation methods may return a different result from this property,
         /// because of their "default value" behavior. For instance, if the flag "feature1" has been deleted, the
         /// following expression will return the string "xyz", because that is the default value that you specified
         /// in the method call:
-        ///
+        /// </para>
         /// <code>
         ///     client.StringVariation("feature1", "xyz");
         /// </code>
-        ///
-        /// But when a <c>FlagChangedEvent</c> is sent for the deletion of the flag, it has no way to know that you
-        /// would have specified "xyz" as a default value when evaluating the flag, so <c>NewValue</c> will simply
-        /// contain a null.
+        /// <para>
+        /// But when an event is sent for the deletion of the flag, it has no way to know that you would have
+        /// specified "xyz" as a default value when evaluating the flag, so <see cref="NewValue"/> will simply
+        /// contain a <see langword="null"/>.
+        /// </para>
         /// </remarks>
         public ImmutableJsonValue NewValue { get; private set; }
 
