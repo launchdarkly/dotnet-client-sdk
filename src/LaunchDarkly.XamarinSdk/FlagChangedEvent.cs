@@ -2,7 +2,6 @@
 using System.Linq;
 using Common.Logging;
 using LaunchDarkly.Client;
-using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -22,12 +21,12 @@ namespace LaunchDarkly.Xamarin
         /// <remarks>
         /// <para>
         /// Since flag values can be of any JSON type, this property is an <see cref="ImmutableJsonValue"/>. You
-        /// can use convenience properties of <see cref="ImmutableJsonValue"/> such as <see cref="ImmutableJsonValue.AsBool"/>
-        /// to convert it to a primitive type, or to access it as a complex <see cref="Newtonsoft.Json"/> type.
+        /// can use properties and methods of <see cref="ImmutableJsonValue"/> such as <see cref="ImmutableJsonValue.AsBool"/>
+        /// to convert it to other types.
         /// </para>
         /// <para>
-        /// Flag evaluations always produce non-null values, but this property could still be <see langword="null"/> if the flag was
-        /// completely deleted or if it could not be evaluated due to an error of some kind.
+        /// Flag evaluations always produce non-null values, but this property could still be <see cref="ImmutableJsonValue.Null"/>
+        ///  if the flag was completely deleted or if it could not be evaluated due to an error of some kind.
         /// </para>
         /// <para>
         /// Note that in those cases, the Variation methods may return a different result from this property,
@@ -56,11 +55,11 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         public bool FlagWasDeleted { get; private set; }
 
-        internal FlagChangedEventArgs(string key, JToken newValue, JToken oldValue, bool flagWasDeleted)
+        internal FlagChangedEventArgs(string key, ImmutableJsonValue newValue, ImmutableJsonValue oldValue, bool flagWasDeleted)
         {
             Key = key;
-            NewValue = ImmutableJsonValue.FromSafeValue(newValue);
-            OldValue = ImmutableJsonValue.FromSafeValue(oldValue);
+            NewValue = newValue;
+            OldValue = oldValue;
             FlagWasDeleted = flagWasDeleted;
         }
     }
@@ -68,8 +67,8 @@ namespace LaunchDarkly.Xamarin
     internal interface IFlagChangedEventManager
     {
         event EventHandler<FlagChangedEventArgs> FlagChanged;
-        void FlagWasDeleted(string flagKey, JToken oldValue);
-        void FlagWasUpdated(string flagKey, JToken newValue, JToken oldValue);
+        void FlagWasDeleted(string flagKey, ImmutableJsonValue oldValue);
+        void FlagWasUpdated(string flagKey, ImmutableJsonValue newValue, ImmutableJsonValue oldValue);
     }
 
     internal sealed class FlagChangedEventManager : IFlagChangedEventManager
@@ -83,12 +82,12 @@ namespace LaunchDarkly.Xamarin
             return FlagChanged != null && FlagChanged.GetInvocationList().Contains(handler);
         }
 
-        public void FlagWasDeleted(string flagKey, JToken oldValue)
+        public void FlagWasDeleted(string flagKey, ImmutableJsonValue oldValue)
         {
-            FireEvent(new FlagChangedEventArgs(flagKey, null, oldValue, true));
+            FireEvent(new FlagChangedEventArgs(flagKey, ImmutableJsonValue.Null, oldValue, true));
         }
 
-        public void FlagWasUpdated(string flagKey, JToken newValue, JToken oldValue)
+        public void FlagWasUpdated(string flagKey, ImmutableJsonValue newValue, ImmutableJsonValue oldValue)
         {
             FireEvent(new FlagChangedEventArgs(flagKey, newValue, oldValue, false));
         }

@@ -7,7 +7,6 @@ using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
 using LaunchDarkly.Xamarin.PlatformSpecific;
-using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -395,7 +394,7 @@ namespace LaunchDarkly.Xamarin
         EvaluationDetail<T> VariationInternal<T>(string featureKey, T defaultValue, ValueType<T> desiredType, EventFactory eventFactory)
         {
             FeatureFlagEvent featureFlagEvent = FeatureFlagEvent.Default(featureKey);
-            JToken defaultJson = desiredType.ValueToJson(defaultValue);
+            ImmutableJsonValue defaultJson = desiredType.ValueToJson(defaultValue);
 
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
                 new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(kind));
@@ -428,8 +427,8 @@ namespace LaunchDarkly.Xamarin
 
             featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
             EvaluationDetail<T> result;
-            JToken valueJson;
-            if (flag.value == null || flag.value.Type == JTokenType.Null)
+            ImmutableJsonValue valueJson;
+            if (flag.value.IsNull)
             {
                 valueJson = defaultJson;
                 result = new EvaluationDetail<T>(defaultValue, flag.variation, flag.reason);
@@ -449,7 +448,7 @@ namespace LaunchDarkly.Xamarin
                 }
             }
             var featureEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent, User,
-                new EvaluationDetail<JToken>(valueJson, flag.variation, flag.reason), defaultJson);
+                new EvaluationDetail<ImmutableJsonValue>(valueJson, flag.variation, flag.reason), defaultJson);
             SendEventIfOnline(featureEvent);
             return result;
         }
@@ -466,13 +465,13 @@ namespace LaunchDarkly.Xamarin
         public IDictionary<string, ImmutableJsonValue> AllFlags()
         {
             return flagCacheManager.FlagsForUser(User)
-                                    .ToDictionary(p => p.Key, p => ImmutableJsonValue.FromSafeValue(p.Value.value));
+                                    .ToDictionary(p => p.Key, p => p.Value.value);
         }
 
         /// <inheritdoc/>
         public void Track(string eventName, ImmutableJsonValue data)
         {
-            SendEventIfOnline(_eventFactoryDefault.NewCustomEvent(eventName, User, data.AsJToken()));
+            SendEventIfOnline(_eventFactoryDefault.NewCustomEvent(eventName, User, data));
         }
 
         /// <inheritdoc/>

@@ -107,7 +107,7 @@ namespace LaunchDarkly.Xamarin.Tests
             PUTMessageSentToProcessor();
             flagsInCache = mockFlagCacheMgr.FlagsForUser(user);
             Assert.NotEmpty(flagsInCache);
-            int intFlagValue = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            int intFlagValue = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagValue);
         }
 
@@ -117,7 +117,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before PATCH, fill in flags
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             //PATCH to update 1 flag
@@ -125,7 +125,7 @@ namespace LaunchDarkly.Xamarin.Tests
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             //verify flag has changed
-            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(99, flagFromPatch);
         }
 
@@ -135,7 +135,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before PATCH, fill in flags
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             //PATCH to update 1 flag
@@ -143,7 +143,7 @@ namespace LaunchDarkly.Xamarin.Tests
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             //verify flag has not changed
-            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, flagFromPatch);
         }
 
@@ -153,7 +153,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before DELETE, fill in flags, test it's there
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             // DELETE int-flag
@@ -170,7 +170,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before DELETE, fill in flags, test it's there
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             // DELETE int-flag
