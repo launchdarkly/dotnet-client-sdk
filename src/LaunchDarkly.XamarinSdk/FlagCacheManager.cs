@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using LaunchDarkly.Client;
-using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -45,7 +44,7 @@ namespace LaunchDarkly.Xamarin
 
         public void CacheFlagsFromService(IDictionary<string, FeatureFlag> flags, User user)
         {
-            List<Tuple<string, JToken, JToken>> changes = null;
+            List<Tuple<string, ImmutableJsonValue, ImmutableJsonValue>> changes = null;
             readWriteLock.EnterWriteLock();
             try
             {
@@ -57,11 +56,11 @@ namespace LaunchDarkly.Xamarin
                 {
                     if (previousFlags.TryGetValue(flag.Key, out var originalFlag))
                     {
-                        if (!JToken.DeepEquals(originalFlag.value, flag.Value.value))
+                        if (!originalFlag.value.Equals(flag.Value.value))
                         {
                             if (changes == null)
                             {
-                                changes = new List<Tuple<string, JToken, JToken>>();
+                                changes = new List<Tuple<string, ImmutableJsonValue, ImmutableJsonValue>>();
                             }
                             changes.Add(Tuple.Create(flag.Key, flag.Value.value, originalFlag.value));
                         }
@@ -93,13 +92,15 @@ namespace LaunchDarkly.Xamarin
 
         public void RemoveFlagForUser(string flagKey, User user)
         {
-            JToken oldValue = null;
+            ImmutableJsonValue oldValue;
+            bool existed = false;
             readWriteLock.EnterWriteLock();
             try
             {
                 var flagsForUser = inMemoryCache.RetrieveFlags(user);
                 if (flagsForUser.TryGetValue(flagKey, out var flag))
                 {
+                    existed = true;
                     oldValue = flag.value;
                     flagsForUser.Remove(flagKey);
                     deviceCache.CacheFlagsForUser(flagsForUser, user);
@@ -110,7 +111,7 @@ namespace LaunchDarkly.Xamarin
             {
                 readWriteLock.ExitWriteLock();
             }
-            if (oldValue != null)
+            if (existed)
             {
                 flagChangedEventManager.FlagWasDeleted(flagKey, oldValue);
             }
@@ -119,14 +120,14 @@ namespace LaunchDarkly.Xamarin
         public void UpdateFlagForUser(string flagKey, FeatureFlag featureFlag, User user)
         {
             bool changed = false;
-            JToken oldValue = null;
+            ImmutableJsonValue oldValue;
             readWriteLock.EnterWriteLock();
             try
             {
                 var flagsForUser = inMemoryCache.RetrieveFlags(user);
                 if (flagsForUser.TryGetValue(flagKey, out var oldFlag))
                 {
-                    if (!JToken.DeepEquals(oldFlag.value, featureFlag.value))
+                    if (!oldFlag.value.Equals(featureFlag.value))
                     {
                         oldValue = oldFlag.value;
                         changed = true;

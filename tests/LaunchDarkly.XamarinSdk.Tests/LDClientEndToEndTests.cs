@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Xamarin.PlatformSpecific;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -516,22 +514,23 @@ namespace LaunchDarkly.Xamarin.Tests
             }
         }
 
-        private JToken FlagJson(string key, string value)
+        private ImmutableJsonValue FlagJson(string key, string value)
         {
-            var o = new JObject();
-            o.Add("key", key);
-            o.Add("value", value);
-            return o;
+            return ImmutableJsonValue.FromDictionary(new Dictionary<string, ImmutableJsonValue>
+            {
+                { "key", ImmutableJsonValue.Of(key) },
+                { "value", ImmutableJsonValue.Of(value) }
+            });
         }
 
         private string PollingData(IDictionary<string, string> flags)
         {
-            var o = new JObject();
+            var d = new Dictionary<string, ImmutableJsonValue>();
             foreach (var e in flags)
             {
-                o.Add(e.Key, FlagJson(e.Key, e.Value));
+                d.Add(e.Key, FlagJson(e.Key, e.Value));
             }
-            return JsonConvert.SerializeObject(o);
+            return ImmutableJsonValue.FromDictionary(d).ToJsonString();
         }
 
         private string StreamingData(IDictionary<string, string> flags)

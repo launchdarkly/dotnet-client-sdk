@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests

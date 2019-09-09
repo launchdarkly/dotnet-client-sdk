@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 

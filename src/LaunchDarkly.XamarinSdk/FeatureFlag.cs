@@ -1,5 +1,4 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
 
@@ -7,7 +6,7 @@ namespace LaunchDarkly.Xamarin
 {
     internal sealed class FeatureFlag : IEquatable<FeatureFlag>
     {
-        public JToken value;
+        public ImmutableJsonValue value;
         public int version;
         public int? flagVersion;
         public bool trackEvents;
@@ -18,7 +17,7 @@ namespace LaunchDarkly.Xamarin
 
         public bool Equals(FeatureFlag otherFlag)
         {
-            return JToken.DeepEquals(value, otherFlag.value)
+            return value.Equals(otherFlag.value)
                         && version == otherFlag.version
                         && flagVersion == otherFlag.flagVersion
                         && trackEvents == otherFlag.trackEvents

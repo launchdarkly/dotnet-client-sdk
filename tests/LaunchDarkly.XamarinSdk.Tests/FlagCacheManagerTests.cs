@@ -1,5 +1,4 @@
 ﻿using LaunchDarkly.Client;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -31,9 +30,9 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             var flagCacheManager = ManagerWithCachedFlags();
             var cachedDeviceFlags = deviceCache.RetrieveFlags(user);
-            Assert.Equal(15, cachedDeviceFlags["int-flag"].value.ToObject<int>());
-            Assert.Equal("markw@magenic.com", cachedDeviceFlags["string-flag"].value.ToString());
-            Assert.Equal(13.5, cachedDeviceFlags["float-flag"].value.ToObject<double>());
+            Assert.Equal(15, cachedDeviceFlags["int-flag"].value.AsInt);
+            Assert.Equal("markw@magenic.com", cachedDeviceFlags["string-flag"].value.AsString);
+            Assert.Equal(13.5, cachedDeviceFlags["float-flag"].value.AsFloat);
         }
 
         [Fact]
@@ -41,9 +40,9 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             var flagCacheManager = ManagerWithCachedFlags();
             var cachedDeviceFlags = inMemoryCache.RetrieveFlags(user);
-            Assert.Equal(15, cachedDeviceFlags["int-flag"].value.ToObject<int>());
-            Assert.Equal("markw@magenic.com", cachedDeviceFlags["string-flag"].value.ToString());
-            Assert.Equal(13.5, cachedDeviceFlags["float-flag"].value.ToObject<double>());
+            Assert.Equal(15, cachedDeviceFlags["int-flag"].value.AsInt);
+            Assert.Equal("markw@magenic.com", cachedDeviceFlags["string-flag"].value.AsString);
+            Assert.Equal(13.5, cachedDeviceFlags["float-flag"].value.AsFloat);
         }
 
         [Fact]
@@ -59,11 +58,11 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = JToken.FromObject(5);
+            updatedFeatureFlag.value = ImmutableJsonValue.Of(5);
             updatedFeatureFlag.version = 12;
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
             var updatedFlagFromCache = flagCacheManager.FlagForUser("int-flag", user);
-            Assert.Equal(5, updatedFlagFromCache.value.ToObject<int>());
+            Assert.Equal(5, updatedFlagFromCache.value.AsInt);
             Assert.Equal(12, updatedFeatureFlag.version);
         }
 
@@ -75,7 +74,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = JToken.FromObject(7);
+            updatedFeatureFlag.value = ImmutableJsonValue.Of(7);
 
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
 
@@ -93,7 +92,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = JToken.FromObject(7);
+            updatedFeatureFlag.value = ImmutableJsonValue.Of(7);
             flagCacheManager.RemoveFlagForUser("int-flag", user);
 
             var e = listener.Await();
