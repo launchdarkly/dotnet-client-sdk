@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Xamarin.PlatformSpecific;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -437,6 +435,31 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public void DateLikeStringValueIsStillParsedAsString(UpdateMode mode)
+        {
+            // Newtonsoft.Json's default behavior is to transform ISO date/time strings into DateTime objects. We
+            // definitely don't want that. Verify that we're disabling that behavior when we parse flags.
+            const string dateLikeString1 = "1970-01-01T00:00:01.001Z";
+            const string dateLikeString2 = "1970-01-01T00:00:01Z";
+            WithServer(server =>
+            {
+                var flagData = new Dictionary<string, string>
+                {
+                    { "flag1", dateLikeString1 },
+                    { "flag2", dateLikeString2 }
+                };
+                SetupResponse(server, flagData, mode);
+
+                var config = BaseConfig(server, mode);
+                using (var client = TestUtil.CreateClient(config, _user))
+                {
+                    VerifyFlagValues(client, flagData);
+                }
+            });
+        }
+
         private Configuration BaseConfig(FluentMockServer server, Func<ConfigurationBuilder, IConfigurationBuilder> extraConfig = null)
         {
             var builderInternal = Configuration.BuilderInternal(_mobileKey)
@@ -516,22 +539,23 @@ namespace LaunchDarkly.Xamarin.Tests
             }
         }
 
-        private JToken FlagJson(string key, string value)
+        private LdValue FlagJson(string key, string value)
         {
-            var o = new JObject();
-            o.Add("key", key);
-            o.Add("value", value);
-            return o;
+            return LdValue.ObjectFrom(new Dictionary<string, LdValue>
+            {
+                { "key", LdValue.Of(key) },
+                { "value", LdValue.Of(value) }
+            });
         }
 
         private string PollingData(IDictionary<string, string> flags)
         {
-            var o = new JObject();
+            var d = new Dictionary<string, LdValue>();
             foreach (var e in flags)
             {
-                o.Add(e.Key, FlagJson(e.Key, e.Value));
+                d.Add(e.Key, FlagJson(e.Key, e.Value));
             }
-            return JsonConvert.SerializeObject(o);
+            return LdValue.ObjectFrom(d).ToJsonString();
         }
 
         private string StreamingData(IDictionary<string, string> flags)

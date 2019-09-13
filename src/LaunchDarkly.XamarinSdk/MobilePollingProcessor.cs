@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
-using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -84,7 +83,7 @@ namespace LaunchDarkly.Xamarin
                 if (response.statusCode == 200)
                 {
                     var flagsAsJsonString = response.jsonResponse;
-                    var flagsDictionary = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsAsJsonString);
+                    var flagsDictionary = JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJsonString);
                     _flagCacheManager.CacheFlagsFromService(flagsDictionary, _user);
 
                     // We can't use bool in CompareExchange because it is not a reference type.
@@ -107,7 +106,7 @@ namespace LaunchDarkly.Xamarin
             }
             catch (Exception ex)
             {
-                Log.ErrorFormat("Error Updating features: '{0}'", Util.ExceptionMessage(ex));
+                Log.ErrorFormat("Error Updating features: '{0}'", Util.ExceptionMessage(PlatformSpecific.Http.TranslateHttpException(ex)));
             }
         }
 

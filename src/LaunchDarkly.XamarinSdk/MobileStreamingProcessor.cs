@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
 using System.Net.Http;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using Common.Logging;
@@ -85,7 +85,7 @@ namespace LaunchDarkly.Xamarin
             {
                 case Constants.PUT:
                     {
-                        _cacheManager.CacheFlagsFromService(JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(messageData), _user);
+                        _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(messageData), _user);
                         streamManager.Initialized = true;
                         break;
                     }
@@ -93,7 +93,7 @@ namespace LaunchDarkly.Xamarin
                     {
                         try
                         {
-                            var parsed = JsonConvert.DeserializeObject<JObject>(messageData);
+                            var parsed = JsonUtil.DecodeJson<JObject>(messageData);
                             var flagkey = (string)parsed[Constants.KEY];
                             var featureFlag = parsed.ToObject<FeatureFlag>();
                             PatchFeatureFlag(flagkey, featureFlag);
@@ -108,7 +108,7 @@ namespace LaunchDarkly.Xamarin
                     {
                         try
                         {
-                            var dictionary = JsonConvert.DeserializeObject<IDictionary<string, JToken>>(messageData);
+                            var dictionary = JsonUtil.DecodeJson<IDictionary<string, JToken>>(messageData);
                             int version = dictionary[Constants.VERSION].ToObject<int>();
                             string flagKey = dictionary[Constants.KEY].ToString();
                             DeleteFeatureFlag(flagKey, version);

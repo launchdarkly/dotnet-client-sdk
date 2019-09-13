@@ -8,10 +8,10 @@ using LaunchDarkly.Common;
 namespace LaunchDarkly.Xamarin
 {
     /// <summary>
-    /// This class exposes advanced configuration options for <see cref="LdClient"/>.
+    /// Configuration options for <see cref="LdClient"/>. 
     /// </summary>
     /// <remarks>
-    /// Instances of <c>Configuration</c> are immutable once created. They can be created with the factory method
+    /// Instances of <see cref="Configuration"/> are immutable once created. They can be created with the factory method
     /// <see cref="Configuration.Default(string)"/>, or using a builder pattern with <see cref="Configuration.Builder(string)"/>
     /// or <see cref="Configuration.Builder(Configuration)"/>.
     /// </remarks>
@@ -56,11 +56,9 @@ namespace LaunchDarkly.Xamarin
         /// the LaunchDarkly server).
         /// </summary>
         /// <remarks>
-        /// If this is true, all of the user attributes will be private, not just the attributes specified with
-        /// <see cref="ConfigurationBuilder.PrivateAttribute(string)"/> or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
-        /// method in <see cref="UserBuilder"/>.
-        ///
-        /// By default, this is false.
+        /// By default, this is <see langword="false"/>. If <see langword="true"/>, all of the user attributes
+        /// will be private, not just the attributes specified with <see cref="IConfigurationBuilder.PrivateAttribute(string)"/>
+        /// or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/> method.
         /// </remarks>
         public bool AllAttributesPrivate => _allAttributesPrivate;
 
@@ -98,12 +96,12 @@ namespace LaunchDarkly.Xamarin
         /// The additional information will then be available through the client's "detail"
         /// methods such as <see cref="ILdClient.BoolVariationDetail(string, bool)"/>. Since this
         /// increases the size of network requests, such information is not sent unless you set this option
-        /// to true.
+        /// to <see langword="true"/>.
         /// </remarks>
         public bool EvaluationReasons => _evaluationReasons;
 
         /// <summary>
-        /// The capacity of the events buffer.
+        /// The capacity of the event buffer.
         /// </summary>
         /// <remarks>
         /// The client buffers up to this many events in memory before flushing. If the capacity is exceeded
@@ -134,8 +132,8 @@ namespace LaunchDarkly.Xamarin
         /// Sets whether to include full user details in every analytics event.
         /// </summary>
         /// <remarks>
-        /// The default is false: events will only include the user key, except for one "index" event that
-        /// provides the full details for the user.
+        /// The default is <see langword="false"/>: events will only include the user key, except for one
+        /// "index" event that provides the full details for the user.
         /// </remarks>
         public bool InlineUsersInEvents => _inlineUsersInEvents;
 
@@ -156,7 +154,7 @@ namespace LaunchDarkly.Xamarin
         public string MobileKey => _mobileKey;
 
         /// <summary>
-        /// Whether or not this client is offline. If true, no calls to Launchdarkly will be made.
+        /// Whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
         public bool Offline => _offline;
 
@@ -165,7 +163,7 @@ namespace LaunchDarkly.Xamarin
         /// immediately available the next time the SDK is started for the same user.
         /// </summary>
         /// <remarks>
-        /// The default is <c>true</c>.
+        /// The default is <see langword="true"/>.
         /// </remarks>
         public bool PersistFlagValues => _persistFlagValues;
 
@@ -180,7 +178,7 @@ namespace LaunchDarkly.Xamarin
         /// <remarks>
         /// Any users sent to LaunchDarkly with this configuration active will have attributes with this name
         /// removed, even if you did not use the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
-        /// method in <see cref="UserBuilder"/>.
+        /// method when building the user.
         /// </remarks>
         public IImmutableSet<string> PrivateAttributeNames => _privateAttributeNames;
 
@@ -252,32 +250,31 @@ namespace LaunchDarkly.Xamarin
         internal static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(10);
 
         /// <summary>
-        /// Creates a configuration with all parameters set to the default. Use extension methods
-        /// to set additional parameters.
+        /// Creates a configuration with all parameters set to the default.
         /// </summary>
         /// <param name="mobileKey">the SDK key for your LaunchDarkly environment</param>
-        /// <returns>a <c>Configuration</c> instance</returns>
+        /// <returns>a <see cref="Configuration"/> instance</returns>
         public static Configuration Default(string mobileKey)
         {
             return Builder(mobileKey).Build();
         }
 
         /// <summary>
-        /// Creates a <c>ConfigurationBuilder</c> for constructing a configuration object using a fluent syntax.
+        /// Creates an <see cref="IConfigurationBuilder"/> for constructing a configuration object using a fluent syntax.
         /// </summary>
         /// <remarks>
-        /// This is the only method for building a <c>Configuration</c> if you are setting properties
-        /// besides the <c>MobileKey</c>. The <c>ConfigurationBuilder</c> has methods for setting any number of
-        /// properties, after which you call <see cref="ConfigurationBuilder.Build"/> to get the resulting
+        /// This is the only method for building a <see cref="Configuration"/> if you are setting properties
+        /// besides the <c>MobileKey</c>. The <see cref="IConfigurationBuilder"/> has methods for setting any number of
+        /// properties, after which you call <see cref="IConfigurationBuilder.Build"/> to get the resulting
         /// <c>Configuration</c> instance.
         /// </remarks>
         /// <example>
-        /// <code><pre>
+        /// <code>
         ///     var config = Configuration.Builder("my-sdk-key")
-        ///         .EventQueueFrequency(TimeSpan.FromSeconds(90))
+        ///         .EventFlushInterval(TimeSpan.FromSeconds(90))
         ///         .StartWaitTime(TimeSpan.FromSeconds(5))
         ///         .Build();
-        /// </pre></code>
+        /// </code>
         /// </example>
         /// <param name="mobileKey">the mobile SDK key for your LaunchDarkly environment</param>
         /// <returns>a builder object</returns>
@@ -291,7 +288,7 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <summary>
-        /// Exposed for test code that needs to access the internal methods of <c>ConfigurationBuilder</c> that
+        /// Exposed for test code that needs to access the internal methods of <see cref="ConfigurationBuilder"/> that
         /// are not in <see cref="IConfigurationBuilder"/>.
         /// </summary>
         /// <param name="mobileKey">the mobile SDK key</param>
@@ -302,7 +299,7 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <summary>
-        /// Creates a <c>ConfigurationBuilder</c> starting with the properties of an existing <c>Configuration</c>.
+        /// Creates an <see cref="IConfigurationBuilder"/> starting with the properties of an existing <see cref="Configuration"/>.
         /// </summary>
         /// <param name="fromConfiguration">the configuration to copy</param>
         /// <returns>a builder object</returns>
@@ -322,7 +319,9 @@ namespace LaunchDarkly.Xamarin
             _eventFlushInterval = builder._eventFlushInterval;
             _eventCapacity = builder._eventCapacity;
             _eventsUri = builder._eventsUri;
-            _httpMessageHandler = builder._httpMessageHandler;
+            _httpMessageHandler = object.ReferenceEquals(builder._httpMessageHandler, ConfigurationBuilder.DefaultHttpMessageHandlerInstance) ?
+                PlatformSpecific.Http.CreateHttpMessageHandler(builder._connectionTimeout, builder._readTimeout) :
+                builder._httpMessageHandler;
             _inlineUsersInEvents = builder._inlineUsersInEvents;
             _isStreamingEnabled = builder._isStreamingEnabled;
             _mobileKey = builder._mobileKey;
@@ -383,6 +382,13 @@ namespace LaunchDarkly.Xamarin
             public TimeSpan HttpClientTimeout => Config.ConnectionTimeout;
             public TimeSpan ReadTimeout => Config.ReadTimeout;
             public TimeSpan ReconnectTime => Config.ReconnectTime;
+
+            public Exception TranslateHttpException(Exception e)
+            {
+                // TODO: this will be used as part of the fix for ch47489 - it will ensure that platform-specific
+                // exceptions like java.net.SocketTimeout will be logged as a standard .NET exception type
+                return e;
+            }
         }
     }
 }

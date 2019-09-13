@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -74,8 +72,8 @@ namespace LaunchDarkly.Xamarin.Tests
             var userB = User.WithKey("b");
 
             var flagKey = "flag";
-            var userAFlags = TestUtil.MakeSingleFlagData(flagKey, "a-value");
-            var userBFlags = TestUtil.MakeSingleFlagData(flagKey, "b-value");
+            var userAFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("a-value"));
+            var userBFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("b-value"));
 
             var startedIdentifyUserB = new SemaphoreSlim(0, 1);
             var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
@@ -349,8 +347,8 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
                 var storedJson = storage.GetValue(Constants.FLAGS_KEY_PREFIX + simpleUser.Key);
-                var flags = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(storedJson);
-                Assert.Equal(new JValue(100), flags["flag"].value);
+                var flags = JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(storedJson);
+                Assert.Equal(100, flags["flag"].value.AsInt);
             }
         }
 

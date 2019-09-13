@@ -73,7 +73,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .HttpMessageHandler(handler)
                 .Build();
 
-            Assert.Equal(handler, config.HttpMessageHandler);
+            Assert.Same(handler, config.HttpMessageHandler);
         }
     }
 }

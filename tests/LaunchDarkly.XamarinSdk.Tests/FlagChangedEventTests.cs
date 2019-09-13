@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
+using LaunchDarkly.Client;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -23,8 +24,8 @@ namespace LaunchDarkly.Xamarin.Tests
             manager.FlagChanged += listener1.Handler;
             manager.FlagChanged += listener2.Handler;
 
-            manager.FlagWasUpdated(INT_FLAG, 7, 6);
-            manager.FlagWasUpdated(DOUBLE_FLAG, 10.5, 9.5);
+            manager.FlagWasUpdated(INT_FLAG, LdValue.Of(7), LdValue.Of(6));
+            manager.FlagWasUpdated(DOUBLE_FLAG, LdValue.Of(10.5f), LdValue.Of(9.5f));
 
             var event1a = listener1.Await();
             var event1b = listener1.Await();
@@ -61,7 +62,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             manager.FlagChanged -= listener1.Handler;
 
-            manager.FlagWasUpdated(INT_FLAG, 7, 6);
+            manager.FlagWasUpdated(INT_FLAG, LdValue.Of(7), LdValue.Of(6));
 
             var e = listener2.Await();
             Assert.Equal(INT_FLAG, e.Key);
@@ -81,7 +82,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var listener = new FlagChangedEventSink();
             manager.FlagChanged += listener.Handler;
 
-            manager.FlagWasDeleted(INT_FLAG, 1);
+            manager.FlagWasDeleted(INT_FLAG, LdValue.Of(1));
 
             var e = listener.Await();
             Assert.Equal(INT_FLAG, e.Key);
@@ -113,7 +114,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             lock (locker)
             {
-                manager.FlagWasUpdated(INT_FLAG, 2, 1);
+                manager.FlagWasUpdated(INT_FLAG, LdValue.Of(2), LdValue.Of(1));
                 Assert.False(Volatile.Read(ref called));
             }
         }

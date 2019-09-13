@@ -4,11 +4,19 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 {
     internal static partial class ClientIdentifier
     {
+        private static volatile string _id;
+
         private const string PreferencesAnonUserIdKey = "anonUserId";
 
         public static string GetOrCreateClientId()
         {
-            return PlatformGetOrCreateClientId();
+            var id = _id;
+            if (id is null)
+            {
+                id = PlatformGetOrCreateClientId();
+                _id = id;
+            }
+            return id;
         }
 
         // Used only for testing, to keep previous calls to GetOrCreateRandomizedClientId from affecting test state.

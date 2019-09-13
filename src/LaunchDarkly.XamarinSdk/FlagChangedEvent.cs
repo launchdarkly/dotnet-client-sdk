@@ -2,7 +2,6 @@
 using System.Linq;
 using Common.Logging;
 using LaunchDarkly.Client;
-using Newtonsoft.Json.Linq;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -20,43 +19,47 @@ namespace LaunchDarkly.Xamarin
         /// The updated value of the flag for the current user.
         /// </summary>
         /// <remarks>
-        /// Since flag values can be of any JSON type, this property is an <see cref="ImmutableJsonValue"/>. You
-        /// can use convenience properties of <c>ImmutableJsonValue</c> such as <c>AsBool</c> to convert it to a
-        /// primitive type, or <c>AsJToken()</c> for complex types.
-        ///
-        /// Flag evaluations always produce non-null values, but this property could still be null if the flag was
-        /// completely deleted or if it could not be evaluated due to an error of some kind.
-        ///
-        /// Note that in those cases, the <c>Variation</c> methods may return a different result from this property,
+        /// <para>
+        /// Since flag values can be of any JSON type, this property is an <see cref="LdValue"/>. You
+        /// can use properties and methods of <see cref="LdValue"/> such as <see cref="LdValue.AsBool"/>
+        /// to convert it to other types.
+        /// </para>
+        /// <para>
+        /// Flag evaluations always produce non-null values, but this property could still be <see cref="LdValue.Null"/>
+        ///  if the flag was completely deleted or if it could not be evaluated due to an error of some kind.
+        /// </para>
+        /// <para>
+        /// Note that in those cases, the Variation methods may return a different result from this property,
         /// because of their "default value" behavior. For instance, if the flag "feature1" has been deleted, the
         /// following expression will return the string "xyz", because that is the default value that you specified
         /// in the method call:
-        ///
+        /// </para>
         /// <code>
         ///     client.StringVariation("feature1", "xyz");
         /// </code>
-        ///
-        /// But when a <c>FlagChangedEvent</c> is sent for the deletion of the flag, it has no way to know that you
-        /// would have specified "xyz" as a default value when evaluating the flag, so <c>NewValue</c> will simply
-        /// contain a null.
+        /// <para>
+        /// But when an event is sent for the deletion of the flag, it has no way to know that you would have
+        /// specified "xyz" as a default value when evaluating the flag, so <see cref="NewValue"/> will simply
+        /// contain a <see langword="null"/>.
+        /// </para>
         /// </remarks>
-        public ImmutableJsonValue NewValue { get; private set; }
+        public LdValue NewValue { get; private set; }
 
         /// <summary>
         /// The last known value of the flag for the current user prior to the update.
         /// </summary>
-        public ImmutableJsonValue OldValue { get; private set; }
+        public LdValue OldValue { get; private set; }
 
         /// <summary>
         /// True if the flag was completely removed from the environment.
         /// </summary>
         public bool FlagWasDeleted { get; private set; }
 
-        internal FlagChangedEventArgs(string key, JToken newValue, JToken oldValue, bool flagWasDeleted)
+        internal FlagChangedEventArgs(string key, LdValue newValue, LdValue oldValue, bool flagWasDeleted)
         {
             Key = key;
-            NewValue = ImmutableJsonValue.FromSafeValue(newValue);
-            OldValue = ImmutableJsonValue.FromSafeValue(oldValue);
+            NewValue = newValue;
+            OldValue = oldValue;
             FlagWasDeleted = flagWasDeleted;
         }
     }
@@ -64,8 +67,8 @@ namespace LaunchDarkly.Xamarin
     internal interface IFlagChangedEventManager
     {
         event EventHandler<FlagChangedEventArgs> FlagChanged;
-        void FlagWasDeleted(string flagKey, JToken oldValue);
-        void FlagWasUpdated(string flagKey, JToken newValue, JToken oldValue);
+        void FlagWasDeleted(string flagKey, LdValue oldValue);
+        void FlagWasUpdated(string flagKey, LdValue newValue, LdValue oldValue);
     }
 
     internal sealed class FlagChangedEventManager : IFlagChangedEventManager
@@ -79,12 +82,12 @@ namespace LaunchDarkly.Xamarin
             return FlagChanged != null && FlagChanged.GetInvocationList().Contains(handler);
         }
 
-        public void FlagWasDeleted(string flagKey, JToken oldValue)
+        public void FlagWasDeleted(string flagKey, LdValue oldValue)
         {
-            FireEvent(new FlagChangedEventArgs(flagKey, null, oldValue, true));
+            FireEvent(new FlagChangedEventArgs(flagKey, LdValue.Null, oldValue, true));
         }
 
-        public void FlagWasUpdated(string flagKey, JToken newValue, JToken oldValue)
+        public void FlagWasUpdated(string flagKey, LdValue newValue, LdValue oldValue)
         {
             FireEvent(new FlagChangedEventArgs(flagKey, newValue, oldValue, false));
         }
