@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -122,12 +121,12 @@ namespace LaunchDarkly.Xamarin.Tests
 
         internal static string JsonFlagsWithSingleFlag(string flagKey, LdValue value, int? variation = null, EvaluationReason reason = null)
         {
-            return JsonConvert.SerializeObject(MakeSingleFlagData(flagKey, value, variation, reason));
+            return JsonUtil.EncodeJson(MakeSingleFlagData(flagKey, value, variation, reason));
         }
 
         internal static IDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
         {
-            return JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsJson);
+            return JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(flagsJson);
         }
 
         internal static ConfigurationBuilder ConfigWithFlagsJson(User user, string appKey, string flagsJson)
