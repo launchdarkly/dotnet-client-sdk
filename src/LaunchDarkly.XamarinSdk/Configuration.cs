@@ -319,7 +319,9 @@ namespace LaunchDarkly.Xamarin
             _eventFlushInterval = builder._eventFlushInterval;
             _eventCapacity = builder._eventCapacity;
             _eventsUri = builder._eventsUri;
-            _httpMessageHandler = builder._httpMessageHandler;
+            _httpMessageHandler = object.ReferenceEquals(builder._httpMessageHandler, ConfigurationBuilder.DefaultHttpMessageHandlerInstance) ?
+                PlatformSpecific.Http.CreateHttpMessageHandler(builder._connectionTimeout, builder._readTimeout) :
+                builder._httpMessageHandler;
             _inlineUsersInEvents = builder._inlineUsersInEvents;
             _isStreamingEnabled = builder._isStreamingEnabled;
             _mobileKey = builder._mobileKey;
