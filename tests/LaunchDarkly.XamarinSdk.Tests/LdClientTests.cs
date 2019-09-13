@@ -73,8 +73,8 @@ namespace LaunchDarkly.Xamarin.Tests
             var userB = User.WithKey("b");
 
             var flagKey = "flag";
-            var userAFlags = TestUtil.MakeSingleFlagData(flagKey, ImmutableJsonValue.Of("a-value"));
-            var userBFlags = TestUtil.MakeSingleFlagData(flagKey, ImmutableJsonValue.Of("b-value"));
+            var userAFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("a-value"));
+            var userBFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("b-value"));
 
             var startedIdentifyUserB = new SemaphoreSlim(0, 1);
             var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);

@@ -44,7 +44,7 @@ namespace LaunchDarkly.Xamarin
 
         public void CacheFlagsFromService(IDictionary<string, FeatureFlag> flags, User user)
         {
-            List<Tuple<string, ImmutableJsonValue, ImmutableJsonValue>> changes = null;
+            List<Tuple<string, LdValue, LdValue>> changes = null;
             readWriteLock.EnterWriteLock();
             try
             {
@@ -60,7 +60,7 @@ namespace LaunchDarkly.Xamarin
                         {
                             if (changes == null)
                             {
-                                changes = new List<Tuple<string, ImmutableJsonValue, ImmutableJsonValue>>();
+                                changes = new List<Tuple<string, LdValue, LdValue>>();
                             }
                             changes.Add(Tuple.Create(flag.Key, flag.Value.value, originalFlag.value));
                         }
@@ -92,7 +92,7 @@ namespace LaunchDarkly.Xamarin
 
         public void RemoveFlagForUser(string flagKey, User user)
         {
-            ImmutableJsonValue oldValue;
+            LdValue oldValue = LdValue.Null;
             bool existed = false;
             readWriteLock.EnterWriteLock();
             try
@@ -120,7 +120,7 @@ namespace LaunchDarkly.Xamarin
         public void UpdateFlagForUser(string flagKey, FeatureFlag featureFlag, User user)
         {
             bool changed = false;
-            ImmutableJsonValue oldValue;
+            LdValue oldValue = LdValue.Null;
             readWriteLock.EnterWriteLock();
             try
             {

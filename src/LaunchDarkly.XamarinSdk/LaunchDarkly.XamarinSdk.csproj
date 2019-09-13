@@ -33,7 +33,7 @@
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="Common.Logging" Version="3.4.1" />
-    <PackageReference Include="LaunchDarkly.CommonSdk" Version="4.0.0-beta1" />
+    <PackageReference Include="LaunchDarkly.CommonSdk" Version="4.0.0-beta2" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.60" PrivateAssets="All" />
     <Compile Include="*.cs" />
     <Compile Include="Properties\*.cs" />

@@ -334,67 +334,67 @@ namespace LaunchDarkly.Xamarin
         /// <inheritdoc/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, _eventFactoryDefault).Value;
+            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true, _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, defaultValue, ValueTypes.Bool, _eventFactoryWithReasons);
+            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true, _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public string StringVariation(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueTypes.String, _eventFactoryDefault).Value;
+            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true, _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, defaultValue, ValueTypes.String, _eventFactoryWithReasons);
+            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true, _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, _eventFactoryDefault).Value;
+            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true, _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, defaultValue, ValueTypes.Float, _eventFactoryWithReasons);
+            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true, _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public int IntVariation(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Int, _eventFactoryDefault).Value;
+            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Int, _eventFactoryWithReasons);
+            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
-        public ImmutableJsonValue JsonVariation(string key, ImmutableJsonValue defaultValue)
+        public LdValue JsonVariation(string key, LdValue defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryDefault).Value;
+            return VariationInternal(key, defaultValue, LdValue.Convert.Json, false, _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
-        public EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue)
+        public EvaluationDetail<LdValue> JsonVariationDetail(string key, LdValue defaultValue)
         {
-            return VariationInternal(key, defaultValue, ValueTypes.Json, _eventFactoryWithReasons);
+            return VariationInternal(key, defaultValue, LdValue.Convert.Json, false, _eventFactoryWithReasons);
         }
 
-        EvaluationDetail<T> VariationInternal<T>(string featureKey, T defaultValue, ValueType<T> desiredType, EventFactory eventFactory)
+        EvaluationDetail<T> VariationInternal<T>(string featureKey, LdValue defaultJson, LdValue.Converter<T> converter, bool checkType, EventFactory eventFactory)
         {
             FeatureFlagEvent featureFlagEvent = FeatureFlagEvent.Default(featureKey);
-            ImmutableJsonValue defaultJson = desiredType.ValueToJson(defaultValue);
+            T defaultValue = converter.ToType(defaultJson);
 
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
                 new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(kind));
@@ -427,7 +427,7 @@ namespace LaunchDarkly.Xamarin
 
             featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
             EvaluationDetail<T> result;
-            ImmutableJsonValue valueJson;
+            LdValue valueJson;
             if (flag.value.IsNull)
             {
                 valueJson = defaultJson;
@@ -435,20 +435,19 @@ namespace LaunchDarkly.Xamarin
             }
             else
             {
-                try
-                {
-                    valueJson = flag.value;
-                    var value = desiredType.ValueFromJson(flag.value);
-                    result = new EvaluationDetail<T>(value, flag.variation, flag.reason);
-                }
-                catch (Exception)
+                if (checkType && flag.value.Type != defaultJson.Type)
                 {
                     valueJson = defaultJson;
                     result = new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(EvaluationErrorKind.WRONG_TYPE));
                 }
+                else
+                {
+                    valueJson = flag.value;
+                    result = new EvaluationDetail<T>(converter.ToType(flag.value), flag.variation, flag.reason);
+                }
             }
             var featureEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent, User,
-                new EvaluationDetail<ImmutableJsonValue>(valueJson, flag.variation, flag.reason), defaultJson);
+                new EvaluationDetail<LdValue>(valueJson, flag.variation, flag.reason), defaultJson);
             SendEventIfOnline(featureEvent);
             return result;
         }
@@ -462,14 +461,14 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <inheritdoc/>
-        public IDictionary<string, ImmutableJsonValue> AllFlags()
+        public IDictionary<string, LdValue> AllFlags()
         {
             return flagCacheManager.FlagsForUser(User)
                                     .ToDictionary(p => p.Key, p => p.Value.value);
         }
 
         /// <inheritdoc/>
-        public void Track(string eventName, ImmutableJsonValue data)
+        public void Track(string eventName, LdValue data)
         {
             SendEventIfOnline(_eventFactoryDefault.NewCustomEvent(eventName, User, data));
         }
@@ -477,7 +476,7 @@ namespace LaunchDarkly.Xamarin
         /// <inheritdoc/>
         public void Track(string eventName)
         {
-            Track(eventName, ImmutableJsonValue.Null);
+            Track(eventName, LdValue.Null);
         }
 
         /// <inheritdoc/>

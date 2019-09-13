@@ -6,7 +6,7 @@ namespace LaunchDarkly.Xamarin
 {
     internal sealed class FeatureFlag : IEquatable<FeatureFlag>
     {
-        public ImmutableJsonValue value;
+        public LdValue value;
         public int version;
         public int? flagVersion;
         public bool trackEvents;

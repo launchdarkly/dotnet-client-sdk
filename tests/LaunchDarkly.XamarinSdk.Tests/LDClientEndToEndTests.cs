@@ -514,23 +514,23 @@ namespace LaunchDarkly.Xamarin.Tests
             }
         }
 
-        private ImmutableJsonValue FlagJson(string key, string value)
+        private LdValue FlagJson(string key, string value)
         {
-            return ImmutableJsonValue.FromDictionary(new Dictionary<string, ImmutableJsonValue>
+            return LdValue.FromDictionary(new Dictionary<string, LdValue>
             {
-                { "key", ImmutableJsonValue.Of(key) },
-                { "value", ImmutableJsonValue.Of(value) }
+                { "key", LdValue.Of(key) },
+                { "value", LdValue.Of(value) }
             });
         }
 
         private string PollingData(IDictionary<string, string> flags)
         {
-            var d = new Dictionary<string, ImmutableJsonValue>();
+            var d = new Dictionary<string, LdValue>();
             foreach (var e in flags)
             {
                 d.Add(e.Key, FlagJson(e.Key, e.Value));
             }
-            return ImmutableJsonValue.FromDictionary(d).ToJsonString();
+            return LdValue.FromDictionary(d).ToJsonString();
         }
 
         private string StreamingData(IDictionary<string, string> flags)

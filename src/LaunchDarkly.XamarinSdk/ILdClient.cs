@@ -200,7 +200,7 @@ namespace LaunchDarkly.Xamarin
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>the variation for the selected user, or <c>defaultValue</c> if the flag is
         /// disabled in the LaunchDarkly control panel</returns>
-        ImmutableJsonValue JsonVariation(string key, ImmutableJsonValue defaultValue);
+        LdValue JsonVariation(string key, LdValue defaultValue);
 
         /// <summary>
         /// Returns the JSON value of a feature flag for a given flag key, in an object that also
@@ -213,14 +213,14 @@ namespace LaunchDarkly.Xamarin
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
-        EvaluationDetail<ImmutableJsonValue> JsonVariationDetail(string key, ImmutableJsonValue defaultValue);
+        EvaluationDetail<LdValue> JsonVariationDetail(string key, LdValue defaultValue);
 
         /// <summary>
         /// Tracks that the current user performed an event for the given event name, with additional JSON data.
         /// </summary>
         /// <param name="eventName">the name of the event</param>
         /// <param name="data">a JSON value containing additional data associated with the event</param>
-        void Track(string eventName, ImmutableJsonValue data);
+        void Track(string eventName, LdValue data);
 
         /// <summary>
         /// Tracks that the current user performed an event for the given event name.
@@ -229,12 +229,12 @@ namespace LaunchDarkly.Xamarin
         void Track(string eventName);
 
         /// <summary>
-        /// Returns a map from feature flag keys to <see cref="ImmutableJsonValue"/> feature flag values for the current user.
+        /// Returns a map from feature flag keys to <see cref="LdValue"/> feature flag values for the current user.
         /// </summary>
         /// <remarks>
         /// <para>
         /// If the result of a flag's value would have returned the default variation, the value in the map will contain
-        /// <see cref="ImmutableJsonValue.Null"/>. If the client is offline or has not been initialized, an empty
+        /// <see cref="LdValue.Null"/>. If the client is offline or has not been initialized, an empty
         /// map will be returned.
         /// </para>
         /// <para>
@@ -242,7 +242,7 @@ namespace LaunchDarkly.Xamarin
         /// </para>
         /// </remarks>
         /// <returns>a map from feature flag keys to values for the current user</returns>
-        IDictionary<string, ImmutableJsonValue> AllFlags();
+        IDictionary<string, LdValue> AllFlags();
 
         /// <summary>
         /// This event is triggered when the client has received an updated value for a feature flag.
