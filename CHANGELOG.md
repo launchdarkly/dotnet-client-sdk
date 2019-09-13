@@ -3,6 +3,23 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.0-beta24] - 2019-09-13
+### Added:
+- `ImmutableJsonValue` now has methods for converting to or from a list or dictionary, rather than using the `Newtonsoft.Json` types `JArray` and `JObject`.
+- HTML documentation for all public types, methods, and properties is now available [online](https://launchdarkly.github.io/xamarin-client-sdk).
+ 
+### Changed:
+- The SDK no longer has a dependency on [`Xam.Plugin.DeviceInfo`](https://github.com/jamesmontemagno/DeviceInfoPlugin).
+- When accessing a floating-point flag value with `IntVariation`, or converting a floating-point `ImmutableJsonValue` to an `int`, it will now truncate (round toward zero) rather than rounding to the nearest integer. This is consistent with normal C# behavior and with most other LaunchDarkly SDKs.
+ 
+### Removed:
+- All public methods and properties now use `ImmutableJsonValue` instead of `JToken`.
+
+### Fixed:
+- Fixed a bug that caused a string flag value that is in an ISO date/time format, like "1970-01-01T00:00:01.001Z", to be treated as an incompatible type by `StringVariation` (because `Newtonsoft.Json` would parse it as a `DateTime` by default).
+- On Android, an HTTP connection timeout could leave a connection attempt still happening in the background-- even though the timeout would still happen normally as far as the SDK was concerned-- until the default timeout for the Android HTTP handler elapsed, which is 24 hours. Now it will properly stop the connection attempt after a timeout.
+- Fixed an implementation problem that caused excessive overhead for flag evaluations due to unnecessary JSON parsing.
+
 ## [1.0.0-beta23] - 2019-08-30
 ### Added:
 - XML documentation comments are now included in the package, so they should be visible in Visual Studio for all LaunchDarkly types and methods.
