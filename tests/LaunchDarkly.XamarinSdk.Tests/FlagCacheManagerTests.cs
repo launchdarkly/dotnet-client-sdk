@@ -58,7 +58,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = ImmutableJsonValue.Of(5);
+            updatedFeatureFlag.value = LdValue.Of(5);
             updatedFeatureFlag.version = 12;
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
             var updatedFlagFromCache = flagCacheManager.FlagForUser("int-flag", user);
@@ -74,7 +74,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = ImmutableJsonValue.Of(7);
+            updatedFeatureFlag.value = LdValue.Of(7);
 
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
 
@@ -92,7 +92,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var flagCacheManager = ManagerWithCachedFlags();
             var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = ImmutableJsonValue.Of(7);
+            updatedFeatureFlag.value = LdValue.Of(7);
             flagCacheManager.RemoveFlagForUser("int-flag", user);
 
             var e = listener.Await();

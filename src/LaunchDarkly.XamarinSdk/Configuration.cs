@@ -380,6 +380,13 @@ namespace LaunchDarkly.Xamarin
             public TimeSpan HttpClientTimeout => Config.ConnectionTimeout;
             public TimeSpan ReadTimeout => Config.ReadTimeout;
             public TimeSpan ReconnectTime => Config.ReconnectTime;
+
+            public Exception TranslateHttpException(Exception e)
+            {
+                // TODO: this will be used as part of the fix for ch47489 - it will ensure that platform-specific
+                // exceptions like java.net.SocketTimeout will be logged as a standard .NET exception type
+                return e;
+            }
         }
     }
 }
