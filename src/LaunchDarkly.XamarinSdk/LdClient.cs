@@ -435,7 +435,7 @@ namespace LaunchDarkly.Xamarin
             }
             else
             {
-                if (checkType && flag.value.Type != defaultJson.Type)
+                if (checkType && !defaultJson.IsNull && flag.value.Type != defaultJson.Type)
                 {
                     valueJson = defaultJson;
                     result = new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(EvaluationErrorKind.WRONG_TYPE));
