@@ -7,9 +7,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void ReturnsFlagVersionAsVersion()
         {
-            var flag = new FeatureFlag();
-            flag.flagVersion = 123;
-            flag.version = 456;
+            var flag = new FeatureFlagBuilder().FlagVersion(123).Version(456).Build();
             var flagEvent = new FeatureFlagEvent("my-flag", flag);
             Assert.Equal(123, flagEvent.EventVersion);
         }
@@ -17,8 +15,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void FallsBackToVersionAsVersion()
         {
-            var flag = new FeatureFlag();
-            flag.version = 456;
+            var flag = new FeatureFlagBuilder().Version(456).Build();
             var flagEvent = new FeatureFlagEvent("my-flag", flag);
             Assert.Equal(456, flagEvent.EventVersion);
         }

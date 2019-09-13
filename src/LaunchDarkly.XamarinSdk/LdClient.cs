@@ -393,7 +393,6 @@ namespace LaunchDarkly.Xamarin
 
         EvaluationDetail<T> VariationInternal<T>(string featureKey, LdValue defaultJson, LdValue.Converter<T> converter, bool checkType, EventFactory eventFactory)
         {
-            FeatureFlagEvent featureFlagEvent = FeatureFlagEvent.Default(featureKey);
             T defaultValue = converter.ToType(defaultJson);
 
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
@@ -425,7 +424,7 @@ namespace LaunchDarkly.Xamarin
                 }
             }
 
-            featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
+            FeatureFlagEvent featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
             EvaluationDetail<T> result;
             LdValue valueJson;
             if (flag.value.IsNull)

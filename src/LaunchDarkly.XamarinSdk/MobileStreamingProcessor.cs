@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
@@ -84,7 +85,7 @@ namespace LaunchDarkly.Xamarin
             {
                 case Constants.PUT:
                     {
-                        _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(messageData), _user);
+                        _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(messageData), _user);
                         streamManager.Initialized = true;
                         break;
                     }

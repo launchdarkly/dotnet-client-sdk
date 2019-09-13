@@ -1,30 +1,31 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using LaunchDarkly.Client;
 
 namespace LaunchDarkly.Xamarin
 {
     internal sealed class UserFlagInMemoryCache : IUserFlagCache
     {
-        // A map of the key (user.Key) and their featureFlags
-        readonly ConcurrentDictionary<string, string> JSONMap =
-            new ConcurrentDictionary<string, string>();
+        // For each known user key, store a map of their flags. This is a write-through cache - updates will always
+        // go to UserFlagDeviceCache as well. The inner dictionaries are immutable; updates are done by updating
+        // the whole thing (that is safe because updates are only ever done from the streaming/polling thread, and
+        // since updates should be relatively infrequent, it's not very expensive).
 
-        void IUserFlagCache.CacheFlagsForUser(IDictionary<string, FeatureFlag> flags, User user)
+        private readonly ConcurrentDictionary<string, IImmutableDictionary<string, FeatureFlag>> _allData =
+            new ConcurrentDictionary<string, IImmutableDictionary<string, FeatureFlag>>();
+
+        void IUserFlagCache.CacheFlagsForUser(IImmutableDictionary<string, FeatureFlag> flags, User user)
         {
-            var jsonString = JsonUtil.EncodeJson(flags);
-            JSONMap[user.Key] = jsonString;
+            _allData[user.Key] = flags;
         }
 
-        IDictionary<string, FeatureFlag> IUserFlagCache.RetrieveFlags(User user)
+        IImmutableDictionary<string, FeatureFlag> IUserFlagCache.RetrieveFlags(User user)
         {
-            string json;
-            if (JSONMap.TryGetValue(user.Key, out json))
+            if (_allData.TryGetValue(user.Key, out var flags))
             {
-                return JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(json);
+                return flags;
             }
-
-            return new Dictionary<string, FeatureFlag>();
+            return ImmutableDictionary.Create<string, FeatureFlag>();
         }
     }
 }

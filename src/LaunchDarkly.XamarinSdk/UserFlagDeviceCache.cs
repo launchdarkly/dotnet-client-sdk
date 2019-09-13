@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
@@ -16,7 +16,7 @@ namespace LaunchDarkly.Xamarin
             this.persister = persister;
         }
 
-        void IUserFlagCache.CacheFlagsForUser(IDictionary<string, FeatureFlag> flags, User user)
+        void IUserFlagCache.CacheFlagsForUser(IImmutableDictionary<string, FeatureFlag> flags, User user)
         {
             var jsonString = JsonUtil.EncodeJson(flags);
             try
@@ -25,30 +25,28 @@ namespace LaunchDarkly.Xamarin
             }
             catch (System.Exception ex)
             {
-                Log.ErrorFormat("Couldn't set preferences on mobile device: '{0}'",
-                    ex,
+                Log.ErrorFormat("Couldn't set preferences on mobile device: {0}",
                     Util.ExceptionMessage(ex));
             }
         }
 
-        IDictionary<string, FeatureFlag> IUserFlagCache.RetrieveFlags(User user)
+        IImmutableDictionary<string, FeatureFlag> IUserFlagCache.RetrieveFlags(User user)
         {
             try
             {
                 var flagsAsJson = persister.GetValue(Constants.FLAGS_KEY_PREFIX + user.Key);
                 if (flagsAsJson != null)
                 {
-                    return JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(flagsAsJson);
+                    return JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJson); // surprisingly, this works
                 }
             }
             catch (Exception ex)
             {
-                Log.ErrorFormat("Couldn't get preferences on mobile device: '{0}'",
-                    ex,
+                Log.ErrorFormat("Couldn't get preferences on mobile device: {0}",
                     Util.ExceptionMessage(ex));
             }
 
-            return new Dictionary<string, FeatureFlag>();
+            return ImmutableDictionary.Create<string, FeatureFlag>();
         }
     }
 }
