@@ -516,7 +516,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private LdValue FlagJson(string key, string value)
         {
-            return LdValue.FromDictionary(new Dictionary<string, LdValue>
+            return LdValue.ObjectFrom(new Dictionary<string, LdValue>
             {
                 { "key", LdValue.Of(key) },
                 { "value", LdValue.Of(value) }
@@ -530,7 +530,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 d.Add(e.Key, FlagJson(e.Key, e.Value));
             }
-            return LdValue.FromDictionary(d).ToJsonString();
+            return LdValue.ObjectFrom(d).ToJsonString();
         }
 
         private string StreamingData(IDictionary<string, string> flags)

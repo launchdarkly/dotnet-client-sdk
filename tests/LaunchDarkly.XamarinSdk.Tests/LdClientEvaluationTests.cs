@@ -163,7 +163,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void JsonVariationReturnsValue()
         {
-            var jsonValue = LdValue.FromDictionary(new Dictionary<string, string> { { "thing", "stuff" } });
+            var jsonValue = LdValue.Convert.String.ObjectFrom(new Dictionary<string, string> { { "thing", "stuff" } });
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
@@ -184,7 +184,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void JsonVariationDetailReturnsValue()
         {
-            var jsonValue = LdValue.FromDictionary(new Dictionary<string, string> { { "thing", "stuff" } });
+            var jsonValue = LdValue.Convert.String.ObjectFrom(new Dictionary<string, string> { { "thing", "stuff" } });
             var reason = EvaluationReason.Off.Instance;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue, 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
