@@ -57,9 +57,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void CanUpdateFlagForUser()
         {
             var flagCacheManager = ManagerWithCachedFlags();
-            var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = LdValue.Of(5);
-            updatedFeatureFlag.version = 12;
+            var updatedFeatureFlag = new FeatureFlagBuilder().Value(LdValue.Of(5)).Version(12).Build();
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
             var updatedFlagFromCache = flagCacheManager.FlagForUser("int-flag", user);
             Assert.Equal(5, updatedFlagFromCache.value.AsInt);
@@ -73,8 +71,7 @@ namespace LaunchDarkly.Xamarin.Tests
             listenerManager.FlagChanged += listener.Handler;
 
             var flagCacheManager = ManagerWithCachedFlags();
-            var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = LdValue.Of(7);
+            var updatedFeatureFlag = new FeatureFlagBuilder().Value(LdValue.Of(7)).Build();
 
             flagCacheManager.UpdateFlagForUser("int-flag", updatedFeatureFlag, user);
 
@@ -91,8 +88,7 @@ namespace LaunchDarkly.Xamarin.Tests
             listenerManager.FlagChanged += listener.Handler;
 
             var flagCacheManager = ManagerWithCachedFlags();
-            var updatedFeatureFlag = new FeatureFlag();
-            updatedFeatureFlag.value = LdValue.Of(7);
+            var updatedFeatureFlag = new FeatureFlagBuilder().Value(LdValue.Of(7)).Build();
             flagCacheManager.RemoveFlagForUser("int-flag", user);
 
             var e = listener.Await();

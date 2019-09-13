@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
@@ -83,7 +83,7 @@ namespace LaunchDarkly.Xamarin
                 if (response.statusCode == 200)
                 {
                     var flagsAsJsonString = response.jsonResponse;
-                    var flagsDictionary = JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(flagsAsJsonString);
+                    var flagsDictionary = JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJsonString);
                     _flagCacheManager.CacheFlagsFromService(flagsDictionary, _user);
 
                     // We can't use bool in CompareExchange because it is not a reference type.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using LaunchDarkly.Client;
 
@@ -29,7 +30,7 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        public IDictionary<string, FeatureFlag> FlagsForUser(User user)
+        public IImmutableDictionary<string, FeatureFlag> FlagsForUser(User user)
         {
             readWriteLock.EnterReadLock();
             try
@@ -42,7 +43,7 @@ namespace LaunchDarkly.Xamarin
             }
         }
 
-        public void CacheFlagsFromService(IDictionary<string, FeatureFlag> flags, User user)
+        public void CacheFlagsFromService(IImmutableDictionary<string, FeatureFlag> flags, User user)
         {
             List<Tuple<string, LdValue, LdValue>> changes = null;
             readWriteLock.EnterWriteLock();
@@ -102,9 +103,9 @@ namespace LaunchDarkly.Xamarin
                 {
                     existed = true;
                     oldValue = flag.value;
-                    flagsForUser.Remove(flagKey);
-                    deviceCache.CacheFlagsForUser(flagsForUser, user);
-                    inMemoryCache.CacheFlagsForUser(flagsForUser, user);
+                    var updatedFlags = flagsForUser.Remove(flagKey); // IImmutableDictionary.Remove() returns a new dictionary
+                    deviceCache.CacheFlagsForUser(updatedFlags, user);
+                    inMemoryCache.CacheFlagsForUser(updatedFlags, user);
                 }
             }
             finally
@@ -133,9 +134,9 @@ namespace LaunchDarkly.Xamarin
                         changed = true;
                     }
                 }
-                flagsForUser[flagKey] = featureFlag;
-                deviceCache.CacheFlagsForUser(flagsForUser, user);
-                inMemoryCache.CacheFlagsForUser(flagsForUser, user);
+                var updatedFlags = flagsForUser.SetItem(flagKey, featureFlag); // IImmutableDictionary.SetItem() returns a new dictionary
+                deviceCache.CacheFlagsForUser(updatedFlags, user);
+                inMemoryCache.CacheFlagsForUser(updatedFlags, user);
             }
             finally
             {

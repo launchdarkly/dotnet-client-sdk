@@ -1,19 +1,34 @@
 ﻿using System;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
+using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
     internal sealed class FeatureFlag : IEquatable<FeatureFlag>
     {
-        public LdValue value;
-        public int version;
-        public int? flagVersion;
-        public bool trackEvents;
-        public bool trackReason;
-        public int? variation;
-        public long? debugEventsUntilDate;
-        public EvaluationReason reason;
+        public readonly LdValue value;
+        public readonly int version;
+        public readonly int? flagVersion;
+        public readonly bool trackEvents;
+        public readonly bool trackReason;
+        public readonly int? variation;
+        public readonly long? debugEventsUntilDate;
+        public readonly EvaluationReason reason;
+
+        [JsonConstructor]
+        public FeatureFlag(LdValue value, int version, int? flagVersion, bool trackEvents, bool trackReason,
+            int? variation, long? debugEventsUntilDate, EvaluationReason reason)
+        {
+            this.value = value;
+            this.version = version;
+            this.flagVersion = flagVersion;
+            this.trackEvents = trackEvents;
+            this.trackReason = trackReason;
+            this.variation = variation;
+            this.debugEventsUntilDate = debugEventsUntilDate;
+            this.reason = reason;
+        }
 
         public bool Equals(FeatureFlag otherFlag)
         {
@@ -37,11 +52,6 @@ namespace LaunchDarkly.Xamarin
         private readonly FeatureFlag _featureFlag;
         private readonly string _key;
 
-        public static FeatureFlagEvent Default(string key)
-        {
-            return new FeatureFlagEvent(key, new FeatureFlag());
-        }
-        
         public FeatureFlagEvent(string key, FeatureFlag featureFlag)
         {
             _featureFlag = featureFlag;

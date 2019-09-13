@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using LaunchDarkly.Client;
 
 namespace LaunchDarkly.Xamarin
 {
     internal interface IUserFlagCache
     {
-        void CacheFlagsForUser(IDictionary<string, FeatureFlag> flags, User user);
-        IDictionary<string, FeatureFlag> RetrieveFlags(User user);
+        void CacheFlagsForUser(IImmutableDictionary<string, FeatureFlag> flags, User user);
+        IImmutableDictionary<string, FeatureFlag> RetrieveFlags(User user);
     }
 
     internal sealed class NullUserFlagCache : IUserFlagCache
     {
-        public void CacheFlagsForUser(IDictionary<string, FeatureFlag> flags, User user) { }
-        public IDictionary<string, FeatureFlag> RetrieveFlags(User user) => null;
+        public void CacheFlagsForUser(IImmutableDictionary<string, FeatureFlag> flags, User user) { }
+        public IImmutableDictionary<string, FeatureFlag> RetrieveFlags(User user) => ImmutableDictionary.Create<string, FeatureFlag>();
     }
 }
