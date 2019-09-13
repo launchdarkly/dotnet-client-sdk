@@ -135,11 +135,13 @@ namespace LaunchDarkly.Xamarin
         /// Sets the object to be used for sending HTTP requests, if a specific implementation is desired.
         /// </summary>
         /// <remarks>
-        /// This is exposed mainly for testing purposes; you should not normally need to change it.
-        /// By default, on mobile platforms it will use the appropriate native HTTP handler for the
-        /// current platform, if any (e.g. <c>Xamarin.Android.Net.AndroidClientHandler</c>). If this is
-        /// <see langword="null"/>, the SDK will call the default <see cref="HttpClient"/> constructor without
-        /// specifying a handler, which may or may not result in using a native HTTP handler.
+        /// This is exposed mainly for testing purposes; you should not normally need to change it. The default
+        /// value is an <see cref="System.Net.Http.HttpClientHandler"/>, but if you do not change this value,
+        /// on mobile platforms it will be replaced by the appropriate native HTTP handler for the current
+        /// current platform, if any (e.g. <c>Xamarin.Android.Net.AndroidClientHandler</c>). If you set it
+        /// explicitly to <see langword="null"/>, the SDK will call the default <see cref="HttpClient"/>
+        /// constructor without specifying a handler, which may or may not result in using a native HTTP handler
+        /// (depending on your application configuration).
         /// </remarks>
         /// <param name="httpMessageHandler">the <see cref="System.Net.Http.HttpMessageHandler"/> to use</param>
         /// <returns>the same builder</returns>
@@ -276,6 +278,11 @@ namespace LaunchDarkly.Xamarin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ConfigurationBuilder));
 
+        // This exists so that we can distinguish between leaving the HttpMessageHandler property unchanged
+        // and explicitly setting it to null. If the property value is the exact same instance as this, we
+        // will replace it with a platform-specific implementation.
+        internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
+
         internal bool _allAttributesPrivate = false;
         internal TimeSpan _backgroundPollingInterval;
         internal Uri _baseUri = Configuration.DefaultUri;
@@ -285,7 +292,7 @@ namespace LaunchDarkly.Xamarin
         internal int _eventCapacity = Configuration.DefaultEventCapacity;
         internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
         internal Uri _eventsUri = Configuration.DefaultEventsUri;
-        internal HttpMessageHandler _httpMessageHandler = PlatformSpecific.Http.GetHttpMessageHandler(); // see Http.shared.cs
+        internal HttpMessageHandler _httpMessageHandler = DefaultHttpMessageHandlerInstance;
         internal bool _inlineUsersInEvents = false;
         internal bool _isStreamingEnabled = true;
         internal string _mobileKey;

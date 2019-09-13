@@ -106,7 +106,7 @@ namespace LaunchDarkly.Xamarin
             }
             catch (Exception ex)
             {
-                Log.ErrorFormat("Error Updating features: '{0}'", Util.ExceptionMessage(ex));
+                Log.ErrorFormat("Error Updating features: '{0}'", Util.ExceptionMessage(PlatformSpecific.Http.TranslateHttpException(ex)));
             }
         }
 
