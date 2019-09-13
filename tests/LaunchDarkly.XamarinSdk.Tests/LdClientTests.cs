@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -348,7 +347,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
                 var storedJson = storage.GetValue(Constants.FLAGS_KEY_PREFIX + simpleUser.Key);
-                var flags = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(storedJson);
+                var flags = JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(storedJson);
                 Assert.Equal(100, flags["flag"].value.AsInt);
             }
         }

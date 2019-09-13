@@ -435,6 +435,31 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
+        [Theory]
+        [MemberData(nameof(PollingAndStreaming))]
+        public void DateLikeStringValueIsStillParsedAsString(UpdateMode mode)
+        {
+            // Newtonsoft.Json's default behavior is to transform ISO date/time strings into DateTime objects. We
+            // definitely don't want that. Verify that we're disabling that behavior when we parse flags.
+            const string dateLikeString1 = "1970-01-01T00:00:01.001Z";
+            const string dateLikeString2 = "1970-01-01T00:00:01Z";
+            WithServer(server =>
+            {
+                var flagData = new Dictionary<string, string>
+                {
+                    { "flag1", dateLikeString1 },
+                    { "flag2", dateLikeString2 }
+                };
+                SetupResponse(server, flagData, mode);
+
+                var config = BaseConfig(server, mode);
+                using (var client = TestUtil.CreateClient(config, _user))
+                {
+                    VerifyFlagValues(client, flagData);
+                }
+            });
+        }
+
         private Configuration BaseConfig(FluentMockServer server, Func<ConfigurationBuilder, IConfigurationBuilder> extraConfig = null)
         {
             var builderInternal = Configuration.BuilderInternal(_mobileKey)

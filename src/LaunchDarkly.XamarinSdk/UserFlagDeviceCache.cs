@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
-using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -19,7 +18,7 @@ namespace LaunchDarkly.Xamarin
 
         void IUserFlagCache.CacheFlagsForUser(IDictionary<string, FeatureFlag> flags, User user)
         {
-            var jsonString = JsonConvert.SerializeObject(flags);
+            var jsonString = JsonUtil.EncodeJson(flags);
             try
             {
                 persister.Save(Constants.FLAGS_KEY_PREFIX + user.Key, jsonString);
@@ -39,7 +38,7 @@ namespace LaunchDarkly.Xamarin
                 var flagsAsJson = persister.GetValue(Constants.FLAGS_KEY_PREFIX + user.Key);
                 if (flagsAsJson != null)
                 {
-                    return JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(flagsAsJson);
+                    return JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(flagsAsJson);
                 }
             }
             catch (Exception ex)

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using LaunchDarkly.Xamarin.PlatformSpecific;
-using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
@@ -220,7 +219,7 @@ namespace LaunchDarkly.Xamarin.Tests
             IsRunning = true;
             if (_cacheManager != null && _flagsJson != null)
             {
-                _cacheManager.CacheFlagsFromService(JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(_flagsJson), _user);
+                _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(_flagsJson), _user);
             }
             return Task.FromResult(true);
         }
