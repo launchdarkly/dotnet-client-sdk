@@ -33,7 +33,7 @@ namespace LaunchDarkly.Xamarin
         Configuration Build();
 
         /// <summary>
-        /// Sets whether or not user attributeps (other than the key) should be private (not sent to
+        /// Sets whether or not user attributes (other than the key) should be private (not sent to
         /// the LaunchDarkly server).
         /// </summary>
         /// <remarks>
