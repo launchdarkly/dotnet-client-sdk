@@ -26,7 +26,7 @@ Refer to the [SDK documentation](https://docs.launchdarkly.com/docs/xamarin-sdk-
 Learn more
 -----------
 
-Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/docs/xamarin-sdk-reference).
+Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/docs/xamarin-sdk-reference) or our [code-generated API documentation](https://launchdarkly.github.io/xamarin-client-sdk/).
 
 Testing
 -------
