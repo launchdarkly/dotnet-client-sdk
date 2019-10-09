@@ -1,5 +1,5 @@
-﻿using LaunchDarkly.Client;
-using Newtonsoft.Json.Linq;
+﻿using System;
+using LaunchDarkly.Client;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -22,7 +22,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (LdClient client = MakeClient(user, "{}"))
             {
                 User user1 = User.WithKey("userkey1");
-                client.Identify(user1);
+                client.Identify(user1, TimeSpan.FromSeconds(1));
                 Assert.Collection(eventProcessor.Events,
                     e => CheckIdentifyEvent(e, user), // there's always an initial identify event
                     e => CheckIdentifyEvent(e, user1));
@@ -41,7 +41,7 @@ namespace LaunchDarkly.Xamarin.Tests
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.Key);
                         Assert.Equal(user.Key, ce.User.Key);
-                        Assert.Null(ce.JsonData);
+                        Assert.Equal(LdValue.Null, ce.Data);
                         Assert.Null(ce.MetricValue);
                     });
             }
@@ -52,15 +52,15 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (LdClient client = MakeClient(user, "{}"))
             {
-                JToken data = new JValue("hi");
-                client.Track("eventkey", ImmutableJsonValue.FromJToken(data));
+                LdValue data = LdValue.Of("hi");
+                client.Track("eventkey", data);
                 Assert.Collection(eventProcessor.Events,
                     e => CheckIdentifyEvent(e, user),
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.Key);
                         Assert.Equal(user.Key, ce.User.Key);
-                        Assert.Equal(data, ce.JsonData);
+                        Assert.Equal(data, ce.Data);
                         Assert.Null(ce.MetricValue);
                     });
             }
@@ -71,16 +71,16 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (LdClient client = MakeClient(user, "{}"))
             {
-                JToken data = new JValue("hi");
+                LdValue data = LdValue.Of("hi");
                 double metricValue = 1.5;
-                client.Track("eventkey", ImmutableJsonValue.FromJToken(data), metricValue);
+                client.Track("eventkey", data, metricValue);
                 Assert.Collection(eventProcessor.Events,
                     e => CheckIdentifyEvent(e, user),
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.Key);
                         Assert.Equal(user.Key, ce.User.Key);
-                        Assert.Equal(data, ce.JsonData);
+                        Assert.Equal(data, ce.Data);
                         Assert.Equal(metricValue, ce.MetricValue);
                     });
             }
@@ -101,10 +101,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("a", fe.Value);
+                        Assert.Equal("a", fe.Value.AsString);
                         Assert.Equal(1, fe.Variation);
                         Assert.Equal(1000, fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.True(fe.TrackEvents);
                         Assert.Equal(2000, fe.DebugEventsUntilDate);
                         Assert.Null(fe.Reason);
@@ -127,10 +127,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("a", fe.Value);
+                        Assert.Equal("a", fe.Value.AsString);
                         Assert.Equal(1, fe.Variation);
                         Assert.Equal(1500, fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                     });
             }
         }
@@ -149,10 +149,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("b", fe.Value);
+                        Assert.Equal("b", fe.Value.AsString);
                         Assert.Null(fe.Variation);
                         Assert.Equal(1000, fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.Null(fe.Reason);
                     });
             }
@@ -170,10 +170,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("b", fe.Value);
+                        Assert.Equal("b", fe.Value.AsString);
                         Assert.Null(fe.Variation);
                         Assert.Null(fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.Null(fe.Reason);
                     });
             }
@@ -197,10 +197,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("b", fe.Value);
+                        Assert.Equal("b", fe.Value.AsString);
                         Assert.Null(fe.Variation);
                         Assert.Null(fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.Null(fe.Reason);
                     });
             }
@@ -222,10 +222,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("a", fe.Value);
+                        Assert.Equal("a", fe.Value.AsString);
                         Assert.Equal(1, fe.Variation);
                         Assert.Equal(1000, fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.True(fe.TrackEvents);
                         Assert.Null(fe.DebugEventsUntilDate);
                         Assert.Equal(EvaluationReason.Off.Instance, fe.Reason);
@@ -251,10 +251,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("a", fe.Value);
+                        Assert.Equal("a", fe.Value.AsString);
                         Assert.Equal(1, fe.Variation);
                         Assert.Equal(1000, fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.True(fe.TrackEvents);
                         Assert.Equal(2000, fe.DebugEventsUntilDate);
                         Assert.Equal(EvaluationReason.Off.Instance, fe.Reason);
@@ -276,10 +276,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("b", fe.Value);
+                        Assert.Equal("b", fe.Value.AsString);
                         Assert.Null(fe.Variation);
                         Assert.Null(fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.False(fe.TrackEvents);
                         Assert.Null(fe.DebugEventsUntilDate);
                         Assert.Equal(expectedReason, fe.Reason);
@@ -306,10 +306,10 @@ namespace LaunchDarkly.Xamarin.Tests
                     e => {
                         FeatureRequestEvent fe = Assert.IsType<FeatureRequestEvent>(e);
                         Assert.Equal("flag", fe.Key);
-                        Assert.Equal("b", fe.Value);
+                        Assert.Equal("b", fe.Value.AsString);
                         Assert.Null(fe.Variation);
                         Assert.Null(fe.Version);
-                        Assert.Equal("b", fe.Default);
+                        Assert.Equal("b", fe.Default.AsString);
                         Assert.False(fe.TrackEvents);
                         Assert.Null(fe.DebugEventsUntilDate);
                         Assert.Equal(expectedReason, fe.Reason);

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
 using LaunchDarkly.Common;
 using System.Net.Http;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using Common.Logging;
@@ -46,9 +46,9 @@ namespace LaunchDarkly.Xamarin
             return _streamManager.Initialized;
         }
 
-        Task<bool> IMobileUpdateProcessor.Start()
+        async Task<bool> IMobileUpdateProcessor.Start()
         {
-            return _streamManager.Start();
+            return await _streamManager.Start();
         }
 
         #endregion
@@ -85,7 +85,7 @@ namespace LaunchDarkly.Xamarin
             {
                 case Constants.PUT:
                     {
-                        _cacheManager.CacheFlagsFromService(JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(messageData), _user);
+                        _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(messageData), _user);
                         streamManager.Initialized = true;
                         break;
                     }
@@ -93,15 +93,14 @@ namespace LaunchDarkly.Xamarin
                     {
                         try
                         {
-                            var parsed = JsonConvert.DeserializeObject<JObject>(messageData);
+                            var parsed = JsonUtil.DecodeJson<JObject>(messageData);
                             var flagkey = (string)parsed[Constants.KEY];
                             var featureFlag = parsed.ToObject<FeatureFlag>();
                             PatchFeatureFlag(flagkey, featureFlag);
                         }
                         catch (Exception ex)
                         {
-                            Log.ErrorFormat("Error parsing PATCH message {0}: '{1}'",
-                                            ex, messageData, Util.ExceptionMessage(ex));
+                            Log.ErrorFormat("Error parsing PATCH message {0}: {1}", messageData, Util.ExceptionMessage(ex));
                         }
                         break;
                     }
@@ -109,15 +108,14 @@ namespace LaunchDarkly.Xamarin
                     {
                         try
                         {
-                            var dictionary = JsonConvert.DeserializeObject<IDictionary<string, JToken>>(messageData);
+                            var dictionary = JsonUtil.DecodeJson<IDictionary<string, JToken>>(messageData);
                             int version = dictionary[Constants.VERSION].ToObject<int>();
                             string flagKey = dictionary[Constants.KEY].ToString();
                             DeleteFeatureFlag(flagKey, version);
                         }
                         catch (Exception ex)
                         {
-                            Log.ErrorFormat("Error parsing DELETE message {0}: '{1}'",
-                                            ex, messageData, Util.ExceptionMessage(ex));
+                            Log.ErrorFormat("Error parsing DELETE message {0}: {1}", messageData, Util.ExceptionMessage(ex));
                         }
                         break;
                     }

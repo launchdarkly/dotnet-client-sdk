@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class DefaultLdClientTests : BaseTest
+    public class LdClientTests : BaseTest
     {
         static readonly string appKey = "some app key";
         static readonly User simpleUser = User.WithKey("user-key");
@@ -52,8 +52,78 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = Client())
             {
                 var updatedUser = User.WithKey("some new key");
-                client.Identify(updatedUser);
+                var success = client.Identify(updatedUser, TimeSpan.FromSeconds(1));
+                Assert.True(success);
                 Assert.Equal(client.User.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
+            }
+        }
+
+        [Fact]
+        public Task IdentifyAsyncCompletesOnlyWhenNewFlagsAreAvailable()
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => client.IdentifyAsync(user));
+
+        [Fact]
+        public Task IdentifySyncCompletesOnlyWhenNewFlagsAreAvailable()
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user, TimeSpan.FromSeconds(4))));
+
+        private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, User, Task> identifyTask)
+        {
+            var userA = User.WithKey("a");
+            var userB = User.WithKey("b");
+
+            var flagKey = "flag";
+            var userAFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("a-value"));
+            var userBFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("b-value"));
+
+            var startedIdentifyUserB = new SemaphoreSlim(0, 1);
+            var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
+            var finishedIdentifyUserB = new SemaphoreSlim(0, 1);
+
+            Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> updateProcessorFactory = (c, flags, user) =>
+                new MockUpdateProcessorFromLambda(user, async () =>
+                {
+                    switch (user.Key)
+                    {
+                        case "a":
+                            flags.CacheFlagsFromService(userAFlags, user);
+                            break;
+
+                        case "b":
+                            startedIdentifyUserB.Release();
+                            await canFinishIdentifyUserB.WaitAsync();
+                            flags.CacheFlagsFromService(userBFlags, user);
+                            break;
+                    }
+                });
+
+            var config = TestUtil.ConfigWithFlagsJson(userA, appKey, "{}")
+                .UpdateProcessorFactory(updateProcessorFactory)
+                .Build();
+
+            ClearCachedFlags(userA);
+            ClearCachedFlags(userB);
+
+            using (var client = await LdClient.InitAsync(config, userA))
+            {
+                Assert.True(client.Initialized);
+                Assert.Equal("a-value", client.StringVariation(flagKey, null));
+
+                var identifyUserBTask = Task.Run(async () =>
+                {
+                    await identifyTask(client, userB);
+                    finishedIdentifyUserB.Release();
+                });
+
+                await startedIdentifyUserB.WaitAsync();
+
+                Assert.False(client.Initialized);
+                Assert.Null(client.StringVariation(flagKey, null));
+
+                canFinishIdentifyUserB.Release();
+                await finishedIdentifyUserB.WaitAsync();
+
+                Assert.True(client.Initialized);
+                Assert.Equal("b-value", client.StringVariation(flagKey, null));
             }
         }
 
@@ -62,7 +132,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var client = Client())
             {
-                Assert.Throws<ArgumentNullException>(() => client.Identify(null));
+                Assert.Throws<ArgumentNullException>(() => client.Identify(null, TimeSpan.Zero));
             }
         }
 
@@ -105,30 +175,17 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void ConnectionManagerShouldKnowIfOnlineOrNot()
-        {
-            using (var client = Client())
-            {
-                var connMgr = client.Config._connectionManager as MockConnectionManager;
-                connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
-                connMgr.Connect(true);
-                Assert.False(client.IsOffline());
-                connMgr.Connect(false);
-                Assert.False(client.Online);
-            }
-        }
-
-        [Fact]
         public void ConnectionChangeShouldStopUpdateProcessor()
         {
             var mockUpdateProc = new MockPollingProcessor(null);
+            var mockConnectivityStateManager = new MockConnectivityStateManager(true);
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .UpdateProcessorFactory(mockUpdateProc.AsFactory()).Build();
+                .UpdateProcessorFactory(mockUpdateProc.AsFactory())
+                .ConnectivityStateManager(mockConnectivityStateManager)
+                .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
-                var connMgr = client.Config._connectionManager as MockConnectionManager;
-                connMgr.ConnectionChanged += (bool obj) => client.Online = obj;
-                connMgr.Connect(false);
+                mockConnectivityStateManager.Connect(false);
                 Assert.False(mockUpdateProc.IsRunning);
             }
         }
@@ -170,7 +227,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
-                client.Identify(userWithNullKey);
+                client.Identify(userWithNullKey, TimeSpan.FromSeconds(1));
                 Assert.Equal(uniqueId, client.User.Key);
                 Assert.True(client.User.Anonymous);
             }
@@ -185,7 +242,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
-                client.Identify(userWithEmptyKey);
+                client.Identify(userWithEmptyKey, TimeSpan.FromSeconds(1));
                 Assert.Equal(uniqueId, client.User.Key);
                 Assert.True(client.User.Anonymous);
             }
@@ -210,7 +267,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             { 
-                client.Identify(user);
+                client.Identify(user, TimeSpan.FromSeconds(1));
                 User newUser = client.User;
                 Assert.NotEqual(user.Key, newUser.Key);
                 Assert.Equal(user.Avatar, newUser.Avatar);
@@ -290,8 +347,78 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
                 var storedJson = storage.GetValue(Constants.FLAGS_KEY_PREFIX + simpleUser.Key);
-                var flags = JsonConvert.DeserializeObject<IDictionary<string, FeatureFlag>>(storedJson);
-                Assert.Equal(new JValue(100), flags["flag"].value);
+                var flags = JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(storedJson);
+                Assert.Equal(100, flags["flag"].value.AsInt);
+            }
+        }
+
+        [Fact]
+        public void EventProcessorIsOnlineByDefault()
+        {
+            var eventProcessor = new MockEventProcessor();
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .EventProcessor(eventProcessor)
+                .Build();
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.False(eventProcessor.Offline);
+            }
+        }
+
+        [Fact]
+        public void EventProcessorIsOfflineWhenClientIsConfiguredOffline()
+        {
+            var connectivityStateManager = new MockConnectivityStateManager(true);
+            var eventProcessor = new MockEventProcessor();
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .ConnectivityStateManager(connectivityStateManager)
+                .EventProcessor(eventProcessor)
+                .Offline(true)
+                .Build();
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.True(eventProcessor.Offline);
+
+                client.SetOffline(false, TimeSpan.FromSeconds(1));
+                Assert.False(eventProcessor.Offline);
+
+                client.SetOffline(true, TimeSpan.FromSeconds(1));
+                Assert.True(eventProcessor.Offline);
+
+                // If the network is unavailable...
+                connectivityStateManager.Connect(false);
+
+                // ...then even if Offline is set to false, events stay off
+                client.SetOffline(false, TimeSpan.FromSeconds(1));
+                Assert.True(eventProcessor.Offline);
+            }
+        }
+
+        [Fact]
+        public void EventProcessorIsOfflineWhenNetworkIsUnavailable()
+        {
+            var connectivityStateManager = new MockConnectivityStateManager(false);
+            var eventProcessor = new MockEventProcessor();
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .ConnectivityStateManager(connectivityStateManager)
+                .EventProcessor(eventProcessor)
+                .Build();
+            using (var client = TestUtil.CreateClient(config, simpleUser))
+            {
+                Assert.True(eventProcessor.Offline);
+
+                connectivityStateManager.Connect(true);
+                Assert.False(eventProcessor.Offline);
+
+                connectivityStateManager.Connect(false);
+                Assert.True(eventProcessor.Offline);
+
+                // If client is configured offline...
+                client.SetOffline(true, TimeSpan.FromSeconds(1));
+
+                // ...then even if the network comes back on, events stay off
+                connectivityStateManager.Connect(true);
+                Assert.True(eventProcessor.Offline);
             }
         }
     }

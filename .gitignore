@@ -6,6 +6,7 @@
 [Bb]in/
 packages/
 TestResults/
+test-packages/
 
 # globs
 Makefile.in
@@ -42,3 +43,5 @@ Thumbs.db
 
 # private key file
 *.snk
+
+docs/build/

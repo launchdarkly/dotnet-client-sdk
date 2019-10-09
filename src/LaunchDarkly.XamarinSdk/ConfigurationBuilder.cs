@@ -10,10 +10,13 @@ namespace LaunchDarkly.Xamarin
     /// A mutable object that uses the Builder pattern to specify properties for a <see cref="Configuration"/> object.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Obtain an instance of this class by calling <see cref="Configuration.Builder(string)"/>.
-    /// 
+    /// </para>
+    /// <para>
     /// All of the builder methods for setting a configuration property return a reference to the same builder, so they can be
     /// chained together.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -24,7 +27,7 @@ namespace LaunchDarkly.Xamarin
     {
         /// <summary>
         /// Creates a <see cref="Configuration"/> based on the properties that have been set on the builder.
-        /// Modifying the builder after this point does not affect the returned <c>Configuration</c>.
+        /// Modifying the builder after this point does not affect the returned <see cref="Configuration"/>.
         /// </summary>
         /// <returns>the configured <c>Configuration</c> object</returns>
         Configuration Build();
@@ -34,11 +37,9 @@ namespace LaunchDarkly.Xamarin
         /// the LaunchDarkly server).
         /// </summary>
         /// <remarks>
-        /// If this is true, all of the user attributes will be private, not just the attributes specified with
-        /// <see cref="PrivateAttribute(string)"/> or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
-        /// method with <see cref="UserBuilder"/>.
-        ///
-        /// By default, this is false.
+        /// By default, this is <see langword="false"/>. If <see langword="true"/>, all of the user attributes
+        /// will be private, not just the attributes specified with <see cref="ConfigurationBuilder.PrivateAttribute(string)"/>
+        /// or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/> method.
         /// </remarks>
         /// <param name="allAttributesPrivate">true if all attributes should be private</param>
         /// <returns>the same builder</returns>
@@ -48,7 +49,8 @@ namespace LaunchDarkly.Xamarin
         /// Sets the interval between feature flag updates when the application is running in the background.
         /// </summary>
         /// <remarks>
-        /// This is only relevant on mobile platforms.
+        /// This is only relevant on mobile platforms. The default is <see cref="Configuration.DefaultBackgroundPollingInterval"/>;
+        /// the minimum is <see cref="Configuration.MinimumPollingInterval"/>.
         /// </remarks>
         /// <param name="backgroundPollingInterval">the background polling interval</param>
         /// <returns>the same builder</returns>
@@ -62,28 +64,52 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder BaseUri(Uri baseUri);
 
         /// <summary>
-        /// Set to true if LaunchDarkly should provide additional information about how flag values were
+        /// Sets the connection timeout for all HTTP requests.
+        /// </summary>
+        /// <remarks>
+        /// The default value is 10 seconds.
+        /// </remarks>
+        /// <param name="connectionTimeout">the connection timeout</param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder ConnectionTimeout(TimeSpan connectionTimeout);
+
+        /// <summary>
+        /// Sets whether to enable feature flag polling when the application is in the background.
+        /// </summary>
+        /// <remarks>
+        /// By default, on Android and iOS the SDK can still receive feature flag updates when an application
+        /// is in the background, but it will use polling rather than maintaining a streaming connection (and
+        /// will use <see cref="BackgroundPollingInterval(TimeSpan)"/> rather than <see cref="PollingInterval(TimeSpan)"/>).
+        /// If you set this property to false, it will not check for feature flag updates until the
+        /// application returns to the foreground.
+        /// </remarks>
+        /// <param name="enableBackgroundUpdating"><see langword="true"/> if background updating should be allowed</param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder EnableBackgroundUpdating(bool enableBackgroundUpdating);
+
+        /// <summary>
+        /// Set to <see langword="true"/> if LaunchDarkly should provide additional information about how flag values were
         /// calculated.
         /// </summary>
         /// <remarks>
         /// The additional information will then be available through the client's "detail"
         /// methods such as <see cref="ILdClient.BoolVariationDetail(string, bool)"/>. Since this
         /// increases the size of network requests, such information is not sent unless you set this option
-        /// to true.
+        /// to <see langword="true"/>.
         /// </remarks>
-        /// <param name="evaluationReasons">True if evaluation reasons are desired.</param>
+        /// <param name="evaluationReasons"><see langword="true"/> if evaluation reasons are desired</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder EvaluationReasons(bool evaluationReasons);
         
         /// <summary>
-        /// Sets the capacity of the events buffer.
+        /// Sets the capacity of the event buffer.
         /// </summary>
         /// <remarks>
         /// The client buffers up to this many events in memory before flushing. If the capacity is exceeded
         /// before the buffer is flushed, events will be discarded. Increasing the capacity means that events
         /// are less likely to be discarded, at the cost of consuming more memory.
         /// </remarks>
-        /// <param name="eventCapacity">the capacity of the events buffer</param>
+        /// <param name="eventCapacity">the capacity of the event buffer</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder EventCapacity(int eventCapacity);
 
@@ -109,29 +135,24 @@ namespace LaunchDarkly.Xamarin
         /// Sets the object to be used for sending HTTP requests, if a specific implementation is desired.
         /// </summary>
         /// <remarks>
-        /// This is exposed mainly for testing purposes; you should not normally need to change it.
-        /// By default, on mobile platforms it will use the appropriate native HTTP handler for the
-        /// current platform, if any (e.g. <c>Xamarin.Android.Net.AndroidClientHandler</c>). If this is
-        /// <c>null</c>, the SDK will call the default <see cref="HttpClient"/> constructor without
-        /// specifying a handler, which may or may not result in using a native HTTP handler.
+        /// This is exposed mainly for testing purposes; you should not normally need to change it. The default
+        /// value is an <see cref="System.Net.Http.HttpClientHandler"/>, but if you do not change this value,
+        /// on mobile platforms it will be replaced by the appropriate native HTTP handler for the current
+        /// current platform, if any (e.g. <c>Xamarin.Android.Net.AndroidClientHandler</c>). If you set it
+        /// explicitly to <see langword="null"/>, the SDK will call the default <see cref="HttpClient"/>
+        /// constructor without specifying a handler, which may or may not result in using a native HTTP handler
+        /// (depending on your application configuration).
         /// </remarks>
-        /// <param name="httpMessageHandler">the <c>HttpMessageHandler</c> to use</param>
+        /// <param name="httpMessageHandler">the <see cref="System.Net.Http.HttpMessageHandler"/> to use</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler);
-
-        /// <summary>
-        /// Sets the connection timeout. The default value is 10 seconds.
-        /// </summary>
-        /// <param name="httpClientTimeout">the connection timeout</param>
-        /// <returns>the same builder</returns>
-        IConfigurationBuilder HttpClientTimeout(TimeSpan httpClientTimeout);
 
         /// <summary>
         /// Sets whether to include full user details in every analytics event.
         /// </summary>
         /// <remarks>
-        /// The default is false: events will only include the user key, except for one "index" event that
-        /// provides the full details for the user.
+        /// The default is <see langword="false"/>: events will only include the user key, except for one
+        /// "index" event that provides the full details for the user.
         /// </remarks>
         /// <param name="inlineUsersInEvents">true or false</param>
         /// <returns>the same builder</returns>
@@ -141,7 +162,7 @@ namespace LaunchDarkly.Xamarin
         /// Sets whether or not the streaming API should be used to receive flag updates.
         /// </summary>
         /// <remarks>
-        /// This is true by default. Streaming should only be disabled on the advice of LaunchDarkly support.
+        /// This is <see langword="true"/> by default. Streaming should only be disabled on the advice of LaunchDarkly support.
         /// </remarks>
         /// <param name="isStreamingEnabled">true if the streaming API should be used</param>
         /// <returns>the same builder</returns>
@@ -158,9 +179,9 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder MobileKey(string mobileKey);
 
         /// <summary>
-        /// Sets whether or not this client is offline. If true, no calls to Launchdarkly will be made.
+        /// Sets whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
-        /// <param name="offline">true if the client should remain offline</param>
+        /// <param name="offline"><see langword="true"/> if the client should remain offline</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder Offline(bool offline);
 
@@ -169,10 +190,9 @@ namespace LaunchDarkly.Xamarin
         /// immediately available the next time the SDK is started for the same user.
         /// </summary>
         /// <remarks>
-        /// The default is <c>true</c>.
+        /// The default is <see langword="true"/>.
         /// </remarks>
-        /// <param name="persistFlagValues">true to save flag values</param>
-        /// <returns>the same <c>Configuration</c> instance</returns>
+        /// <param name="persistFlagValues"><see langword="true"/> to save flag values</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder PersistFlagValues(bool persistFlagValues);
 
@@ -180,7 +200,8 @@ namespace LaunchDarkly.Xamarin
         /// Sets the polling interval (when streaming is disabled).
         /// </summary>
         /// <remarks>
-        /// Values less than the default of 30 seconds will be changed to the default.
+        /// The default is <see cref="Configuration.DefaultPollingInterval"/>; the minimum is
+        /// <see cref="Configuration.MinimumPollingInterval"/>.
         /// </remarks>
         /// <param name="pollingInterval">the rule update polling interval</param>
         /// <returns>the same builder</returns>
@@ -190,11 +211,14 @@ namespace LaunchDarkly.Xamarin
         /// Marks an attribute name as private for all users.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Any users sent to LaunchDarkly with this configuration active will have attributes with this name
         /// removed, even if you did not use the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
         /// method in <see cref="UserBuilder"/>.
-        /// 
+        /// </para>
+        /// <para>
         /// You may call this method repeatedly to mark multiple attributes as private.
+        /// </para>
         /// </remarks>
         /// <param name="privateAttributeName">the attribute name</param>
         /// <returns>the same builder</returns>
@@ -229,18 +253,6 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder StreamUri(Uri streamUri);
 
         /// <summary>
-        /// Sets whether to use the HTTP REPORT method for feature flag requests.
-        /// </summary>
-        /// <remarks>
-        /// By default, polling and streaming connections are made with the GET method, witht the user data
-        /// encoded into the request URI. Using REPORT allows the user data to be sent in the request body instead.
-        /// However, some network gateways do not support REPORT.
-        /// </remarks>
-        /// <param name="useReport">whether to use REPORT mode</param>
-        /// <returns>the same builder</returns>
-        IConfigurationBuilder UseReport(bool useReport);
-
-        /// <summary>
         /// Sets the number of user keys that the event processor can remember at any one time.
         /// </summary>
         /// <remarks>
@@ -266,17 +278,21 @@ namespace LaunchDarkly.Xamarin
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ConfigurationBuilder));
 
+        // This exists so that we can distinguish between leaving the HttpMessageHandler property unchanged
+        // and explicitly setting it to null. If the property value is the exact same instance as this, we
+        // will replace it with a platform-specific implementation.
+        internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
+
         internal bool _allAttributesPrivate = false;
         internal TimeSpan _backgroundPollingInterval;
         internal Uri _baseUri = Configuration.DefaultUri;
-        internal TimeSpan _connectionTimeout;
-        internal bool _enableBackgroundUpdating;
+        internal TimeSpan _connectionTimeout = Configuration.DefaultConnectionTimeout;
+        internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
         internal int _eventCapacity = Configuration.DefaultEventCapacity;
         internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
         internal Uri _eventsUri = Configuration.DefaultEventsUri;
-        internal HttpMessageHandler _httpMessageHandler = PlatformSpecific.Http.GetHttpMessageHandler(); // see Http.shared.cs
-        internal TimeSpan _httpClientTimeout = Configuration.DefaultHttpClientTimeout;
+        internal HttpMessageHandler _httpMessageHandler = DefaultHttpMessageHandlerInstance;
         internal bool _inlineUsersInEvents = false;
         internal bool _isStreamingEnabled = true;
         internal string _mobileKey;
@@ -292,7 +308,8 @@ namespace LaunchDarkly.Xamarin
         internal TimeSpan _userKeysFlushInterval = Configuration.DefaultUserKeysFlushInterval;
 
         // Internal properties only settable for testing
-        internal IConnectionManager _connectionManager;
+        internal IBackgroundModeManager _backgroundModeManager;
+        internal IConnectivityStateManager _connectivityStateManager;
         internal IDeviceInfo _deviceInfo;
         internal IEventProcessor _eventProcessor;
         internal IFlagCacheManager _flagCacheManager;
@@ -317,7 +334,6 @@ namespace LaunchDarkly.Xamarin
             _eventFlushInterval = copyFrom.EventFlushInterval;
             _eventsUri = copyFrom.EventsUri;
             _httpMessageHandler = copyFrom.HttpMessageHandler;
-            _httpClientTimeout = copyFrom.HttpClientTimeout;
             _inlineUsersInEvents = copyFrom.InlineUsersInEvents;
             _isStreamingEnabled = copyFrom.IsStreamingEnabled;
             _mobileKey = copyFrom.MobileKey;
@@ -407,12 +423,6 @@ namespace LaunchDarkly.Xamarin
             return this;
         }
 
-        public IConfigurationBuilder HttpClientTimeout(TimeSpan httpClientTimeout)
-        {
-            _httpClientTimeout = httpClientTimeout;
-            return this;
-        }
-
         public IConfigurationBuilder InlineUsersInEvents(bool inlineUsersInEvents)
         {
             _inlineUsersInEvents = inlineUsersInEvents;
@@ -485,12 +495,6 @@ namespace LaunchDarkly.Xamarin
             return this;
         }
 
-        public IConfigurationBuilder UseReport(bool useReport)
-        {
-            _useReport = useReport;
-            return this;
-        }
-
         public  IConfigurationBuilder UserKeysCapacity(int userKeysCapacity)
         {
             _userKeysCapacity = userKeysCapacity;
@@ -509,9 +513,21 @@ namespace LaunchDarkly.Xamarin
         // and then call these methods before you have called any of the public methods (since
         // only these methods return ConfigurationBuilder rather than IConfigurationBuilder).
 
-        internal ConfigurationBuilder ConnectionManager(IConnectionManager connectionManager)
+        internal ConfigurationBuilder BackgroundModeManager(IBackgroundModeManager backgroundModeManager)
         {
-            _connectionManager = connectionManager;
+            _backgroundModeManager = backgroundModeManager;
+            return this;
+        }
+
+        internal IConfigurationBuilder BackgroundPollingIntervalWithoutMinimum(TimeSpan backgroundPollingInterval)
+        {
+            _backgroundPollingInterval = backgroundPollingInterval;
+            return this;
+        }
+
+        internal ConfigurationBuilder ConnectivityStateManager(IConnectivityStateManager connectivityStateManager)
+        {
+            _connectivityStateManager = connectivityStateManager;
             return this;
         }
 

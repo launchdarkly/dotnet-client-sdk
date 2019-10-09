@@ -83,7 +83,7 @@
         <Version>4.0.0.497661</Version>
       </PackageReference>
       <PackageReference Include="WireMock.Net">
-        <Version>1.0.20</Version>
+        <Version>1.0.22</Version>
       </PackageReference>
     </ItemGroup>
     <ItemGroup>
@@ -151,6 +151,9 @@
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\ConfigurationTest.cs">
           <Link>SharedTestCode\ConfigurationTest.cs</Link>
         </Compile>
+        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagBuilder.cs">
+          <Link>SharedTestCode\FeatureFlagBuilder.cs</Link>
+        </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagRequestorTests.cs">
           <Link>SharedTestCode\FeatureFlagRequestorTests.cs</Link>
         </Compile>
@@ -194,6 +197,7 @@
           <Link>SharedTestCode\WireMockExtensions.cs</Link>
         </Compile>
         <Compile Include="IOsSpecificTests.cs" />
+        <Compile Include="AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">

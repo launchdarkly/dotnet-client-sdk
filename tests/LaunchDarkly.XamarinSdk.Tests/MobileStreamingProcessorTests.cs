@@ -18,7 +18,7 @@ namespace LaunchDarkly.Xamarin.Tests
             "}";
 
         private readonly User user = User.WithKey("me");
-        private const string encodedUser = "eyJrZXkiOiJtZSIsImFub255bW91cyI6ZmFsc2UsImN1c3RvbSI6e319";
+        private const string encodedUser = "eyJrZXkiOiJtZSIsIkFub255bW91cyI6ZmFsc2UsImN1c3RvbSI6e319";
 
         private EventSourceMock mockEventSource;
         private TestEventSourceFactory eventSourceFactory;
@@ -31,7 +31,7 @@ namespace LaunchDarkly.Xamarin.Tests
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
             mockFlagCacheMgr = new MockFlagCacheManager(new UserFlagInMemoryCache());
             configBuilder = Configuration.BuilderInternal("someKey")
-                                         .ConnectionManager(new MockConnectionManager(true))
+                                         .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                          .FlagCacheManager(mockFlagCacheMgr)
                                          .IsStreamingEnabled(true);
                                   
@@ -49,7 +49,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void StreamUriInGetModeHasUser()
         {
-            var config = configBuilder.UseReport(false).Build();
+            var config = configBuilder.Build();
             MobileStreamingProcessorStarted();
             var props = eventSourceFactory.ReceivedProperties;
             Assert.Equal(HttpMethod.Get, props.Method);
@@ -59,41 +59,42 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void StreamUriInGetModeHasReasonsParameterIfConfigured()
         {
-            var config = configBuilder.UseReport(false).EvaluationReasons(true).Build();
+            var config = configBuilder.EvaluationReasons(true).Build();
             MobileStreamingProcessorStarted();
             var props = eventSourceFactory.ReceivedProperties;
             Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + encodedUser + "?withReasons=true"), props.StreamUri);
         }
 
-        [Fact]
-        public void StreamUriInReportModeHasNoUser()
-        {
-            var config = configBuilder.UseReport(true).Build();
-            MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            Assert.Equal(new HttpMethod("REPORT"), props.Method);
-            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH), props.StreamUri);
-        }
+        // Report mode is currently disabled - ch47341
+        //[Fact]
+        //public void StreamUriInReportModeHasNoUser()
+        //{
+        //    var config = configBuilder.UseReport(true).Build();
+        //    MobileStreamingProcessorStarted();
+        //    var props = eventSourceFactory.ReceivedProperties;
+        //    Assert.Equal(new HttpMethod("REPORT"), props.Method);
+        //    Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH), props.StreamUri);
+        //}
 
-        [Fact]
-        public void StreamUriInReportModeHasReasonsParameterIfConfigured()
-        {
-            var config = configBuilder.UseReport(true).EvaluationReasons(true).Build();
-            MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + "?withReasons=true"), props.StreamUri);
-        }
+        //[Fact]
+        //public void StreamUriInReportModeHasReasonsParameterIfConfigured()
+        //{
+        //    var config = configBuilder.UseReport(true).EvaluationReasons(true).Build();
+        //    MobileStreamingProcessorStarted();
+        //    var props = eventSourceFactory.ReceivedProperties;
+        //    Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + "?withReasons=true"), props.StreamUri);
+        //}
 
-        [Fact]
-        public async Task StreamRequestBodyInReportModeHasUser()
-        {
-            configBuilder.UseReport(true);
-            MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            var body = Assert.IsType<StringContent>(props.RequestBody);
-            var s = await body.ReadAsStringAsync();
-            Assert.Equal(user.AsJson(), s);
-        }
+        //[Fact]
+        //public async Task StreamRequestBodyInReportModeHasUser()
+        //{
+        //    configBuilder.UseReport(true);
+        //    MobileStreamingProcessorStarted();
+        //    var props = eventSourceFactory.ReceivedProperties;
+        //    var body = Assert.IsType<StringContent>(props.RequestBody);
+        //    var s = await body.ReadAsStringAsync();
+        //    Assert.Equal(user.AsJson(), s);
+        //}
 
         [Fact]
         public void PUTstoresFeatureFlags()
@@ -106,7 +107,7 @@ namespace LaunchDarkly.Xamarin.Tests
             PUTMessageSentToProcessor();
             flagsInCache = mockFlagCacheMgr.FlagsForUser(user);
             Assert.NotEmpty(flagsInCache);
-            int intFlagValue = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            int intFlagValue = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagValue);
         }
 
@@ -116,7 +117,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before PATCH, fill in flags
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             //PATCH to update 1 flag
@@ -124,7 +125,7 @@ namespace LaunchDarkly.Xamarin.Tests
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             //verify flag has changed
-            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(99, flagFromPatch);
         }
 
@@ -134,7 +135,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before PATCH, fill in flags
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             //PATCH to update 1 flag
@@ -142,7 +143,7 @@ namespace LaunchDarkly.Xamarin.Tests
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             //verify flag has not changed
-            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, flagFromPatch);
         }
 
@@ -152,7 +153,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before DELETE, fill in flags, test it's there
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             // DELETE int-flag
@@ -169,7 +170,7 @@ namespace LaunchDarkly.Xamarin.Tests
             // before DELETE, fill in flags, test it's there
             MobileStreamingProcessorStarted();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.ToObject<int>();
+            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
 
             // DELETE int-flag

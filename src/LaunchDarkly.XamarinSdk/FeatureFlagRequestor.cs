@@ -79,7 +79,7 @@ namespace LaunchDarkly.Xamarin
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)
         {
-            using (var cts = new CancellationTokenSource(_configuration.HttpClientTimeout))
+            using (var cts = new CancellationTokenSource(_configuration.ConnectionTimeout))
             {
                 if (_etag != null)
                 {
@@ -116,7 +116,7 @@ namespace LaunchDarkly.Xamarin
                     }
                     //Otherwise this was a request timeout.
                     throw new TimeoutException("Get item with URL: " + request.RequestUri +
-                                                " timed out after : " + _configuration.HttpClientTimeout);
+                                                " timed out after : " + _configuration.ConnectionTimeout);
                 }
             }
         }

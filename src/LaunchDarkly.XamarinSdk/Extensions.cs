@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using LaunchDarkly.Client;
-using Newtonsoft.Json;
 
 namespace LaunchDarkly.Xamarin
 {
@@ -15,8 +13,7 @@ namespace LaunchDarkly.Xamarin
 
         public static string AsJson(this User user)
         {
-            var userAsString = JsonConvert.SerializeObject(user);
-            return userAsString;
+            return JsonUtil.EncodeJson(user);
         }
     }
 }

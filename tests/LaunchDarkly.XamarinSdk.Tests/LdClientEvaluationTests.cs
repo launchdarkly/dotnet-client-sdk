@@ -1,5 +1,5 @@
-﻿using LaunchDarkly.Client;
-using Newtonsoft.Json.Linq;
+﻿using System.Collections.Generic;
+using LaunchDarkly.Client;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -19,7 +19,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void BoolVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(true));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(true));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.True(client.BoolVariation("flag-key", false));
@@ -39,7 +39,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void BoolVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.Off.Instance;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(true), 1, reason);
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(true), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 var expected = new EvaluationDetail<bool>(true, 1, reason);
@@ -50,7 +50,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void IntVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(3));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(3));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.Equal(3, client.IntVariation("flag-key", 0));
@@ -60,7 +60,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void IntVariationCoercesFloatValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(3.0f));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(3.0f));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.Equal(3, client.IntVariation("flag-key", 0));
@@ -80,7 +80,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void IntVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.Off.Instance;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(3), 1, reason);
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(3), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 var expected = new EvaluationDetail<int>(3, 1, reason);
@@ -91,7 +91,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void FloatVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(2.5f));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(2.5f));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.Equal(2.5f, client.FloatVariation("flag-key", 0));
@@ -101,7 +101,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void FloatVariationCoercesIntValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(2));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(2));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.Equal(2.0f, client.FloatVariation("flag-key", 0));
@@ -121,7 +121,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void FloatVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.Off.Instance;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue(2.5f), 1, reason);
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(2.5f), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 var expected = new EvaluationDetail<float>(2.5f, 1, reason);
@@ -132,7 +132,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void StringVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue("string value"));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.Equal("string value", client.StringVariation("flag-key", ""));
@@ -152,7 +152,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void StringVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.Off.Instance;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue("string value"), 1, reason);
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 var expected = new EvaluationDetail<string>("string value", 1, reason);
@@ -163,11 +163,11 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void JsonVariationReturnsValue()
         {
-            var jsonValue = new JObject { { "thing", new JValue("stuff") } };
+            var jsonValue = LdValue.Convert.String.ObjectFrom(new Dictionary<string, string> { { "thing", "stuff" } });
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
-                Assert.Equal(jsonValue, client.JsonVariation("flag-key", ImmutableJsonValue.Of(3)).AsJToken());
+                Assert.Equal(jsonValue, client.JsonVariation("flag-key", LdValue.Of(3)));
             }
         }
 
@@ -176,7 +176,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var client = ClientWithFlagsJson("{}"))
             {
-                var defaultVal = ImmutableJsonValue.Of(3);
+                var defaultVal = LdValue.Of(3);
                 Assert.Equal(defaultVal, client.JsonVariation(nonexistentFlagKey, defaultVal));
             }
         }
@@ -184,14 +184,14 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void JsonVariationDetailReturnsValue()
         {
-            var jsonValue = new JObject { { "thing", new JValue("stuff") } };
+            var jsonValue = LdValue.Convert.String.ObjectFrom(new Dictionary<string, string> { { "thing", "stuff" } });
             var reason = EvaluationReason.Off.Instance;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue, 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
-                var expected = new EvaluationDetail<JToken>(jsonValue, 1, reason);
-                var result = client.JsonVariationDetail("flag-key", ImmutableJsonValue.Of(3));
-                Assert.True(JToken.DeepEquals(expected.Value, result.Value.AsJToken()));
+                var expected = new EvaluationDetail<LdValue>(jsonValue, 1, reason);
+                var result = client.JsonVariationDetail("flag-key", LdValue.Of(3));
+                Assert.Equal(expected.Value, result.Value);
                 Assert.Equal(expected.VariationIndex, result.VariationIndex);
                 Assert.Equal(expected.Reason, result.Reason);
             }
@@ -213,7 +213,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void DefaultValueReturnedIfValueTypeIsDifferent()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue("string value"));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.Equal(3, client.IntVariation("flag-key", 3));
@@ -223,7 +223,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void DefaultValueAndReasonIsReturnedIfValueTypeIsDifferent()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", new JValue("string value"));
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 var expected = new EvaluationDetail<int>(3, null, new EvaluationReason.Error(EvaluationErrorKind.WRONG_TYPE));
@@ -234,7 +234,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void DefaultValueReturnedIfFlagValueIsNull()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", null);
+            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Null);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
                 Assert.Equal(3, client.IntVariation("flag-key", 3));

@@ -3,8 +3,6 @@ LaunchDarkly Client-Side SDK for Xamarin
 
 [![CircleCI](https://circleci.com/gh/launchdarkly/xamarin-client-sdk/tree/master.svg?style=svg)](https://circleci.com/gh/launchdarkly/xamarin-client-sdk/tree/master)
 
-*This version of the SDK is a **beta** version and should not be considered ready for production use while this message is visible.*
-
 LaunchDarkly overview
 -------------------------
 [LaunchDarkly](https://www.launchdarkly.com) is a feature management platform that serves over 100 billion feature flags daily to help teams build better software, faster. [Get started](https://docs.launchdarkly.com/docs/getting-started) using LaunchDarkly today!
@@ -26,7 +24,7 @@ Refer to the [SDK documentation](https://docs.launchdarkly.com/docs/xamarin-sdk-
 Learn more
 -----------
 
-Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/docs/xamarin-sdk-reference).
+Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/docs/xamarin-sdk-reference) or our [code-generated API documentation](https://launchdarkly.github.io/xamarin-client-sdk/).
 
 Testing
 -------

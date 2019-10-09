@@ -38,7 +38,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             }
         }
 
-        internal static void UpdateBackgroundMode(bool isInBackground)
+        private static void UpdateBackgroundMode(bool isInBackground)
         {
             var args = new BackgroundModeChangedEventArgs(isInBackground);
             var handlers = _backgroundModeChanged;

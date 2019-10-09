@@ -8,7 +8,7 @@ namespace LaunchDarkly.Xamarin
     {
         public string UniqueDeviceId()
         {
-            return ClientIdentifier.PlatformGetOrCreateClientId();
+            return ClientIdentifier.GetOrCreateClientId();
         }
     }
 }

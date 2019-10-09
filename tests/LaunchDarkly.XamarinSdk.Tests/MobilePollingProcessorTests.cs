@@ -21,8 +21,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var stubbedFlagCache = new UserFlagInMemoryCache();
             mockFlagCacheManager = new MockFlagCacheManager(stubbedFlagCache);
             user = User.WithKey("user1Key");
-            var timeSpan = TimeSpan.FromSeconds(1);
-            return new MobilePollingProcessor(mockFeatureFlagRequestor, mockFlagCacheManager, user, timeSpan);
+            return new MobilePollingProcessor(mockFeatureFlagRequestor, mockFlagCacheManager, user, TimeSpan.FromSeconds(30), TimeSpan.Zero);
         }
 
         [Fact]

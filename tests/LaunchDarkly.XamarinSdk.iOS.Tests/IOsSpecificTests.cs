@@ -3,7 +3,7 @@ using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
 {
-    public class IOsSpecificTests
+    public class IOsSpecificTests : BaseTest
     {
         [Fact]
         public void SdkReturnsIOsPlatformType()
@@ -23,6 +23,20 @@ namespace LaunchDarkly.Xamarin.Tests
                 Assert.Contains("os", user.Custom.Keys);
                 Assert.StartsWith("iOS ", user.Custom["os"].AsString);
                 Assert.Contains("device", user.Custom.Keys);
+            }
+        }
+
+        [Fact]
+        public void CanGetUniqueUserKey()
+        {
+            var anonUser = User.Builder((string)null).Anonymous(true).Build();
+            var config = TestUtil.ConfigWithFlagsJson(anonUser, "mobileKey", "{}")
+                .DeviceInfo(null).Build();
+            using (var client = TestUtil.CreateClient(config, anonUser))
+            {
+                var user = client.User;
+                Assert.NotNull(user.Key);
+                Assert.NotEqual("", user.Key);
             }
         }
     }
