@@ -7,6 +7,43 @@ namespace LaunchDarkly.Xamarin.Tests
     public class ConfigurationTest : BaseTest
     {
         [Fact]
+        public void TestDefaultsFromDefaultFactoryMethod()
+        {
+            VerifyDefaults(Configuration.Default("my-key"));
+        }
+
+        [Fact]
+        public void TestDefaultsFromBuilder()
+        {
+            VerifyDefaults(Configuration.Builder("my-key").Build());
+        }
+
+        private void VerifyDefaults(Configuration c)
+        {
+            Assert.False(c.AllAttributesPrivate);
+            Assert.Equal(Configuration.DefaultBackgroundPollingInterval, c.BackgroundPollingInterval);
+            Assert.Equal(Configuration.DefaultUri, c.BaseUri);
+            Assert.Equal(Configuration.DefaultConnectionTimeout, c.ConnectionTimeout);
+            Assert.True(c.EnableBackgroundUpdating);
+            Assert.False(c.EvaluationReasons);
+            Assert.Equal(Configuration.DefaultEventCapacity, c.EventCapacity);
+            Assert.Equal(Configuration.DefaultEventFlushInterval, c.EventFlushInterval);
+            Assert.Equal(Configuration.DefaultEventsUri, c.EventsUri);
+            Assert.False(c.InlineUsersInEvents);
+            Assert.True(c.IsStreamingEnabled);
+            Assert.False(c.Offline);
+            Assert.True(c.PersistFlagValues);
+            Assert.Equal(Configuration.DefaultPollingInterval, c.PollingInterval);
+            Assert.Null(c.PrivateAttributeNames);
+            Assert.Equal(Configuration.DefaultReadTimeout, c.ReadTimeout);
+            Assert.Equal(Configuration.DefaultReconnectTime, c.ReconnectTime);
+            Assert.Equal(Configuration.DefaultStreamUri, c.StreamUri);
+            Assert.False(c.UseReport);
+            Assert.Equal(Configuration.DefaultUserKeysCapacity, c.UserKeysCapacity);
+            Assert.Equal(Configuration.DefaultUserKeysFlushInterval, c.UserKeysFlushInterval);
+        }
+
+        [Fact]
         public void CanOverrideConfiguration()
         {
             var config = Configuration.Builder("AnyOtherSdkKey")
