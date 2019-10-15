@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
+<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{2E7720E4-01A0-403B-863C-C6C596DF5926}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TemplateGuid>{122416d6-6b49-4ee2-a1e8-b825f31c79fe}</TemplateGuid>
     <OutputType>Library</OutputType>
@@ -142,20 +141,15 @@
     <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
-    <PackageReference Include="Common.Logging">
-      <Version>3.4.1</Version>
+    <PackageReference Include="Common.Logging" Version="3.4.1">
     </PackageReference>
-    <PackageReference Include="WireMock.Net">
-      <Version>1.0.22</Version>
+    <PackageReference Include="WireMock.Net" Version="1.0.22">
     </PackageReference>
-    <PackageReference Include="xunit">
-      <Version>2.4.1</Version>
+    <PackageReference Include="xunit" Version="2.4.1">
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms">
-      <Version>4.0.0.497661</Version>
+    <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661">
     </PackageReference>
-    <PackageReference Include="xunit.runner.devices">
-      <Version>2.5.25</Version>
+    <PackageReference Include="xunit.runner.devices" Version="2.5.25">
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -164,8 +158,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
-      <Project>{7717A2B2-9905-40A7-989F-790139D69543}</Project>
-      <Name>LaunchDarkly.XamarinSdk</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
