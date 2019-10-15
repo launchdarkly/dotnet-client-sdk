@@ -34,7 +34,6 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="Common.Logging" Version="3.4.1" />
     <PackageReference Include="LaunchDarkly.CommonSdk" Version="4.2.0" />
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.54" PrivateAssets="All" />
     <Compile Include="*.cs" />
     <Compile Include="Properties\*.cs" />
     <Compile Include="**\*.shared.cs" />
@@ -81,6 +80,4 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
-  
-  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>
