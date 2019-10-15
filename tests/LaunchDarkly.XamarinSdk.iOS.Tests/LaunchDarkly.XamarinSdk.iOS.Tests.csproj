@@ -8,6 +8,7 @@
         <TemplateGuid>{edc1b0fa-90cd-4038-8fad-98fe74adb368}</TemplateGuid>
         <TargetFramework>Xamarin.iOS10</TargetFramework>
         <OutputType>Exe</OutputType>
+        <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
         <RootNamespace>LaunchDarkly.XamarinSdk.iOS.Tests</RootNamespace>
         <AssemblyName>LaunchDarkly.XamarinSdk.iOS.Tests</AssemblyName>
         <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
