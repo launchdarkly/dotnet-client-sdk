@@ -6,6 +6,7 @@
         <ProjectGuid>{5EFF7561-35C1-4C62-B0BE-A76E37DCEB32}</ProjectGuid>
         <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
         <TemplateGuid>{edc1b0fa-90cd-4038-8fad-98fe74adb368}</TemplateGuid>
+        <TargetFramework>Xamarin.iOS10</TargetFramework>
         <OutputType>Exe</OutputType>
         <RootNamespace>LaunchDarkly.XamarinSdk.iOS.Tests</RootNamespace>
         <AssemblyName>LaunchDarkly.XamarinSdk.iOS.Tests</AssemblyName>
