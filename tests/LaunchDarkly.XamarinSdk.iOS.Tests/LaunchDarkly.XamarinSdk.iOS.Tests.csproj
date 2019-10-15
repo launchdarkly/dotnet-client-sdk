@@ -143,8 +143,6 @@
         <None Include="Entitlements.plist" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Main.cs" />
-        <Compile Include="AppDelegate.cs" />
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\BaseTest.cs">
           <Link>SharedTestCode\BaseTest.cs</Link>
         </Compile>
@@ -196,8 +194,6 @@
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\WireMockExtensions.cs">
           <Link>SharedTestCode\WireMockExtensions.cs</Link>
         </Compile>
-        <Compile Include="IOsSpecificTests.cs" />
-        <Compile Include="AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
