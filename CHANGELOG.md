@@ -3,7 +3,7 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
-## [1.1.0] - 2019-10-10
+## [1.1.0] - 2019-10-17
 ### Added:
 - Added support for upcoming LaunchDarkly experimentation features. See `ILdClient.Track(string, LdValue, double)`.
 - `User.AnonymousOptional` and `IUserBuilder.AnonymousOptional` allow treating the `Anonymous` property as nullable (necessary for consistency with other SDKs). See note about this under Fixed.
