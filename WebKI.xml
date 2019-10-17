@@ -9,6 +9,8 @@
   <HelpKINode Title="Android enumeration member" Url="html/T_LaunchDarkly_Xamarin_PlatformType.htm" />
   <HelpKINode Title="Anonymous method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Anonymous.htm" />
   <HelpKINode Title="Anonymous property" Url="html/P_LaunchDarkly_Client_User_Anonymous.htm" />
+  <HelpKINode Title="AnonymousOptional method" Url="html/M_LaunchDarkly_Client_IUserBuilder_AnonymousOptional.htm" />
+  <HelpKINode Title="AnonymousOptional property" Url="html/P_LaunchDarkly_Client_User_AnonymousOptional.htm" />
   <HelpKINode Title="Array enumeration member" Url="html/T_LaunchDarkly_Client_LdValueType.htm" />
   <HelpKINode Title="ArrayFrom method">
     <HelpKINode Title="LdValue.ArrayFrom Method " Url="html/M_LaunchDarkly_Client_LdValue_ArrayFrom.htm" />
@@ -89,6 +91,14 @@
   <HelpKINode Title="Configuration.UserKeysFlushInterval property" Url="html/P_LaunchDarkly_Xamarin_Configuration_UserKeysFlushInterval.htm" />
   <HelpKINode Title="ConnectionTimeout method" Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_ConnectionTimeout.htm" />
   <HelpKINode Title="ConnectionTimeout property" Url="html/P_LaunchDarkly_Xamarin_Configuration_ConnectionTimeout.htm" />
+  <HelpKINode Title="ConsoleAdapter class">
+    <HelpKINode Title="ConsoleAdapter Class" Url="html/T_LaunchDarkly_Logging_ConsoleAdapter.htm" />
+    <HelpKINode Title="constructor" Url="html/Overload_LaunchDarkly_Logging_ConsoleAdapter__ctor.htm" />
+    <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Logging_ConsoleAdapter.htm" />
+    <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Logging_ConsoleAdapter.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ConsoleAdapter.ConsoleAdapter constructor" Url="html/Overload_LaunchDarkly_Logging_ConsoleAdapter__ctor.htm" />
+  <HelpKINode Title="ConsoleAdapter.CreateLogger method" Url="html/Overload_LaunchDarkly_Logging_ConsoleAdapter_CreateLogger.htm" />
   <HelpKINode Title="Convert class">
     <HelpKINode Title="fields" Url="html/Fields_T_LaunchDarkly_Client_LdValue_Convert.htm" />
   </HelpKINode>
@@ -100,6 +110,7 @@
   </HelpKINode>
   <HelpKINode Title="Country method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Country.htm" />
   <HelpKINode Title="Country property" Url="html/P_LaunchDarkly_Client_User_Country.htm" />
+  <HelpKINode Title="CreateLogger method" Url="html/Overload_LaunchDarkly_Logging_ConsoleAdapter_CreateLogger.htm" />
   <HelpKINode Title="CreationDate property" Url="html/P_LaunchDarkly_Client_Event_CreationDate.htm" />
   <HelpKINode Title="Custom method" Url="html/Overload_LaunchDarkly_Client_IUserBuilder_Custom.htm" />
   <HelpKINode Title="Custom property" Url="html/P_LaunchDarkly_Client_User_Custom.htm" />
@@ -394,6 +405,7 @@
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_IUserBuilder.htm" />
   </HelpKINode>
   <HelpKINode Title="IUserBuilder.Anonymous method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Anonymous.htm" />
+  <HelpKINode Title="IUserBuilder.AnonymousOptional method" Url="html/M_LaunchDarkly_Client_IUserBuilder_AnonymousOptional.htm" />
   <HelpKINode Title="IUserBuilder.Avatar method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Avatar.htm" />
   <HelpKINode Title="IUserBuilder.Build method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Build.htm" />
   <HelpKINode Title="IUserBuilder.Country method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Country.htm" />
@@ -453,6 +465,8 @@
   <HelpKINode Title="LaunchDarkly.Client.LdValue.Converter&lt;T&gt; class" Url="html/T_LaunchDarkly_Client_LdValue_Converter_1.htm" />
   <HelpKINode Title="LaunchDarkly.Client.LdValueType enumeration" Url="html/T_LaunchDarkly_Client_LdValueType.htm" />
   <HelpKINode Title="LaunchDarkly.Client.User class" Url="html/T_LaunchDarkly_Client_User.htm" />
+  <HelpKINode Title="LaunchDarkly.Logging namespace" Url="html/N_LaunchDarkly_Logging.htm" />
+  <HelpKINode Title="LaunchDarkly.Logging.ConsoleAdapter class" Url="html/T_LaunchDarkly_Logging_ConsoleAdapter.htm" />
   <HelpKINode Title="LaunchDarkly.Xamarin namespace" Url="html/N_LaunchDarkly_Xamarin.htm" />
   <HelpKINode Title="LaunchDarkly.Xamarin.Configuration class" Url="html/T_LaunchDarkly_Xamarin_Configuration.htm" />
   <HelpKINode Title="LaunchDarkly.Xamarin.FlagChangedEventArgs class" Url="html/T_LaunchDarkly_Xamarin_FlagChangedEventArgs.htm" />
@@ -671,6 +685,7 @@
     <HelpKINode Title="LdClient.User Property " Url="html/P_LaunchDarkly_Xamarin_LdClient_User.htm" />
   </HelpKINode>
   <HelpKINode Title="User.Anonymous property" Url="html/P_LaunchDarkly_Client_User_Anonymous.htm" />
+  <HelpKINode Title="User.AnonymousOptional property" Url="html/P_LaunchDarkly_Client_User_AnonymousOptional.htm" />
   <HelpKINode Title="User.Avatar property" Url="html/P_LaunchDarkly_Client_User_Avatar.htm" />
   <HelpKINode Title="User.Builder method" Url="html/Overload_LaunchDarkly_Client_User_Builder.htm" />
   <HelpKINode Title="User.Country property" Url="html/P_LaunchDarkly_Client_User_Country.htm" />
