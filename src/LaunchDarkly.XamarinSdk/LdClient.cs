@@ -467,6 +467,12 @@ namespace LaunchDarkly.Xamarin
         }
 
         /// <inheritdoc/>
+        public void Track(string eventName, LdValue data, double metricValue)
+        {
+            eventProcessor.SendEvent(_eventFactoryDefault.NewCustomEvent(eventName, User, data, metricValue));
+        }
+
+        /// <inheritdoc/>
         public void Track(string eventName, LdValue data)
         {
             SendEventIfOnline(_eventFactoryDefault.NewCustomEvent(eventName, User, data));

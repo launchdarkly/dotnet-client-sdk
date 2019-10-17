@@ -216,6 +216,12 @@ namespace LaunchDarkly.Xamarin
         EvaluationDetail<LdValue> JsonVariationDetail(string key, LdValue defaultValue);
 
         /// <summary>
+        /// Tracks that current user performed an event for the given event name.
+        /// </summary>
+        /// <param name="eventName">the name of the event</param>
+        void Track(string eventName);
+
+        /// <summary>
         /// Tracks that the current user performed an event for the given event name, with additional JSON data.
         /// </summary>
         /// <param name="eventName">the name of the event</param>
@@ -223,10 +229,22 @@ namespace LaunchDarkly.Xamarin
         void Track(string eventName, LdValue data);
 
         /// <summary>
-        /// Tracks that the current user performed an event for the given event name.
+        /// Tracks that the current user performed an event for the given event name, and associates it with a
+        /// numeric metric value.
         /// </summary>
+        /// <remarks>
+        /// As of this version’s release date, the LaunchDarkly service does not support the <c>metricValue</c>
+        /// parameter. As a result, calling this overload of <c>Track</c> will not yet produce any different
+        /// behavior from calling <see cref="Track(String, LdValue)"/> without a <c>metricValue</c>.
+        /// Refer to the <a href="https://docs.launchdarkly.com/docs/xamarin-sdk-reference#section-track">SDK reference guide</a>
+        /// for the latest status.
+        /// </remarks>
         /// <param name="eventName">the name of the event</param>
-        void Track(string eventName);
+        /// <param name="data">a JSON value containing additional data associated with the event; pass
+        /// <see cref="LdValue.Null"/> if you do not need this value</param>
+        /// <param name="metricValue">this value is used by the LaunchDarkly experimentation feature in
+        /// numeric custom metrics, and will also be returned as part of the custom event for Data Export</param>
+        void Track(string eventName, LdValue data, double metricValue);
 
         /// <summary>
         /// Returns a map from feature flag keys to <see cref="LdValue"/> feature flag values for the current user.

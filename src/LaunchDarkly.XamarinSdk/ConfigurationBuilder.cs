@@ -284,7 +284,7 @@ namespace LaunchDarkly.Xamarin
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
         internal bool _allAttributesPrivate = false;
-        internal TimeSpan _backgroundPollingInterval;
+        internal TimeSpan _backgroundPollingInterval = Configuration.DefaultBackgroundPollingInterval;
         internal Uri _baseUri = Configuration.DefaultUri;
         internal TimeSpan _connectionTimeout = Configuration.DefaultConnectionTimeout;
         internal bool _enableBackgroundUpdating = true;
@@ -303,7 +303,7 @@ namespace LaunchDarkly.Xamarin
         internal TimeSpan _readTimeout = Configuration.DefaultReadTimeout;
         internal TimeSpan _reconnectTime = Configuration.DefaultReconnectTime;
         internal Uri _streamUri = Configuration.DefaultStreamUri;
-        internal bool _useReport;
+        internal bool _useReport = false;
         internal int _userKeysCapacity = Configuration.DefaultUserKeysCapacity;
         internal TimeSpan _userKeysFlushInterval = Configuration.DefaultUserKeysFlushInterval;
 

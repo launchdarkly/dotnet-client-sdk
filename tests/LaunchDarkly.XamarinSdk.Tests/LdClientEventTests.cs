@@ -34,15 +34,54 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (LdClient client = MakeClient(user, "{}"))
             {
-                LdValue data = LdValue.Of("hi");
-                client.Track("eventkey", data);
+                client.Track("eventkey");
                 Assert.Collection(eventProcessor.Events, 
                     e => CheckIdentifyEvent(e, user),
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.Key);
                         Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(LdValue.Null, ce.Data);
+                        Assert.Null(ce.MetricValue);
+                    });
+            }
+        }
+
+        [Fact]
+        public void TrackWithDataSendsCustomEvent()
+        {
+            using (LdClient client = MakeClient(user, "{}"))
+            {
+                LdValue data = LdValue.Of("hi");
+                client.Track("eventkey", data);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        CustomEvent ce = Assert.IsType<CustomEvent>(e);
+                        Assert.Equal("eventkey", ce.Key);
+                        Assert.Equal(user.Key, ce.User.Key);
                         Assert.Equal(data, ce.Data);
+                        Assert.Null(ce.MetricValue);
+                    });
+            }
+        }
+
+        [Fact]
+        public void TrackWithMetricValueSendsCustomEvent()
+        {
+            using (LdClient client = MakeClient(user, "{}"))
+            {
+                LdValue data = LdValue.Of("hi");
+                double metricValue = 1.5;
+                client.Track("eventkey", data, metricValue);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        CustomEvent ce = Assert.IsType<CustomEvent>(e);
+                        Assert.Equal("eventkey", ce.Key);
+                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(data, ce.Data);
+                        Assert.Equal(metricValue, ce.MetricValue);
                     });
             }
         }
