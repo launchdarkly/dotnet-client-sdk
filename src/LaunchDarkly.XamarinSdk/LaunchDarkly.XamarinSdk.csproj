@@ -5,7 +5,7 @@
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">netstandard1.6;netstandard2.0;net45;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">netstandard1.6;netstandard2.0;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' != '' ">$(LD_TARGET_FRAMEWORKS)</TargetFrameworks>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.XamarinSdk</AssemblyName>
     <PackageId>LaunchDarkly.XamarinSdk</PackageId>
@@ -33,7 +33,7 @@
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="Common.Logging" Version="3.4.1" />
-    <PackageReference Include="LaunchDarkly.CommonSdk" Version="4.2.0" />
+    <PackageReference Include="LaunchDarkly.CommonSdk" Version="4.2.1" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.60" PrivateAssets="All" />
     <Compile Include="*.cs" />
     <Compile Include="Properties\*.cs" />
