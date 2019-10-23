@@ -3,6 +3,10 @@
 All notable changes to the LaunchDarkly Client-side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.1.1] - 2019-10-23
+### Fixed:
+- The JSON serialization of `User` was producing an extra `Anonymous` property in addition to `anonymous`. If Newtonsoft.Json was configured globally to force all properties to lowercase, this would cause an exception when serializing a user since the two properties would end up with the same name. ([#22](https://github.com/launchdarkly/xamarin-client-sdk/issues/22))
+
 ## [1.1.0] - 2019-10-17
 ### Added:
 - Added support for upcoming LaunchDarkly experimentation features. See `ILdClient.Track(string, LdValue, double)`.
