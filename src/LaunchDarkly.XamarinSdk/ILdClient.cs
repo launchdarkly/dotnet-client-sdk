@@ -8,6 +8,10 @@ namespace LaunchDarkly.Xamarin
     /// <summary>
     /// Interface for the standard SDK client methods and properties. The only implementation of this is <see cref="LdClient"/>.
     /// </summary>
+    /// <remarks>
+    /// See also <see cref="ILdClientExtensions"/>, which provides convenience methods that build upon
+    /// this interface.
+    /// </remarks>
     public interface ILdClient : IDisposable
     {
         /// <summary>
