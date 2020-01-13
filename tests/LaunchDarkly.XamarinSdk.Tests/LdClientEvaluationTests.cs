@@ -38,7 +38,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void BoolVariationDetailReturnsValue()
         {
-            var reason = EvaluationReason.Off.Instance;
+            var reason = EvaluationReason.OffReason;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(true), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
