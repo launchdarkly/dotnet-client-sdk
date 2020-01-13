@@ -396,7 +396,7 @@ namespace LaunchDarkly.Xamarin
             T defaultValue = converter.ToType(defaultJson);
 
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
-                new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(kind));
+                new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(kind));
 
             var flag = flagCacheManager.FlagForUser(featureKey, User);
             if (flag == null)
@@ -437,7 +437,7 @@ namespace LaunchDarkly.Xamarin
                 if (checkType && !defaultJson.IsNull && flag.value.Type != defaultJson.Type)
                 {
                     valueJson = defaultJson;
-                    result = new EvaluationDetail<T>(defaultValue, null, new EvaluationReason.Error(EvaluationErrorKind.WRONG_TYPE));
+                    result = new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WRONG_TYPE));
                 }
                 else
                 {
