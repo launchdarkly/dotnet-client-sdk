@@ -75,8 +75,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (var client = await LdClient.InitAsync(config, anonUserIn))
             {
                 Assert.NotSame(anonUserIn, stub.ReceivedUser);
-                Assert.NotNull(stub.ReceivedUser.Key);
-                Assert.NotEqual("", stub.ReceivedUser.Key);
+                Assert.Equal(MockDeviceInfo.GeneratedId, stub.ReceivedUser.Key);
                 Assert.True(stub.ReceivedUser.Anonymous);
             }
         }
@@ -218,9 +217,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 await client.IdentifyAsync(anonUserIn);
 
                 Assert.NotSame(simpleUser, stub.ReceivedUser);
-                Assert.NotEqual(simpleUser.Key, stub.ReceivedUser.Key);
-                Assert.NotNull(stub.ReceivedUser.Key);
-                Assert.NotEqual("", stub.ReceivedUser.Key);
+                Assert.Equal(MockDeviceInfo.GeneratedId, stub.ReceivedUser.Key);
                 Assert.True(stub.ReceivedUser.Anonymous);
             }
         }
