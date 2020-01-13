@@ -519,7 +519,7 @@ namespace LaunchDarkly.Xamarin
             SendEventIfOnline(_eventFactoryDefault.NewIdentifyEvent(newUser));
 
             return await _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(_config, user, flagCacheManager, _inBackground),
+                Factory.CreateUpdateProcessorFactory(_config, newUser, flagCacheManager, _inBackground),
                 true
             );
         }

@@ -145,7 +145,7 @@ namespace LaunchDarkly.Xamarin.Tests
                                 .EventProcessor(new MockEventProcessor())
                                 .UpdateProcessorFactory(MockPollingProcessor.Factory(null))
                                 .PersistentStorage(new MockPersistentStorage())
-                                .DeviceInfo(new MockDeviceInfo(""));
+                                .DeviceInfo(new MockDeviceInfo());
         }
 
         public static void AssertJsonEquals(JToken expected, JToken actual)
