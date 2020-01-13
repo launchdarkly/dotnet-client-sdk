@@ -175,6 +175,8 @@ namespace LaunchDarkly.Xamarin.Tests
         private User _user;
         private string _flagsJson;
 
+        public User ReceivedUser => _user;
+
         public MockPollingProcessor(string flagsJson) : this(null, null, flagsJson) { }
 
         private MockPollingProcessor(IFlagCacheManager cacheManager, User user, string flagsJson)
