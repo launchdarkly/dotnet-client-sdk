@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <HelpKI>
+  <HelpKINode Title="Add method">
+    <HelpKINode Title="ArrayBuilder.Add Method " Url="html/Overload_LaunchDarkly_Client_LdValue_ArrayBuilder_Add.htm" />
+    <HelpKINode Title="ObjectBuilder.Add Method " Url="html/Overload_LaunchDarkly_Client_LdValue_ObjectBuilder_Add.htm" />
+  </HelpKINode>
   <HelpKINode Title="AllAttributesPrivate method" Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_AllAttributesPrivate.htm" />
   <HelpKINode Title="AllAttributesPrivate property" Url="html/P_LaunchDarkly_Xamarin_Configuration_AllAttributesPrivate.htm" />
   <HelpKINode Title="AllFlags method">
@@ -12,6 +16,9 @@
   <HelpKINode Title="AnonymousOptional method" Url="html/M_LaunchDarkly_Client_IUserBuilder_AnonymousOptional.htm" />
   <HelpKINode Title="AnonymousOptional property" Url="html/P_LaunchDarkly_Client_User_AnonymousOptional.htm" />
   <HelpKINode Title="Array enumeration member" Url="html/T_LaunchDarkly_Client_LdValueType.htm" />
+  <HelpKINode Title="ArrayBuilder class">
+    <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_LdValue_ArrayBuilder.htm" />
+  </HelpKINode>
   <HelpKINode Title="ArrayFrom method">
     <HelpKINode Title="LdValue.ArrayFrom Method " Url="html/M_LaunchDarkly_Client_LdValue_ArrayFrom.htm" />
     <HelpKINode Title="LdValue.Converter(T).ArrayFrom Method " Url="html/M_LaunchDarkly_Client_LdValue_Converter_1_ArrayFrom.htm" />
@@ -50,11 +57,15 @@
   <HelpKINode Title="Build method">
     <HelpKINode Title="IConfigurationBuilder.Build Method " Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_Build.htm" />
     <HelpKINode Title="IUserBuilder.Build Method " Url="html/M_LaunchDarkly_Client_IUserBuilder_Build.htm" />
+    <HelpKINode Title="LdValue.ArrayBuilder.Build Method " Url="html/M_LaunchDarkly_Client_LdValue_ArrayBuilder_Build.htm" />
+    <HelpKINode Title="LdValue.ObjectBuilder.Build Method " Url="html/M_LaunchDarkly_Client_LdValue_ObjectBuilder_Build.htm" />
   </HelpKINode>
+  <HelpKINode Title="BuildArray method" Url="html/M_LaunchDarkly_Client_LdValue_BuildArray.htm" />
   <HelpKINode Title="Builder method">
     <HelpKINode Title="Configuration.Builder Method " Url="html/Overload_LaunchDarkly_Xamarin_Configuration_Builder.htm" />
     <HelpKINode Title="User.Builder Method " Url="html/Overload_LaunchDarkly_Client_User_Builder.htm" />
   </HelpKINode>
+  <HelpKINode Title="BuildObject method" Url="html/M_LaunchDarkly_Client_LdValue_BuildObject.htm" />
   <HelpKINode Title="CLIENT_NOT_READY enumeration member" Url="html/T_LaunchDarkly_Client_EvaluationErrorKind.htm" />
   <HelpKINode Title="Config property" Url="html/P_LaunchDarkly_Xamarin_LdClient_Config.htm" />
   <HelpKINode Title="Configuration class">
@@ -108,6 +119,7 @@
   <HelpKINode Title="Converter&lt;T&gt; class">
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_LdValue_Converter_1.htm" />
   </HelpKINode>
+  <HelpKINode Title="Count property" Url="html/P_LaunchDarkly_Client_LdValue_Count.htm" />
   <HelpKINode Title="Country method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Country.htm" />
   <HelpKINode Title="Country property" Url="html/P_LaunchDarkly_Client_User_Country.htm" />
   <HelpKINode Title="CreateLogger method" Url="html/Overload_LaunchDarkly_Logging_ConsoleAdapter_CreateLogger.htm" />
@@ -133,11 +145,13 @@
   <HelpKINode Title="Email property" Url="html/P_LaunchDarkly_Client_User_Email.htm" />
   <HelpKINode Title="EnableBackgroundUpdating method" Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_EnableBackgroundUpdating.htm" />
   <HelpKINode Title="EnableBackgroundUpdating property" Url="html/P_LaunchDarkly_Xamarin_Configuration_EnableBackgroundUpdating.htm" />
+  <HelpKINode Title="EnumVariation(Of T) method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariation__1.htm" />
+  <HelpKINode Title="EnumVariation&lt;T&gt; method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariation__1.htm" />
+  <HelpKINode Title="EnumVariationDetail(Of T) method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariationDetail__1.htm" />
+  <HelpKINode Title="EnumVariationDetail&lt;T&gt; method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariationDetail__1.htm" />
   <HelpKINode Title="Equals method">
     <HelpKINode Title="EvaluationDetail(T).Equals Method " Url="html/M_LaunchDarkly_Client_EvaluationDetail_1_Equals.htm" />
-    <HelpKINode Title="EvaluationReason.Error.Equals Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_Error_Equals.htm" />
-    <HelpKINode Title="EvaluationReason.PrerequisiteFailed.Equals Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed_Equals.htm" />
-    <HelpKINode Title="EvaluationReason.RuleMatch.Equals Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatch_Equals.htm" />
+    <HelpKINode Title="EvaluationReason.Equals Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_Equals.htm" />
     <HelpKINode Title="LdValue.Equals Method " Url="html/Overload_LaunchDarkly_Client_LdValue_Equals.htm" />
     <HelpKINode Title="User.Equals Method " Url="html/Overload_LaunchDarkly_Client_User_Equals.htm" />
   </HelpKINode>
@@ -146,7 +160,8 @@
     <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Client_EvaluationReason_Error.htm" />
   </HelpKINode>
   <HelpKINode Title="ERROR enumeration member" Url="html/T_LaunchDarkly_Client_EvaluationReasonKind.htm" />
-  <HelpKINode Title="ErrorKind property" Url="html/P_LaunchDarkly_Client_EvaluationReason_Error_ErrorKind.htm" />
+  <HelpKINode Title="ErrorKind property" Url="html/P_LaunchDarkly_Client_EvaluationReason_ErrorKind.htm" />
+  <HelpKINode Title="ErrorReason method" Url="html/M_LaunchDarkly_Client_EvaluationReason_ErrorReason.htm" />
   <HelpKINode Title="EvaluationDetail(Of T) class">
     <HelpKINode Title="EvaluationDetail(T) Class" Url="html/T_LaunchDarkly_Client_EvaluationDetail_1.htm" />
     <HelpKINode Title="constructor" Url="html/M_LaunchDarkly_Client_EvaluationDetail_1__ctor.htm" />
@@ -179,41 +194,43 @@
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_EvaluationReason.htm" />
     <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Client_EvaluationReason.htm" />
   </HelpKINode>
+  <HelpKINode Title="EvaluationReason.Equals method" Url="html/M_LaunchDarkly_Client_EvaluationReason_Equals.htm" />
   <HelpKINode Title="EvaluationReason.Error class">
     <HelpKINode Title="EvaluationReason.Error Class" Url="html/T_LaunchDarkly_Client_EvaluationReason_Error.htm" />
     <HelpKINode Title="constructor" Url="html/M_LaunchDarkly_Client_EvaluationReason_Error__ctor.htm" />
   </HelpKINode>
-  <HelpKINode Title="EvaluationReason.Error.Equals method" Url="html/M_LaunchDarkly_Client_EvaluationReason_Error_Equals.htm" />
   <HelpKINode Title="EvaluationReason.Error.Error constructor" Url="html/M_LaunchDarkly_Client_EvaluationReason_Error__ctor.htm" />
-  <HelpKINode Title="EvaluationReason.Error.ErrorKind property" Url="html/P_LaunchDarkly_Client_EvaluationReason_Error_ErrorKind.htm" />
-  <HelpKINode Title="EvaluationReason.Error.GetHashCode method" Url="html/M_LaunchDarkly_Client_EvaluationReason_Error_GetHashCode.htm" />
   <HelpKINode Title="EvaluationReason.Error.ToString method" Url="html/M_LaunchDarkly_Client_EvaluationReason_Error_ToString.htm" />
+  <HelpKINode Title="EvaluationReason.ErrorKind property" Url="html/P_LaunchDarkly_Client_EvaluationReason_ErrorKind.htm" />
+  <HelpKINode Title="EvaluationReason.ErrorReason method" Url="html/M_LaunchDarkly_Client_EvaluationReason_ErrorReason.htm" />
   <HelpKINode Title="EvaluationReason.Fallthrough class" Url="html/T_LaunchDarkly_Client_EvaluationReason_Fallthrough.htm" />
   <HelpKINode Title="EvaluationReason.Fallthrough.Instance property" Url="html/P_LaunchDarkly_Client_EvaluationReason_Fallthrough_Instance.htm" />
+  <HelpKINode Title="EvaluationReason.FallthroughReason property" Url="html/P_LaunchDarkly_Client_EvaluationReason_FallthroughReason.htm" />
+  <HelpKINode Title="EvaluationReason.GetHashCode method" Url="html/M_LaunchDarkly_Client_EvaluationReason_GetHashCode.htm" />
   <HelpKINode Title="EvaluationReason.Kind property" Url="html/P_LaunchDarkly_Client_EvaluationReason_Kind.htm" />
   <HelpKINode Title="EvaluationReason.Off class" Url="html/T_LaunchDarkly_Client_EvaluationReason_Off.htm" />
   <HelpKINode Title="EvaluationReason.Off.Instance property" Url="html/P_LaunchDarkly_Client_EvaluationReason_Off_Instance.htm" />
+  <HelpKINode Title="EvaluationReason.OffReason property" Url="html/P_LaunchDarkly_Client_EvaluationReason_OffReason.htm" />
   <HelpKINode Title="EvaluationReason.PrerequisiteFailed class">
     <HelpKINode Title="EvaluationReason.PrerequisiteFailed Class" Url="html/T_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed.htm" />
     <HelpKINode Title="constructor" Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed__ctor.htm" />
   </HelpKINode>
-  <HelpKINode Title="EvaluationReason.PrerequisiteFailed.Equals method" Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed_Equals.htm" />
-  <HelpKINode Title="EvaluationReason.PrerequisiteFailed.GetHashCode method" Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed_GetHashCode.htm" />
   <HelpKINode Title="EvaluationReason.PrerequisiteFailed.PrerequisiteFailed constructor" Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed__ctor.htm" />
-  <HelpKINode Title="EvaluationReason.PrerequisiteFailed.PrerequisiteKey property" Url="html/P_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed_PrerequisiteKey.htm" />
   <HelpKINode Title="EvaluationReason.PrerequisiteFailed.ToString method" Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed_ToString.htm" />
+  <HelpKINode Title="EvaluationReason.PrerequisiteFailedReason method" Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailedReason.htm" />
+  <HelpKINode Title="EvaluationReason.PrerequisiteKey property" Url="html/P_LaunchDarkly_Client_EvaluationReason_PrerequisiteKey.htm" />
+  <HelpKINode Title="EvaluationReason.RuleId property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleId.htm" />
+  <HelpKINode Title="EvaluationReason.RuleIndex property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleIndex.htm" />
   <HelpKINode Title="EvaluationReason.RuleMatch class">
     <HelpKINode Title="EvaluationReason.RuleMatch Class" Url="html/T_LaunchDarkly_Client_EvaluationReason_RuleMatch.htm" />
     <HelpKINode Title="constructor" Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatch__ctor.htm" />
   </HelpKINode>
-  <HelpKINode Title="EvaluationReason.RuleMatch.Equals method" Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatch_Equals.htm" />
-  <HelpKINode Title="EvaluationReason.RuleMatch.GetHashCode method" Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatch_GetHashCode.htm" />
-  <HelpKINode Title="EvaluationReason.RuleMatch.RuleId property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleMatch_RuleId.htm" />
-  <HelpKINode Title="EvaluationReason.RuleMatch.RuleIndex property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleMatch_RuleIndex.htm" />
   <HelpKINode Title="EvaluationReason.RuleMatch.RuleMatch constructor" Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatch__ctor.htm" />
   <HelpKINode Title="EvaluationReason.RuleMatch.ToString method" Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatch_ToString.htm" />
+  <HelpKINode Title="EvaluationReason.RuleMatchReason method" Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatchReason.htm" />
   <HelpKINode Title="EvaluationReason.TargetMatch class" Url="html/T_LaunchDarkly_Client_EvaluationReason_TargetMatch.htm" />
   <HelpKINode Title="EvaluationReason.TargetMatch.Instance property" Url="html/P_LaunchDarkly_Client_EvaluationReason_TargetMatch_Instance.htm" />
+  <HelpKINode Title="EvaluationReason.TargetMatchReason property" Url="html/P_LaunchDarkly_Client_EvaluationReason_TargetMatchReason.htm" />
   <HelpKINode Title="EvaluationReason.ToString method" Url="html/M_LaunchDarkly_Client_EvaluationReason_ToString.htm" />
   <HelpKINode Title="EvaluationReasonKind enumeration" Url="html/T_LaunchDarkly_Client_EvaluationReasonKind.htm" />
   <HelpKINode Title="EvaluationReasons method" Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_EvaluationReasons.htm" />
@@ -238,6 +255,7 @@
     <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Client_EvaluationReason_Fallthrough.htm" />
   </HelpKINode>
   <HelpKINode Title="FALLTHROUGH enumeration member" Url="html/T_LaunchDarkly_Client_EvaluationReasonKind.htm" />
+  <HelpKINode Title="FallthroughReason property" Url="html/P_LaunchDarkly_Client_EvaluationReason_FallthroughReason.htm" />
   <HelpKINode Title="FeatureRequestEvent class">
     <HelpKINode Title="FeatureRequestEvent Class" Url="html/T_LaunchDarkly_Client_FeatureRequestEvent.htm" />
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_FeatureRequestEvent.htm" />
@@ -284,11 +302,10 @@
     <HelpKINode Title="LdClient.Flush Method " Url="html/M_LaunchDarkly_Xamarin_LdClient_Flush.htm" />
   </HelpKINode>
   <HelpKINode Title="FromType method" Url="html/M_LaunchDarkly_Client_LdValue_Converter_1_FromType.htm" />
+  <HelpKINode Title="Get method" Url="html/Overload_LaunchDarkly_Client_LdValue_Get.htm" />
   <HelpKINode Title="GetHashCode method">
     <HelpKINode Title="EvaluationDetail(T).GetHashCode Method " Url="html/M_LaunchDarkly_Client_EvaluationDetail_1_GetHashCode.htm" />
-    <HelpKINode Title="EvaluationReason.Error.GetHashCode Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_Error_GetHashCode.htm" />
-    <HelpKINode Title="EvaluationReason.PrerequisiteFailed.GetHashCode Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed_GetHashCode.htm" />
-    <HelpKINode Title="EvaluationReason.RuleMatch.GetHashCode Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatch_GetHashCode.htm" />
+    <HelpKINode Title="EvaluationReason.GetHashCode Method " Url="html/M_LaunchDarkly_Client_EvaluationReason_GetHashCode.htm" />
     <HelpKINode Title="LdValue.GetHashCode Method " Url="html/M_LaunchDarkly_Client_LdValue_GetHashCode.htm" />
     <HelpKINode Title="User.GetHashCode Method " Url="html/M_LaunchDarkly_Client_User_GetHashCode.htm" />
   </HelpKINode>
@@ -367,6 +384,14 @@
   <HelpKINode Title="ILdClient.StringVariation method" Url="html/M_LaunchDarkly_Xamarin_ILdClient_StringVariation.htm" />
   <HelpKINode Title="ILdClient.StringVariationDetail method" Url="html/M_LaunchDarkly_Xamarin_ILdClient_StringVariationDetail.htm" />
   <HelpKINode Title="ILdClient.Track method" Url="html/Overload_LaunchDarkly_Xamarin_ILdClient_Track.htm" />
+  <HelpKINode Title="ILdClientExtensions class">
+    <HelpKINode Title="ILdClientExtensions Class" Url="html/T_LaunchDarkly_Xamarin_ILdClientExtensions.htm" />
+    <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Xamarin_ILdClientExtensions.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ILdClientExtensions.EnumVariation(Of T) method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariation__1.htm" />
+  <HelpKINode Title="ILdClientExtensions.EnumVariation&lt;T&gt; method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariation__1.htm" />
+  <HelpKINode Title="ILdClientExtensions.EnumVariationDetail(Of T) method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariationDetail__1.htm" />
+  <HelpKINode Title="ILdClientExtensions.EnumVariationDetail&lt;T&gt; method" Url="html/M_LaunchDarkly_Xamarin_ILdClientExtensions_EnumVariationDetail__1.htm" />
   <HelpKINode Title="Init method" Url="html/Overload_LaunchDarkly_Xamarin_LdClient_Init.htm" />
   <HelpKINode Title="InitAsync method" Url="html/Overload_LaunchDarkly_Xamarin_LdClient_InitAsync.htm" />
   <HelpKINode Title="Initialized property">
@@ -416,6 +441,7 @@
   <HelpKINode Title="IUserBuilder.Key method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Key.htm" />
   <HelpKINode Title="IUserBuilder.LastName method" Url="html/M_LaunchDarkly_Client_IUserBuilder_LastName.htm" />
   <HelpKINode Title="IUserBuilder.Name method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Name.htm" />
+  <HelpKINode Title="IUserBuilder.Secondary method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Secondary.htm" />
   <HelpKINode Title="IUserBuilder.SecondaryKey method" Url="html/M_LaunchDarkly_Client_IUserBuilder_SecondaryKey.htm" />
   <HelpKINode Title="IUserBuilderCanMakeAttributePrivate interface">
     <HelpKINode Title="IUserBuilderCanMakeAttributePrivate Interface" Url="html/T_LaunchDarkly_Client_IUserBuilderCanMakeAttributePrivate.htm" />
@@ -460,9 +486,11 @@
   <HelpKINode Title="LaunchDarkly.Client.IUserBuilder interface" Url="html/T_LaunchDarkly_Client_IUserBuilder.htm" />
   <HelpKINode Title="LaunchDarkly.Client.IUserBuilderCanMakeAttributePrivate interface" Url="html/T_LaunchDarkly_Client_IUserBuilderCanMakeAttributePrivate.htm" />
   <HelpKINode Title="LaunchDarkly.Client.LdValue structure" Url="html/T_LaunchDarkly_Client_LdValue.htm" />
+  <HelpKINode Title="LaunchDarkly.Client.LdValue.ArrayBuilder class" Url="html/T_LaunchDarkly_Client_LdValue_ArrayBuilder.htm" />
   <HelpKINode Title="LaunchDarkly.Client.LdValue.Convert class" Url="html/T_LaunchDarkly_Client_LdValue_Convert.htm" />
   <HelpKINode Title="LaunchDarkly.Client.LdValue.Converter(Of T) class" Url="html/T_LaunchDarkly_Client_LdValue_Converter_1.htm" />
   <HelpKINode Title="LaunchDarkly.Client.LdValue.Converter&lt;T&gt; class" Url="html/T_LaunchDarkly_Client_LdValue_Converter_1.htm" />
+  <HelpKINode Title="LaunchDarkly.Client.LdValue.ObjectBuilder class" Url="html/T_LaunchDarkly_Client_LdValue_ObjectBuilder.htm" />
   <HelpKINode Title="LaunchDarkly.Client.LdValueType enumeration" Url="html/T_LaunchDarkly_Client_LdValueType.htm" />
   <HelpKINode Title="LaunchDarkly.Client.User class" Url="html/T_LaunchDarkly_Client_User.htm" />
   <HelpKINode Title="LaunchDarkly.Logging namespace" Url="html/N_LaunchDarkly_Logging.htm" />
@@ -472,6 +500,7 @@
   <HelpKINode Title="LaunchDarkly.Xamarin.FlagChangedEventArgs class" Url="html/T_LaunchDarkly_Xamarin_FlagChangedEventArgs.htm" />
   <HelpKINode Title="LaunchDarkly.Xamarin.IConfigurationBuilder interface" Url="html/T_LaunchDarkly_Xamarin_IConfigurationBuilder.htm" />
   <HelpKINode Title="LaunchDarkly.Xamarin.ILdClient interface" Url="html/T_LaunchDarkly_Xamarin_ILdClient.htm" />
+  <HelpKINode Title="LaunchDarkly.Xamarin.ILdClientExtensions class" Url="html/T_LaunchDarkly_Xamarin_ILdClientExtensions.htm" />
   <HelpKINode Title="LaunchDarkly.Xamarin.LdClient class" Url="html/T_LaunchDarkly_Xamarin_LdClient.htm" />
   <HelpKINode Title="LaunchDarkly.Xamarin.PlatformType enumeration" Url="html/T_LaunchDarkly_Xamarin_PlatformType.htm" />
   <HelpKINode Title="LdClient class">
@@ -513,6 +542,9 @@
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_LdValue.htm" />
     <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Client_LdValue.htm" />
   </HelpKINode>
+  <HelpKINode Title="LdValue.ArrayBuilder class" Url="html/T_LaunchDarkly_Client_LdValue_ArrayBuilder.htm" />
+  <HelpKINode Title="LdValue.ArrayBuilder.Add method" Url="html/Overload_LaunchDarkly_Client_LdValue_ArrayBuilder_Add.htm" />
+  <HelpKINode Title="LdValue.ArrayBuilder.Build method" Url="html/M_LaunchDarkly_Client_LdValue_ArrayBuilder_Build.htm" />
   <HelpKINode Title="LdValue.ArrayFrom method" Url="html/M_LaunchDarkly_Client_LdValue_ArrayFrom.htm" />
   <HelpKINode Title="LdValue.ArrayOf method" Url="html/M_LaunchDarkly_Client_LdValue_ArrayOf.htm" />
   <HelpKINode Title="LdValue.AsBool property" Url="html/P_LaunchDarkly_Client_LdValue_AsBool.htm" />
@@ -525,6 +557,8 @@
   <HelpKINode Title="LdValue.AsList&lt;T&gt; method" Url="html/M_LaunchDarkly_Client_LdValue_AsList__1.htm" />
   <HelpKINode Title="LdValue.AsLong property" Url="html/P_LaunchDarkly_Client_LdValue_AsLong.htm" />
   <HelpKINode Title="LdValue.AsString property" Url="html/P_LaunchDarkly_Client_LdValue_AsString.htm" />
+  <HelpKINode Title="LdValue.BuildArray method" Url="html/M_LaunchDarkly_Client_LdValue_BuildArray.htm" />
+  <HelpKINode Title="LdValue.BuildObject method" Url="html/M_LaunchDarkly_Client_LdValue_BuildObject.htm" />
   <HelpKINode Title="LdValue.Convert class" Url="html/T_LaunchDarkly_Client_LdValue_Convert.htm" />
   <HelpKINode Title="LdValue.Convert.Bool field" Url="html/F_LaunchDarkly_Client_LdValue_Convert_Bool.htm" />
   <HelpKINode Title="LdValue.Convert.Double field" Url="html/F_LaunchDarkly_Client_LdValue_Convert_Double.htm" />
@@ -553,15 +587,21 @@
   <HelpKINode Title="LdValue.Converter&lt;T&gt;.FromType method" Url="html/M_LaunchDarkly_Client_LdValue_Converter_1_FromType.htm" />
   <HelpKINode Title="LdValue.Converter&lt;T&gt;.ObjectFrom method" Url="html/M_LaunchDarkly_Client_LdValue_Converter_1_ObjectFrom.htm" />
   <HelpKINode Title="LdValue.Converter&lt;T&gt;.ToType method" Url="html/M_LaunchDarkly_Client_LdValue_Converter_1_ToType.htm" />
+  <HelpKINode Title="LdValue.Count property" Url="html/P_LaunchDarkly_Client_LdValue_Count.htm" />
   <HelpKINode Title="LdValue.Equals method" Url="html/Overload_LaunchDarkly_Client_LdValue_Equals.htm" />
+  <HelpKINode Title="LdValue.Get method" Url="html/Overload_LaunchDarkly_Client_LdValue_Get.htm" />
   <HelpKINode Title="LdValue.GetHashCode method" Url="html/M_LaunchDarkly_Client_LdValue_GetHashCode.htm" />
   <HelpKINode Title="LdValue.IsInt property" Url="html/P_LaunchDarkly_Client_LdValue_IsInt.htm" />
   <HelpKINode Title="LdValue.IsNull property" Url="html/P_LaunchDarkly_Client_LdValue_IsNull.htm" />
   <HelpKINode Title="LdValue.IsNumber property" Url="html/P_LaunchDarkly_Client_LdValue_IsNumber.htm" />
   <HelpKINode Title="LdValue.IsString property" Url="html/P_LaunchDarkly_Client_LdValue_IsString.htm" />
   <HelpKINode Title="LdValue.Null property" Url="html/P_LaunchDarkly_Client_LdValue_Null.htm" />
+  <HelpKINode Title="LdValue.ObjectBuilder class" Url="html/T_LaunchDarkly_Client_LdValue_ObjectBuilder.htm" />
+  <HelpKINode Title="LdValue.ObjectBuilder.Add method" Url="html/Overload_LaunchDarkly_Client_LdValue_ObjectBuilder_Add.htm" />
+  <HelpKINode Title="LdValue.ObjectBuilder.Build method" Url="html/M_LaunchDarkly_Client_LdValue_ObjectBuilder_Build.htm" />
   <HelpKINode Title="LdValue.ObjectFrom method" Url="html/M_LaunchDarkly_Client_LdValue_ObjectFrom.htm" />
   <HelpKINode Title="LdValue.Of method" Url="html/Overload_LaunchDarkly_Client_LdValue_Of.htm" />
+  <HelpKINode Title="LdValue.Parse method" Url="html/M_LaunchDarkly_Client_LdValue_Parse.htm" />
   <HelpKINode Title="LdValue.ToJsonString method" Url="html/M_LaunchDarkly_Client_LdValue_ToJsonString.htm" />
   <HelpKINode Title="LdValue.ToString method" Url="html/M_LaunchDarkly_Client_LdValue_ToString.htm" />
   <HelpKINode Title="LdValue.Type property" Url="html/P_LaunchDarkly_Client_LdValue_Type.htm" />
@@ -575,10 +615,14 @@
   <HelpKINode Title="Name method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Name.htm" />
   <HelpKINode Title="Name property" Url="html/P_LaunchDarkly_Client_User_Name.htm" />
   <HelpKINode Title="NewValue property" Url="html/P_LaunchDarkly_Xamarin_FlagChangedEventArgs_NewValue.htm" />
+  <HelpKINode Title="NONE enumeration member" Url="html/T_LaunchDarkly_Client_EvaluationErrorKind.htm" />
   <HelpKINode Title="Null enumeration member" Url="html/T_LaunchDarkly_Client_LdValueType.htm" />
   <HelpKINode Title="Null property" Url="html/P_LaunchDarkly_Client_LdValue_Null.htm" />
   <HelpKINode Title="Number enumeration member" Url="html/T_LaunchDarkly_Client_LdValueType.htm" />
   <HelpKINode Title="Object enumeration member" Url="html/T_LaunchDarkly_Client_LdValueType.htm" />
+  <HelpKINode Title="ObjectBuilder class">
+    <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_LdValue_ObjectBuilder.htm" />
+  </HelpKINode>
   <HelpKINode Title="ObjectFrom method">
     <HelpKINode Title="LdValue.Converter(T).ObjectFrom Method " Url="html/M_LaunchDarkly_Client_LdValue_Converter_1_ObjectFrom.htm" />
     <HelpKINode Title="LdValue.ObjectFrom Method " Url="html/M_LaunchDarkly_Client_LdValue_ObjectFrom.htm" />
@@ -595,7 +639,9 @@
     <HelpKINode Title="ILdClient.Offline Property " Url="html/P_LaunchDarkly_Xamarin_ILdClient_Offline.htm" />
     <HelpKINode Title="LdClient.Offline Property " Url="html/P_LaunchDarkly_Xamarin_LdClient_Offline.htm" />
   </HelpKINode>
+  <HelpKINode Title="OffReason property" Url="html/P_LaunchDarkly_Client_EvaluationReason_OffReason.htm" />
   <HelpKINode Title="OldValue property" Url="html/P_LaunchDarkly_Xamarin_FlagChangedEventArgs_OldValue.htm" />
+  <HelpKINode Title="Parse method" Url="html/M_LaunchDarkly_Client_LdValue_Parse.htm" />
   <HelpKINode Title="PersistFlagValues method" Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_PersistFlagValues.htm" />
   <HelpKINode Title="PersistFlagValues property" Url="html/P_LaunchDarkly_Xamarin_Configuration_PersistFlagValues.htm" />
   <HelpKINode Title="PlatformType enumeration" Url="html/T_LaunchDarkly_Xamarin_PlatformType.htm" />
@@ -607,7 +653,8 @@
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed.htm" />
     <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed.htm" />
   </HelpKINode>
-  <HelpKINode Title="PrerequisiteKey property" Url="html/P_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailed_PrerequisiteKey.htm" />
+  <HelpKINode Title="PrerequisiteFailedReason method" Url="html/M_LaunchDarkly_Client_EvaluationReason_PrerequisiteFailedReason.htm" />
+  <HelpKINode Title="PrerequisiteKey property" Url="html/P_LaunchDarkly_Client_EvaluationReason_PrerequisiteKey.htm" />
   <HelpKINode Title="PREREQUISITE_FAILED enumeration member" Url="html/T_LaunchDarkly_Client_EvaluationReasonKind.htm" />
   <HelpKINode Title="PrivateAttribute method" Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_PrivateAttribute.htm" />
   <HelpKINode Title="PrivateAttributeNames property">
@@ -622,13 +669,16 @@
   </HelpKINode>
   <HelpKINode Title="ReconnectTime method" Url="html/M_LaunchDarkly_Xamarin_IConfigurationBuilder_ReconnectTime.htm" />
   <HelpKINode Title="ReconnectTime property" Url="html/P_LaunchDarkly_Xamarin_Configuration_ReconnectTime.htm" />
-  <HelpKINode Title="RuleId property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleMatch_RuleId.htm" />
-  <HelpKINode Title="RuleIndex property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleMatch_RuleIndex.htm" />
+  <HelpKINode Title="RuleId property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleId.htm" />
+  <HelpKINode Title="RuleIndex property" Url="html/P_LaunchDarkly_Client_EvaluationReason_RuleIndex.htm" />
   <HelpKINode Title="RuleMatch class">
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_EvaluationReason_RuleMatch.htm" />
     <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Client_EvaluationReason_RuleMatch.htm" />
   </HelpKINode>
+  <HelpKINode Title="RuleMatchReason method" Url="html/M_LaunchDarkly_Client_EvaluationReason_RuleMatchReason.htm" />
   <HelpKINode Title="RULE_MATCH enumeration member" Url="html/T_LaunchDarkly_Client_EvaluationReasonKind.htm" />
+  <HelpKINode Title="Secondary method" Url="html/M_LaunchDarkly_Client_IUserBuilder_Secondary.htm" />
+  <HelpKINode Title="Secondary property" Url="html/P_LaunchDarkly_Client_User_Secondary.htm" />
   <HelpKINode Title="SecondaryKey method" Url="html/M_LaunchDarkly_Client_IUserBuilder_SecondaryKey.htm" />
   <HelpKINode Title="SecondaryKey property" Url="html/P_LaunchDarkly_Client_User_SecondaryKey.htm" />
   <HelpKINode Title="SendEvent method" Url="html/M_LaunchDarkly_Client_IEventProcessor_SendEvent.htm" />
@@ -658,6 +708,7 @@
     <HelpKINode Title="methods" Url="html/Methods_T_LaunchDarkly_Client_EvaluationReason_TargetMatch.htm" />
     <HelpKINode Title="properties" Url="html/Properties_T_LaunchDarkly_Client_EvaluationReason_TargetMatch.htm" />
   </HelpKINode>
+  <HelpKINode Title="TargetMatchReason property" Url="html/P_LaunchDarkly_Client_EvaluationReason_TargetMatchReason.htm" />
   <HelpKINode Title="TARGET_MATCH enumeration member" Url="html/T_LaunchDarkly_Client_EvaluationReasonKind.htm" />
   <HelpKINode Title="ToJsonString method" Url="html/M_LaunchDarkly_Client_LdValue_ToJsonString.htm" />
   <HelpKINode Title="ToString method">
@@ -699,6 +750,7 @@
   <HelpKINode Title="User.LastName property" Url="html/P_LaunchDarkly_Client_User_LastName.htm" />
   <HelpKINode Title="User.Name property" Url="html/P_LaunchDarkly_Client_User_Name.htm" />
   <HelpKINode Title="User.PrivateAttributeNames property" Url="html/P_LaunchDarkly_Client_User_PrivateAttributeNames.htm" />
+  <HelpKINode Title="User.Secondary property" Url="html/P_LaunchDarkly_Client_User_Secondary.htm" />
   <HelpKINode Title="User.SecondaryKey property" Url="html/P_LaunchDarkly_Client_User_SecondaryKey.htm" />
   <HelpKINode Title="User.User constructor" Url="html/M_LaunchDarkly_Client_User__ctor.htm" />
   <HelpKINode Title="User.WithKey method" Url="html/M_LaunchDarkly_Client_User_WithKey.htm" />
