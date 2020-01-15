@@ -38,7 +38,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void BoolVariationDetailReturnsValue()
         {
-            var reason = EvaluationReason.Off.Instance;
+            var reason = EvaluationReason.OffReason;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(true), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
@@ -79,7 +79,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void IntVariationDetailReturnsValue()
         {
-            var reason = EvaluationReason.Off.Instance;
+            var reason = EvaluationReason.OffReason;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(3), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
@@ -120,7 +120,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void FloatVariationDetailReturnsValue()
         {
-            var reason = EvaluationReason.Off.Instance;
+            var reason = EvaluationReason.OffReason;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(2.5f), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
@@ -151,7 +151,7 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void StringVariationDetailReturnsValue()
         {
-            var reason = EvaluationReason.Off.Instance;
+            var reason = EvaluationReason.OffReason;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"), 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
@@ -185,7 +185,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void JsonVariationDetailReturnsValue()
         {
             var jsonValue = LdValue.Convert.String.ObjectFrom(new Dictionary<string, string> { { "thing", "stuff" } });
-            var reason = EvaluationReason.Off.Instance;
+            var reason = EvaluationReason.OffReason;
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue, 1, reason);
             using (var client = ClientWithFlagsJson(flagsJson))
             {
@@ -226,7 +226,7 @@ namespace LaunchDarkly.Xamarin.Tests
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
-                var expected = new EvaluationDetail<int>(3, null, new EvaluationReason.Error(EvaluationErrorKind.WRONG_TYPE));
+                var expected = new EvaluationDetail<int>(3, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WRONG_TYPE));
                 Assert.Equal(expected, client.IntVariationDetail("flag-key", 3));
             }
         }

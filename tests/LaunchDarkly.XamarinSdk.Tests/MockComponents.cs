@@ -49,7 +49,11 @@ namespace LaunchDarkly.Xamarin.Tests
 
     internal class MockDeviceInfo : IDeviceInfo
     {
+        internal const string GeneratedId = "fake-generated-id";
+
         private readonly string key;
+
+        public MockDeviceInfo() : this(GeneratedId) { }
 
         public MockDeviceInfo(string key)
         {
@@ -174,6 +178,8 @@ namespace LaunchDarkly.Xamarin.Tests
         private IFlagCacheManager _cacheManager;
         private User _user;
         private string _flagsJson;
+
+        public User ReceivedUser => _user;
 
         public MockPollingProcessor(string flagsJson) : this(null, null, flagsJson) { }
 

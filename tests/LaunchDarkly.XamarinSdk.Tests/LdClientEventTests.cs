@@ -228,7 +228,7 @@ namespace LaunchDarkly.Xamarin.Tests
                         Assert.Equal("b", fe.Default.AsString);
                         Assert.True(fe.TrackEvents);
                         Assert.Null(fe.DebugEventsUntilDate);
-                        Assert.Equal(EvaluationReason.Off.Instance, fe.Reason);
+                        Assert.Equal(EvaluationReason.OffReason, fe.Reason);
                     });
             }
         }
@@ -245,7 +245,7 @@ namespace LaunchDarkly.Xamarin.Tests
             {
                 EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
                 Assert.Equal("a", result.Value);
-                Assert.Equal(EvaluationReason.Off.Instance, result.Reason);
+                Assert.Equal(EvaluationReason.OffReason, result.Reason);
                 Assert.Collection(eventProcessor.Events,
                     e => CheckIdentifyEvent(e, user),
                     e => {
@@ -257,7 +257,7 @@ namespace LaunchDarkly.Xamarin.Tests
                         Assert.Equal("b", fe.Default.AsString);
                         Assert.True(fe.TrackEvents);
                         Assert.Equal(2000, fe.DebugEventsUntilDate);
-                        Assert.Equal(EvaluationReason.Off.Instance, fe.Reason);
+                        Assert.Equal(EvaluationReason.OffReason, fe.Reason);
                     });
             }
         }
@@ -268,7 +268,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (LdClient client = MakeClient(user, "{}"))
             {
                 EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
-                var expectedReason = new EvaluationReason.Error(EvaluationErrorKind.FLAG_NOT_FOUND);
+                var expectedReason = EvaluationReason.ErrorReason(EvaluationErrorKind.FLAG_NOT_FOUND);
                 Assert.Equal("b", result.Value);
                 Assert.Equal(expectedReason, result.Reason);
                 Assert.Collection(eventProcessor.Events,
@@ -298,7 +298,7 @@ namespace LaunchDarkly.Xamarin.Tests
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
             {
                 EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
-                var expectedReason = new EvaluationReason.Error(EvaluationErrorKind.CLIENT_NOT_READY);
+                var expectedReason = EvaluationReason.ErrorReason(EvaluationErrorKind.CLIENT_NOT_READY);
                 Assert.Equal("b", result.Value);
                 Assert.Equal(expectedReason, result.Reason);
                 Assert.Collection(eventProcessor.Events,
