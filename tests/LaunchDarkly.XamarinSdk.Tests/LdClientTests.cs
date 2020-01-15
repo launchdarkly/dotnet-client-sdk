@@ -328,7 +328,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public void AllOtherAttributesArePreservedWhenSubstitutingUniqueUserKey()
         {
             var user = User.Builder("")
-                .SecondaryKey("secondary")
+                .Secondary("secondary")
                 .IPAddress("10.0.0.1")
                 .Country("US")
                 .FirstName("John")
@@ -353,7 +353,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 Assert.Equal(user.LastName, newUser.LastName);
                 Assert.Equal(user.Name, newUser.Name);
                 Assert.Equal(user.IPAddress, newUser.IPAddress);
-                Assert.Equal(user.SecondaryKey, newUser.SecondaryKey);
+                Assert.Equal(user.Secondary, newUser.Secondary);
                 Assert.Equal(user.Custom["attr"], newUser.Custom["attr"]);
                 Assert.True(newUser.Anonymous);
             }
