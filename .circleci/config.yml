@@ -111,11 +111,11 @@ jobs:
 
       - run:
           name: Build SDK
-          command: msbuild /restore /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+          command: msbuild /restore /p:Configuration=Debug /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
       - run:
           name: Build test project
-          command: msbuild /restore tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
+          command: msbuild /restore /p:Configuration=Debug tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
 
       - run:
           name: Start simulator
