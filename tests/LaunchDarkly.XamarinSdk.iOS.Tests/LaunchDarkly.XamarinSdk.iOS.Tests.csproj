@@ -134,14 +134,6 @@
         <Folder Include="SharedTestCode\" />
     </ItemGroup>
     <ItemGroup>
-        <InterfaceDefinition Include="LaunchScreen.storyboard" />
-        <InterfaceDefinition Include="Main.storyboard" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="Info.plist" />
-        <None Include="Entitlements.plist" />
-    </ItemGroup>
-    <ItemGroup>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\BaseTest.cs">
           <Link>SharedTestCode\BaseTest.cs</Link>
         </Compile>
