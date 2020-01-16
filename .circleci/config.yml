@@ -87,7 +87,7 @@ jobs:
 
   test-ios:
     macos:
-      xcode: "10.2.1"
+      xcode: "11.3.0"
 
     environment:
       PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
