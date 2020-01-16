@@ -117,7 +117,12 @@ jobs:
       - run:
           name: Build test project
           command: msbuild /restore /p:Configuration=Debug /p:Platform=iPhoneSimulator tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
-
+          # Note that we must specify Platform=iPhoneSimulator here explicitly because, when using a current
+          # version of msbuild with a project file that uses MSBuild.Sdk.Extras, it seems like Platform does *not*
+          # default to an empty string (I think it defaults to "AnyCPU"), therefore it will try to build it for a
+          # real iPhone, which will fail because it can't do code signing. We want a debug build that we will only
+          # be running in the simulator.
+          
       - run:
           name: Start simulator
           command: |
