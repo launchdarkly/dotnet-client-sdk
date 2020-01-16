@@ -126,7 +126,7 @@ jobs:
 
       - run:
           name: Load test app into simulator
-          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/iPhoneSimulator/Debug/LaunchDarkly.XamarinSdk.iOS.Tests.app
+          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/Debug/xamarin.ios10/LaunchDarkly.XamarinSdk.iOS.Tests.app
 
       - run:
           name: Start capturing log output
