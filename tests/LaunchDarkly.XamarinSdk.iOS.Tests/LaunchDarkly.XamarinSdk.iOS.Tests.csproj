@@ -15,6 +15,7 @@
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <CodesignKey>iPhone Developer</CodesignKey>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
         <DebugSymbols>true</DebugSymbols>
