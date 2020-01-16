@@ -87,7 +87,7 @@ jobs:
 
   test-ios:
     macos:
-      xcode: "10.2.1"
+      xcode: "11.3.0"
 
     environment:
       PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
@@ -99,6 +99,7 @@ jobs:
       - run:
           name: Install Xamarin tools
           command: |
+            brew untap caskroom/versions  # avoids conflict on mono-mdk516
             brew cask install xamarin xamarin-ios mono-mdk
           # Note, "mono-mdk" provides the msbuild CLI tool
 
@@ -111,12 +112,17 @@ jobs:
 
       - run:
           name: Build SDK
-          command: msbuild /restore /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+          command: msbuild /restore /p:Configuration=Debug /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
       - run:
           name: Build test project
-          command: msbuild /restore tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
-
+          command: msbuild /restore /p:Configuration=Debug /p:Platform=iPhoneSimulator tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
+          # Note that we must specify Platform=iPhoneSimulator here explicitly because, when using a current
+          # version of msbuild with a project file that uses MSBuild.Sdk.Extras, it seems like Platform does *not*
+          # default to an empty string (I think it defaults to "AnyCPU"), therefore it will try to build it for a
+          # real iPhone, which will fail because it can't do code signing. We want a debug build that we will only
+          # be running in the simulator.
+          
       - run:
           name: Start simulator
           command: |
@@ -125,7 +131,7 @@ jobs:
 
       - run:
           name: Load test app into simulator
-          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/iPhoneSimulator/Debug/LaunchDarkly.XamarinSdk.iOS.Tests.app
+          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/Debug/xamarin.ios10/LaunchDarkly.XamarinSdk.iOS.Tests.app
 
       - run:
           name: Start capturing log output
