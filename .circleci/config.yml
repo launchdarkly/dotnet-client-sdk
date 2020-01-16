@@ -115,7 +115,7 @@ jobs:
 
       - run:
           name: Build test project
-          command: msbuild /restore /p:Configuration=Debug tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
+          command: msbuild /restore /p:Configuration=Debug /p:Platform=iPhoneSimulator tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
 
       - run:
           name: Start simulator
