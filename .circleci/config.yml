@@ -99,6 +99,7 @@ jobs:
       - run:
           name: Install Xamarin tools
           command: |
+            brew untap caskroom/versions  # avoids conflict on mono-mdk516
             brew cask install xamarin xamarin-ios mono-mdk
           # Note, "mono-mdk" provides the msbuild CLI tool
 
