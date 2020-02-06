@@ -1,0 +1,37 @@
+repo:
+  public: xamarin-client-sdk
+  private: xamarin-client-sdk-private
+
+circleci:
+  mac:
+    xcode: "11.3.0"
+    steps:
+      - step: prepare
+        cachePaths:
+          - /usr/local/Homebrew
+          - /usr/local/share/android-sdk
+      - step: build
+      - step: test
+      - step: publish
+  windows:  # only for building documentation
+    env:
+      LD_RELEASE_DOCS_TARGET_FRAMEWORK: netstandard2.0
+      LD_RELEASE_DOCS_ASSEMBLIES: LaunchDarkly.XamarinSdk LaunchDarkly.CommonSdk
+    steps:
+      - step: build
+      - step: build-docs
+      - step: publish-docs
+
+template:
+  name: dotnet-windows  # only for building documentation
+
+publications:
+  - url: https://www.nuget.org/packages/LaunchDarkly.XamarinSdk
+    description: NuGet
+
+documentation:
+  title: LaunchDarkly Client-Side SDK for Xamarin
+  githubPages: true
+
+sdk:
+  displayName: "Xamarin"
