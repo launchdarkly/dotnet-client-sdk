@@ -21,45 +21,87 @@ jobs:
       - run: dotnet test -v=normal tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
 
   test-android:
-    docker:
-      - image: ldcircleci/ld-xamarin-android-linux:api27
+    macos:
+      xcode: "10.3.0"
 
     environment:
-      LD_SKIP_XML_DOCS: 1  # there seems to be a bug in Xamarin Android builds on Linux that makes the XML build step fail
+      PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
+      TERM: dumb
+      QEMU_AUDIO_DRV: none
+      ANDROID_HOME: "/usr/local/share/android-sdk"
+      ANDROID_SDK_HOME: "/usr/local/share/android-sdk"
+      ANDROID_SDK_ROOT: "/usr/local/share/android-sdk"
 
     steps:
+      - run:
+          name: Setup env
+          command: |
+            echo 'export PATH="$PATH:/$ANDROID_HOME/tools/bin"' >> $BASH_ENV
+            echo 'export PATH="$PATH:/$ANDROID_HOME/platform-tools"' >> $BASH_ENV
+
+      - restore_cache:
+          key: homebrew-xamarin-android
+
+      - run:
+          name: Install Xamarin Android tools
+          command: |
+            HOMEBREW_NO_AUTO_UPDATE=1 brew cask install xamarin xamarin-android mono-mdk
+          # Note, "mono-mdk" provides the msbuild CLI tool
+
+      - run:
+          name: Install Android SDK
+          command: |
+            if [ ! -d "$ANDROID_HOME" ]; then
+              HOMEBREW_NO_AUTO_UPDATE=1 brew cask install android-sdk
+            fi
+
+      - run:
+          name: Set up Android SDK
+          command: |
+            sudo mkdir -p /usr/local/android-sdk-linux/licenses
+            yes | sdkmanager "platform-tools" "platforms;android-27" "extras;intel;Hardware_Accelerated_Execution_Manager" \
+              "build-tools;26.0.2" "system-images;android-27;default;x86" "emulator" | grep -v = || true
+            set +o pipefail
+            yes | sdkmanager --licenses >/dev/null
+
+      - save_cache:
+          key: homebrew-xamarin-android
+          paths:
+            - /usr/local/Homebrew
+            - /usr/local/share/android-sdk
+
       - checkout
 
       - run:
-          name: Build SDK
-          command: msbuild /restore /p:TargetFramework=MonoAndroid81 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
-
-      - run:
-          name: Build test project
-          command: ~/xamarin-android/bin/Debug/bin/xabuild /restore /t:SignAndroidPackage tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
-          # Note, xabuild is just a wrapper for msbuild that adds various tools paths etc. necessary for building an
-          # Android app. See: https://github.com/xamarin/xamarin-android/blob/master/tools/scripts/xabuild
-
-      - run:
           name: Set up emulator
-          command: echo no | avdmanager create avd -n xm-android -f -k "system-images;android-24;default;armeabi-v7a"
+          command: echo no | avdmanager create avd -n ci-android-avd -f -k "system-images;android-27;default;x86"
 
       - run:
           name: Start emulator
-          command: emulator -avd xm-android -netdelay none -netspeed full -no-audio -no-window -no-snapshot -use-system-libs -no-boot-anim
+          command: $ANDROID_HOME/emulator/emulator -avd ci-android-avd -netdelay none -netspeed full -no-audio -no-window -no-snapshot -no-boot-anim
           background: true
           timeout: 1200
-          no_output_timeout: 20m
+          no_output_timeout: 2h
 
       - run:
-          name: Wait for emulator to become available
-          command: circle-android wait-for-boot
-          # this script is provided in the CircleCI Android images:
-          # https://raw.githubusercontent.com/circleci/circleci-images/master/android/bin/circle-android
+          name: Build SDK
+          command: |
+            msbuild /restore /p:TargetFramework=MonoAndroid81 \
+              src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+
+      - run:
+          name: Build test project
+          command: |
+            msbuild /restore /t:SignAndroidPackage \
+              tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
+
+      - run:
+          name: Wait for emulator
+          command: .circleci/scripts/circle-android wait-for-boot
 
       - run: 
           name: Start capturing log output
-          command: adb logcat mono-stdout:D *:S | tee test-run.log
+          command: adb logcat mono-stdout:D AndroidRuntime:D *:S | tee test-run.log
           # mono-stdout is the default tag for standard output from a Xamarin app - that's where our test runner output goes
           background: true
           no_output_timeout: 10m
