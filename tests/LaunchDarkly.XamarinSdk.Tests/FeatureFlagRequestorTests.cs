@@ -18,14 +18,27 @@ namespace LaunchDarkly.Xamarin.Tests
 
         private const string _allDataJson = "{}"; // Note that in this implementation, unlike the .NET SDK, FeatureFlagRequestor does not unmarshal the response
 
-        [Fact]
-        public async Task GetFlagsUsesCorrectUriAndMethodInGetModeAsync()
+        [Theory]
+        [InlineData("", false, "/msdk/evalx/users/", "")]
+        [InlineData("", true, "/msdk/evalx/users/", "?withReasons=true")]
+        [InlineData("/basepath", false, "/basepath/msdk/evalx/users/", "")]
+        [InlineData("/basepath", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
+        [InlineData("/basepath/", false, "/basepath/msdk/evalx/users/", "")]
+        [InlineData("/basepath/", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
+        public async Task GetFlagsUsesCorrectUriAndMethodInGetModexAsync(
+            string baseUriExtraPath,
+            bool withReasons,
+            string expectedPathWithoutUser,
+            string expectedQuery
+            )
         {
             await WithServerAsync(async server =>
             {
                 server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
 
-                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
+                var config = Configuration.Builder(_mobileKey)
+                    .BaseUri(new Uri(server.GetUrl() + baseUriExtraPath))
+                    .EvaluationReasons(withReasons)
                     .Build();
 
                 using (var requestor = new FeatureFlagRequestor(config, _user))
@@ -36,34 +49,8 @@ namespace LaunchDarkly.Xamarin.Tests
 
                     var req = server.GetLastRequest();
                     Assert.Equal("GET", req.Method);
-                    Assert.Equal($"/msdk/evalx/users/{_encodedUser}", req.Path);
-                    Assert.Equal("", req.RawQuery);
-                    Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
-                    Assert.Null(req.Body);
-                }
-            });
-        }
-
-        [Fact]
-        public async Task GetFlagsUsesCorrectUriAndMethodInGetModeWithReasonsAsync()
-        {
-            await WithServerAsync(async server =>
-            {
-                server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
-
-                var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
-                    .EvaluationReasons(true).Build();
-
-                using (var requestor = new FeatureFlagRequestor(config, _user))
-                {
-                    var resp = await requestor.FeatureFlagsAsync();
-                    Assert.Equal(200, resp.statusCode);
-                    Assert.Equal(_allDataJson, resp.jsonResponse);
-
-                    var req = server.GetLastRequest();
-                    Assert.Equal("GET", req.Method);
-                    Assert.Equal($"/msdk/evalx/users/{_encodedUser}", req.Path);
-                    Assert.Equal("?withReasons=true", req.RawQuery);
+                    Assert.Equal(expectedPathWithoutUser + _encodedUser, req.Path);
+                    Assert.Equal(expectedQuery, req.RawQuery);
                     Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
                     Assert.Null(req.Body);
                 }

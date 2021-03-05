@@ -357,7 +357,30 @@ namespace LaunchDarkly.Xamarin
             public bool AllAttributesPrivate => Config.AllAttributesPrivate;
             public int EventCapacity => Config.EventCapacity;
             public TimeSpan EventFlushInterval => Config.EventFlushInterval;
-            public Uri EventsUri => Config.EventsUri;
+            public Uri EventsUri
+            {
+                get
+                {
+                    // This is a hack to work around the fact that the implementation of DefaultEventProcessor
+                    // in LaunchDarkly.CommonSdk 4.x does not use the path concatenation logic that we implemented
+                    // in this assembly in Extensions.AddPath(Uri, string), which assumes a trailing slash in
+                    // the base path. Instead it just calls new Uri(Uri, string) which will drop the last path
+                    // component of the base path if there's no trailing slash. So we add the trailing slash
+                    // here, and we do *not* include a leading slash in Constants.EVENTS_PATH.
+                    //
+                    // In the next major version of the SDK, we'll be using a different implementation of
+                    // DefaultEventProcessor that's in a different assembly and giving it a pre-concatenated URI.
+                    // So there's no point in fixing this in the current LaunchDarkly.CommonSdk implementation,
+                    // which isn't used anywhere else.
+                    var ub = new UriBuilder(Config.EventsUri);
+                    if (ub.Path.EndsWith("/"))
+                    {
+                        return Config.EventsUri;
+                    }
+                    ub.Path += "/";
+                    return ub.Uri;
+                }
+            }
             public TimeSpan HttpClientTimeout => Config.ConnectionTimeout;
             public bool InlineUsersInEvents => Config.InlineUsersInEvents;
             public IImmutableSet<string> PrivateAttributeNames => Config.PrivateAttributeNames;

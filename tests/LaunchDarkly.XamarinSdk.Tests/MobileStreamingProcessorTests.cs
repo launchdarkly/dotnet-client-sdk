@@ -46,14 +46,30 @@ namespace LaunchDarkly.Xamarin.Tests
             return processor;
         }
 
-        [Fact]
-        public void StreamUriInGetModeHasUser()
+        [Theory]
+        [InlineData("", false, "/meval/", "")]
+        [InlineData("", true, "/meval/", "?withReasons=true")]
+        [InlineData("/basepath", false, "/basepath/meval/", "")]
+        [InlineData("/basepath", true, "/basepath/meval/", "?withReasons=true")]
+        [InlineData("/basepath/", false, "/basepath/meval/", "")]
+        [InlineData("/basepath/", true, "/basepath/meval/", "?withReasons=true")]
+        public void RequestHasCorrectUriAndMethodInGetMode(
+            string baseUriExtraPath,
+            bool withReasons,
+            string expectedPathWithoutUser,
+            string expectedQuery
+            )
         {
+            var fakeRootUri = "http://fake-stream-host";
+            var fakeBaseUri = fakeRootUri + baseUriExtraPath;
+            configBuilder.StreamUri(new Uri(fakeBaseUri));
+            configBuilder.EvaluationReasons(withReasons);
             var config = configBuilder.Build();
             MobileStreamingProcessorStarted();
             var props = eventSourceFactory.ReceivedProperties;
             Assert.Equal(HttpMethod.Get, props.Method);
-            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + encodedUser), props.StreamUri);
+            Assert.Equal(new Uri(fakeRootUri + expectedPathWithoutUser + encodedUser + expectedQuery),
+                props.StreamUri);
         }
 
         [Fact]
