@@ -55,7 +55,7 @@ namespace LaunchDarkly.Xamarin
 
         private HttpRequestMessage GetRequestMessage()
         {
-            var path = Constants.FLAG_REQUEST_PATH_GET + _currentUser.AsJson().Base64Encode();
+            var path = Constants.FLAG_REQUEST_PATH_GET + _currentUser.AsJson().UrlSafeBase64Encode();
             return new HttpRequestMessage(HttpMethod.Get, MakeRequestUriWithPath(path));
         }
 

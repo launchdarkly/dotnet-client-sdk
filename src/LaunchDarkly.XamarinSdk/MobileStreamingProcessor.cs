@@ -55,7 +55,7 @@ namespace LaunchDarkly.Xamarin
 
         private StreamProperties MakeStreamPropertiesForGet()
         {
-            var userEncoded = _user.AsJson().Base64Encode();
+            var userEncoded = _user.AsJson().UrlSafeBase64Encode();
             var path = Constants.STREAM_REQUEST_PATH + userEncoded;
             return new StreamProperties(MakeRequestUriWithPath(path), HttpMethod.Get, null);
         }

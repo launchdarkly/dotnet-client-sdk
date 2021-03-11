@@ -10,9 +10,11 @@ namespace LaunchDarkly.Xamarin.Tests
     {
         private const string _mobileKey = "FAKE_KEY";
 
-        private static readonly User _user = User.WithKey("foo");
-        private const string _userJson = "{\"key\":\"foo\"}";
-        private const string _encodedUser = "eyJrZXkiOiJmb28ifQ==";
+        // User key constructed to test base64 encoding of 62 and 63, which differ between the standard and "URL and Filename safe"
+        // base64 encodings from RFC4648. We need to use the URL safe encoding for flag requests.
+        private static readonly User _user = User.WithKey("foo>bar__?");
+        private const string _userJson = "{\"key\":\"foo>bar__?\"}";
+        private const string _encodedUser = "eyJrZXkiOiJmb28-YmFyX18_In0=";
         // Note that in a real use case, the user encoding may vary depending on the target platform, because the SDK adds custom
         // user attributes like "os". But the lower-level FeatureFlagRequestor component does not do that.
 
