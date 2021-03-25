@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Common.Logging;
 using LaunchDarkly.Client;
 using LaunchDarkly.Xamarin.PlatformSpecific;
+using WireMock;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -251,6 +253,42 @@ namespace LaunchDarkly.Xamarin.Tests
                     Assert.False(success);
                     Assert.False(client.Initialized);
                     Assert.Null(client.StringVariation(_flagData1.First().Key, null));
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData("", "/mobile/events/bulk")]
+        [InlineData("/basepath", "/basepath/mobile/events/bulk")]
+        [InlineData("/basepath/", "/basepath/mobile/events/bulk")]
+        public void EventsAreSentToCorrectEndpointAsync(
+            string baseUriExtraPath,
+            string expectedPath
+            )
+        {
+            var requests = new BlockingCollection<RequestMessage>();
+            var gotRequest = new EventWaitHandle(false, EventResetMode.ManualReset);
+            WithServer(server =>
+            {
+                server.ForAllRequests(r => r.WithCallback(req =>
+                {
+                    requests.Add(req);
+                    return new ResponseMessage() { StatusCode = 202 };
+                }));
+
+                var config = Configuration.BuilderInternal(_mobileKey)
+                    .UpdateProcessorFactory(MockPollingProcessor.Factory("{}"))
+                    .EventsUri(new Uri(server.Urls[0] + baseUriExtraPath))
+                    .PersistFlagValues(false)
+                    .Build();
+
+                using (var client = TestUtil.CreateClient(config, _user))
+                {
+                    client.Flush();
+                    Assert.True(requests.TryTake(out var request, TimeSpan.FromSeconds(5)));
+
+                    Assert.Equal("POST", request.Method);
+                    Assert.Equal(expectedPath, request.Path);
                 }
             });
         }

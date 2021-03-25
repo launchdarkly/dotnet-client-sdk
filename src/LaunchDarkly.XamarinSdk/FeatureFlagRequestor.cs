@@ -68,13 +68,8 @@ namespace LaunchDarkly.Xamarin
 
         private Uri MakeRequestUriWithPath(string path)
         {
-            var uri = new UriBuilder(_configuration.BaseUri);
-            uri.Path = path;
-            if (_configuration.EvaluationReasons)
-            {
-                uri.Query = "withReasons=true";
-            }
-            return uri.Uri;
+            var uri = _configuration.BaseUri.AddPath(path);
+            return _configuration.EvaluationReasons ? uri.AddQuery("withReasons=true") : uri;
         }
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)
