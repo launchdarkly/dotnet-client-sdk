@@ -4,15 +4,7 @@ repo:
 
 circleci:
   mac:
-    xcode: "11.3.0"
-    steps:
-      - step: prepare
-        cachePaths:
-          - /usr/local/Homebrew
-          - /usr/local/share/android-sdk
-      - step: build
-      - step: test
-      - step: publish
+    xcode: "12.4.0"
   windows:  # only for building documentation
     env:
       LD_RELEASE_DOCS_TARGET_FRAMEWORK: netstandard2.0

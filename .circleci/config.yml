@@ -25,57 +25,19 @@ jobs:
       xcode: "12.4.0"
 
     environment:
-      PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
       TERM: dumb
       QEMU_AUDIO_DRV: none
-      ANDROID_HOME: "/usr/local/share/android-sdk"
-      ANDROID_SDK_HOME: "/usr/local/share/android-sdk"
-      ANDROID_SDK_ROOT: "/usr/local/share/android-sdk"
 
     steps:
       - checkout
 
       - run:
-          name: Setup env
-          command: |
-            echo 'export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:/$ANDROID_HOME/tools/bin:$PATH"' >> $BASH_ENV
-            echo 'export PATH="$ANDROID_HOME/platform-tools:$PATH"' >> $BASH_ENV
+          name: Install .NET/Xamarin build tools
+          command: ./scripts/macos-install-xamarin.sh android
 
       - run:
-          name: Install .NET command-line tools
-          command: brew install --cask dotnet-sdk mono-mdk android-sdk
-          # mono-mdk provides the msbuild command
-
-      - run:
-          name: Install installer tool
-          command: dotnet tool install --global boots
-
-      - run:
-          name: Install Xamarin Android
-          command: boots https://aka.ms/xamarin-android-commercial-d16-8-macos
-          # The Homebrew installer for Xamarin Android is out of date and unmaintained
-
-      - run:
-          name: Download Android SDK command-line tools
-          # we don't use Homebrew for this, because the version they had (as of March 2021)
-          # was out of date and incompatible with Java 11
-          command: |
-            mkdir -p $ANDROID_HOME
-            mkdir -p $ANDROID_HOME/cmdline-tools
-            mkdir -p /tmp/android-sdk
-            curl https://dl.google.com/android/repository/commandlinetools-mac-6858069_latest.zip >/tmp/android-sdk/android-sdk.zip
-            cd /tmp/android-sdk && unzip android-sdk.zip && mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
-
-      - run:
-          name: Set up Android SDK
-          command: |
-            sudo mkdir -p /usr/local/android-sdk-linux/licenses
-            yes | sdkmanager "platform-tools" "platforms;android-27" "extras;intel;Hardware_Accelerated_Execution_Manager" \
-              "build-tools;26.0.2" "system-images;android-27;default;x86" "emulator" | grep -v = || true
-            set +o pipefail
-            yes | sdkmanager --licenses >/dev/null
-
-      - checkout
+          name: Install Android SDK
+          command: ./scripts/macos-install-android-sdk.sh 27
 
       - run:
           name: Set up emulator
@@ -136,27 +98,12 @@ jobs:
     macos:
       xcode: "12.4.0"
 
-    environment:
-      PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
-    
     steps:
       - checkout
 
-      - restore_cache:
-          key: homebrew
-
       - run:
-          name: Install Xamarin tools
-          command: |
-            brew install --cask xamarin xamarin-ios mono-mdk
-          # Note, "mono-mdk" provides the msbuild CLI tool
-
-      - save_cache: 
-          key: homebrew
-          paths:
-              - /usr/local/Homebrew
-
-      - checkout
+          name: Install .NET/Xamarin build tools
+          command: ./scripts/macos-install-xamarin.sh ios
 
       - run:
           name: Build SDK
