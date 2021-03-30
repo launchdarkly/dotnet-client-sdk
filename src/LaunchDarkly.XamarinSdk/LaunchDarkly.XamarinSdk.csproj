@@ -5,7 +5,7 @@
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">netstandard1.6;netstandard2.0;net45;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">netstandard1.6;netstandard2.0;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' != '' ">$(LD_TARGET_FRAMEWORKS)</TargetFrameworks>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.XamarinSdk</AssemblyName>
     <PackageId>LaunchDarkly.XamarinSdk</PackageId>
