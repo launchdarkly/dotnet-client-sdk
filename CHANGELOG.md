@@ -3,6 +3,12 @@
 All notable changes to the LaunchDarkly Client-Side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.2.1] - 2021-03-30
+### Fixed:
+- Removed unnecessary dependencies on `Xamarin.Android.Support.Core.Utils` and `Xamarin.Android.Support.CustomTabs`. (Thanks, [Vladimir-Mischenchuk](https://github.com/launchdarkly/xamarin-client-sdk/pull/25)!)
+- Setting custom base URIs now works correctly even if the base URI includes a path prefix (such as you might use with a reverse proxy that rewrites request URIs). ([#26](https://github.com/launchdarkly/xamarin-client-sdk/issues/26))
+- Fixed the base64 encoding of user properties in request URIs to use the URL-safe variant of base64.
+
 ## [1.2.0] - 2020-01-15
 ### Added:
 - Added `ILdClient` extension methods `EnumVariation` and `EnumVariationDetail`, which convert strings to enums.
