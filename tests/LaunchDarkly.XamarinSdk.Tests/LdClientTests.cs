@@ -58,7 +58,9 @@ namespace LaunchDarkly.Xamarin.Tests
 
             using (var client = await LdClient.InitAsync(config, testUser))
             {
-                Assert.Same(testUser, stub.ReceivedUser);
+                var actualUser = client.User; // may have been transformed e.g. to add device/OS properties
+                Assert.Equal(testUser.Key, actualUser.Key);
+                Assert.Equal(actualUser, stub.ReceivedUser);
             }
         }
 
@@ -192,11 +194,15 @@ namespace LaunchDarkly.Xamarin.Tests
 
             using (var client = await LdClient.InitAsync(config, simpleUser))
             {
-                Assert.Same(simpleUser, stub.ReceivedUser);
+                var actualUser = client.User; // may have been transformed e.g. to add device/OS properties
+                Assert.Equal(simpleUser.Key, actualUser.Key);
+                Assert.Equal(actualUser, stub.ReceivedUser);
 
                 await client.IdentifyAsync(newUser);
 
-                Assert.Same(newUser, stub.ReceivedUser);
+                actualUser = client.User;
+                Assert.Equal(newUser.Key, actualUser.Key);
+                Assert.Equal(actualUser, stub.ReceivedUser);
             }
         }
 
@@ -212,7 +218,9 @@ namespace LaunchDarkly.Xamarin.Tests
 
             using (var client = await LdClient.InitAsync(config, simpleUser))
             {
-                Assert.Same(simpleUser, stub.ReceivedUser);
+                var actualUser = client.User; // may have been transformed e.g. to add device/OS properties
+                Assert.Equal(simpleUser.Key, actualUser.Key);
+                Assert.Equal(actualUser, stub.ReceivedUser);
 
                 await client.IdentifyAsync(anonUserIn);
 

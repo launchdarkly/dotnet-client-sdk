@@ -55,7 +55,7 @@ namespace LaunchDarkly.Xamarin
 
         private HttpRequestMessage GetRequestMessage()
         {
-            var path = Constants.FLAG_REQUEST_PATH_GET + _currentUser.AsJson().Base64Encode();
+            var path = Constants.FLAG_REQUEST_PATH_GET + _currentUser.AsJson().UrlSafeBase64Encode();
             return new HttpRequestMessage(HttpMethod.Get, MakeRequestUriWithPath(path));
         }
 
@@ -68,13 +68,8 @@ namespace LaunchDarkly.Xamarin
 
         private Uri MakeRequestUriWithPath(string path)
         {
-            var uri = new UriBuilder(_configuration.BaseUri);
-            uri.Path = path;
-            if (_configuration.EvaluationReasons)
-            {
-                uri.Query = "withReasons=true";
-            }
-            return uri.Uri;
+            var uri = _configuration.BaseUri.AddPath(path);
+            return _configuration.EvaluationReasons ? uri.AddQuery("withReasons=true") : uri;
         }
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)

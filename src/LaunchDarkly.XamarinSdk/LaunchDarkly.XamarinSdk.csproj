@@ -5,7 +5,7 @@
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">netstandard1.6;netstandard2.0;net45;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">netstandard1.6;netstandard2.0;Xamarin.iOS10;MonoAndroid71;MonoAndroid80;MonoAndroid81;</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' != '' ">$(LD_TARGET_FRAMEWORKS)</TargetFrameworks>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.XamarinSdk</AssemblyName>
     <PackageId>LaunchDarkly.XamarinSdk</PackageId>
@@ -54,24 +54,6 @@
     <Compile Include="**\*.android.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
-  </ItemGroup>
-
-  <!-- dependencies for Android 8.1 -->
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid81')) ">
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="27.0.2.1" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="27.0.2.1" />
-  </ItemGroup>
-
-  <!-- dependencies for Android 8.0 -->
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid80')) ">
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="26.1.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="26.1.0.1" />
-  </ItemGroup>
-
-  <!-- dependencies for Android 7.1 -->
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid71')) ">
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="25.4.0.2" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="25.4.0.2" />
   </ItemGroup>
 
   <!-- dependencies and source files for iOS (all versions) -->

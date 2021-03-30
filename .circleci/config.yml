@@ -21,45 +21,54 @@ jobs:
       - run: dotnet test -v=normal tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
 
   test-android:
-    docker:
-      - image: ldcircleci/ld-xamarin-android-linux:api27
+    macos:
+      xcode: "12.4.0"
 
     environment:
-      LD_SKIP_XML_DOCS: 1  # there seems to be a bug in Xamarin Android builds on Linux that makes the XML build step fail
+      TERM: dumb
+      QEMU_AUDIO_DRV: none
 
     steps:
       - checkout
 
       - run:
-          name: Build SDK
-          command: msbuild /restore /p:TargetFramework=MonoAndroid81 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+          name: Install .NET/Xamarin build tools
+          command: ./scripts/macos-install-xamarin.sh android
 
       - run:
-          name: Build test project
-          command: ~/xamarin-android/bin/Debug/bin/xabuild /restore /t:SignAndroidPackage tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
-          # Note, xabuild is just a wrapper for msbuild that adds various tools paths etc. necessary for building an
-          # Android app. See: https://github.com/xamarin/xamarin-android/blob/master/tools/scripts/xabuild
+          name: Install Android SDK
+          command: ./scripts/macos-install-android-sdk.sh 27
 
       - run:
           name: Set up emulator
-          command: echo no | avdmanager create avd -n xm-android -f -k "system-images;android-24;default;armeabi-v7a"
+          command: echo no | avdmanager create avd -n ci-android-avd -f -k "system-images;android-27;default;x86"
 
       - run:
           name: Start emulator
-          command: emulator -avd xm-android -netdelay none -netspeed full -no-audio -no-window -no-snapshot -use-system-libs -no-boot-anim
+          command: $ANDROID_HOME/emulator/emulator -avd ci-android-avd -netdelay none -netspeed full -no-audio -no-window -no-snapshot -no-boot-anim
           background: true
           timeout: 1200
-          no_output_timeout: 20m
+          no_output_timeout: 2h
 
       - run:
-          name: Wait for emulator to become available
-          command: circle-android wait-for-boot
-          # this script is provided in the CircleCI Android images:
-          # https://raw.githubusercontent.com/circleci/circleci-images/master/android/bin/circle-android
+          name: Build SDK
+          command: |
+            msbuild /restore /p:TargetFramework=MonoAndroid81 \
+              src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+
+      - run:
+          name: Build test project
+          command: |
+            msbuild /restore /t:SignAndroidPackage \
+              tests/LaunchDarkly.XamarinSdk.Android.Tests/LaunchDarkly.XamarinSdk.Android.Tests.csproj
+
+      - run:
+          name: Wait for emulator
+          command: .circleci/scripts/circle-android wait-for-boot
 
       - run: 
           name: Start capturing log output
-          command: adb logcat mono-stdout:D *:S | tee test-run.log
+          command: adb logcat mono-stdout:D AndroidRuntime:D *:S | tee test-run.log
           # mono-stdout is the default tag for standard output from a Xamarin app - that's where our test runner output goes
           background: true
           no_output_timeout: 10m
@@ -87,36 +96,28 @@ jobs:
 
   test-ios:
     macos:
-      xcode: "10.2.1"
+      xcode: "12.4.0"
 
-    environment:
-      PATH: /usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Mono.framework/Commands
-    
     steps:
-      - restore_cache:
-          key: homebrew
-
-      - run:
-          name: Install Xamarin tools
-          command: |
-            brew cask install xamarin xamarin-ios mono-mdk
-          # Note, "mono-mdk" provides the msbuild CLI tool
-
-      - save_cache: 
-          key: homebrew
-          paths:
-              - /usr/local/Homebrew
-
       - checkout
 
       - run:
+          name: Install .NET/Xamarin build tools
+          command: ./scripts/macos-install-xamarin.sh ios
+
+      - run:
           name: Build SDK
-          command: msbuild /restore /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+          command: msbuild /restore /p:Configuration=Debug /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
       - run:
           name: Build test project
-          command: msbuild /restore tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
-
+          command: msbuild /restore /p:Configuration=Debug /p:Platform=iPhoneSimulator tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
+          # Note that we must specify Platform=iPhoneSimulator here explicitly because, when using a current
+          # version of msbuild with a project file that uses MSBuild.Sdk.Extras, it seems like Platform does *not*
+          # default to an empty string (I think it defaults to "AnyCPU"), therefore it will try to build it for a
+          # real iPhone, which will fail because it can't do code signing. We want a debug build that we will only
+          # be running in the simulator.
+          
       - run:
           name: Start simulator
           command: |
@@ -125,7 +126,7 @@ jobs:
 
       - run:
           name: Load test app into simulator
-          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/iPhoneSimulator/Debug/LaunchDarkly.XamarinSdk.iOS.Tests.app
+          command: xcrun simctl install "xm-ios" tests/LaunchDarkly.XamarinSdk.iOS.Tests/bin/Debug/xamarin.ios10/LaunchDarkly.XamarinSdk.iOS.Tests.app
 
       - run:
           name: Start capturing log output

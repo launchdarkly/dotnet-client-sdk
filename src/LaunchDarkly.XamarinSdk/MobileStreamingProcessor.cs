@@ -55,7 +55,7 @@ namespace LaunchDarkly.Xamarin
 
         private StreamProperties MakeStreamPropertiesForGet()
         {
-            var userEncoded = _user.AsJson().Base64Encode();
+            var userEncoded = _user.AsJson().UrlSafeBase64Encode();
             var path = Constants.STREAM_REQUEST_PATH + userEncoded;
             return new StreamProperties(MakeRequestUriWithPath(path), HttpMethod.Get, null);
         }
@@ -68,13 +68,8 @@ namespace LaunchDarkly.Xamarin
 
         private Uri MakeRequestUriWithPath(string path)
         {
-            var uri = new UriBuilder(_configuration.StreamUri);
-            uri.Path = path;
-            if (_configuration.EvaluationReasons)
-            {
-                uri.Query = "withReasons=true";
-            }
-            return uri.Uri;
+            var uri = _configuration.StreamUri.AddPath(path);
+            return _configuration.EvaluationReasons ? uri.AddQuery("withReasons=true") : uri;
         }
 
         #region IStreamProcessor

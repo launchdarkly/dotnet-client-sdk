@@ -19,7 +19,7 @@ namespace LaunchDarkly.Xamarin
         public const string PATCH = "patch";
         public const string DELETE = "delete";
         public const string PING = "ping";
-        public const string EVENTS_PATH = "/mobile/events/bulk";
+        public const string EVENTS_PATH = "mobile/events/bulk";
         public const string UNIQUE_ID_KEY = "unique_id_key";
     }
 }
