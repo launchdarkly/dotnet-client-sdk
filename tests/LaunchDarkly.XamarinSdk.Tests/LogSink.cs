@@ -23,6 +23,11 @@ namespace LaunchDarkly.Xamarin.Tests
         protected override void WriteInternal(LogLevel level, object message, Exception exception)
         {
             var str = message?.ToString();
+            try
+            {
+                LogSinkFactoryAdapter._logFn?.Invoke(DateTime.Now.ToString() + " [" + level + "] " + str);
+            }
+            catch { }
             if (_showLogs)
             {
                 Console.WriteLine("*** LOG: [" + level + "] " + str);
@@ -39,7 +44,14 @@ namespace LaunchDarkly.Xamarin.Tests
 
     public class LogSinkFactoryAdapter : AbstractSimpleLoggerFactoryAdapter
     {
-        public LogSinkFactoryAdapter() : base(null) {}
+        public static Action<string> _logFn;
+
+        public LogSinkFactoryAdapter() : this(null) { }
+
+        public LogSinkFactoryAdapter(Action<string> logFn) : base(null)
+        {
+            _logFn = logFn;
+        }
 
         protected override ILog CreateLogger(string name, LogLevel level, bool showLevel, bool showDateTime, bool showLogName, string dateTimeFormat)
         {
