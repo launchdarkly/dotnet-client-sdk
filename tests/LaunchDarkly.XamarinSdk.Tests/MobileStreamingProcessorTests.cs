@@ -23,6 +23,7 @@ namespace LaunchDarkly.Xamarin.Tests
         private EventSourceMock mockEventSource;
         private TestEventSourceFactory eventSourceFactory;
         private IFlagCacheManager mockFlagCacheMgr;
+        private IFeatureFlagRequestor mockRequestor;
         private IConfigurationBuilder configBuilder;
 
         public MobileStreamingProcessorTests()
@@ -41,7 +42,7 @@ namespace LaunchDarkly.Xamarin.Tests
         private IMobileUpdateProcessor MobileStreamingProcessorStarted()
         {
             IMobileUpdateProcessor processor = new MobileStreamingProcessor(configBuilder.Build(),
-                mockFlagCacheMgr, user, eventSourceFactory.Create());
+                mockFlagCacheMgr, null, user, eventSourceFactory.Create());
             processor.Start();
             return processor;
         }
