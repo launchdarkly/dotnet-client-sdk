@@ -85,6 +85,9 @@
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FlagChangedEventTests.cs">
       <Link>SharedTestCode\FlagChangedEventTests.cs</Link>
     </Compile>
+    <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\HttpHelpers.cs">
+      <Link>SharedTestCode\HttpHelpers.cs</Link>
+    </Compile>
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LDClientEndToEndTests.cs">
       <Link>SharedTestCode\LDClientEndToEndTests.cs</Link>
     </Compile>
@@ -111,9 +114,6 @@
     </Compile>
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\UserFlagCacheTests.cs">
       <Link>SharedTestCode\UserFlagCacheTests.cs</Link>
-    </Compile>
-    <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\WireMockExtensions.cs">
-      <Link>SharedTestCode\WireMockExtensions.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -148,16 +148,12 @@
     <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
-    <PackageReference Include="Common.Logging" Version="3.4.1">
-    </PackageReference>
-    <PackageReference Include="WireMock.Net" Version="1.0.22">
-    </PackageReference>
-    <PackageReference Include="xunit" Version="2.4.1">
-    </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661">
-    </PackageReference>
-    <PackageReference Include="xunit.runner.devices" Version="2.5.25">
-    </PackageReference>
+    <PackageReference Include="Common.Logging" Version="3.4.1" />
+    <PackageReference Include="EmbedIO" Version="3.4.3" />
+    <PackageReference Include="LaunchDarkly.CommonSdk" Version="4.3.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661" />
+    <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="SharedTestCode\" />

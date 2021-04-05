@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
+using LaunchDarkly.Xamarin.Tests.HttpHelpers;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -27,19 +28,17 @@ namespace LaunchDarkly.Xamarin.Tests
         [InlineData("/basepath", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
         [InlineData("/basepath/", false, "/basepath/msdk/evalx/users/", "")]
         [InlineData("/basepath/", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
-        public async Task GetFlagsUsesCorrectUriAndMethodInGetModexAsync(
+        public async Task GetFlagsUsesCorrectUriAndMethodInGetModeAsync(
             string baseUriExtraPath,
             bool withReasons,
             string expectedPathWithoutUser,
             string expectedQuery
             )
         {
-            await WithServerAsync(async server =>
+            using (var server = TestHttpServer.Start(Handlers.JsonResponse("{}")))
             {
-                server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
-
                 var config = Configuration.Builder(_mobileKey)
-                    .BaseUri(new Uri(server.GetUrl() + baseUriExtraPath))
+                    .BaseUri(new Uri(server.Uri.ToString() + baseUriExtraPath))
                     .EvaluationReasons(withReasons)
                     .Build();
 
@@ -49,14 +48,14 @@ namespace LaunchDarkly.Xamarin.Tests
                     Assert.Equal(200, resp.statusCode);
                     Assert.Equal(_allDataJson, resp.jsonResponse);
 
-                    var req = server.GetLastRequest();
+                    var req = server.Recorder.RequireRequest();
                     Assert.Equal("GET", req.Method);
                     Assert.Equal(expectedPathWithoutUser + _encodedUser, req.Path);
-                    Assert.Equal(expectedQuery, req.RawQuery);
-                    Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
+                    Assert.Equal(expectedQuery, req.Query);
+                    Assert.Equal(_mobileKey, req.Headers["Authorization"]);
                     Assert.Null(req.Body);
                 }
-            });
+            }
         }
 
         // Report mode is currently disabled - ch47341
@@ -81,7 +80,7 @@ namespace LaunchDarkly.Xamarin.Tests
         //            Assert.Equal($"/msdk/evalx/user", req.Path);
         //            Assert.Equal("", req.RawQuery);
         //            Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
-        //            TestUtil.AssertJsonEquals(JToken.Parse(_userJson), TestUtil.NormalizeJsonUser(JToken.Parse(req.Body)));
+        //            TestUtil.AssertJsonEquals(LdValue.Parse(_userJson), TestUtil.NormalizeJsonUser(LdValue.Parse(req.Body)));
         //        }
         //    });
         //}
@@ -107,7 +106,7 @@ namespace LaunchDarkly.Xamarin.Tests
         //            Assert.Equal($"/msdk/evalx/user", req.Path);
         //            Assert.Equal("?withReasons=true", req.RawQuery);
         //            Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
-        //            TestUtil.AssertJsonEquals(JToken.Parse(_userJson), TestUtil.NormalizeJsonUser(JToken.Parse(req.Body)));
+        //            TestUtil.AssertJsonEquals(LdValue.Parse(_userJson), TestUtil.NormalizeJsonUser(LdValue.Parse(req.Body)));
         //        }
         //    });
         //}
