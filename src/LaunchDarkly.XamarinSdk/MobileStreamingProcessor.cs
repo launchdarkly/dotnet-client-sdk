@@ -124,13 +124,10 @@ namespace LaunchDarkly.Xamarin
                             Task.Run(async () =>
                             {
                                 var response = await _requestor.FeatureFlagsAsync();
-                                if (response.statusCode == 200)
-                                {
-                                    var flagsAsJsonString = response.jsonResponse;
-                                    var flagsDictionary = JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJsonString);
-                                    _cacheManager.CacheFlagsFromService(flagsDictionary, _user);
-                                    streamManager.Initialized = true;
-                                }
+                                var flagsAsJsonString = response.jsonResponse;
+                                var flagsDictionary = JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJsonString);
+                                _cacheManager.CacheFlagsFromService(flagsDictionary, _user);
+                                streamManager.Initialized = true;
                             });
                         }
                         catch (Exception ex)

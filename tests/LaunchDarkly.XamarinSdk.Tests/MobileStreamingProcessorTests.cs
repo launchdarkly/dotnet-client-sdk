@@ -31,6 +31,7 @@ namespace LaunchDarkly.Xamarin.Tests
             mockEventSource = new EventSourceMock();
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
             mockFlagCacheMgr = new MockFlagCacheManager(new UserFlagInMemoryCache());
+            mockRequestor = new MockFeatureFlagRequestor(initialFlagsJson);
             configBuilder = Configuration.BuilderInternal("someKey")
                                          .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                          .FlagCacheManager(mockFlagCacheMgr)
@@ -42,7 +43,7 @@ namespace LaunchDarkly.Xamarin.Tests
         private IMobileUpdateProcessor MobileStreamingProcessorStarted()
         {
             IMobileUpdateProcessor processor = new MobileStreamingProcessor(configBuilder.Build(),
-                mockFlagCacheMgr, null, user, eventSourceFactory.Create());
+                mockFlagCacheMgr, mockRequestor, user, eventSourceFactory.Create());
             processor.Start();
             return processor;
         }
@@ -114,7 +115,7 @@ namespace LaunchDarkly.Xamarin.Tests
         //}
 
         [Fact]
-        public void PUTstoresFeatureFlags()
+        public void PutStoresFeatureFlags()
         {
             MobileStreamingProcessorStarted();
             // should be empty before PUT message arrives
@@ -129,7 +130,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void PATCHupdatesFeatureFlag()
+        public void PatchUpdatesFeatureFlag()
         {
             // before PATCH, fill in flags
             MobileStreamingProcessorStarted();
@@ -147,7 +148,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void PATCHdoesnotUpdateFlagIfVersionIsLower()
+        public void PatchDoesnotUpdateFlagIfVersionIsLower()
         {
             // before PATCH, fill in flags
             MobileStreamingProcessorStarted();
@@ -165,7 +166,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void DELETEremovesFeatureFlag()
+        public void DeleteRemovesFeatureFlag()
         {
             // before DELETE, fill in flags, test it's there
             MobileStreamingProcessorStarted();
@@ -182,7 +183,7 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
-        public void DELTEdoesnotRemoveFeatureFlagIfVersionIsLower()
+        public void DeleteDoesnotRemoveFeatureFlagIfVersionIsLower()
         {
             // before DELETE, fill in flags, test it's there
             MobileStreamingProcessorStarted();
@@ -196,6 +197,24 @@ namespace LaunchDarkly.Xamarin.Tests
 
             // verify flag was not deleted
             Assert.NotNull(mockFlagCacheMgr.FlagForUser("int-flag", user));
+        }
+
+        [Fact]
+        public async void PingCausesPoll()
+        {
+            MobileStreamingProcessorStarted();
+            mockEventSource.RaiseMessageRcvd(new MessageReceivedEventArgs(new MessageEvent("", null), "ping"));
+            var deadline = DateTime.Now.Add(TimeSpan.FromSeconds(5));
+            while (DateTime.Now < deadline)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(10));
+                if (mockFlagCacheMgr.FlagsForUser(user).Count > 0)
+                {
+                    Assert.Equal(15, mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt);
+                    return;
+                }
+            }
+            Assert.True(false, "timed out waiting for polled flags");
         }
 
         string UpdatedFlag()
