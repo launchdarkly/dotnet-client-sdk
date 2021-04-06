@@ -3,6 +3,10 @@
 All notable changes to the LaunchDarkly Client-Side SDK for Xamarin will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.2.2] - 2021-04-06
+### Fixed:
+- The SDK was failing to get flags in streaming mode when connecting to a LaunchDarkly Relay Proxy instance.
+
 ## [1.2.1] - 2021-03-30
 ### Fixed:
 - Removed unnecessary dependencies on `Xamarin.Android.Support.Core.Utils` and `Xamarin.Android.Support.CustomTabs`. (Thanks, [Vladimir-Mischenchuk](https://github.com/launchdarkly/xamarin-client-sdk/pull/25)!)
