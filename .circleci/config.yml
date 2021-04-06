@@ -110,6 +110,18 @@ jobs:
           command: msbuild /restore /p:Configuration=Debug /p:TargetFramework=Xamarin.iOS10 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
       - run:
+          name: Pre-build storyboard
+          command: >-
+            /Applications/Xcode.app/Contents/Developer/usr/bin/ibtool --errors --warnings --notices --output-format xml1 --minimum-deployment-target 10.0
+            --target-device iphone --target-device ipad --auto-activate-custom-fonts
+            --sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator14.4.sdk
+            --compilation-directory /Users/distiller/project/tests/LaunchDarkly.XamarinSdk.iOS.Tests/obj/iPhoneSimulator/Debug/xamarin.ios10/ibtool
+            /Users/distiller/project/tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchScreen.storyboard
+          # This is the exact ibtool command that msbuild runs to build the first storyboard. The difference is that msbuild sets some environment variables
+          # which cause this command to fail. By pre-running this command, some unknown state gets set up that allows future calls to ibtool to succeed.
+          # It is unclear where this state resides or how this works...
+
+      - run:
           name: Build test project
           command: msbuild /restore /p:Configuration=Debug /p:Platform=iPhoneSimulator tests/LaunchDarkly.XamarinSdk.iOS.Tests/LaunchDarkly.XamarinSdk.iOS.Tests.csproj
           # Note that we must specify Platform=iPhoneSimulator here explicitly because, when using a current
@@ -121,7 +133,7 @@ jobs:
       - run:
           name: Start simulator
           command: |
-            xcrun simctl create xm-ios com.apple.CoreSimulator.SimDeviceType.iPhone-X com.apple.CoreSimulator.SimRuntime.iOS-12-2
+            xcrun simctl create xm-ios com.apple.CoreSimulator.SimDeviceType.iPhone-12 com.apple.CoreSimulator.SimRuntime.iOS-14-4
             xcrun simctl boot xm-ios
 
       - run:

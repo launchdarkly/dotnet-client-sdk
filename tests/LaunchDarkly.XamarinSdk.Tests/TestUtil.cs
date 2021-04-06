@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Client;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LaunchDarkly.Xamarin.Tests
@@ -148,24 +146,27 @@ namespace LaunchDarkly.Xamarin.Tests
                                 .DeviceInfo(new MockDeviceInfo());
         }
 
-        public static void AssertJsonEquals(JToken expected, JToken actual)
+        public static void AssertJsonEquals(LdValue expected, LdValue actual)
         {
-            if (!JToken.DeepEquals(expected, actual))
-            {
-                Assert.Equal(expected.ToString(), actual.ToString()); // will print the values with the failure
-            }
+            Assert.Equal(expected, actual);
         }
 
-        public static JToken NormalizeJsonUser(JToken json)
+        public static LdValue NormalizeJsonUser(LdValue json)
         {
             // It's undefined whether a user with no custom attributes will have "custom":{} or not
-            if (json is JObject o && o.ContainsKey("custom") && o["custom"] is JObject co)
+            if (json.Type == LdValueType.Object && json.Get("custom").Type == LdValueType.Object)
             {
-                if (co.Count == 0)
+                if (json.Count == 0)
                 {
-                    JObject o1 = new JObject(o);
-                    o1.Remove("custom");
-                    return o1;
+                    var o1 = LdValue.BuildObject();
+                    foreach (var kv in json.AsDictionary(LdValue.Convert.Json))
+                    {
+                        if (kv.Key != "custom")
+                        {
+                            o1.Add(kv.Key, kv.Value);
+                        }
+                    }
+                    return o1.Build();
                 }
             }
             return json;

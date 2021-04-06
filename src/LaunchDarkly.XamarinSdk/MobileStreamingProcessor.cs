@@ -20,14 +20,17 @@ namespace LaunchDarkly.Xamarin
         private readonly IFlagCacheManager _cacheManager;
         private readonly User _user;
         private readonly StreamManager _streamManager;
+        private readonly IFeatureFlagRequestor _requestor;
 
         internal MobileStreamingProcessor(Configuration configuration,
                                           IFlagCacheManager cacheManager,
+                                          IFeatureFlagRequestor requestor,
                                           User user,
                                           StreamManager.EventSourceCreator eventSourceCreator)
         {
             this._configuration = configuration;
             this._cacheManager = cacheManager;
+            this._requestor = requestor;
             this._user = user;
 
             var streamProperties = _configuration.UseReport ? MakeStreamPropertiesForReport() : MakeStreamPropertiesForGet();
@@ -116,7 +119,21 @@ namespace LaunchDarkly.Xamarin
                     }
                 case Constants.PING:
                     {
-                        streamManager.Initialized = true;
+                        try
+                        {
+                            Task.Run(async () =>
+                            {
+                                var response = await _requestor.FeatureFlagsAsync();
+                                var flagsAsJsonString = response.jsonResponse;
+                                var flagsDictionary = JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJsonString);
+                                _cacheManager.CacheFlagsFromService(flagsDictionary, _user);
+                                streamManager.Initialized = true;
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.ErrorFormat("Error in handling PING message: {1}", Util.ExceptionMessage(ex));
+                        }
                         break;
                     }
                 default:
@@ -166,6 +183,10 @@ namespace LaunchDarkly.Xamarin
             if (disposing)
             {
                 ((IDisposable)_streamManager).Dispose();
+                if (_requestor != null)
+                {
+                    _requestor.Dispose();
+                }
             }
         }
     }
