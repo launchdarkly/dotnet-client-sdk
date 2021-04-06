@@ -73,6 +73,31 @@ namespace LaunchDarkly.Xamarin.Tests
         }
 
         [Fact]
+        public void StreamingInitMakesPollRequestIfStreamSendsPing()
+        {
+            Handler streamHandler = async ctx =>
+            {
+                ctx.AddHeader("Content-Type", "text/event-stream");
+                await ctx.WriteChunkedDataAsync(Encoding.UTF8.GetBytes("event: ping\ndata: \n\n"));
+                await Task.Delay(-1, ctx.CancellationToken);
+            };
+            using (var streamServer = TestHttpServer.Start(streamHandler))
+            {
+                using (var pollServer = TestHttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
+                {
+                    var config = BaseConfig(streamServer.Uri, UpdateMode.Streaming,
+                        b => b.BaseUri(pollServer.Uri));
+                    using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromSeconds(5)))
+                    {
+                        VerifyRequest(streamServer.Recorder, UpdateMode.Streaming);
+                        VerifyRequest(pollServer.Recorder, UpdateMode.Polling);
+                        VerifyFlagValues(client, _flagData1);
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void InitCanTimeOutSync()
         {
             var handler = Handlers.DelayBefore(TimeSpan.FromSeconds(2), SetupResponse(_flagData1, UpdateMode.Polling));

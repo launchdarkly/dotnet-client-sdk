@@ -42,13 +42,13 @@ namespace LaunchDarkly.Xamarin
                     return configuration._updateProcessorFactory(configuration, flagCacheManager, user);
                 }
 
+                var featureFlagRequestor = new FeatureFlagRequestor(configuration, user);
                 if (configuration.IsStreamingEnabled && !inBackground)
                 {
-                    return new MobileStreamingProcessor(configuration, flagCacheManager, user, null);
+                    return new MobileStreamingProcessor(configuration, flagCacheManager, featureFlagRequestor, user, null);
                 }
                 else
                 {
-                    var featureFlagRequestor = new FeatureFlagRequestor(configuration, user);
                     return new MobilePollingProcessor(featureFlagRequestor,
                                                       flagCacheManager,
                                                       user,
