@@ -17,7 +17,7 @@ namespace LaunchDarkly.Sdk.Xamarin
 
         void IUserFlagCache.CacheFlagsForUser(IImmutableDictionary<string, FeatureFlag> flags, User user)
         {
-            var jsonString = JsonUtil.EncodeJson(flags);
+            var jsonString = JsonUtil.SerializeFlags(flags);
             try
             {
                 persister.Save(Constants.FLAGS_KEY_PREFIX + user.Key, jsonString);
@@ -36,7 +36,7 @@ namespace LaunchDarkly.Sdk.Xamarin
                 var flagsAsJson = persister.GetValue(Constants.FLAGS_KEY_PREFIX + user.Key);
                 if (flagsAsJson != null)
                 {
-                    return JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJson); // surprisingly, this works
+                    return JsonUtil.DeserializeFlags(flagsAsJson);
                 }
             }
             catch (Exception ex)

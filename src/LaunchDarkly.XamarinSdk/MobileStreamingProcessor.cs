@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using LaunchDarkly.EventSource;
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
@@ -162,7 +161,7 @@ namespace LaunchDarkly.Sdk.Xamarin
             {
                 case Constants.PUT:
                     {
-                        _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(messageData), _user);
+                        _cacheManager.CacheFlagsFromService(JsonUtil.DeserializeFlags(messageData), _user);
                         if (!_initialized.GetAndSet(true))
                         {
                             _initTask.SetResult(true);
@@ -173,8 +172,8 @@ namespace LaunchDarkly.Sdk.Xamarin
                     {
                         try
                         {
-                            var parsed = JsonUtil.DecodeJson<JObject>(messageData);
-                            var flagkey = (string)parsed[Constants.KEY];
+                            var parsed = LdValue.Parse(messageData);
+                            var flagkey = parsed.Get(Constants.KEY).AsString;
                             var featureFlag = JsonUtil.DecodeJson<FeatureFlag>(messageData);
                             PatchFeatureFlag(flagkey, featureFlag);
                         }
@@ -188,9 +187,9 @@ namespace LaunchDarkly.Sdk.Xamarin
                     {
                         try
                         {
-                            var dictionary = JsonUtil.DecodeJson<IDictionary<string, JToken>>(messageData);
-                            int version = dictionary[Constants.VERSION].ToObject<int>();
-                            string flagKey = dictionary[Constants.KEY].ToString();
+                            var parsed = LdValue.Parse(messageData);
+                            int version = parsed.Get(Constants.VERSION).AsInt;
+                            string flagKey = parsed.Get(Constants.KEY).AsString;
                             DeleteFeatureFlag(flagKey, version);
                         }
                         catch (Exception ex)
@@ -207,7 +206,7 @@ namespace LaunchDarkly.Sdk.Xamarin
                             {
                                 var response = await _requestor.FeatureFlagsAsync();
                                 var flagsAsJsonString = response.jsonResponse;
-                                var flagsDictionary = JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJsonString);
+                                var flagsDictionary = JsonUtil.DeserializeFlags(flagsAsJsonString);
                                 _cacheManager.CacheFlagsFromService(flagsDictionary, _user);
                                 if (!_initialized.GetAndSet(true))
                                 {

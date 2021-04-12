@@ -119,12 +119,12 @@ namespace LaunchDarkly.Sdk.Xamarin
 
         internal static string JsonFlagsWithSingleFlag(string flagKey, LdValue value, int? variation = null, EvaluationReason? reason = null)
         {
-            return JsonUtil.EncodeJson(MakeSingleFlagData(flagKey, value, variation, reason));
+            return JsonUtil.SerializeFlags(MakeSingleFlagData(flagKey, value, variation, reason));
         }
 
         internal static IImmutableDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
         {
-            return JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsJson);
+            return JsonUtil.DeserializeFlags(flagsJson);
         }
 
         internal static ConfigurationBuilder ConfigWithFlagsJson(User user, string appKey, string flagsJson)

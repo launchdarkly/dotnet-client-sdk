@@ -455,7 +455,7 @@ namespace LaunchDarkly.Sdk.Xamarin
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
                 var storedJson = storage.GetValue(Constants.FLAGS_KEY_PREFIX + simpleUser.Key);
-                var flags = JsonUtil.DecodeJson<IDictionary<string, FeatureFlag>>(storedJson);
+                var flags = JsonUtil.DeserializeFlags(storedJson);
                 Assert.Equal(100, flags["flag"].value.AsInt);
             }
         }

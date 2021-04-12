@@ -186,7 +186,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
         {
-            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "")
+            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
                 .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
                 .EventProcessor(eventProcessor);
             config.EventProcessor(eventProcessor);
@@ -294,7 +294,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
         {
-            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "")
+            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
                 .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
                 .EventProcessor(eventProcessor);
             config.EventProcessor(eventProcessor);

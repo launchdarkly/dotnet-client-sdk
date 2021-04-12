@@ -1,65 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Json;
-using Newtonsoft.Json;
 
 namespace LaunchDarkly.Sdk.Xamarin
 {
     internal class JsonUtil
     {
-        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
-        {
-            Converters = new List<JsonConverter> { LdJsonNet.Converter, new UnixMillisecondTimeConverter() },
-            DateParseHandling = DateParseHandling.None
-        };
+        internal static T DecodeJson<T>(string json) where T : IJsonSerializable =>
+            LdJsonSerialization.DeserializeObject<T>(json);
 
-        // Wrapper for JsonConvert.DeserializeObject that ensures we use consistent settings and minimizes our Newtonsoft references.
-        internal static T DecodeJson<T>(string json)
-        {
-            return JsonConvert.DeserializeObject<T>(json, _jsonSettings);
-        }
+        internal static string EncodeJson<T>(T o) where T : IJsonSerializable =>
+            LdJsonSerialization.SerializeObject(o);
 
-        // Wrapper for JsonConvert.DeserializeObject that ensures we use consistent settings and minimizes our Newtonsoft references.
-        internal static object DecodeJson(string json, Type type)
+        public static ImmutableDictionary<string, FeatureFlag> DeserializeFlags(string json)
         {
-            return JsonConvert.DeserializeObject(json, type, _jsonSettings);
-        }
-
-        // Wrapper for JsonConvert.SerializeObject that ensures we use consistent settings and minimizes our Newtonsoft references.
-        internal static string EncodeJson(object o)
-        {
-            return JsonConvert.SerializeObject(o, _jsonSettings);
-        }
-
-        private class UnixMillisecondTimeConverter : JsonConverter
-        {
-            public override bool CanConvert(Type objectType) =>
-                objectType == typeof(UnixMillisecondTime) || objectType == typeof(UnixMillisecondTime?);
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            var r = JReader.FromString(json);
+            try
             {
-                if (objectType == typeof(UnixMillisecondTime?))
+                var builder = ImmutableDictionary.CreateBuilder<string, FeatureFlag>();
+                for (var or = r.Object(); or.Next(ref r);)
                 {
-                    if (reader.TokenType == JsonToken.Null)
-                    {
-                        reader.Skip();
-                        return null;
-                    }
+                    builder.Add(or.Name.ToString(), FeatureFlag.JsonConverter.ReadJsonValue(ref r));
                 }
-                return UnixMillisecondTime.OfMillis((long)reader.Value);
+                return builder.ToImmutable();
             }
-
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            catch (Exception e)
             {
-                if (value is null)
+                throw r.TranslateException(e);
+            }
+        }
+
+        public static string SerializeFlags(IReadOnlyDictionary<string, FeatureFlag> flags)
+        {
+            var w = JWriter.New();
+            using (var ow = w.Object())
+            {
+                foreach (var kv in flags)
                 {
-                    writer.WriteNull();
-                }
-                else
-                {
-                    writer.WriteValue(((UnixMillisecondTime)value).Value);
+                    FeatureFlag.JsonConverter.WriteJsonValue(kv.Value, ow.Name(kv.Key));
                 }
             }
+            return w.GetString();
         }
     }
 }

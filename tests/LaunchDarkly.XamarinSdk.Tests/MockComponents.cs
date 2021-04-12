@@ -230,7 +230,7 @@ namespace LaunchDarkly.Sdk.Xamarin
             IsRunning = true;
             if (_cacheManager != null && _flagsJson != null)
             {
-                _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(_flagsJson), _user);
+                _cacheManager.CacheFlagsFromService(JsonUtil.DeserializeFlags(_flagsJson), _user);
             }
             return Task.FromResult(true);
         }
