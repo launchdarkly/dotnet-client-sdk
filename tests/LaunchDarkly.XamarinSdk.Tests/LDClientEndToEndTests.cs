@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
-using LaunchDarkly.Client;
-using LaunchDarkly.Xamarin.PlatformSpecific;
-using LaunchDarkly.Xamarin.Tests.HttpHelpers;
+using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
+using LaunchDarkly.Sdk.Xamarin.HttpHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     // Tests of an LDClient instance doing actual HTTP against an embedded server. These aren't intended to cover
     // every possible type of interaction, since the lower-level component tests like FeatureFlagRequestorTests
@@ -103,16 +101,13 @@ namespace LaunchDarkly.Xamarin.Tests
             var handler = Handlers.DelayBefore(TimeSpan.FromSeconds(2), SetupResponse(_flagData1, UpdateMode.Polling));
             using (var server = TestHttpServer.Start(handler))
             {
-                using (var log = new LogSinkScope())
+                var config = BaseConfig(server.Uri, builder => builder.IsStreamingEnabled(false));
+                using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                 {
-                    var config = BaseConfig(server.Uri, builder => builder.IsStreamingEnabled(false));
-                    using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
-                    {
-                        Assert.False(client.Initialized);
-                        Assert.Null(client.StringVariation(_flagData1.First().Key, null));
-                        Assert.Contains(log.Messages, m => m.Level == LogLevel.Warn &&
-                            m.Text == "Client did not successfully initialize within 200 milliseconds.");
-                    }
+                    Assert.False(client.Initialized);
+                    Assert.Null(client.StringVariation(_flagData1.First().Key, null));
+                    Assert.True(logCapture.HasMessageWithText(Logging.LogLevel.Warn,
+                        "Client did not successfully initialize within 200 milliseconds."));
                 }
             }
         }
@@ -123,13 +118,10 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var server = TestHttpServer.Start(Handlers.Status(401)))
             {
-                using (var log = new LogSinkScope())
+                var config = BaseConfig(server.Uri, mode);
+                using (var client = TestUtil.CreateClient(config, _user))
                 {
-                    var config = BaseConfig(server.Uri, mode);
-                    using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromSeconds(10)))
-                    {
-                        Assert.False(client.Initialized);
-                    }
+                    Assert.False(client.Initialized);
                 }
             }
         }
@@ -140,17 +132,14 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             using (var server = TestHttpServer.Start(Handlers.Status(401)))
             {
-                using (var log = new LogSinkScope())
-                {
-                    var config = BaseConfig(server.Uri, mode);
+                var config = BaseConfig(server.Uri, mode);
 
-                    // Currently the behavior of LdClient.InitAsync is somewhat inconsistent with LdClient.Init if there is
-                    // an unrecoverable error: LdClient.Init throws an exception, but LdClient.InitAsync returns a task that
-                    // will complete successfully with an uninitialized client.
-                    using (var client = await TestUtil.CreateClientAsync(config, _user))
-                    {
-                        Assert.False(client.Initialized);
-                    }
+                // Currently the behavior of LdClient.InitAsync is somewhat inconsistent with LdClient.Init if there is
+                // an unrecoverable error: LdClient.Init throws an exception, but LdClient.InitAsync returns a task that
+                // will complete successfully with an uninitialized client.
+                using (var client = await TestUtil.CreateClientAsync(config, _user))
+                {
+                    Assert.False(client.Initialized);
                 }
             }
         }
@@ -167,7 +156,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
                 // Note, on mobile platforms, the generated user key is the device ID and is stable; on other platforms,
                 // it's a GUID that is cached in local storage. Calling ClearCachedClientId() resets the latter.
-                ClientIdentifier.ClearCachedClientId();
+                ClientIdentifier.ClearCachedClientId(testLogger);
 
                 string generatedKey = null;
                 using (var client = await TestUtil.CreateClientAsync(config, anonUser))
@@ -490,6 +479,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var builderInternal = Configuration.BuilderInternal(_mobileKey)
                 .EventProcessor(new MockEventProcessor());
             builderInternal
+                .Logging(testLogging)
                 .BaseUri(serverUri)
                 .StreamUri(serverUri)
                 .PersistFlagValues(false);  // unless we're specifically testing flag caching, this helps to prevent test state contamination

@@ -2,10 +2,9 @@
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using LaunchDarkly.Client;
 using Xunit;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public static class TestUtil
     {
@@ -112,13 +111,13 @@ namespace LaunchDarkly.Xamarin.Tests
             });
         }
 
-        internal static IImmutableDictionary<string, FeatureFlag> MakeSingleFlagData(string flagKey, LdValue value, int? variation = null, EvaluationReason reason = null)
+        internal static IImmutableDictionary<string, FeatureFlag> MakeSingleFlagData(string flagKey, LdValue value, int? variation = null, EvaluationReason? reason = null)
         {
             var flag = new FeatureFlagBuilder().Value(value).Variation(variation).Reason(reason).Build();
             return ImmutableDictionary.Create<string, FeatureFlag>().SetItem(flagKey, flag);
         }
 
-        internal static string JsonFlagsWithSingleFlag(string flagKey, LdValue value, int? variation = null, EvaluationReason reason = null)
+        internal static string JsonFlagsWithSingleFlag(string flagKey, LdValue value, int? variation = null, EvaluationReason? reason = null)
         {
             return JsonUtil.EncodeJson(MakeSingleFlagData(flagKey, value, variation, reason));
         }

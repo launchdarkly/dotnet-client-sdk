@@ -1,21 +1,16 @@
-<Project Sdk="MSBuild.Sdk.Extras">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>LaunchDarkly.XamarinSdk.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="dotnet-xunit" Version="2.3.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <PackageReference Include="LaunchDarkly.CommonSdk" Version="4.3.1" />
     <PackageReference Include="EmbedIO" Version="3.4.3" />
     <PackageReference Include="Moq" Version="4.13.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.3.1" />
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="circle.yml" />
@@ -24,5 +19,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="TestLogging.cs">
+      <SubType></SubType>
+    </Compile>
   </ItemGroup>
 </Project>

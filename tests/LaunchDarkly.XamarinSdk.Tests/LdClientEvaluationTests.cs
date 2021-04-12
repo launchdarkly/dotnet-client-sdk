@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using LaunchDarkly.Client;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class LdClientEvaluationTests : BaseTest
     {
@@ -10,9 +10,11 @@ namespace LaunchDarkly.Xamarin.Tests
         static readonly string nonexistentFlagKey = "some flag key";
         static readonly User user = User.WithKey("userkey");
 
-        private static LdClient ClientWithFlagsJson(string flagsJson)
+        public LdClientEvaluationTests(ITestOutputHelper testOutput) : base(testOutput) { }
+
+        private LdClient ClientWithFlagsJson(string flagsJson)
         {
-            var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson).Build();
+            var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson).Logging(testLogging).Build();
             return TestUtil.CreateClient(config, user);
         }
 
@@ -226,7 +228,7 @@ namespace LaunchDarkly.Xamarin.Tests
             string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
             using (var client = ClientWithFlagsJson(flagsJson))
             {
-                var expected = new EvaluationDetail<int>(3, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WRONG_TYPE));
+                var expected = new EvaluationDetail<int>(3, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
                 Assert.Equal(expected, client.IntVariationDetail("flag-key", 3));
             }
         }

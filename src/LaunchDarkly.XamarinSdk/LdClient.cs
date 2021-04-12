@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
-using LaunchDarkly.Xamarin.PlatformSpecific;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Xamarin.Internal;
+using LaunchDarkly.Sdk.Xamarin.Internal.Events;
+using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
     /// A client for the LaunchDarkly API. Client instances are thread-safe. Your application should instantiate
@@ -16,8 +17,6 @@ namespace LaunchDarkly.Xamarin
     /// </summary>
     public sealed class LdClient : ILdClient
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(LdClient));
-
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
         static readonly EventFactory _eventFactoryWithReasons = EventFactory.DefaultWithReasons;
 
@@ -34,6 +33,7 @@ namespace LaunchDarkly.Xamarin
         readonly IFlagCacheManager flagCacheManager;
         internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
         readonly IPersistentStorage persister;
+        private readonly Logger _log;
 
         // Mutable client state (some state is also in the ConnectionManager)
         readonly ReaderWriterLockSlim _stateLock = new ReaderWriterLockSlim();
@@ -53,7 +53,7 @@ namespace LaunchDarkly.Xamarin
         /// <summary>
         /// The current version string of the SDK.
         /// </summary>
-        public static Version Version => MobileClientEnvironment.Instance.Version;
+        public static Version Version => AssemblyVersions.GetAssemblyVersionForType(typeof(LdClient));
 
         /// <summary>
         /// The <see cref="Configuration"/> instance used to set up the LdClient.
@@ -126,42 +126,50 @@ namespace LaunchDarkly.Xamarin
 
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            persister = Factory.CreatePersistentStorage(configuration);
-            deviceInfo = Factory.CreateDeviceInfo(configuration);
-            flagChangedEventManager = Factory.CreateFlagChangedEventManager(configuration);
+            _log = configuration.LogAdapter.Logger(LogNames.Base);
+
+            _log.Info("Starting LaunchDarkly Client {0}", Version);
+
+            persister = Factory.CreatePersistentStorage(configuration, _log);
+            deviceInfo = Factory.CreateDeviceInfo(configuration, _log);
+            flagChangedEventManager = Factory.CreateFlagChangedEventManager(configuration, _log);
 
             _user = DecorateUser(user);
 
-            flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User);
+            flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User, _log);
 
-            _connectionManager = new ConnectionManager();
+            _connectionManager = new ConnectionManager(_log);
             _connectionManager.SetForceOffline(configuration.Offline);
             if (configuration.Offline)
             {
-                Log.InfoFormat("Starting LaunchDarkly client in offline mode");
+                _log.Info("Starting LaunchDarkly client in offline mode");
             }
             _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(configuration, User, flagCacheManager, _inBackground),
+                Factory.CreateUpdateProcessorFactory(configuration, User, flagCacheManager, _log, _inBackground),
                 true
             );
 
             _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
             _connectivityStateManager.ConnectionChanged += networkAvailable =>
             {
-                Log.DebugFormat("Setting online to {0} due to a connectivity change event", networkAvailable);
+                _log.Debug("Setting online to {0} due to a connectivity change event", networkAvailable);
                 _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
                 eventProcessor.SetOffline(!networkAvailable || _connectionManager.ForceOffline);
             };
             var isConnected = _connectivityStateManager.IsConnected;
             _connectionManager.SetNetworkEnabled(isConnected);
 
-            eventProcessor = Factory.CreateEventProcessor(configuration);
+            eventProcessor = Factory.CreateEventProcessor(configuration, _log);
             eventProcessor.SetOffline(configuration.Offline || !isConnected);
 
             // Send an initial identify event, but only if we weren't explicitly set to be offline
             if (!configuration.Offline)
             {
-                eventProcessor.SendEvent(_eventFactoryDefault.NewIdentifyEvent(User));
+                eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
+                {
+                    Timestamp = UnixMillisecondTime.Now,
+                    User = user
+                });
             }
             
             _backgroundModeManager = _config._backgroundModeManager ?? new DefaultBackgroundModeManager();
@@ -173,7 +181,7 @@ namespace LaunchDarkly.Xamarin
             var success = AsyncUtils.WaitSafely(() => _connectionManager.Start(), maxWaitTime);
             if (!success)
             {
-                Log.WarnFormat("Client did not successfully initialize within {0} milliseconds.",
+                _log.Warn("Client did not successfully initialize within {0} milliseconds.",
                     maxWaitTime.TotalMilliseconds);
             }
         }
@@ -313,7 +321,6 @@ namespace LaunchDarkly.Xamarin
 
                 var c = new LdClient(configuration, user);
                 _instance = c;
-                Log.InfoFormat("Initialized LaunchDarkly Client {0}", Version);
                 return c;
             }
         }
@@ -403,59 +410,58 @@ namespace LaunchDarkly.Xamarin
             {
                 if (!Initialized)
                 {
-                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
-                    SendEventIfOnline(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
-                        EvaluationErrorKind.CLIENT_NOT_READY));
-                    return errorResult(EvaluationErrorKind.CLIENT_NOT_READY);
+                    _log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, User, defaultJson,
+                        EvaluationErrorKind.ClientNotReady));
+                    return errorResult(EvaluationErrorKind.ClientNotReady);
                 }
                 else
                 {
-                    Log.InfoFormat("Unknown feature flag {0}; returning default value", featureKey);
-                    SendEventIfOnline(eventFactory.NewUnknownFeatureRequestEvent(featureKey, User, defaultJson,
-                        EvaluationErrorKind.FLAG_NOT_FOUND));
-                    return errorResult(EvaluationErrorKind.FLAG_NOT_FOUND);
+                    _log.Info("Unknown feature flag {0}; returning default value", featureKey);
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, User, defaultJson,
+                        EvaluationErrorKind.FlagNotFound));
+                    return errorResult(EvaluationErrorKind.FlagNotFound);
                 }
             }
             else
             {
                 if (!Initialized)
                 {
-                    Log.Warn("LaunchDarkly client has not yet been initialized. Returning cached value");
+                    _log.Warn("LaunchDarkly client has not yet been initialized. Returning cached value");
                 }
             }
 
-            FeatureFlagEvent featureFlagEvent = new FeatureFlagEvent(featureKey, flag);
             EvaluationDetail<T> result;
             LdValue valueJson;
             if (flag.value.IsNull)
             {
                 valueJson = defaultJson;
-                result = new EvaluationDetail<T>(defaultValue, flag.variation, flag.reason);
+                result = new EvaluationDetail<T>(defaultValue, flag.variation, flag.reason ?? EvaluationReason.OffReason);
             }
             else
             {
                 if (checkType && !defaultJson.IsNull && flag.value.Type != defaultJson.Type)
                 {
                     valueJson = defaultJson;
-                    result = new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WRONG_TYPE));
+                    result = new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
                 }
                 else
                 {
                     valueJson = flag.value;
-                    result = new EvaluationDetail<T>(converter.ToType(flag.value), flag.variation, flag.reason);
+                    result = new EvaluationDetail<T>(converter.ToType(flag.value), flag.variation, flag.reason ?? EvaluationReason.OffReason);
                 }
             }
-            var featureEvent = eventFactory.NewFeatureRequestEvent(featureFlagEvent, User,
-                new EvaluationDetail<LdValue>(valueJson, flag.variation, flag.reason), defaultJson);
-            SendEventIfOnline(featureEvent);
+            var featureEvent = eventFactory.NewEvaluationEvent(featureKey, flag, User,
+                new EvaluationDetail<LdValue>(valueJson, flag.variation, flag.reason ?? EvaluationReason.OffReason), defaultJson);
+            SendEvaluationEventIfOnline(featureEvent);
             return result;
         }
 
-        private void SendEventIfOnline(Event e)
+        private void SendEvaluationEventIfOnline(EventProcessorTypes.EvaluationEvent e)
         {
             if (!_connectionManager.ForceOffline)
             {
-                eventProcessor.SendEvent(e);
+                eventProcessor.RecordEvaluationEvent(e);
             }
         }
 
@@ -469,13 +475,32 @@ namespace LaunchDarkly.Xamarin
         /// <inheritdoc/>
         public void Track(string eventName, LdValue data, double metricValue)
         {
-            eventProcessor.SendEvent(_eventFactoryDefault.NewCustomEvent(eventName, User, data, metricValue));
+            if (!_connectionManager.ForceOffline)
+            {
+                eventProcessor.RecordCustomEvent(new EventProcessorTypes.CustomEvent
+                {
+                    Timestamp = UnixMillisecondTime.Now,
+                    EventKey = eventName,
+                    User = User,
+                    Data = data,
+                    MetricValue = metricValue
+                });
+            }
         }
 
         /// <inheritdoc/>
         public void Track(string eventName, LdValue data)
         {
-            SendEventIfOnline(_eventFactoryDefault.NewCustomEvent(eventName, User, data));
+            if (!_connectionManager.ForceOffline)
+            {
+                eventProcessor.RecordCustomEvent(new EventProcessorTypes.CustomEvent
+                {
+                    Timestamp = UnixMillisecondTime.Now,
+                    EventKey = eventName,
+                    User = User,
+                    Data = data
+                });
+            }
         }
 
         /// <inheritdoc/>
@@ -516,10 +541,17 @@ namespace LaunchDarkly.Xamarin
                 _user = newUser;
             });
 
-            SendEventIfOnline(_eventFactoryDefault.NewIdentifyEvent(newUser));
+            if (!_connectionManager.ForceOffline)
+            {
+                eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
+                {
+                    Timestamp = UnixMillisecondTime.Now,
+                    User = user
+                });
+            }
 
             return await _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(_config, newUser, flagCacheManager, _inBackground),
+                Factory.CreateUpdateProcessorFactory(_config, newUser, flagCacheManager, _log, _inBackground),
                 true
             );
         }
@@ -578,7 +610,7 @@ namespace LaunchDarkly.Xamarin
         {
             if (disposing)
             {
-                Log.InfoFormat("Shutting down the LaunchDarkly client");
+                _log.Info("Shutting down the LaunchDarkly client");
 
                 _backgroundModeManager.BackgroundModeChanged -= OnBackgroundModeChanged;
                 _connectionManager.Dispose();
@@ -612,19 +644,19 @@ namespace LaunchDarkly.Xamarin
             {
                 return;
             }
-            Log.DebugFormat("Background mode is changing to {0}", goingIntoBackground);
+            _log.Debug("Background mode is changing to {0}", goingIntoBackground);
             if (goingIntoBackground)
             {
                 if (!Config.EnableBackgroundUpdating)
                 {
-                    Log.Debug("Background updating is disabled");
+                    _log.Debug("Background updating is disabled");
                     await _connectionManager.SetUpdateProcessorFactory(null, false);
                     return;
                 }
-                Log.Debug("Background updating is enabled, starting polling processor");
+                _log.Debug("Background updating is enabled, starting polling processor");
             }
             await _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(_config, User, flagCacheManager, goingIntoBackground),
+                Factory.CreateUpdateProcessorFactory(_config, User, flagCacheManager, _log, goingIntoBackground),
                 false  // don't reset initialized state because the user is still the same
             );
         }

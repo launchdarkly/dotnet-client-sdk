@@ -1,4 +1,4 @@
-﻿namespace LaunchDarkly.Xamarin
+﻿namespace LaunchDarkly.Sdk.Xamarin
 {
     internal interface IPersistentStorage
     {

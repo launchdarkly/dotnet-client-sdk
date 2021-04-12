@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Threading.Tasks;
-using LaunchDarkly.Client;
-using LaunchDarkly.Xamarin.Tests.HttpHelpers;
+using LaunchDarkly.Sdk.Xamarin.HttpHelpers;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     // End-to-end tests of this component against an embedded HTTP server.
     public class FeatureFlagRequestorTests : BaseTest
     {
+        public FeatureFlagRequestorTests(ITestOutputHelper testOutput) : base(testOutput) { }
+
         private const string _mobileKey = "FAKE_KEY";
 
-        // User key constructed to test base64 encoding of 62 and 63, which differ between the standard and "URL and Filename safe"
+        // User key constructed to test base64 encoding that differs between the standard and "URL and Filename safe"
         // base64 encodings from RFC4648. We need to use the URL safe encoding for flag requests.
-        private static readonly User _user = User.WithKey("foo>bar__?");
-        private const string _userJson = "{\"key\":\"foo>bar__?\"}";
-        private const string _encodedUser = "eyJrZXkiOiJmb28-YmFyX18_In0=";
+        private static readonly User _user = User.WithKey("foo_bar__?");
+        private const string _encodedUser = "eyJrZXkiOiJmb29fYmFyX18_In0=";
         // Note that in a real use case, the user encoding may vary depending on the target platform, because the SDK adds custom
         // user attributes like "os". But the lower-level FeatureFlagRequestor component does not do that.
 
@@ -42,7 +43,7 @@ namespace LaunchDarkly.Xamarin.Tests
                     .EvaluationReasons(withReasons)
                     .Build();
 
-                using (var requestor = new FeatureFlagRequestor(config, _user))
+                using (var requestor = new FeatureFlagRequestor(config, _user, testLogger))
                 {
                     var resp = await requestor.FeatureFlagsAsync();
                     Assert.Equal(200, resp.statusCode);

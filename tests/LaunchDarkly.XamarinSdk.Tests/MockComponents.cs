@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using LaunchDarkly.Client;
-using LaunchDarkly.Xamarin.PlatformSpecific;
+using LaunchDarkly.Sdk.Xamarin.Internal.Events;
+using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal class MockBackgroundModeManager : IBackgroundModeManager
     {
@@ -68,7 +68,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
     internal class MockEventProcessor : IEventProcessor
     {
-        public List<Event> Events = new List<Event>();
+        public List<object> Events = new List<object>();
         public bool Offline = false;
 
         public void SetOffline(bool offline)
@@ -76,14 +76,18 @@ namespace LaunchDarkly.Xamarin.Tests
             Offline = offline;
         }
 
-        public void SendEvent(Event e)
-        {
-            Events.Add(e);
-        }
-
         public void Flush() { }
 
         public void Dispose() { }
+
+        public void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e) =>
+            Events.Add(e);
+
+        public void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e) =>
+            Events.Add(e);
+
+        public void RecordCustomEvent(EventProcessorTypes.CustomEvent e) =>
+            Events.Add(e);
     }
 
     internal class MockFeatureFlagRequestor : IFeatureFlagRequestor

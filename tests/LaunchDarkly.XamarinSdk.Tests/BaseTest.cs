@@ -1,34 +1,38 @@
 ﻿using System;
-using Common.Logging;
-using LaunchDarkly.Client;
+using LaunchDarkly.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     [Collection("serialize all tests")]
     public class BaseTest : IDisposable
     {
+        protected readonly ILogAdapter testLogging;
+        protected readonly Logger testLogger;
+        protected readonly LogCapture logCapture;
+
         public BaseTest()
         {
-            LogManager.Adapter = new LogSinkFactoryAdapter();
-            TestUtil.ClearClient();
+            logCapture = Logs.Capture();
+            testLogging = logCapture;
+            testLogger = logCapture.Logger("");
         }
 
-        public BaseTest(ITestOutputHelper testOutput)
+        public BaseTest(ITestOutputHelper testOutput) : this()
         {
-            LogManager.Adapter = new LogSinkFactoryAdapter(testOutput.WriteLine);
-            TestUtil.ClearClient();
+            testLogging = Logs.ToMultiple(TestLogging.TestOutputAdapter(testOutput), logCapture);
+            testLogger = testLogging.Logger("");
+        }
+
+        protected void ClearCachedFlags(User user)
+        {
+            PlatformSpecific.Preferences.Clear(Constants.FLAGS_KEY_PREFIX + user.Key, testLogger);
         }
 
         public void Dispose()
         {
             TestUtil.ClearClient();
-        }
-
-        protected void ClearCachedFlags(User user)
-        {
-            PlatformSpecific.Preferences.Clear(Constants.FLAGS_KEY_PREFIX + user.Key);
         }
     }
 }

@@ -69,11 +69,10 @@
         <Reference Include="System.Numerics.Vectors" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="Common.Logging" Version="3.4.1"/>
       <PackageReference Include="xunit.runner.devices" Version="2.5.25"/>
       <PackageReference Include="xunit" Version="2.4.1"/>
       <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661"/>
-        <PackageReference Include="EmbedIO" Version="3.4.3" />
+      <PackageReference Include="EmbedIO" Version="3.4.3" />
     </ItemGroup>
     <ItemGroup>
         <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
@@ -144,9 +143,6 @@
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagRequestorTests.cs">
           <Link>SharedTestCode\FeatureFlagRequestorTests.cs</Link>
         </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagTests.cs">
-          <Link>SharedTestCode\FeatureFlagTests.cs</Link>
-        </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FlagCacheManagerTests.cs">
           <Link>SharedTestCode\FlagCacheManagerTests.cs</Link>
         </Compile>
@@ -168,14 +164,14 @@
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LdClientTests.cs">
           <Link>SharedTestCode\LdClientTests.cs</Link>
         </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LogSink.cs">
-          <Link>SharedTestCode\LogSink.cs</Link>
-        </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\MobilePollingProcessorTests.cs">
           <Link>SharedTestCode\MobilePollingProcessorTests.cs</Link>
         </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\MockComponents.cs">
           <Link>SharedTestCode\MockComponents.cs</Link>
+        </Compile>
+        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\TestLogging.cs">
+          <Link>SharedTestCode\TestLogging.cs</Link>
         </Compile>
         <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\TestUtil.cs">
           <Link>SharedTestCode\TestUtil.cs</Link>

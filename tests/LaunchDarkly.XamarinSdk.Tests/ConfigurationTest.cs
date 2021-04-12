@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Net.Http;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class ConfigurationTest : BaseTest
     {
+        public ConfigurationTest(ITestOutputHelper testOutput) : base(testOutput) { }
+
         [Fact]
         public void TestDefaultsFromDefaultFactoryMethod()
         {

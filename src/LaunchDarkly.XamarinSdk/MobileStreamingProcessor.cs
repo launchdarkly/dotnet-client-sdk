@@ -1,72 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
-using System.Text;
-using Common.Logging;
+using LaunchDarkly.EventSource;
+using LaunchDarkly.JsonStream;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Http;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
-    internal sealed class MobileStreamingProcessor : IMobileUpdateProcessor, IStreamProcessor
+    internal sealed class MobileStreamingProcessor : IMobileUpdateProcessor
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MobileStreamingProcessor));
+        // The read timeout for the stream is not the same read timeout that can be set in the SDK configuration.
+        // It is a fixed value that is set to be slightly longer than the expected interval between heartbeats
+        // from the LaunchDarkly streaming server. If this amount of time elapses with no new data, the connection
+        // will be cycled.
+        private static readonly TimeSpan LaunchDarklyStreamReadTimeout = TimeSpan.FromMinutes(5);
+
         private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
         private readonly Configuration _configuration;
         private readonly IFlagCacheManager _cacheManager;
         private readonly User _user;
-        private readonly StreamManager _streamManager;
+        private readonly EventSourceCreator _eventSourceCreator;
         private readonly IFeatureFlagRequestor _requestor;
+        private readonly TaskCompletionSource<bool> _initTask;
+        private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
+        private readonly Logger _log;
+
+        private volatile IEventSource _eventSource;
+
+        internal delegate IEventSource EventSourceCreator(
+            HttpProperties httpProperties,
+            HttpMethod method,
+            Uri uri,
+            string jsonBody
+            );
 
         internal MobileStreamingProcessor(Configuration configuration,
                                           IFlagCacheManager cacheManager,
                                           IFeatureFlagRequestor requestor,
                                           User user,
-                                          StreamManager.EventSourceCreator eventSourceCreator)
+                                          EventSourceCreator eventSourceCreator,
+                                          Logger log)
         {
             this._configuration = configuration;
             this._cacheManager = cacheManager;
             this._requestor = requestor;
             this._user = user;
-
-            var streamProperties = _configuration.UseReport ? MakeStreamPropertiesForReport() : MakeStreamPropertiesForGet();
-
-            _streamManager = new StreamManager(this,
-                                               streamProperties,
-                                               _configuration.StreamManagerConfiguration,
-                                               MobileClientEnvironment.Instance,
-                                               eventSourceCreator);
+            this._eventSourceCreator = eventSourceCreator ?? CreateEventSource;
+            this._initTask = new TaskCompletionSource<bool>();
+            this._log = log;
         }
 
         #region IMobileUpdateProcessor
 
-        bool IMobileUpdateProcessor.Initialized()
-        {
-            return _streamManager.Initialized;
-        }
+        bool IMobileUpdateProcessor.Initialized() => _initialized.Get();
 
-        async Task<bool> IMobileUpdateProcessor.Start()
+        Task<bool> IMobileUpdateProcessor.Start()
         {
-            return await _streamManager.Start();
+            if (_configuration.UseReport)
+            {
+                _eventSource = _eventSourceCreator(
+                    _configuration.HttpProperties,
+                    ReportMethod,
+                    MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH),
+                    _user.AsJson()
+                    );
+            }
+            else
+            {
+                _eventSource = _eventSourceCreator(
+                    _configuration.HttpProperties,
+                    HttpMethod.Get,
+                    MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH + _user.AsJson().UrlSafeBase64Encode()),
+                    null
+                    );
+            }
+
+            _eventSource.MessageReceived += OnMessage;
+            _eventSource.Error += OnError;
+            _eventSource.Opened += OnOpen;
+
+            _ = Task.Run(() => _eventSource.StartAsync());
+            return _initTask.Task;
         }
 
         #endregion
 
-        private StreamProperties MakeStreamPropertiesForGet()
+        private IEventSource CreateEventSource(
+            HttpProperties httpProperties,
+            HttpMethod method,
+            Uri uri,
+            string jsonBody
+            )
         {
-            var userEncoded = _user.AsJson().UrlSafeBase64Encode();
-            var path = Constants.STREAM_REQUEST_PATH + userEncoded;
-            return new StreamProperties(MakeRequestUriWithPath(path), HttpMethod.Get, null);
-        }
-
-        private StreamProperties MakeStreamPropertiesForReport()
-        {
-            var content = new StringContent(_user.AsJson(), Encoding.UTF8, Constants.APPLICATION_JSON);
-            return new StreamProperties(MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH), ReportMethod, content);
+            var configBuilder = EventSource.Configuration.Builder(uri)
+                .Method(method)
+                .HttpMessageHandler(httpProperties.HttpMessageHandlerFactory(httpProperties))
+                .ConnectionTimeout(httpProperties.ConnectTimeout)
+                .InitialRetryDelay(_configuration.ReconnectTime)
+                .ReadTimeout(LaunchDarklyStreamReadTimeout)
+                .RequestHeaders(httpProperties.BaseHeaders.ToDictionary(kv => kv.Key, kv => kv.Value))
+                .Logger(_log);
+            return new EventSource.EventSource(configBuilder.Build());
         }
 
         private Uri MakeRequestUriWithPath(string path)
@@ -75,16 +116,57 @@ namespace LaunchDarkly.Xamarin
             return _configuration.EvaluationReasons ? uri.AddQuery("withReasons=true") : uri;
         }
 
+        private void OnOpen(object sender, EventSource.StateChangedEventArgs e)
+        {
+            _log.Debug("EventSource Opened");
+        }
+
+        private void OnMessage(object sender, EventSource.MessageReceivedEventArgs e)
+        {
+            try
+            {
+                HandleMessage(e.EventName, e.Message.Data);
+            }
+            catch (JsonReadException ex)
+            {
+                _log.Error("LaunchDarkly service request failed or received invalid data: {0}",
+                    LogValues.ExceptionSummary(ex));
+            }
+            catch (Exception ex)
+            {
+                LogHelpers.LogException(_log, "Unexpected error in stream processing", ex);
+            }
+        }
+
+        private void OnError(object sender, EventSource.ExceptionEventArgs e)
+        {
+            var ex = e.Exception;
+            LogHelpers.LogException(_log, "Encountered EventSource error", ex);
+            if (ex is EventSource.EventSourceServiceUnsuccessfulResponseException respEx)
+            {
+                int status = respEx.StatusCode;
+                _log.Error(HttpErrors.ErrorMessage(status, "streaming connection", "will retry"));
+                if (!HttpErrors.IsRecoverable(status))
+                {
+                    _initTask.TrySetException(ex); // sends this exception to the client if we haven't already started up
+                    ((IDisposable)this).Dispose();
+                }
+            }
+        }
+
         #region IStreamProcessor
 
-        Task IStreamProcessor.HandleMessage(StreamManager streamManager, string messageType, string messageData)
+        void HandleMessage(string messageType, string messageData)
         {
             switch (messageType)
             {
                 case Constants.PUT:
                     {
                         _cacheManager.CacheFlagsFromService(JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(messageData), _user);
-                        streamManager.Initialized = true;
+                        if (!_initialized.GetAndSet(true))
+                        {
+                            _initTask.SetResult(true);
+                        }
                         break;
                     }
                 case Constants.PATCH:
@@ -93,12 +175,12 @@ namespace LaunchDarkly.Xamarin
                         {
                             var parsed = JsonUtil.DecodeJson<JObject>(messageData);
                             var flagkey = (string)parsed[Constants.KEY];
-                            var featureFlag = parsed.ToObject<FeatureFlag>();
+                            var featureFlag = JsonUtil.DecodeJson<FeatureFlag>(messageData);
                             PatchFeatureFlag(flagkey, featureFlag);
                         }
                         catch (Exception ex)
                         {
-                            Log.ErrorFormat("Error parsing PATCH message {0}: {1}", messageData, Util.ExceptionMessage(ex));
+                            _log.Error("Error parsing PATCH message {0}: {1}", messageData, LogValues.ExceptionSummary(ex));
                         }
                         break;
                     }
@@ -113,7 +195,7 @@ namespace LaunchDarkly.Xamarin
                         }
                         catch (Exception ex)
                         {
-                            Log.ErrorFormat("Error parsing DELETE message {0}: {1}", messageData, Util.ExceptionMessage(ex));
+                            _log.Error("Error parsing DELETE message {0}: {1}", messageData, LogValues.ExceptionSummary(ex));
                         }
                         break;
                     }
@@ -127,20 +209,21 @@ namespace LaunchDarkly.Xamarin
                                 var flagsAsJsonString = response.jsonResponse;
                                 var flagsDictionary = JsonUtil.DecodeJson<ImmutableDictionary<string, FeatureFlag>>(flagsAsJsonString);
                                 _cacheManager.CacheFlagsFromService(flagsDictionary, _user);
-                                streamManager.Initialized = true;
+                                if (!_initialized.GetAndSet(true))
+                                {
+                                    _initTask.SetResult(true);
+                                }
                             });
                         }
                         catch (Exception ex)
                         {
-                            Log.ErrorFormat("Error in handling PING message: {1}", Util.ExceptionMessage(ex));
+                            _log.Error("Error in handling PING message: {0}", LogValues.ExceptionSummary(ex));
                         }
                         break;
                     }
                 default:
                     break;
             }
-
-            return Task.FromResult(true);
         }
 
         void PatchFeatureFlag(string flagKey, FeatureFlag featureFlag)
@@ -182,11 +265,8 @@ namespace LaunchDarkly.Xamarin
         {
             if (disposing)
             {
-                ((IDisposable)_streamManager).Dispose();
-                if (_requestor != null)
-                {
-                    _requestor.Dispose();
-                }
+                _eventSource?.Close();
+                _requestor?.Dispose();
             }
         }
     }

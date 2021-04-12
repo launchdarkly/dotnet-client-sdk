@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Net.Http;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Http;
+using LaunchDarkly.Sdk.Xamarin.Internal.Events;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
     /// Configuration options for <see cref="LdClient"/>. 
@@ -29,11 +30,12 @@ namespace LaunchDarkly.Xamarin
         private readonly HttpMessageHandler _httpMessageHandler;
         private readonly bool _inlineUsersInEvents;
         private readonly bool _isStreamingEnabled;
+        private readonly ILogAdapter _logAdapter;
         private readonly string _mobileKey;
         private readonly bool _offline;
         private readonly bool _persistFlagValues;
         private readonly TimeSpan _pollingInterval;
-        private readonly ImmutableHashSet<string> _privateAttributeNames;
+        private readonly ImmutableHashSet<UserAttribute> _privateAttributeNames;
         private readonly TimeSpan _readTimeout;
         private readonly TimeSpan _reconnectTime;
         private readonly Uri _streamUri;
@@ -57,7 +59,7 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <remarks>
         /// By default, this is <see langword="false"/>. If <see langword="true"/>, all of the user attributes
-        /// will be private, not just the attributes specified with <see cref="IConfigurationBuilder.PrivateAttribute(string)"/>
+        /// will be private, not just the attributes specified with <see cref="IConfigurationBuilder.PrivateAttribute(UserAttribute)"/>
         /// or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/> method.
         /// </remarks>
         public bool AllAttributesPrivate => _allAttributesPrivate;
@@ -145,6 +147,8 @@ namespace LaunchDarkly.Xamarin
         /// </remarks>
         public bool IsStreamingEnabled => _isStreamingEnabled;
 
+        internal ILogAdapter LogAdapter => _logAdapter;
+
         /// <summary>
         /// The key for your LaunchDarkly environment.
         /// </summary>
@@ -180,7 +184,7 @@ namespace LaunchDarkly.Xamarin
         /// removed, even if you did not use the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
         /// method when building the user.
         /// </remarks>
-        public IImmutableSet<string> PrivateAttributeNames => _privateAttributeNames;
+        public IImmutableSet<UserAttribute> PrivateAttributeNames => _privateAttributeNames;
 
         /// <summary>
         /// The timeout when reading data from the streaming connection.
@@ -324,6 +328,7 @@ namespace LaunchDarkly.Xamarin
                 builder._httpMessageHandler;
             _inlineUsersInEvents = builder._inlineUsersInEvents;
             _isStreamingEnabled = builder._isStreamingEnabled;
+            _logAdapter = builder._logAdapter;
             _mobileKey = builder._mobileKey;
             _offline = builder._offline;
             _persistFlagValues = builder._persistFlagValues;
@@ -347,71 +352,11 @@ namespace LaunchDarkly.Xamarin
             _updateProcessorFactory = builder._updateProcessorFactory;
         }
 
-        internal IEventProcessorConfiguration EventProcessorConfiguration => new EventProcessorAdapter { Config = this };
-        internal IHttpRequestConfiguration HttpRequestConfiguration => new HttpRequestAdapter { Config = this };
-        internal IStreamManagerConfiguration StreamManagerConfiguration => new StreamManagerAdapter { Config = this };
-
-        private class EventProcessorAdapter : IEventProcessorConfiguration
-        {
-            internal Configuration Config { get; set; }
-            public bool AllAttributesPrivate => Config.AllAttributesPrivate;
-            public int EventCapacity => Config.EventCapacity;
-            public TimeSpan EventFlushInterval => Config.EventFlushInterval;
-            public Uri EventsUri
-            {
-                get
-                {
-                    // This is a hack to work around the fact that the implementation of DefaultEventProcessor
-                    // in LaunchDarkly.CommonSdk 4.x does not use the path concatenation logic that we implemented
-                    // in this assembly in Extensions.AddPath(Uri, string), which assumes a trailing slash in
-                    // the base path. Instead it just calls new Uri(Uri, string) which will drop the last path
-                    // component of the base path if there's no trailing slash. So we add the trailing slash
-                    // here, and we do *not* include a leading slash in Constants.EVENTS_PATH.
-                    //
-                    // In the next major version of the SDK, we'll be using a different implementation of
-                    // DefaultEventProcessor that's in a different assembly and giving it a pre-concatenated URI.
-                    // So there's no point in fixing this in the current LaunchDarkly.CommonSdk implementation,
-                    // which isn't used anywhere else.
-                    var ub = new UriBuilder(Config.EventsUri);
-                    if (ub.Path.EndsWith("/"))
-                    {
-                        return Config.EventsUri;
-                    }
-                    ub.Path += "/";
-                    return ub.Uri;
-                }
-            }
-            public TimeSpan HttpClientTimeout => Config.ConnectionTimeout;
-            public bool InlineUsersInEvents => Config.InlineUsersInEvents;
-            public IImmutableSet<string> PrivateAttributeNames => Config.PrivateAttributeNames;
-            public TimeSpan ReadTimeout => Config.ReadTimeout;
-            public TimeSpan ReconnectTime => Config.ReconnectTime;
-            public int UserKeysCapacity => Config.UserKeysCapacity;
-            public TimeSpan UserKeysFlushInterval => Config.UserKeysFlushInterval;
-        }
-
-        private class HttpRequestAdapter : IHttpRequestConfiguration
-        {
-            internal Configuration Config { get; set; }
-            public string HttpAuthorizationKey => Config.MobileKey;
-            public HttpMessageHandler HttpMessageHandler => Config.HttpMessageHandler;
-        }
-
-        private class StreamManagerAdapter : IStreamManagerConfiguration
-        {
-            internal Configuration Config { get; set; }
-            public string HttpAuthorizationKey => Config.MobileKey;
-            public HttpMessageHandler HttpMessageHandler => Config.HttpMessageHandler;
-            public TimeSpan HttpClientTimeout => Config.ConnectionTimeout;
-            public TimeSpan ReadTimeout => Config.ReadTimeout;
-            public TimeSpan ReconnectTime => Config.ReconnectTime;
-
-            public Exception TranslateHttpException(Exception e)
-            {
-                // TODO: this will be used as part of the fix for ch47489 - it will ensure that platform-specific
-                // exceptions like java.net.SocketTimeout will be logged as a standard .NET exception type
-                return e;
-            }
-        }
+        internal HttpProperties HttpProperties => HttpProperties.Default
+            .WithAuthorizationKey(this.MobileKey)
+            .WithConnectTimeout(this.ConnectionTimeout)
+            .WithHttpMessageHandlerFactory(_ => this.HttpMessageHandler)
+            .WithReadTimeout(this.ReadTimeout)
+            .WithUserAgent("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)));
     }
 }

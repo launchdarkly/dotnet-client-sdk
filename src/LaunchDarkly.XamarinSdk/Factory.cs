@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Net.Http;
-using Common.Logging;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal.Events;
+using LaunchDarkly.Sdk.Xamarin.Internal;
+using LaunchDarkly.Sdk.Xamarin.Internal.Events;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal static class Factory
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(Factory));
-
         internal static IFlagCacheManager CreateFlagCacheManager(Configuration configuration, 
                                                                  IPersistentStorage persister,
                                                                  IFlagChangedEventManager flagChangedEventManager,
-                                                                 User user)
+                                                                 User user,
+                                                                 Logger log)
         {
             if (configuration._flagCacheManager != null)
             {
@@ -22,7 +21,7 @@ namespace LaunchDarkly.Xamarin
             else
             {
                 var inMemoryCache = new UserFlagInMemoryCache();
-                var deviceCache = configuration.PersistFlagValues ? new UserFlagDeviceCache(persister) as IUserFlagCache : new NullUserFlagCache();
+                var deviceCache = configuration.PersistFlagValues ? new UserFlagDeviceCache(persister, log) as IUserFlagCache : new NullUserFlagCache();
                 return new FlagCacheManager(inMemoryCache, deviceCache, flagChangedEventManager, user);
             }
         }
@@ -33,8 +32,9 @@ namespace LaunchDarkly.Xamarin
         }
 
         internal static Func<IMobileUpdateProcessor> CreateUpdateProcessorFactory(Configuration configuration, User user,
-            IFlagCacheManager flagCacheManager, bool inBackground)
+            IFlagCacheManager flagCacheManager, Logger baseLog, bool inBackground)
         {
+            Logger log = baseLog.SubLogger(LogNames.DataSourceSubLog);
             return () =>
             {
                 if (configuration._updateProcessorFactory != null)
@@ -42,10 +42,10 @@ namespace LaunchDarkly.Xamarin
                     return configuration._updateProcessorFactory(configuration, flagCacheManager, user);
                 }
 
-                var featureFlagRequestor = new FeatureFlagRequestor(configuration, user);
+                var featureFlagRequestor = new FeatureFlagRequestor(configuration, user, log);
                 if (configuration.IsStreamingEnabled && !inBackground)
                 {
-                    return new MobileStreamingProcessor(configuration, flagCacheManager, featureFlagRequestor, user, null);
+                    return new MobileStreamingProcessor(configuration, flagCacheManager, featureFlagRequestor, user, null, log);
                 }
                 else
                 {
@@ -53,34 +53,60 @@ namespace LaunchDarkly.Xamarin
                                                       flagCacheManager,
                                                       user,
                                                       inBackground ? configuration.BackgroundPollingInterval : configuration.PollingInterval,
-                                                      inBackground ? configuration.BackgroundPollingInterval : TimeSpan.Zero);
+                                                      inBackground ? configuration.BackgroundPollingInterval : TimeSpan.Zero,
+                                                      log);
                 }
             };
         }
 
-        internal static IEventProcessor CreateEventProcessor(Configuration configuration)
+        internal static IEventProcessor CreateEventProcessor(Configuration configuration, Logger baseLog)
         {
             if (configuration._eventProcessor != null)
             {
                 return configuration._eventProcessor;
             }
-            HttpClient httpClient = Util.MakeHttpClient(configuration.HttpRequestConfiguration, MobileClientEnvironment.Instance);
-            return new DefaultEventProcessor(configuration.EventProcessorConfiguration, null, httpClient, Constants.EVENTS_PATH);
+
+            var log = baseLog.SubLogger(LogNames.EventsSubLog);
+            var eventsConfig = new EventsConfiguration
+            {
+                AllAttributesPrivate = configuration.AllAttributesPrivate,
+                DiagnosticRecordingInterval = TimeSpan.FromMinutes(15), // TODO
+                DiagnosticUri = null,
+                EventCapacity = configuration.EventCapacity,
+                EventFlushInterval = configuration.EventFlushInterval,
+                EventsUri = configuration.EventsUri.AddPath(Constants.EVENTS_PATH),
+                InlineUsersInEvents = configuration.InlineUsersInEvents,
+                PrivateAttributeNames = configuration.PrivateAttributeNames,
+                RetryInterval = TimeSpan.FromSeconds(1),
+                UserKeysCapacity = configuration.UserKeysCapacity,
+                UserKeysFlushInterval = configuration.UserKeysFlushInterval
+            };
+            var httpProperties = configuration.HttpProperties;
+            var eventProcessor = new EventProcessor(
+                eventsConfig,
+                new DefaultEventSender(httpProperties, eventsConfig, log),
+                null,
+                null,
+                null,
+                log,
+                null
+                );
+            return new DefaultEventProcessorWrapper(eventProcessor);
         }
 
-        internal static IPersistentStorage CreatePersistentStorage(Configuration configuration)
+        internal static IPersistentStorage CreatePersistentStorage(Configuration configuration, Logger log)
         {
-            return configuration._persistentStorage ?? new DefaultPersistentStorage();
+            return configuration._persistentStorage ?? new DefaultPersistentStorage(log);
         }
 
-        internal static IDeviceInfo CreateDeviceInfo(Configuration configuration)
+        internal static IDeviceInfo CreateDeviceInfo(Configuration configuration, Logger log)
         {
-            return configuration._deviceInfo ?? new DefaultDeviceInfo();
+            return configuration._deviceInfo ?? new DefaultDeviceInfo(log);
         }
 
-        internal static IFlagChangedEventManager CreateFlagChangedEventManager(Configuration configuration)
+        internal static IFlagChangedEventManager CreateFlagChangedEventManager(Configuration configuration, Logger log)
         {
-            return configuration._flagChangedEventManager ?? new FlagChangedEventManager();
+            return configuration._flagChangedEventManager ?? new FlagChangedEventManager(log);
         }
     }
 }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 
-namespace LaunchDarkly.Xamarin.Tests.HttpHelpers
+namespace LaunchDarkly.Sdk.Xamarin.HttpHelpers
 {
     /// <summary>
     /// An abstraction used by <see cref="Handler"/> implementations to hide the details of the

@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Immutable;
-using Common.Logging;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
+using LaunchDarkly.Logging;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal sealed class UserFlagDeviceCache : IUserFlagCache
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(UserFlagDeviceCache));
         private readonly IPersistentStorage persister;
+        private readonly Logger _log;
 
-        public UserFlagDeviceCache(IPersistentStorage persister)
+        public UserFlagDeviceCache(IPersistentStorage persister, Logger log)
         {
             this.persister = persister;
+            _log = log;
         }
 
         void IUserFlagCache.CacheFlagsForUser(IImmutableDictionary<string, FeatureFlag> flags, User user)
@@ -25,8 +24,8 @@ namespace LaunchDarkly.Xamarin
             }
             catch (System.Exception ex)
             {
-                Log.ErrorFormat("Couldn't set preferences on mobile device: {0}",
-                    Util.ExceptionMessage(ex));
+                _log.Error("Couldn't set preferences on mobile device: {0}",
+                    LogValues.ExceptionSummary(ex));
             }
         }
 
@@ -42,8 +41,8 @@ namespace LaunchDarkly.Xamarin
             }
             catch (Exception ex)
             {
-                Log.ErrorFormat("Couldn't get preferences on mobile device: {0}",
-                    Util.ExceptionMessage(ex));
+                _log.Error("Couldn't get preferences on mobile device: {0}",
+                    LogValues.ExceptionSummary(ex));
             }
 
             return ImmutableDictionary.Create<string, FeatureFlag>();

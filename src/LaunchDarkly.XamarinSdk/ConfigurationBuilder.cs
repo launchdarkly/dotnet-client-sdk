@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Common.Logging;
-using LaunchDarkly.Client;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Xamarin.Internal.Events;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
     /// A mutable object that uses the Builder pattern to specify properties for a <see cref="Configuration"/> object.
@@ -38,7 +38,7 @@ namespace LaunchDarkly.Xamarin
         /// </summary>
         /// <remarks>
         /// By default, this is <see langword="false"/>. If <see langword="true"/>, all of the user attributes
-        /// will be private, not just the attributes specified with <see cref="ConfigurationBuilder.PrivateAttribute(string)"/>
+        /// will be private, not just the attributes specified with <see cref="ConfigurationBuilder.PrivateAttribute(UserAttribute)"/>
         /// or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/> method.
         /// </remarks>
         /// <param name="allAttributesPrivate">true if all attributes should be private</param>
@@ -169,6 +169,13 @@ namespace LaunchDarkly.Xamarin
         IConfigurationBuilder IsStreamingEnabled(bool isStreamingEnabled);
 
         /// <summary>
+        /// Sets the implementation of logging that the SDK will use.
+        /// </summary>
+        /// <param name="logAdapter">an <c>ILogAdapter</c></param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder Logging(ILogAdapter logAdapter);
+
+        /// <summary>
         /// Sets the key for your LaunchDarkly environment.
         /// </summary>
         /// <remarks>
@@ -220,9 +227,9 @@ namespace LaunchDarkly.Xamarin
         /// You may call this method repeatedly to mark multiple attributes as private.
         /// </para>
         /// </remarks>
-        /// <param name="privateAttributeName">the attribute name</param>
+        /// <param name="privateAttribute">the attribute</param>
         /// <returns>the same builder</returns>
-        IConfigurationBuilder PrivateAttribute(string privateAttributeName);
+        IConfigurationBuilder PrivateAttribute(UserAttribute privateAttribute);
 
         /// <summary>
         /// Sets the timeout when reading data from the streaming connection.
@@ -276,8 +283,6 @@ namespace LaunchDarkly.Xamarin
 
     internal sealed class ConfigurationBuilder : IConfigurationBuilder
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ConfigurationBuilder));
-
         // This exists so that we can distinguish between leaving the HttpMessageHandler property unchanged
         // and explicitly setting it to null. If the property value is the exact same instance as this, we
         // will replace it with a platform-specific implementation.
@@ -295,11 +300,12 @@ namespace LaunchDarkly.Xamarin
         internal HttpMessageHandler _httpMessageHandler = DefaultHttpMessageHandlerInstance;
         internal bool _inlineUsersInEvents = false;
         internal bool _isStreamingEnabled = true;
+        internal ILogAdapter _logAdapter = Logs.None;
         internal string _mobileKey;
         internal bool _offline = false;
         internal bool _persistFlagValues = true;
         internal TimeSpan _pollingInterval = Configuration.DefaultPollingInterval;
-        internal HashSet<string> _privateAttributeNames = null;
+        internal HashSet<UserAttribute> _privateAttributeNames = null;
         internal TimeSpan _readTimeout = Configuration.DefaultReadTimeout;
         internal TimeSpan _reconnectTime = Configuration.DefaultReconnectTime;
         internal Uri _streamUri = Configuration.DefaultStreamUri;
@@ -336,12 +342,13 @@ namespace LaunchDarkly.Xamarin
             _httpMessageHandler = copyFrom.HttpMessageHandler;
             _inlineUsersInEvents = copyFrom.InlineUsersInEvents;
             _isStreamingEnabled = copyFrom.IsStreamingEnabled;
+            _logAdapter = copyFrom.LogAdapter;
             _mobileKey = copyFrom.MobileKey;
             _offline = copyFrom.Offline;
             _persistFlagValues = copyFrom.PersistFlagValues;
             _pollingInterval = copyFrom.PollingInterval;
             _privateAttributeNames = copyFrom.PrivateAttributeNames is null ? null :
-                new HashSet<string>(copyFrom.PrivateAttributeNames);
+                new HashSet<UserAttribute>(copyFrom.PrivateAttributeNames);
             _readTimeout = copyFrom.ReadTimeout;
             _reconnectTime = copyFrom.ReconnectTime;
             _streamUri = copyFrom.StreamUri;
@@ -365,7 +372,6 @@ namespace LaunchDarkly.Xamarin
         {
             if (backgroundPollingInterval.CompareTo(Configuration.MinimumBackgroundPollingInterval) < 0)
             {
-                Log.WarnFormat("BackgroundPollingInterval cannot be less than {0}", Configuration.MinimumBackgroundPollingInterval);
                 _backgroundPollingInterval = Configuration.MinimumBackgroundPollingInterval;
             }
             else
@@ -435,6 +441,12 @@ namespace LaunchDarkly.Xamarin
             return this;
         }
 
+        public IConfigurationBuilder Logging(ILogAdapter logAdapter)
+        {
+            _logAdapter = logAdapter ?? Logs.None;
+            return this;
+        }
+
         public IConfigurationBuilder MobileKey(string mobileKey)
         {
             _mobileKey = mobileKey;
@@ -457,7 +469,6 @@ namespace LaunchDarkly.Xamarin
         {
             if (pollingInterval.CompareTo(Configuration.MinimumPollingInterval) < 0)
             {
-                Log.WarnFormat("PollingInterval cannot be less than {0}", Configuration.MinimumPollingInterval);
                 _pollingInterval = Configuration.MinimumPollingInterval;
             }
             else
@@ -467,13 +478,13 @@ namespace LaunchDarkly.Xamarin
             return this;
         }
 
-        public IConfigurationBuilder PrivateAttribute(string privateAtributeName)
+        public IConfigurationBuilder PrivateAttribute(UserAttribute privateAttribute)
         {
             if (_privateAttributeNames is null)
             {
-                _privateAttributeNames = new HashSet<string>();
+                _privateAttributeNames = new HashSet<UserAttribute>();
             }
-            _privateAttributeNames.Add(privateAtributeName);
+            _privateAttributeNames.Add(privateAttribute);
             return this;
         }
 

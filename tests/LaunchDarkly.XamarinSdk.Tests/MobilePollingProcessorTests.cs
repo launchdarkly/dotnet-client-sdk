@@ -1,8 +1,8 @@
 ﻿using System;
-using LaunchDarkly.Client;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class MobilePollingProcessorTests : BaseTest
     {
@@ -15,13 +15,15 @@ namespace LaunchDarkly.Xamarin.Tests
         IFlagCacheManager mockFlagCacheManager;
         User user;
 
+        public MobilePollingProcessorTests(ITestOutputHelper testOutput) : base(testOutput) { }
+
         IMobileUpdateProcessor Processor()
         {
             var mockFeatureFlagRequestor = new MockFeatureFlagRequestor(flagsJson);
             var stubbedFlagCache = new UserFlagInMemoryCache();
             mockFlagCacheManager = new MockFlagCacheManager(stubbedFlagCache);
             user = User.WithKey("user1Key");
-            return new MobilePollingProcessor(mockFeatureFlagRequestor, mockFlagCacheManager, user, TimeSpan.FromSeconds(30), TimeSpan.Zero);
+            return new MobilePollingProcessor(mockFeatureFlagRequestor, mockFlagCacheManager, user, TimeSpan.FromSeconds(30), TimeSpan.Zero, testLogger);
         }
 
         [Fact]

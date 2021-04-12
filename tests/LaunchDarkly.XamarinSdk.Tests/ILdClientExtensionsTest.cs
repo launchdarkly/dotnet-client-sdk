@@ -1,8 +1,7 @@
-﻿using LaunchDarkly.Client;
-using Moq;
+﻿using Moq;
 using Xunit;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class ILdClientExtensionsTest
     {
@@ -82,7 +81,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var client = clientMock.Object;
 
             var result = client.EnumVariationDetail("key", MyEnum.Blue);
-            var expected = new EvaluationDetail<MyEnum>(MyEnum.Blue, 1, EvaluationReason.ErrorReason(EvaluationErrorKind.WRONG_TYPE));
+            var expected = new EvaluationDetail<MyEnum>(MyEnum.Blue, 1, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
             Assert.Equal(expected, result);
         }
 
@@ -109,7 +108,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var client = clientMock.Object;
 
             var result = client.EnumVariationDetail("key", defaultValue);
-            var expected = new EvaluationDetail<string>(defaultValue, 1, EvaluationReason.ErrorReason(EvaluationErrorKind.WRONG_TYPE));
+            var expected = new EvaluationDetail<string>(defaultValue, 1, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
             Assert.Equal(expected, result);
         }
     }

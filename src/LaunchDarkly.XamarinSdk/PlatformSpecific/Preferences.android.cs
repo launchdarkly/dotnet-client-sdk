@@ -25,8 +25,9 @@ using System.Globalization;
 using Android.App;
 using Android.Content;
 using Android.Preferences;
+using LaunchDarkly.Logging;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     // Modified for LaunchDarkly: the SDK always serializes values to strings before using this class
     // to store them. Therefore, the overloads for non-string types have been removed, thereby
@@ -36,7 +37,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
     {
         static readonly object locker = new object();
 
-        static bool PlatformContainsKey(string key, string sharedName)
+        static bool PlatformContainsKey(string key, string sharedName, Logger log)
         {
             lock (locker)
             {
@@ -47,7 +48,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             }
         }
 
-        static void PlatformRemove(string key, string sharedName)
+        static void PlatformRemove(string key, string sharedName, Logger log)
         {
             lock (locker)
             {
@@ -59,7 +60,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             }
         }
 
-        static void PlatformClear(string sharedName)
+        static void PlatformClear(string sharedName, Logger log)
         {
             lock (locker)
             {
@@ -71,7 +72,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             }
         }
 
-        static void PlatformSet(string key, string value, string sharedName)
+        static void PlatformSet(string key, string value, string sharedName, Logger log)
         {
             lock (locker)
             {
@@ -91,7 +92,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             }
         }
 
-        static string PlatformGet(string key, string defaultValue, string sharedName)
+        static string PlatformGet(string key, string defaultValue, string sharedName, Logger log)
         {
             lock (locker)
             {

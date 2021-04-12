@@ -1,5 +1,5 @@
-﻿using System;
-namespace LaunchDarkly.Xamarin
+﻿
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal static class Constants
     {

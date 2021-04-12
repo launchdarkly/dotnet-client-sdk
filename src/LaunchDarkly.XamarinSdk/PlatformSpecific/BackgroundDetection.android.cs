@@ -1,9 +1,8 @@
 ﻿using System;
-using LaunchDarkly.Xamarin;
 using Android.App;
 using Android.OS;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     internal static partial class BackgroundDetection
     {

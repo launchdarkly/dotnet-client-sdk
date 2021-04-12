@@ -1,18 +1,20 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
-using LaunchDarkly.Client;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class FlagChangedEventTests : BaseTest
     {
         private const string INT_FLAG = "int-flag";
         private const string DOUBLE_FLAG = "double-flag";
 
+        public FlagChangedEventTests(ITestOutputHelper testOutput) : base(testOutput) { }
+
         FlagChangedEventManager Manager()
         {
-            return new FlagChangedEventManager();
+            return new FlagChangedEventManager(testLogger);
         }
 
         [Fact]

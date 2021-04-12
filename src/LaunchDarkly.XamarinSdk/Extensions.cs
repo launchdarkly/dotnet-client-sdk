@@ -1,7 +1,7 @@
 ﻿using System;
-using LaunchDarkly.Client;
+using LaunchDarkly.Sdk.Json;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal static class Extensions
     {
@@ -13,7 +13,7 @@ namespace LaunchDarkly.Xamarin
 
         public static string AsJson(this User user)
         {
-            return JsonUtil.EncodeJson(user);
+            return LdJsonSerialization.SerializeObject(user);
         }
 
         // This differs from "new Uri(baseUri, path)" in that it always assumes a trailing "/" in

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
-using LaunchDarkly.Client;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal interface IUserFlagCache
     {

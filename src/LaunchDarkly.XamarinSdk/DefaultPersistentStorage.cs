@@ -1,17 +1,21 @@
-﻿using LaunchDarkly.Xamarin.PlatformSpecific;
+﻿using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal sealed class DefaultPersistentStorage : IPersistentStorage
     {
-        public void Save(string key, string value)
+        private readonly Logger _log;
+
+        internal DefaultPersistentStorage(Logger log)
         {
-            Preferences.Set(key, value);
+            _log = log;
         }
 
-        public string GetValue(string key)
-        {
-            return Preferences.Get(key, null);
-        }
+        public void Save(string key, string value) =>
+            Preferences.Set(key, value, _log);
+
+        public string GetValue(string key) =>
+            Preferences.Get(key, null, _log);
     }
 }

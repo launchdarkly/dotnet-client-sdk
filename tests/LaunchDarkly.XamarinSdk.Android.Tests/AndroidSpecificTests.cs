@@ -1,7 +1,6 @@
-﻿using LaunchDarkly.Client;
-using Xunit;
+﻿using Xunit;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class AndroidSpecificTests : BaseTest
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
-using LaunchDarkly.Common;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
     /// Manages our connection to LaunchDarkly, if any, and encapsulates all of the state that
@@ -22,8 +22,7 @@ namespace LaunchDarkly.Xamarin
     /// </remarks>
     internal sealed class ConnectionManager : IDisposable
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ConnectionManager));
-
+        private readonly Logger _log;
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         private bool _disposed = false;
         private bool _started = false;
@@ -52,6 +51,11 @@ namespace LaunchDarkly.Xamarin
         /// <see cref="ILdClient.Initialized"/>).
         /// </summary>
         public bool Initialized => LockUtils.WithReadLock(_lock, () => _initialized);
+
+        internal ConnectionManager(Logger log)
+        {
+            _log = log;
+        }
 
         /// <summary>
         /// Sets whether the client should always be offline, and attempts to connect if appropriate.
@@ -90,7 +94,7 @@ namespace LaunchDarkly.Xamarin
                     return Task.FromResult(false);
                 }
                 _forceOffline = forceOffline;
-                Log.InfoFormat("Offline mode is now {0}", forceOffline);
+                _log.Info("Offline mode is now {0}", forceOffline);
                 return OpenOrCloseConnectionIfNecessary(); // not awaiting
             });
         }
@@ -132,7 +136,7 @@ namespace LaunchDarkly.Xamarin
                     return Task.FromResult(false);
                 }
                 _networkEnabled = networkEnabled;
-                Log.InfoFormat("Network availability is now {0}", networkEnabled);
+                _log.Info("Network availability is now {0}", networkEnabled);
                 return OpenOrCloseConnectionIfNecessary(); // not awaiting
             });
         }
@@ -264,7 +268,7 @@ namespace LaunchDarkly.Xamarin
                 if (task.IsFaulted)
                 {
                     // Don't let exceptions from the update processor propagate up into the SDK. Just say we didn't initialize.
-                    Log.ErrorFormat("Failed to initialize LaunchDarkly connection: {0}", Util.ExceptionMessage(task.Exception));
+                    LogHelpers.LogException(_log, "Failed to initialize LaunchDarkly connection", task.Exception);
                     return false;
                 }
                 var success = task.Result;

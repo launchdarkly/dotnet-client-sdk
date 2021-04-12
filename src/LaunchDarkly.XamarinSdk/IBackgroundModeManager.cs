@@ -1,7 +1,7 @@
 ﻿using System;
-using LaunchDarkly.Xamarin.PlatformSpecific;
+using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal interface IBackgroundModeManager
     {

@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
 using LaunchDarkly.EventSource;
+using LaunchDarkly.Sdk.Internal.Http;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class MobileStreamingProcessorTests : BaseTest
     {
@@ -26,7 +25,7 @@ namespace LaunchDarkly.Xamarin.Tests
         private IFeatureFlagRequestor mockRequestor;
         private IConfigurationBuilder configBuilder;
 
-        public MobileStreamingProcessorTests()
+        public MobileStreamingProcessorTests(ITestOutputHelper testOutput) : base(testOutput)
         {
             mockEventSource = new EventSourceMock();
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
@@ -35,15 +34,14 @@ namespace LaunchDarkly.Xamarin.Tests
             configBuilder = Configuration.BuilderInternal("someKey")
                                          .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                          .FlagCacheManager(mockFlagCacheMgr)
-                                         .IsStreamingEnabled(true);
-                                  
-
+                                         .IsStreamingEnabled(true)
+                                         .Logging(testLogging);
         }
 
         private IMobileUpdateProcessor MobileStreamingProcessorStarted()
         {
             IMobileUpdateProcessor processor = new MobileStreamingProcessor(configBuilder.Build(),
-                mockFlagCacheMgr, mockRequestor, user, eventSourceFactory.Create());
+                mockFlagCacheMgr, mockRequestor, user, eventSourceFactory.Create(), testLogger);
             processor.Start();
             return processor;
         }
@@ -66,21 +64,10 @@ namespace LaunchDarkly.Xamarin.Tests
             var fakeBaseUri = fakeRootUri + baseUriExtraPath;
             configBuilder.StreamUri(new Uri(fakeBaseUri));
             configBuilder.EvaluationReasons(withReasons);
-            var config = configBuilder.Build();
             MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            Assert.Equal(HttpMethod.Get, props.Method);
+            Assert.Equal(HttpMethod.Get, eventSourceFactory.ReceivedMethod);
             Assert.Equal(new Uri(fakeRootUri + expectedPathWithoutUser + encodedUser + expectedQuery),
-                props.StreamUri);
-        }
-
-        [Fact]
-        public void StreamUriInGetModeHasReasonsParameterIfConfigured()
-        {
-            var config = configBuilder.EvaluationReasons(true).Build();
-            MobileStreamingProcessorStarted();
-            var props = eventSourceFactory.ReceivedProperties;
-            Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + encodedUser + "?withReasons=true"), props.StreamUri);
+                eventSourceFactory.ReceivedUri);
         }
 
         // Report mode is currently disabled - ch47341
@@ -139,7 +126,7 @@ namespace LaunchDarkly.Xamarin.Tests
             Assert.Equal(15, intFlagFromPUT);
 
             //PATCH to update 1 flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(UpdatedFlag(), null), "patch");
+            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("patch", UpdatedFlag(), null));
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             //verify flag has changed
@@ -157,7 +144,7 @@ namespace LaunchDarkly.Xamarin.Tests
             Assert.Equal(15, intFlagFromPUT);
 
             //PATCH to update 1 flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(UpdatedFlagWithLowerVersion(), null), "patch");
+            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("patch", UpdatedFlagWithLowerVersion(), null));
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             //verify flag has not changed
@@ -175,7 +162,7 @@ namespace LaunchDarkly.Xamarin.Tests
             Assert.Equal(15, intFlagFromPUT);
 
             // DELETE int-flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(DeleteFlag(), null), "delete");
+            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("delete", DeleteFlag(), null));
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             // verify flag was deleted
@@ -192,7 +179,7 @@ namespace LaunchDarkly.Xamarin.Tests
             Assert.Equal(15, intFlagFromPUT);
 
             // DELETE int-flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(DeleteFlagWithLowerVersion(), null), "delete");
+            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("delete", DeleteFlagWithLowerVersion(), null));
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             // verify flag was not deleted
@@ -203,7 +190,7 @@ namespace LaunchDarkly.Xamarin.Tests
         public async void PingCausesPoll()
         {
             MobileStreamingProcessorStarted();
-            mockEventSource.RaiseMessageRcvd(new MessageReceivedEventArgs(new MessageEvent("", null), "ping"));
+            mockEventSource.RaiseMessageRcvd(new MessageReceivedEventArgs(new MessageEvent("ping", null, null)));
             var deadline = DateTime.Now.Add(TimeSpan.FromSeconds(5));
             while (DateTime.Now < deadline)
             {
@@ -243,15 +230,17 @@ namespace LaunchDarkly.Xamarin.Tests
 
         void PUTMessageSentToProcessor()
         {
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent(initialFlagsJson, null), "put");
+            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("put", initialFlagsJson, null));
             mockEventSource.RaiseMessageRcvd(eventArgs);
         }
     }
 
     class TestEventSourceFactory
     {
-        public StreamProperties ReceivedProperties { get; private set; }
-        public IDictionary<string, string> ReceivedHeaders { get; private set; }
+        public HttpProperties ReceivedHttpProperties { get; private set; }
+        public HttpMethod ReceivedMethod { get; private set; }
+        public Uri ReceivedUri { get; private set; }
+        public string ReceivedBody { get; private set; }
         IEventSource _eventSource;
 
         public TestEventSourceFactory(IEventSource eventSource)
@@ -259,12 +248,14 @@ namespace LaunchDarkly.Xamarin.Tests
             _eventSource = eventSource;
         }
 
-        public StreamManager.EventSourceCreator Create()
+        public MobileStreamingProcessor.EventSourceCreator Create()
         {
-            return (StreamProperties sp, IDictionary<string, string> headers) =>
+            return (httpProperties, method, uri, jsonBody) =>
             {
-                ReceivedProperties = sp;
-                ReceivedHeaders = headers;
+                ReceivedHttpProperties = httpProperties;
+                ReceivedMethod = method;
+                ReceivedUri = uri;
+                ReceivedBody = jsonBody;
                 return _eventSource;
             };
         }
@@ -291,6 +282,8 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             return Task.CompletedTask;
         }
+
+        public void Restart(bool withDelay) { }
 
         public void RaiseMessageRcvd(MessageReceivedEventArgs eventArgs)
         {

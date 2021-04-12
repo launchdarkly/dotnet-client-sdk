@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Common.Logging;
-using LaunchDarkly.Client;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
     /// An event object that is sent to handlers for the <see cref="ILdClient.FlagChanged"/> event.
@@ -73,9 +73,14 @@ namespace LaunchDarkly.Xamarin
 
     internal sealed class FlagChangedEventManager : IFlagChangedEventManager
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(IFlagChangedEventManager));
+        private readonly Logger _log;
 
         public event EventHandler<FlagChangedEventArgs> FlagChanged;
+
+        internal FlagChangedEventManager(Logger log)
+        {
+            _log = log;
+        }
 
         public bool IsHandlerRegistered(EventHandler<FlagChangedEventArgs> handler)
         {
@@ -109,8 +114,7 @@ namespace LaunchDarkly.Xamarin
                         }
                         catch (Exception e)
                         {
-                            Log.Warn("Unexpected exception from FlagChanged event handler", e);
-                            Log.Debug(e, e);
+                            LogHelpers.LogException(_log, "Unexpected exception from FlagChanged event handler", e);
                         }
                     });
                 }

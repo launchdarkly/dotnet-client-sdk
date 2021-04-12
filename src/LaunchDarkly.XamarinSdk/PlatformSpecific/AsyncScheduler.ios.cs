@@ -1,7 +1,7 @@
 ﻿using System;
 using Foundation;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     internal static partial class AsyncScheduler
     {

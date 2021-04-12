@@ -2,21 +2,19 @@
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal sealed class MobilePollingProcessor : IMobileUpdateProcessor
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(MobilePollingProcessor));
-
         private readonly IFeatureFlagRequestor _featureFlagRequestor;
         private readonly IFlagCacheManager _flagCacheManager;
         private readonly User _user;
         private readonly TimeSpan _pollingInterval;
         private readonly TimeSpan _initialDelay;
+        private readonly Logger _log;
         private readonly TaskCompletionSource<bool> _startTask;
         private readonly TaskCompletionSource<bool> _stopTask;
         private const int UNINITIALIZED = 0;
@@ -28,13 +26,15 @@ namespace LaunchDarkly.Xamarin
                                       IFlagCacheManager cacheManager,
                                       User user,
                                       TimeSpan pollingInterval,
-                                      TimeSpan initialDelay)
+                                      TimeSpan initialDelay,
+                                      Logger log)
         {
             this._featureFlagRequestor = featureFlagRequestor;
             this._flagCacheManager = cacheManager;
             this._user = user;
             this._pollingInterval = pollingInterval;
             this._initialDelay = initialDelay;
+            this._log = log;
             _startTask = new TaskCompletionSource<bool>();
             _stopTask = new TaskCompletionSource<bool>();
         }
@@ -46,11 +46,11 @@ namespace LaunchDarkly.Xamarin
 
             if (_initialDelay > TimeSpan.Zero)
             {
-                Log.InfoFormat("Starting LaunchDarkly PollingProcessor with interval: {0} (waiting {1} first)", _pollingInterval, _initialDelay);
+                _log.Info("Starting LaunchDarkly PollingProcessor with interval: {0} (waiting {1} first)", _pollingInterval, _initialDelay);
             }
             else
             {
-                Log.InfoFormat("Starting LaunchDarkly PollingProcessor with interval: {0}", _pollingInterval);
+                _log.Info("Starting LaunchDarkly PollingProcessor with interval: {0}", _pollingInterval);
             }
 
             Task.Run(() => UpdateTaskLoopAsync());
@@ -90,14 +90,14 @@ namespace LaunchDarkly.Xamarin
                     if (Interlocked.CompareExchange(ref _initialized, INITIALIZED, UNINITIALIZED) == UNINITIALIZED)
                     {
                         _startTask.SetResult(true);
-                        Log.Info("Initialized LaunchDarkly Polling Processor.");
+                        _log.Info("Initialized LaunchDarkly Polling Processor.");
                     }
                 }
             }
             catch (UnsuccessfulResponseException ex) when (ex.StatusCode == 401)
             {
-                Log.ErrorFormat("Error Updating features: '{0}'", Util.ExceptionMessage(ex));
-                Log.Error("Received 401 error, no further polling requests will be made since SDK key is invalid");
+                _log.Error("Error Updating features: '{0}'", LogValues.ExceptionSummary(ex));
+                _log.Error("Received 401 error, no further polling requests will be made since SDK key is invalid");
                 if (_initialized == UNINITIALIZED)
                 {
                     _startTask.SetException(ex);
@@ -106,7 +106,7 @@ namespace LaunchDarkly.Xamarin
             }
             catch (Exception ex)
             {
-                Log.ErrorFormat("Error Updating features: '{0}'", Util.ExceptionMessage(PlatformSpecific.Http.TranslateHttpException(ex)));
+                LogHelpers.LogException(_log, "Error updating features", PlatformSpecific.Http.TranslateHttpException(ex));
             }
         }
 

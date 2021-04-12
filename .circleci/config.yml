@@ -11,14 +11,15 @@ workflows:
 jobs:  
   test-netstandard2.0:
     docker:
-      - image: microsoft/dotnet:2.0-sdk-jessie
+      - image: mcr.microsoft.com/dotnet/sdk:5.0-focal
     environment:
       ASPNETCORE_SUPPRESSSTATUSMESSAGES: "true" # suppresses annoying debug output from embedded HTTP servers in tests
     steps:
       - checkout
-      - run: dotnet restore
+      - run: dotnet restore src/LaunchDarkly.XamarinSdk
       - run: dotnet build src/LaunchDarkly.XamarinSdk -f netstandard2.0
-      - run: dotnet test -v=normal tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
+      - run: dotnet restore tests/LaunchDarkly.XamarinSdk.Tests
+      - run: dotnet test -v=normal tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj
 
   test-android:
     macos:

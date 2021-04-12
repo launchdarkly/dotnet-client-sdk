@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     // This provides a method for asynchronously starting tasks, such as event handlers, using a mechanism
     // that may vary by platform.

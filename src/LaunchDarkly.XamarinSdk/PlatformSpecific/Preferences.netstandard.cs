@@ -5,11 +5,11 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
-using Common.Logging;
-using LaunchDarkly.Common;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
 #endif
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     // This code is not from Xamarin Essentials, though it implements the same Preferences abstraction.
     //
@@ -25,29 +25,16 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
     internal static partial class Preferences
     {
-#if NETSTANDARD1_6
-        static bool PlatformContainsKey(string key, string sharedName) => false;
-
-        static void PlatformRemove(string key, string sharedName) { }
-
-        static void PlatformClear(string sharedName) { }
-
-        static void PlatformSet(string key, string value, string sharedName) { }
-
-        static string PlatformGet(string key, string defaultValue, string sharedName) => defaultValue;
-#else
-        private static readonly ILog Log = LogManager.GetLogger(typeof(Preferences));
-
         private static AtomicBoolean _loggedOSError = new AtomicBoolean(false); // AtomicBoolean is defined in LaunchDarkly.CommonSdk
 
         private const string ConfigDirectoryName = "LaunchDarkly";
 
-        static bool PlatformContainsKey(string key, string sharedName)
+        static bool PlatformContainsKey(string key, string sharedName, Logger log)
         {
-            return WithStore(store => store.FileExists(MakeFilePath(key, sharedName)));
+            return WithStore(store => store.FileExists(MakeFilePath(key, sharedName)), log);
         }
 
-        static void PlatformRemove(string key, string sharedName)
+        static void PlatformRemove(string key, string sharedName, Logger log)
         {
             WithStore(store =>
             {
@@ -56,10 +43,10 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                     store.DeleteFile(MakeFilePath(key, sharedName));
                 }
                 catch (IsolatedStorageException) { } // file didn't exist - that's OK
-            });
+            }, log);
         }
 
-        static void PlatformClear(string sharedName)
+        static void PlatformClear(string sharedName, Logger log)
         {
             WithStore(store =>
             {
@@ -69,10 +56,10 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                     // The directory will be recreated next time PlatformSet is called with the same sharedName.
                 }
                 catch (IsolatedStorageException) { } // directory didn't exist - that's OK
-            });
+            }, log);
         }
 
-        static void PlatformSet(string key, string value, string sharedName)
+        static void PlatformSet(string key, string value, string sharedName, Logger log)
         {
             WithStore(store =>
             {
@@ -85,10 +72,10 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                         sw.Write(value);
                     }
                 }
-            });
+            }, log);
         }
 
-        static string PlatformGet(string key, string defaultValue, string sharedName)
+        static string PlatformGet(string key, string defaultValue, string sharedName, Logger log)
         {
             return WithStore(store =>
             {
@@ -105,10 +92,10 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                 catch (DirectoryNotFoundException) { } // just return null if no preferences have ever been set
                 catch (FileNotFoundException) { } // just return null if this preference was never set
                 return null;
-            });
+            }, log);
         }
 
-        private static T WithStore<T>(Func<IsolatedStorageFile, T> callback)
+        private static T WithStore<T>(Func<IsolatedStorageFile, T> callback, Logger log)
         {
             try
             {
@@ -118,12 +105,12 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             }
             catch (Exception e)
             {
-                HandleStoreException(e);
+                HandleStoreException(e, log);
                 return default;
             }
         }
 
-        private static void HandleStoreException(Exception e)
+        private static void HandleStoreException(Exception e, Logger log)
         {
             if (e is IsolatedStorageException ||
                 e is InvalidOperationException)
@@ -139,25 +126,24 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
                 if (!_loggedOSError.GetAndSet(true))
                 {
-                    Log.WarnFormat("Persistent storage is unavailable and has been disabled ({0}: {1})", e.GetType(), e.Message);
+                    log.Warn("Persistent storage is unavailable and has been disabled ({0}: {1})", e.GetType(), e.Message);
                 }
             }
             else
             {
                 // All other errors probably indicate an error in our own code. We don't want to throw these up
                 // into the SDK; the Preferences API is expected to either work or silently fail.
-                Log.ErrorFormat("Error in accessing persistent storage: {0}: {1}", e.GetType(), e.Message);
-                Log.Debug(e.StackTrace);
+                LogHelpers.LogException(log, "Error in accessing persistent storage", e);
             }
         }
 
-        private static void WithStore(Action<IsolatedStorageFile> callback)
+        private static void WithStore(Action<IsolatedStorageFile> callback, Logger log)
         {
             WithStore<Boolean>(store =>
             {
                 callback(store);
                 return true;
-            });
+            }, log);
         }
 
         private static string MakeDirectoryPath(string sharedName)
@@ -200,6 +186,5 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
             }
             return buf == null ? name : buf.ToString();
         }
-#endif
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
-using LaunchDarkly.Client;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal class FeatureFlagBuilder
     {
@@ -15,9 +14,9 @@ namespace LaunchDarkly.Xamarin.Tests
         // same properties.
         private bool _trackEvents;
         private bool _trackReason;
-        private long? _debugEventsUntilDate;
+        private UnixMillisecondTime? _debugEventsUntilDate;
 #pragma warning disable 0649
-        private EvaluationReason _reason;
+        private EvaluationReason? _reason;
 
         public FeatureFlagBuilder()
         {
@@ -52,7 +51,7 @@ namespace LaunchDarkly.Xamarin.Tests
             return this;
         }
 
-        public FeatureFlagBuilder Reason(EvaluationReason reason)
+        public FeatureFlagBuilder Reason(EvaluationReason? reason)
         {
             _reason = reason;
             return this;

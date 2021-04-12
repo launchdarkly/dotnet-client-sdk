@@ -1,5 +1,5 @@
 ﻿
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
     /// Values returned by <see cref="LdClient.PlatformType"/>.

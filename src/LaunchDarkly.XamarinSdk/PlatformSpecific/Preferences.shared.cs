@@ -20,9 +20,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System;
+using LaunchDarkly.Logging;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     // Modified for LaunchDarkly: the SDK always serializes values to strings before using this class
     // to store them. Therefore, the overloads for non-string types have been removed, thereby
@@ -35,17 +35,17 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
         // overloads
 
-        public static bool ContainsKey(string key) =>
-            ContainsKey(key, null);
+        public static bool ContainsKey(string key, Logger log) =>
+            ContainsKey(key, null, log);
 
-        public static void Remove(string key) =>
-            Remove(key, null);
+        public static void Remove(string key, Logger log) =>
+            Remove(key, null, log);
 
-        public static void Clear() =>
-            Clear(null);
+        public static void Clear(Logger log) =>
+            Clear(null, log);
 
-        public static string Get(string key, string defaultValue) =>
-            Get(key, defaultValue, null);
+        public static string Get(string key, string defaultValue, Logger log) =>
+            Get(key, defaultValue, null, log);
 
         //public static bool Get(string key, bool defaultValue) =>
         //    Get(key, defaultValue, null);
@@ -62,8 +62,8 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
         //public static long Get(string key, long defaultValue) =>
         //    Get(key, defaultValue, null);
 
-        public static void Set(string key, string value) =>
-            Set(key, value, null);
+        public static void Set(string key, string value, Logger log) =>
+            Set(key, value, null, log);
 
         //public static void Set(string key, bool value) =>
         //    Set(key, value, null);
@@ -82,17 +82,17 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
 
         // shared -> platform
 
-        public static bool ContainsKey(string key, string sharedName) =>
-            PlatformContainsKey(key, sharedName);
+        public static bool ContainsKey(string key, string sharedName, Logger log) =>
+            PlatformContainsKey(key, sharedName, log);
 
-        public static void Remove(string key, string sharedName) =>
-            PlatformRemove(key, sharedName);
+        public static void Remove(string key, string sharedName, Logger log) =>
+            PlatformRemove(key, sharedName, log);
 
-        public static void Clear(string sharedName) =>
-            PlatformClear(sharedName);
+        public static void Clear(string sharedName, Logger log) =>
+            PlatformClear(sharedName, log);
 
-        public static string Get(string key, string defaultValue, string sharedName) =>
-            PlatformGet(key, defaultValue, sharedName);
+        public static string Get(string key, string defaultValue, string sharedName, Logger log) =>
+            PlatformGet(key, defaultValue, sharedName, log);
 
         //public static bool Get(string key, bool defaultValue, string sharedName) =>
         //    PlatformGet<bool>(key, defaultValue, sharedName);
@@ -109,8 +109,8 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
         //public static long Get(string key, long defaultValue, string sharedName) =>
         //    PlatformGet<long>(key, defaultValue, sharedName);
 
-        public static void Set(string key, string value, string sharedName) =>
-            PlatformSet(key, value, sharedName);
+        public static void Set(string key, string value, string sharedName, Logger log) =>
+            PlatformSet(key, value, sharedName, log);
 
         //public static void Set(string key, bool value, string sharedName) =>
         //    PlatformSet<bool>(key, value, sharedName);

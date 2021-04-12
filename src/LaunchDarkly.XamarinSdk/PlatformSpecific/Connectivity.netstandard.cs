@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     // This code is not from Xamarin Essentials, though it implements the same Connectivity abstraction.
     // It is a stub that always reports that we do have network connectivity.

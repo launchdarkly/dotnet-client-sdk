@@ -2,19 +2,24 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using LaunchDarkly.Client;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class LdClientTests : BaseTest
     {
         static readonly string appKey = "some app key";
         static readonly User simpleUser = User.WithKey("user-key");
 
+        public LdClientTests(ITestOutputHelper testOutput) : base(testOutput) { }
+
+        IConfigurationBuilder BaseConfig() =>
+            TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Logging(testLogging);
+
         LdClient Client()
         {
-            var configuration = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Build();
+            var configuration = BaseConfig().Build();
             return TestUtil.CreateClient(configuration, simpleUser);
         }
         
@@ -27,21 +32,21 @@ namespace LaunchDarkly.Xamarin.Tests
         [Fact]
         public void CannotCreateClientWithNullUser()
         {
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Build();
+            var config = BaseConfig().Build();
             Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null, TimeSpan.Zero));
         }
 
         [Fact]
         public void CannotCreateClientWithNegativeWaitTime()
         {
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Build();
+            var config = BaseConfig().Build();
             Assert.Throws<ArgumentOutOfRangeException>(() => LdClient.Init(config, simpleUser, TimeSpan.FromMilliseconds(-2)));
         }
 
         [Fact]
         public void CanCreateClientWithInfiniteWaitTime()
         {
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Build();
+            var config = BaseConfig().Build();
             using (var client = LdClient.Init(config, simpleUser, System.Threading.Timeout.InfiniteTimeSpan)) { }
             TestUtil.ClearClient();
         }
@@ -54,6 +59,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var config = TestUtil.ConfigWithFlagsJson(testUser, appKey, "{}")
                 .UpdateProcessorFactory(stub.AsFactory())
+                .Logging(testLogging)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, testUser))
@@ -72,6 +78,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var config = TestUtil.ConfigWithFlagsJson(anonUserIn, appKey, "{}")
                 .UpdateProcessorFactory(stub.AsFactory())
+                .Logging(testLogging)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, anonUserIn))
@@ -134,6 +141,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var config = TestUtil.ConfigWithFlagsJson(userA, appKey, "{}")
                 .UpdateProcessorFactory(updateProcessorFactory)
+                .Logging(testLogging)
                 .Build();
 
             ClearCachedFlags(userA);
@@ -190,6 +198,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
                 .UpdateProcessorFactory(stub.AsFactory())
+                .Logging(testLogging)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, simpleUser))
@@ -214,6 +223,7 @@ namespace LaunchDarkly.Xamarin.Tests
 
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
                 .UpdateProcessorFactory(stub.AsFactory())
+                .Logging(testLogging)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, simpleUser))
@@ -235,7 +245,7 @@ namespace LaunchDarkly.Xamarin.Tests
         {
             TestUtil.WithClientLock(() =>
             {
-                var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Build();
+                var config = BaseConfig().Build();
                 using (var client = LdClient.Init(config, simpleUser, TimeSpan.Zero))
                 {
                     Assert.Throws<Exception>(() => LdClient.Init(config, simpleUser, TimeSpan.Zero));
@@ -250,7 +260,7 @@ namespace LaunchDarkly.Xamarin.Tests
             TestUtil.WithClientLock(() =>
             {
                 TestUtil.ClearClient();
-                var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Build();
+                var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Logging(testLogging).Build();
                 using (var client0 = LdClient.Init(config, simpleUser, TimeSpan.Zero)) { }
                 Assert.Null(LdClient.Instance);
                 // Dispose() is called automatically at end of "using" block
@@ -266,6 +276,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
                 .UpdateProcessorFactory(mockUpdateProc.AsFactory())
                 .ConnectivityStateManager(mockConnectivityStateManager)
+                .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
@@ -280,7 +291,9 @@ namespace LaunchDarkly.Xamarin.Tests
             var userWithNullKey = User.WithKey(null);
             var uniqueId = "some-unique-key";
             var config = TestUtil.ConfigWithFlagsJson(userWithNullKey, appKey, "{}")
-                .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
+                .DeviceInfo(new MockDeviceInfo(uniqueId))
+                .Logging(testLogging)
+                .Build();
             using (var client = TestUtil.CreateClient(config, userWithNullKey))
             {
                 Assert.Equal(uniqueId, client.User.Key);
@@ -294,7 +307,9 @@ namespace LaunchDarkly.Xamarin.Tests
             var userWithEmptyKey = User.WithKey("");
             var uniqueId = "some-unique-key";
             var config = TestUtil.ConfigWithFlagsJson(userWithEmptyKey, appKey, "{}")
-                .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
+                .DeviceInfo(new MockDeviceInfo(uniqueId))
+                .Logging(testLogging)
+                .Build();
             using (var client = TestUtil.CreateClient(config, userWithEmptyKey))
             {
                 Assert.Equal(uniqueId, client.User.Key);
@@ -308,7 +323,9 @@ namespace LaunchDarkly.Xamarin.Tests
             var userWithNullKey = User.WithKey(null);
             var uniqueId = "some-unique-key";
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
+                .DeviceInfo(new MockDeviceInfo(uniqueId))
+                .Logging(testLogging)
+                .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
                 client.Identify(userWithNullKey, TimeSpan.FromSeconds(1));
@@ -323,7 +340,9 @@ namespace LaunchDarkly.Xamarin.Tests
             var userWithEmptyKey = User.WithKey("");
             var uniqueId = "some-unique-key";
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
+                .DeviceInfo(new MockDeviceInfo(uniqueId))
+                .Logging(testLogging)
+                .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
                 client.Identify(userWithEmptyKey, TimeSpan.FromSeconds(1));
@@ -348,7 +367,9 @@ namespace LaunchDarkly.Xamarin.Tests
                 .Build();
             var uniqueId = "some-unique-key";
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .DeviceInfo(new MockDeviceInfo(uniqueId)).Build();
+                .DeviceInfo(new MockDeviceInfo(uniqueId))
+                .Logging(testLogging)
+                .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             { 
                 client.Identify(user, TimeSpan.FromSeconds(1));
@@ -393,6 +414,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .PersistentStorage(storage)
                 .FlagCacheManager(null) // use actual cache logic, not mock component (even though persistence layer is a mock)
                 .Offline(true)
+                .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
@@ -411,6 +433,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .FlagCacheManager(null) // use actual cache logic, not mock component (even though persistence layer is a mock)
                 .PersistFlagValues(false)
                 .Offline(true)
+                .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
@@ -427,6 +450,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .FlagCacheManager(null)
                 .UpdateProcessorFactory(MockPollingProcessor.Factory(flagsJson))
                 .PersistentStorage(storage)
+                .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
@@ -442,6 +466,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var eventProcessor = new MockEventProcessor();
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
                 .EventProcessor(eventProcessor)
+                .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
@@ -458,6 +483,7 @@ namespace LaunchDarkly.Xamarin.Tests
                 .ConnectivityStateManager(connectivityStateManager)
                 .EventProcessor(eventProcessor)
                 .Offline(true)
+                .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
@@ -486,6 +512,7 @@ namespace LaunchDarkly.Xamarin.Tests
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
                 .ConnectivityStateManager(connectivityStateManager)
                 .EventProcessor(eventProcessor)
+                .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {

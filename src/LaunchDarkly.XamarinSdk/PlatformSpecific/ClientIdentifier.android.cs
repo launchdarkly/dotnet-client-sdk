@@ -1,19 +1,17 @@
 ﻿using System;
-using Common.Logging;
-using Android.App;
 using Android.Provider;
 using Android.OS;
 using Android.Runtime;
 using Java.Interop;
+using LaunchDarkly.Logging;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     internal static partial class ClientIdentifier
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ClientIdentifier));
         private static JniPeerMembers buildMembers = new XAPeerMembers("android/os/Build", typeof(Build));
 
-        private static string PlatformGetOrCreateClientId()
+        private static string PlatformGetOrCreateClientId(Logger log)
         {
             // Based on: https://github.com/jamesmontemagno/DeviceInfoPlugin/blob/master/src/DeviceInfo.Plugin/DeviceInfo.android.cs
             string serialField;
@@ -35,7 +33,7 @@ namespace LaunchDarkly.Xamarin.PlatformSpecific
                 }
                 catch (Exception ex)
                 {
-                    Log.WarnFormat("Unable to get client ID: {0}", ex);
+                    log.Warn("Unable to get client ID: {0}", LogValues.ExceptionSummary(ex));
                     return null;
                 }
             }

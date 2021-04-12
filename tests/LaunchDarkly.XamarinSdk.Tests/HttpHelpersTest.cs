@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace LaunchDarkly.Xamarin.Tests.HttpHelpers
+namespace LaunchDarkly.Sdk.Xamarin.HttpHelpers
 {
     public class HttpHelpersTest
     {

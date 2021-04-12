@@ -1,7 +1,7 @@
-﻿using LaunchDarkly.Client;
-using Xunit;
+﻿using Xunit;
+using Xunit.Abstractions;
 
-namespace LaunchDarkly.Xamarin.Tests
+namespace LaunchDarkly.Sdk.Xamarin
 {
     public class FlagCacheManagerTests : BaseTest
     {
@@ -13,9 +13,14 @@ namespace LaunchDarkly.Xamarin.Tests
 
         IUserFlagCache deviceCache = new UserFlagInMemoryCache();
         IUserFlagCache inMemoryCache = new UserFlagInMemoryCache();
-        FlagChangedEventManager listenerManager = new FlagChangedEventManager();
+        FlagChangedEventManager listenerManager;
 
         User user = User.WithKey("someKey");
+
+        public FlagCacheManagerTests(ITestOutputHelper testOutput) : base(testOutput)
+        {
+            listenerManager = new FlagChangedEventManager(testLogger);
+        }
 
         IFlagCacheManager ManagerWithCachedFlags()
         {

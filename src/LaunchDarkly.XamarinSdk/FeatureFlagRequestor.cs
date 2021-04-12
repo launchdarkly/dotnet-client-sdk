@@ -5,11 +5,11 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
-using LaunchDarkly.Client;
-using LaunchDarkly.Common;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Http;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     internal struct WebResponse
     {
@@ -32,19 +32,22 @@ namespace LaunchDarkly.Xamarin
 
     internal sealed class FeatureFlagRequestor : IFeatureFlagRequestor
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(FeatureFlagRequestor));
         private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
         private readonly Configuration _configuration;
         private readonly User _currentUser;
         private readonly HttpClient _httpClient;
+        private readonly HttpProperties _httpProperties;
+        private readonly Logger _log;
         private volatile EntityTagHeaderValue _etag;
 
-        internal FeatureFlagRequestor(Configuration configuration, User user)
+        internal FeatureFlagRequestor(Configuration configuration, User user, Logger log)
         {
             this._configuration = configuration;
-            this._httpClient = Util.MakeHttpClient(configuration.HttpRequestConfiguration, MobileClientEnvironment.Instance);
+            this._httpProperties = configuration.HttpProperties;
+            this._httpClient = configuration.HttpProperties.NewHttpClient();
             this._currentUser = user;
+            this._log = log;
         }
 
         public async Task<WebResponse> FeatureFlagsAsync()
@@ -74,6 +77,7 @@ namespace LaunchDarkly.Xamarin
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)
         {
+            _httpProperties.AddHeaders(request);
             using (var cts = new CancellationTokenSource(_configuration.ConnectionTimeout))
             {
                 if (_etag != null)
@@ -83,12 +87,12 @@ namespace LaunchDarkly.Xamarin
 
                 try
                 {
-                    Log.DebugFormat("Getting flags with uri: {0}", request.RequestUri.AbsoluteUri);
+                    _log.Debug("Getting flags with uri: {0}", request.RequestUri.AbsoluteUri);
                     using (var response = await _httpClient.SendAsync(request, cts.Token).ConfigureAwait(false))
                     {
                         if (response.StatusCode == HttpStatusCode.NotModified)
                         {
-                            Log.Debug("Get all flags returned 304: not modified");
+                            _log.Debug("Get all flags returned 304: not modified");
                             return new WebResponse(304, null, "Get all flags returned 304: not modified");
                         }
                         _etag = response.Headers.ETag;

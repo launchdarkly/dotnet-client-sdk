@@ -2,7 +2,7 @@
 using System.Net.Http;
 using Xamarin.Android.Net;
 
-namespace LaunchDarkly.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
 {
     internal static partial class Http
     {

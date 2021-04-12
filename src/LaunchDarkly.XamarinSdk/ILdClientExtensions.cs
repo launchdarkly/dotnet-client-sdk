@@ -1,7 +1,6 @@
 ﻿using System;
-using LaunchDarkly.Client;
 
-namespace LaunchDarkly.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
     /// Convenience methods that extend the <see cref="ILdClient"/> interface.
@@ -81,7 +80,7 @@ namespace LaunchDarkly.Xamarin
                 }
                 catch (ArgumentException)
                 {
-                    return new EvaluationDetail<T>(defaultValue, stringDetail.VariationIndex, EvaluationReason.ErrorReason(EvaluationErrorKind.WRONG_TYPE));
+                    return new EvaluationDetail<T>(defaultValue, stringDetail.VariationIndex, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
                 }
             }
             return new EvaluationDetail<T>(defaultValue, stringDetail.VariationIndex, stringDetail.Reason);
