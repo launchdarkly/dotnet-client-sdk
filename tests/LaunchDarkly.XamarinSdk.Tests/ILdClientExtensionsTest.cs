@@ -1,4 +1,6 @@
-﻿using Moq;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace LaunchDarkly.Sdk.Xamarin
@@ -15,9 +17,8 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void EnumVariationConvertsStringToEnum()
         {
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariation("key", "Blue")).Returns("Green");
-            var client = clientMock.Object;
+            var client = new MockStringVariationClient();
+            client.SetupStringVariation("key", "Blue", "Green");
 
             var result = client.EnumVariation("key", MyEnum.Blue);
             Assert.Equal(MyEnum.Green, result);
@@ -26,9 +27,8 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void EnumVariationReturnsDefaultValueForInvalidFlagValue()
         {
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariation("key", "Blue")).Returns("not-a-color");
-            var client = clientMock.Object;
+            var client = new MockStringVariationClient();
+            client.SetupStringVariation("key", "Blue", "not-a-color");
 
             var defaultValue = MyEnum.Blue;
             var result = client.EnumVariation("key", defaultValue);
@@ -38,9 +38,8 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void EnumVariationReturnsDefaultValueForNullFlagValue()
         {
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariation("key", "Blue")).Returns((string)null);
-            var client = clientMock.Object;
+            var client = new MockStringVariationClient();
+            client.SetupStringVariation("key", "Blue", null);
 
             var defaultValue = MyEnum.Blue;
             var result = client.EnumVariation("key", defaultValue);
@@ -48,24 +47,11 @@ namespace LaunchDarkly.Sdk.Xamarin
         }
 
         [Fact]
-        public void EnumVariationReturnsDefaultValueForNonEnumType()
-        {
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariation("key", "Blue")).Returns("Green");
-            var client = clientMock.Object;
-
-            var defaultValue = "this is a string, not an enum";
-            var result = client.EnumVariation("key", defaultValue);
-            Assert.Equal(defaultValue, result);
-        }
-
-        [Fact]
         public void EnumVariationDetailConvertsStringToEnum()
         {
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariationDetail("key", "Blue"))
-                .Returns(new EvaluationDetail<string>("Green", 1, EvaluationReason.FallthroughReason));
-            var client = clientMock.Object;
+            var client = new MockStringVariationClient();
+            client.SetupStringVariationDetail("key", "Blue",
+                new EvaluationDetail<string>("Green", 1, EvaluationReason.FallthroughReason));
 
             var result = client.EnumVariationDetail("key", MyEnum.Blue);
             var expected = new EvaluationDetail<MyEnum>(MyEnum.Green, 1, EvaluationReason.FallthroughReason);
@@ -75,10 +61,9 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void EnumVariationDetailReturnsDefaultValueForInvalidFlagValue()
         {
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariationDetail("key", "Blue"))
-                .Returns(new EvaluationDetail<string>("not-a-color", 1, EvaluationReason.FallthroughReason));
-            var client = clientMock.Object;
+            var client = new MockStringVariationClient();
+            client.SetupStringVariationDetail("key", "Blue",
+                new EvaluationDetail<string>("not-a-color", 1, EvaluationReason.FallthroughReason));
 
             var result = client.EnumVariationDetail("key", MyEnum.Blue);
             var expected = new EvaluationDetail<MyEnum>(MyEnum.Blue, 1, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
@@ -88,28 +73,103 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void EnumVariationDetailReturnsDefaultValueForNullFlagValue()
         {
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariationDetail("key", "Blue"))
-                .Returns(new EvaluationDetail<string>(null, 1, EvaluationReason.FallthroughReason));
-            var client = clientMock.Object;
+            var client = new MockStringVariationClient();
+            client.SetupStringVariationDetail("key", "Blue",
+                new EvaluationDetail<string>(null, 1, EvaluationReason.FallthroughReason));
 
             var result = client.EnumVariationDetail("key", MyEnum.Blue);
             var expected = new EvaluationDetail<MyEnum>(MyEnum.Blue, 1, EvaluationReason.FallthroughReason);
             Assert.Equal(expected, result);
         }
 
-        [Fact]
-        public void EnumVariationDetailReturnsDefaultValueForNonEnumType()
+        private sealed class MockStringVariationClient : ILdClient
         {
-            var defaultValue = "this is a string, not an enum";
-            var clientMock = new Mock<ILdClient>();
-            clientMock.Setup(c => c.StringVariationDetail("key", defaultValue))
-                .Returns(new EvaluationDetail<string>("Green", 1, EvaluationReason.FallthroughReason));
-            var client = clientMock.Object;
+            private Func<string, string, string> _stringVariationFn;
+            private Func<string, string, EvaluationDetail<string>> _stringVariationDetailFn;
 
-            var result = client.EnumVariationDetail("key", defaultValue);
-            var expected = new EvaluationDetail<string>(defaultValue, 1, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
-            Assert.Equal(expected, result);
+            public void SetupStringVariation(string expectedKey, string expectedDefault, string result)
+            {
+                _stringVariationFn = (key, defaultValue) =>
+                {
+                    Assert.Equal(expectedKey, key);
+                    Assert.Equal(expectedDefault, defaultValue);
+                    return result;
+                };
+            }
+
+            public void SetupStringVariationDetail(string expectedKey, string expectedDefault, EvaluationDetail<string> result)
+            {
+                _stringVariationDetailFn = (key, defaultValue) =>
+                {
+                    Assert.Equal(expectedKey, key);
+                    Assert.Equal(expectedDefault, defaultValue);
+                    return result;
+                };
+            }
+
+            public string StringVariation(string key, string defaultValue) =>
+                _stringVariationFn(key, defaultValue);
+
+            public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue) =>
+                _stringVariationDetailFn(key, defaultValue);
+
+            // Other methods aren't relevant to these tests
+
+            public bool Initialized => true;
+            public bool Offline => false;
+            public event System.EventHandler<FlagChangedEventArgs> FlagChanged;
+
+            public IDictionary<string, LdValue> AllFlags() =>
+                throw new System.NotImplementedException();
+
+            public bool BoolVariation(string key, bool defaultValue = false) =>
+                throw new System.NotImplementedException();
+
+            public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false) =>
+                throw new System.NotImplementedException();
+
+            public void Dispose() { }
+
+            public float FloatVariation(string key, float defaultValue = 0) =>
+                throw new System.NotImplementedException();
+
+            public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0) =>
+                throw new System.NotImplementedException();
+
+            public void Flush() { }
+
+            public bool Identify(User user, System.TimeSpan maxWaitTime) =>
+                throw new System.NotImplementedException();
+
+            public Task<bool> IdentifyAsync(User user) =>
+                throw new System.NotImplementedException();
+
+            public int IntVariation(string key, int defaultValue = 0) =>
+                throw new System.NotImplementedException();
+
+            public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0) =>
+                throw new System.NotImplementedException();
+
+            public LdValue JsonVariation(string key, LdValue defaultValue) =>
+                throw new System.NotImplementedException();
+
+            public EvaluationDetail<LdValue> JsonVariationDetail(string key, LdValue defaultValue) =>
+                throw new System.NotImplementedException();
+
+            public bool SetOffline(bool value, System.TimeSpan maxWaitTime) =>
+                throw new System.NotImplementedException();
+
+            public Task SetOfflineAsync(bool value) =>
+                throw new System.NotImplementedException();
+
+            public void Track(string eventName) =>
+                throw new System.NotImplementedException();
+
+            public void Track(string eventName, LdValue data) =>
+                throw new System.NotImplementedException();
+
+            public void Track(string eventName, LdValue data, double metricValue) =>
+                throw new System.NotImplementedException();
         }
     }
 }
