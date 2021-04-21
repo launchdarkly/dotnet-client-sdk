@@ -85,6 +85,9 @@
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\HttpHelpers.cs">
       <Link>SharedTestCode\HttpHelpers.cs</Link>
     </Compile>
+    <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\ILdClientExtensionsTest.cs">
+      <Link>SharedTestCode\ILdClientExtensionsTest.cs</Link>
+    </Compile>
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LDClientEndToEndTests.cs">
       <Link>SharedTestCode\LDClientEndToEndTests.cs</Link>
     </Compile>
@@ -156,7 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
-      <Project>{7717A2B2-9905-40A7-989F-790139D69543}</Project>
+      <Project>{9197B4B6-DE72-4A1B-AB8D-F31FE4AC2BE3}</Project>
       <Name>LaunchDarkly.XamarinSdk</Name>
     </ProjectReference>
   </ItemGroup>

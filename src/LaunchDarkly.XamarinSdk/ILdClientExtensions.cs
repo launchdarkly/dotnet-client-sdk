@@ -21,11 +21,6 @@ namespace LaunchDarkly.Sdk.Xamarin
         /// If the flag has a value that is not one of the allowed enum value names, or is not a string,
         /// <c>defaultValue</c> is returned.
         /// </para>
-        /// <para>
-        /// Note that there is no type constraint to guarantee that T really is an enum type, because that is
-        /// a C# 7.3 feature that is unavailable in older versions of .NET Standard. If you try to use a
-        /// non-enum type, you will simply receive the default value back.
-        /// </para>
         /// </remarks>
         /// <typeparam name="T">the enum type</typeparam>
         /// <param name="client">the client instance</param>
@@ -33,17 +28,15 @@ namespace LaunchDarkly.Sdk.Xamarin
         /// <param name="defaultValue">the default value of the flag (as an enum value)</param>
         /// <returns>the variation for the given user, or <c>defaultValue</c> if the flag cannot
         /// be evaluated or does not have a valid enum value</returns>
-        public static T EnumVariation<T>(this ILdClient client, string key, T defaultValue)
+        public static T EnumVariation<T>(this ILdClient client, string key, T defaultValue) where T : struct, Enum
         {
             var stringVal = client.StringVariation(key, defaultValue.ToString());
             if (stringVal != null)
             {
-                try
+                if (Enum.TryParse<T>(stringVal, out var enumValue))
                 {
-                    return (T)Enum.Parse(typeof(T), stringVal, true);
+                    return enumValue;
                 }
-                catch (ArgumentException)
-                { }
             }
             return defaultValue;
         }
@@ -57,31 +50,23 @@ namespace LaunchDarkly.Sdk.Xamarin
         /// If the flag has a value that is not one of the allowed enum value names, or is not a string,
         /// <c>defaultValue</c> is returned.
         /// </para>
-        /// <para>
-        /// Note that there is no type constraint to guarantee that T really is an enum type, because that is
-        /// a C# 7.3 feature that is unavailable in older versions of .NET Standard. If you try to use a
-        /// non-enum type, you will simply receive the default value back.
-        /// </para>
         /// </remarks>
         /// <typeparam name="T">the enum type</typeparam>
         /// <param name="client">the client instance</param>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag (as an enum value)</param>
         /// <returns>an <see cref="EvaluationDetail{T}"/> object</returns>
-        public static EvaluationDetail<T> EnumVariationDetail<T>(this ILdClient client, string key, T defaultValue)
+        public static EvaluationDetail<T> EnumVariationDetail<T>(this ILdClient client,
+            string key, T defaultValue) where T : struct, Enum
         {
             var stringDetail = client.StringVariationDetail(key, defaultValue.ToString());
-            if (stringDetail.Value != null)
+            if (!stringDetail.IsDefaultValue && stringDetail.Value != null)
             {
-                try
+                if (Enum.TryParse<T>(stringDetail.Value, out var enumValue))
                 {
-                    var enumValue = (T)Enum.Parse(typeof(T), stringDetail.Value, true);
                     return new EvaluationDetail<T>(enumValue, stringDetail.VariationIndex, stringDetail.Reason);
                 }
-                catch (ArgumentException)
-                {
-                    return new EvaluationDetail<T>(defaultValue, stringDetail.VariationIndex, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
-                }
+                return new EvaluationDetail<T>(defaultValue, stringDetail.VariationIndex, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
             }
             return new EvaluationDetail<T>(defaultValue, stringDetail.VariationIndex, stringDetail.Reason);
         }

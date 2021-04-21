@@ -12,7 +12,7 @@ LaunchDarkly overview
 Supported platforms
 -------------------
 
-This beta release is built for the following targets: Android 7.1, 8.0, 8.1; iOS 10; .NET Standard 1.6, 2.0. It has also been tested with Android 9/API 28 and iOS 12.1.
+This beta release is built for the following targets: Android 7.1, 8.0, 8.1; iOS 10; .NET Standard 2.0. It has also been tested with Android 9/API 28 and iOS 12.1.
 
 Note that if you are targeting .NET Framework, there is a [known issue](https://stackoverflow.com/questions/46788323/installing-a-netstandard-2-0-nuget-package-into-a-vs2015-net-4-6-1-project) in Visual Studio 2015 where it does not correctly detect compatibility with .NET Standard packages. This is not a problem in later versions of Visual Studio.
 
