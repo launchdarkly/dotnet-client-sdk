@@ -82,9 +82,6 @@
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FlagChangedEventTests.cs">
       <Link>SharedTestCode\FlagChangedEventTests.cs</Link>
     </Compile>
-    <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\HttpHelpers.cs">
-      <Link>SharedTestCode\HttpHelpers.cs</Link>
-    </Compile>
     <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\ILdClientExtensionsTest.cs">
       <Link>SharedTestCode\ILdClientExtensionsTest.cs</Link>
     </Compile>
