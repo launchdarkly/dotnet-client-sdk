@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
-using LaunchDarkly.Sdk.Xamarin.HttpHelpers;
+using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -38,14 +37,14 @@ namespace LaunchDarkly.Sdk.Xamarin
             { new object[] { UpdateMode.Polling } },
             { new object[] { UpdateMode.Streaming } }
         };
-
+        
         public LdClientEndToEndTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
         [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitGetsFlagsSync(UpdateMode mode)
         {
-            using (var server = TestHttpServer.Start(SetupResponse(_flagData1, mode)))
+            using (var server = HttpServer.Start(SetupResponse(_flagData1, mode)))
             {
                 var config = BaseConfig(server.Uri, mode);
                 using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromSeconds(10)))
@@ -60,7 +59,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitGetsFlagsAsync(UpdateMode mode)
         {
-            using (var server = TestHttpServer.Start(SetupResponse(_flagData1, mode)))
+            using (var server = HttpServer.Start(SetupResponse(_flagData1, mode)))
             {
                 var config = BaseConfig(server.Uri, mode);
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -73,15 +72,12 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void StreamingInitMakesPollRequestIfStreamSendsPing()
         {
-            Handler streamHandler = async ctx =>
+            Handler streamHandler = Handlers.SSE.Start()
+                .Then(Handlers.SSE.Event("ping", ""))
+                .Then(Handlers.SSE.LeaveOpen());
+            using (var streamServer = HttpServer.Start(streamHandler))
             {
-                ctx.AddHeader("Content-Type", "text/event-stream");
-                await ctx.WriteChunkedDataAsync(Encoding.UTF8.GetBytes("event: ping\ndata: \n\n"));
-                await Task.Delay(-1, ctx.CancellationToken);
-            };
-            using (var streamServer = TestHttpServer.Start(streamHandler))
-            {
-                using (var pollServer = TestHttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
+                using (var pollServer = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
                 {
                     var config = BaseConfig(streamServer.Uri, UpdateMode.Streaming,
                         b => b.BaseUri(pollServer.Uri));
@@ -98,8 +94,8 @@ namespace LaunchDarkly.Sdk.Xamarin
         [Fact]
         public void InitCanTimeOutSync()
         {
-            var handler = Handlers.DelayBefore(TimeSpan.FromSeconds(2), SetupResponse(_flagData1, UpdateMode.Polling));
-            using (var server = TestHttpServer.Start(handler))
+            var handler = Handlers.Delay(TimeSpan.FromSeconds(2)).Then(SetupResponse(_flagData1, UpdateMode.Polling));
+            using (var server = HttpServer.Start(handler))
             {
                 var config = BaseConfig(server.Uri, builder => builder.IsStreamingEnabled(false));
                 using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
@@ -116,7 +112,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         [MemberData(nameof(PollingAndStreaming))]
         public void InitFailsOn401Sync(UpdateMode mode)
         {
-            using (var server = TestHttpServer.Start(Handlers.Status(401)))
+            using (var server = HttpServer.Start(Handlers.Status(401)))
             {
                 var config = BaseConfig(server.Uri, mode);
                 using (var client = TestUtil.CreateClient(config, _user))
@@ -130,7 +126,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         [MemberData(nameof(PollingAndStreaming))]
         public async Task InitFailsOn401Async(UpdateMode mode)
         {
-            using (var server = TestHttpServer.Start(Handlers.Status(401)))
+            using (var server = HttpServer.Start(Handlers.Status(401)))
             {
                 var config = BaseConfig(server.Uri, mode);
 
@@ -148,7 +144,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         public async Task InitWithKeylessAnonUserAddsKeyAndReusesIt()
         {
             // Note, we don't care about polling mode vs. streaming mode for this functionality.
-            using (var server = TestHttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
+            using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
             {
                 var config = BaseConfig(server.Uri, UpdateMode.Polling);
                 var name = "Sue";
@@ -177,9 +173,10 @@ namespace LaunchDarkly.Sdk.Xamarin
         [MemberData(nameof(PollingAndStreaming))]
         public void IdentifySwitchesUserAndGetsFlagsSync(UpdateMode mode)
         {
-            var switchable = Handlers.DelegateTo(SetupResponse(_flagData1, mode));
-            using (var server = TestHttpServer.Start(switchable))
+            using (var server = HttpServer.Start(Handlers.Switchable(out var switchable)))
             {
+                switchable.Target = SetupResponse(_flagData1, mode);
+
                 var config = BaseConfig(server.Uri, mode);
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
@@ -205,9 +202,10 @@ namespace LaunchDarkly.Sdk.Xamarin
         [MemberData(nameof(PollingAndStreaming))]
         public async Task IdentifySwitchesUserAndGetsFlagsAsync(UpdateMode mode)
         {
-            var switchable = Handlers.DelegateTo(SetupResponse(_flagData1, mode));
-            using (var server = TestHttpServer.Start(switchable))
+            using (var server = HttpServer.Start(Handlers.Switchable(out var switchable)))
             {
+                switchable.Target = SetupResponse(_flagData1, mode);
+
                 var config = BaseConfig(server.Uri, mode);
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
@@ -233,17 +231,18 @@ namespace LaunchDarkly.Sdk.Xamarin
         [MemberData(nameof(PollingAndStreaming))]
         public void IdentifyCanTimeOutSync(UpdateMode mode)
         {
-            var switchable = Handlers.DelegateTo(SetupResponse(_flagData1, mode));
-            using (var server = TestHttpServer.Start(switchable))
+            using (var server = HttpServer.Start(Handlers.Switchable(out var switchable)))
             {
+                switchable.Target = SetupResponse(_flagData1, mode);
+
                 var config = BaseConfig(server.Uri, mode);
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     var req1 = VerifyRequest(server.Recorder, mode);
                     VerifyFlagValues(client, _flagData1);
 
-                    switchable.Target = Handlers.DelayBefore(TimeSpan.FromSeconds(2),
-                        SetupResponse(_flagData1, mode));
+                    switchable.Target = Handlers.Delay(TimeSpan.FromSeconds(2))
+                        .Then(SetupResponse(_flagData1, mode));
 
                     var success = client.Identify(_otherUser, TimeSpan.FromMilliseconds(100));
                     Assert.False(success);
@@ -262,11 +261,11 @@ namespace LaunchDarkly.Sdk.Xamarin
             string expectedPath
             )
         {
-            using (var server = TestHttpServer.Start(Handlers.Status(202)))
+            using (var server = HttpServer.Start(Handlers.Status(202)))
             {
                 var config = Configuration.BuilderInternal(_mobileKey)
                     .UpdateProcessorFactory(MockPollingProcessor.Factory("{}"))
-                    .EventsUri(new Uri(server.Uri.ToString() + baseUriExtraPath))
+                    .EventsUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
                     .PersistFlagValues(false)
                     .Build();
 
@@ -286,7 +285,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         public void OfflineClientUsesCachedFlagsSync()
         {
             // streaming vs. polling should make no difference for this
-            using (var server = TestHttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
+            using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
             {
                 ClearCachedFlags(_user);
                 try
@@ -316,7 +315,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         public async Task OfflineClientUsesCachedFlagsAsync()
         {
             // streaming vs. polling should make no difference for this
-            using (var server = TestHttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
+            using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
             {
                 ClearCachedFlags(_user);
                 try
@@ -349,9 +348,10 @@ namespace LaunchDarkly.Sdk.Xamarin
 
             ClearCachedFlags(_user);
 
-            var switchable = Handlers.DelegateTo(SetupResponse(_flagData1, UpdateMode.Streaming));
-            using (var server = TestHttpServer.Start(switchable))
+            using (var server = HttpServer.Start(Handlers.Switchable(out var switchable)))
             {
+                switchable.Target = SetupResponse(_flagData1, UpdateMode.Streaming);
+
                 var config = BaseConfig(server.Uri, UpdateMode.Streaming, builder => builder
                     .BackgroundModeManager(mockBackgroundModeManager)
                     .BackgroundPollingIntervalWithoutMinimum(backgroundInterval)
@@ -394,9 +394,11 @@ namespace LaunchDarkly.Sdk.Xamarin
             var hackyUpdateDelay = TimeSpan.FromMilliseconds(200);
 
             ClearCachedFlags(_user);
-            var switchable = Handlers.DelegateTo(SetupResponse(_flagData1, UpdateMode.Streaming));
-            using (var server = TestHttpServer.Start(switchable))
+
+            using (var server = HttpServer.Start(Handlers.Switchable(out var switchable)))
             {
+                switchable.Target = SetupResponse(_flagData1, UpdateMode.Streaming);
+
                 var config = BaseConfig(server.Uri, UpdateMode.Streaming, builder => builder
                     .BackgroundModeManager(mockBackgroundModeManager)
                     .EnableBackgroundUpdating(false)
@@ -435,7 +437,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         [MemberData(nameof(PollingAndStreaming))]
         public async Task OfflineClientGoesOnlineAndGetsFlagsAsync(UpdateMode mode)
         {
-            using (var server = TestHttpServer.Start(SetupResponse(_flagData1, mode)))
+            using (var server = HttpServer.Start(SetupResponse(_flagData1, mode)))
             {
                 ClearCachedFlags(_user);
                 var config = BaseConfig(server.Uri, mode, builder => builder.Offline(true).PersistFlagValues(false));
@@ -464,7 +466,7 @@ namespace LaunchDarkly.Sdk.Xamarin
                     { "flag1", dateLikeString1 },
                     { "flag2", dateLikeString2 }
                 };
-            using (var server = TestHttpServer.Start(SetupResponse(flagData, mode)))
+            using (var server = HttpServer.Start(SetupResponse(flagData, mode)))
             {
                 var config = BaseConfig(server.Uri, mode);
                 using (var client = TestUtil.CreateClient(config, _user))
@@ -496,24 +498,12 @@ namespace LaunchDarkly.Sdk.Xamarin
             });
         }
 
-        private Handler SetupResponse(IDictionary<string, string> data, UpdateMode mode)
-        {
-            var body = mode.IsStreaming ? StreamingData(data) : PollingData(data);
-            return async ctx =>
-            {
-                if (mode.IsStreaming)
-                {
-                    ctx.SetHeader("Content-Type", "text/event-stream");
-                    var bytes = Encoding.UTF8.GetBytes(body);
-                    await ctx.WriteChunkedDataAsync(bytes);
-                    await Task.Delay(Timeout.Infinite, ctx.CancellationToken);
-                }
-                else
-                {
-                    await Handlers.JsonResponse(body)(ctx);
-                }
-            };
-        }
+        private Handler SetupResponse(IDictionary<string, string> data, UpdateMode mode) =>
+            mode.IsStreaming
+                ? Handlers.SSE.Start()
+                    .Then(Handlers.SSE.Event("put", PollingData(data)))
+                    .Then(Handlers.SSE.LeaveOpen())
+                : Handlers.BodyJson(PollingData(data));
 
         private RequestInfo VerifyRequest(RequestRecorder recorder, UpdateMode mode)
         {
@@ -528,7 +518,7 @@ namespace LaunchDarkly.Sdk.Xamarin
 
             Assert.Equal("", req.Query);
             Assert.Equal(_mobileKey, req.Headers["Authorization"]);
-            Assert.Null(req.Body);
+            Assert.Equal("", req.Body);
 
             return req;
         }
@@ -568,11 +558,6 @@ namespace LaunchDarkly.Sdk.Xamarin
                 d.Add(e.Key, FlagJson(e.Key, e.Value));
             }
             return LdValue.ObjectFrom(d).ToJsonString();
-        }
-
-        private static string StreamingData(IDictionary<string, string> flags)
-        {
-            return "event: put\ndata: " + PollingData(flags) + "\n\n";
         }
     }
 

@@ -4,9 +4,9 @@
     <AssemblyName>LaunchDarkly.XamarinSdk.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <PackageReference Include="EmbedIO" Version="3.4.3" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.3.1" />
