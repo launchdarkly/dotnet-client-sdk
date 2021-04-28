@@ -15,6 +15,7 @@
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <Platforms>iPhoneSimulator;iPhone;AnyCPU</Platforms>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
         <DebugSymbols>true</DebugSymbols>
@@ -70,9 +71,9 @@
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.0.1" />
-      <PackageReference Include="xunit.runner.devices" Version="2.5.25"/>
-      <PackageReference Include="xunit" Version="2.4.1"/>
-      <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661"/>
+      <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
+      <PackageReference Include="xunit" Version="2.4.1" />
+      <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661" />
     </ItemGroup>
     <ItemGroup>
         <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
@@ -131,59 +132,10 @@
         <None Include="Entitlements.plist" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\BaseTest.cs">
-          <Link>SharedTestCode\BaseTest.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\ConfigurationTest.cs">
-          <Link>SharedTestCode\ConfigurationTest.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagBuilder.cs">
-          <Link>SharedTestCode\FeatureFlagBuilder.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FeatureFlagRequestorTests.cs">
-          <Link>SharedTestCode\FeatureFlagRequestorTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FlagCacheManagerTests.cs">
-          <Link>SharedTestCode\FlagCacheManagerTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\FlagChangedEventTests.cs">
-          <Link>SharedTestCode\FlagChangedEventTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\ILdClientExtensionsTest.cs">
-          <Link>SharedTestCode\ILdClientExtensionsTest.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LdClientEndToEndTests.cs">
-          <Link>SharedTestCode\LdClientEndToEndTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LdClientEvaluationTests.cs">
-          <Link>SharedTestCode\LdClientEvaluationTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LdClientEventTests.cs">
-          <Link>SharedTestCode\LdClientEventTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\LdClientTests.cs">
-          <Link>SharedTestCode\LdClientTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\MobilePollingProcessorTests.cs">
-          <Link>SharedTestCode\MobilePollingProcessorTests.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\MockComponents.cs">
-          <Link>SharedTestCode\MockComponents.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\TestLogging.cs">
-          <Link>SharedTestCode\TestLogging.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\TestUtil.cs">
-          <Link>SharedTestCode\TestUtil.cs</Link>
-        </Compile>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\UserFlagCacheTests.cs">
-          <Link>SharedTestCode\UserFlagCacheTests.cs</Link>
-        </Compile>
+        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.XamarinSdk.Tests\bin\**\*.cs;..\LaunchDarkly.XamarinSdk.Tests\obj\**\*.cs" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
-        <Project>{7717A2B2-9905-40A7-989F-790139D69543}</Project>
-        <Name>LaunchDarkly.XamarinSdk</Name>
       </ProjectReference>
     </ItemGroup>
 </Project>

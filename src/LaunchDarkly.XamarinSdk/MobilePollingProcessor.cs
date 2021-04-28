@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Http;
 
 namespace LaunchDarkly.Sdk.Xamarin
 {

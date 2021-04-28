@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http;
@@ -9,6 +7,7 @@ using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
+using LaunchDarkly.Sdk.Xamarin.Internal;
 
 namespace LaunchDarkly.Sdk.Xamarin
 {
@@ -68,7 +67,7 @@ namespace LaunchDarkly.Sdk.Xamarin
                     _configuration.HttpProperties,
                     ReportMethod,
                     MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH),
-                    _user.AsJson()
+                    JsonUtil.EncodeJson(_user)
                     );
             }
             else
@@ -76,7 +75,8 @@ namespace LaunchDarkly.Sdk.Xamarin
                 _eventSource = _eventSourceCreator(
                     _configuration.HttpProperties,
                     HttpMethod.Get,
-                    MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH + _user.AsJson().UrlSafeBase64Encode()),
+                    MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH +
+                        Base64.UrlSafeEncode(JsonUtil.EncodeJson(_user))),
                     null
                     );
             }

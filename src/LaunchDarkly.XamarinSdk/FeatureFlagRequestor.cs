@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
+using LaunchDarkly.Sdk.Xamarin.Internal;
 
 namespace LaunchDarkly.Sdk.Xamarin
 {
@@ -58,14 +59,14 @@ namespace LaunchDarkly.Sdk.Xamarin
 
         private HttpRequestMessage GetRequestMessage()
         {
-            var path = Constants.FLAG_REQUEST_PATH_GET + _currentUser.AsJson().UrlSafeBase64Encode();
+            var path = Constants.FLAG_REQUEST_PATH_GET + Base64.UrlSafeEncode(JsonUtil.EncodeJson(_currentUser));
             return new HttpRequestMessage(HttpMethod.Get, MakeRequestUriWithPath(path));
         }
 
         private HttpRequestMessage ReportRequestMessage()
         {
             var request = new HttpRequestMessage(ReportMethod, MakeRequestUriWithPath(Constants.FLAG_REQUEST_PATH_REPORT));
-            request.Content = new StringContent(_currentUser.AsJson(), Encoding.UTF8, Constants.APPLICATION_JSON);
+            request.Content = new StringContent(JsonUtil.EncodeJson(_currentUser), Encoding.UTF8, Constants.APPLICATION_JSON);
             return request;
         }
 

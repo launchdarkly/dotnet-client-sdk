@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Xamarin.Internal
 {
     public class ExtensionsTest
     {
@@ -8,7 +8,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         public void TestUrlSafeBase64Encode()
         {
             Assert.Equal("eyJrZXkiOiJmb28-YmFyX18_In0=",
-                @"{""key"":""foo>bar__?""}".UrlSafeBase64Encode());
+                Base64.UrlSafeEncode(@"{""key"":""foo>bar__?""}"));
         }
     }
 }

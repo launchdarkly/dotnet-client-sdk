@@ -24,4 +24,7 @@
       <SubType></SubType>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Internal\" />
+  </ItemGroup>
 </Project>

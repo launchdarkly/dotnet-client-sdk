@@ -1,5 +1,6 @@
 ﻿using System;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Xamarin.Internal;
 using LaunchDarkly.Sdk.Xamarin.Internal.Events;

@@ -39,7 +39,7 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="LaunchDarkly.CommonSdk" Version="5.0.1" />
     <PackageReference Include="LaunchDarkly.EventSource" Version="4.0.0" />
-    <PackageReference Include="LaunchDarkly.InternalSdk" Version="1.0.0" />
+    <PackageReference Include="LaunchDarkly.InternalSdk" Version="1.1.0" />
     <PackageReference Include="LaunchDarkly.JsonStream" Version="1.0.1-alpha.1" />
     <PackageReference Include="LaunchDarkly.Logging" Version="1.0.1" />
     <Compile Include="*.cs" />
