@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using LaunchDarkly.Sdk.Xamarin.HttpHelpers;
+using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,10 +37,10 @@ namespace LaunchDarkly.Sdk.Xamarin
             string expectedQuery
             )
         {
-            using (var server = TestHttpServer.Start(Handlers.JsonResponse("{}")))
+            using (var server = HttpServer.Start(Handlers.BodyJson(_allDataJson)))
             {
                 var config = Configuration.Builder(_mobileKey)
-                    .BaseUri(new Uri(server.Uri.ToString() + baseUriExtraPath))
+                    .BaseUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
                     .EvaluationReasons(withReasons)
                     .Build();
 
@@ -54,7 +55,7 @@ namespace LaunchDarkly.Sdk.Xamarin
                     Assert.Equal(expectedPathWithoutUser + _encodedUser, req.Path);
                     Assert.Equal(expectedQuery, req.Query);
                     Assert.Equal(_mobileKey, req.Headers["Authorization"]);
-                    Assert.Null(req.Body);
+                    Assert.Equal("", req.Body);
                 }
             }
         }
@@ -63,24 +64,22 @@ namespace LaunchDarkly.Sdk.Xamarin
         //[Fact]
         //public async Task GetFlagsUsesCorrectUriAndMethodInReportModeAsync()
         //{
-        //    await WithServerAsync(async server =>
+        //    using (var server = HttpServer.Start(Handlers.BodyJson(_allDataJson)))
         //    {
-        //        server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
-
         //        var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
         //            .UseReport(true).Build();
-
+        //
         //        using (var requestor = new FeatureFlagRequestor(config, _user))
         //        {
         //            var resp = await requestor.FeatureFlagsAsync();
         //            Assert.Equal(200, resp.statusCode);
         //            Assert.Equal(_allDataJson, resp.jsonResponse);
-
-        //            var req = server.GetLastRequest();
+        //
+        //            var req = server.Recorder.RequireRequest();
         //            Assert.Equal("REPORT", req.Method);
         //            Assert.Equal($"/msdk/evalx/user", req.Path);
-        //            Assert.Equal("", req.RawQuery);
-        //            Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
+        //            Assert.Equal("", req.Query);
+        //            Assert.Equal(_mobileKey, req.Headers["Authorization"]);
         //            TestUtil.AssertJsonEquals(LdValue.Parse(_userJson), TestUtil.NormalizeJsonUser(LdValue.Parse(req.Body)));
         //        }
         //    });
@@ -89,24 +88,22 @@ namespace LaunchDarkly.Sdk.Xamarin
         //[Fact]
         //public async Task GetFlagsUsesCorrectUriAndMethodInReportModeWithReasonsAsync()
         //{
-        //    await WithServerAsync(async server =>
+        //    using (var server = HttpServer.Start(Handlers.BodyJson(_allDataJson)))
         //    {
-        //        server.ForAllRequests(r => r.WithJsonBody(_allDataJson));
-
         //        var config = Configuration.Builder(_mobileKey).BaseUri(new Uri(server.GetUrl()))
         //            .UseReport(true).EvaluationReasons(true).Build();
-
+        //
         //        using (var requestor = new FeatureFlagRequestor(config, _user))
         //        {
         //            var resp = await requestor.FeatureFlagsAsync();
         //            Assert.Equal(200, resp.statusCode);
         //            Assert.Equal(_allDataJson, resp.jsonResponse);
-
+        //
         //            var req = server.GetLastRequest();
         //            Assert.Equal("REPORT", req.Method);
         //            Assert.Equal($"/msdk/evalx/user", req.Path);
-        //            Assert.Equal("?withReasons=true", req.RawQuery);
-        //            Assert.Equal(_mobileKey, req.Headers["Authorization"][0]);
+        //            Assert.Equal("?withReasons=true", req.Query);
+        //            Assert.Equal(_mobileKey, req.Headers["Authorization"]);
         //            TestUtil.AssertJsonEquals(LdValue.Parse(_userJson), TestUtil.NormalizeJsonUser(LdValue.Parse(req.Body)));
         //        }
         //    });
