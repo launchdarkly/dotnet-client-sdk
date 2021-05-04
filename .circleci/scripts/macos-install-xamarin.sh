@@ -72,3 +72,15 @@ do
       exit 1
   esac
 done
+
+# In the CircleCI environment, /Applications/Xcode.app might be a symlink. The build
+# tools can be confused by this (https://github.com/xamarin/xamarin-macios/issues/11006)
+# so we'll just move things around so that is a real file.
+
+if [[ -L /Applications/Xcode.app ]]; then
+  cd /Applications
+  real_xcode=`readlink Xcode.app`
+  rm Xcode.app
+  mv "$real_xcode" Xcode.app
+  sudo xcode-select --switch /Applications/Xcode.app
+fi
