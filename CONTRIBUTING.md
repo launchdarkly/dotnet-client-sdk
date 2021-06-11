@@ -26,7 +26,7 @@ msbuild /restore src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
 
 Currently this command can only be run on MacOS, because that is the only platform that allows building for all of the targets (.NET Standard, Android, and iOS).
 
-To build the SDK for only one of the supported platforms, add `-f X` where `X` is one of the items in the `<TargetFrameworks>` list of `LaunchDarkly.XamarinSdk.csproj`: `netstandard2.0` for .NET Standard 2.0, `MonoAndroid80` for Android 8.0, etc.:
+To build the SDK for only one of the supported platforms, add `-f X` where `X` is one of the items in the `<TargetFrameworks>` list of `LaunchDarkly.XamarinSdk.csproj`: `netstandard2.0` for .NET Standard 2.0, `MonoAndroid81` for Android 8.1, etc.:
 
 ```
 msbuild /restore src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj -f netstandard2.0
