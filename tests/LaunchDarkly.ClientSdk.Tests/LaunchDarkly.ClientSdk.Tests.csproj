@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>LaunchDarkly.XamarinSdk.Tests</AssemblyName>
+    <AssemblyName>LaunchDarkly.ClientSdk.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.0.1" />
@@ -17,7 +17,7 @@
     <None Remove="FeatureFlagsFromServiceUpdatedValues.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj" />
+    <ProjectReference Include="..\..\src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="TestLogging.cs">

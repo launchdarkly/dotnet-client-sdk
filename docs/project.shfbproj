@@ -19,10 +19,10 @@
     <Language>en-US</Language>
     <DocumentationSources>
       <!-- note that the LaunchDarkly.CommonSdk files must be copied to this location by build-docs.ps1 -->
-      <DocumentationSource sourceFile="..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\LaunchDarkly.XamarinSdk.xml" />
-      <DocumentationSource sourceFile="..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\LaunchDarkly.XamarinSdk.dll" />
-      <DocumentationSource sourceFile="..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\LaunchDarkly.CommonSdk.xml" />
-      <DocumentationSource sourceFile="..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\LaunchDarkly.CommonSdk.dll" />
+      <DocumentationSource sourceFile="..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.ClientSdk.xml" />
+      <DocumentationSource sourceFile="..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.ClientSdk.dll" />
+      <DocumentationSource sourceFile="..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.CommonSdk.xml" />
+      <DocumentationSource sourceFile="..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.CommonSdk.dll" />
     </DocumentationSources>
     <HelpTitle>LaunchDarkly Client-Side SDK for Xamarin $(LD_RELEASE_VERSION)</HelpTitle>
     <HelpFileVersion>1.0.0.0</HelpFileVersion>
@@ -73,19 +73,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Common.Logging">
-      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\Common.Logging.dll</HintPath>
+      <HintPath>..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\Common.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Common.Logging.Core">
-      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\Common.Logging.Core.dll</HintPath>
+      <HintPath>..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\Common.Logging.Core.dll</HintPath>
     </Reference>
     <Reference Include="LaunchDarkly.Cache">
-      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\LaunchDarkly.Cache.dll</HintPath>
+      <HintPath>..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.Cache.dll</HintPath>
     </Reference>
     <Reference Include="LaunchDarkly.EventSource">
-      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\LaunchDarkly.EventSource.dll</HintPath>
+      <HintPath>..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.EventSource.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

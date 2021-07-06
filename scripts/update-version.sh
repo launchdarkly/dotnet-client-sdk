@@ -5,7 +5,7 @@
 
 NEW_VERSION="$1"
 
-PROJECT_FILE=./src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+PROJECT_FILE=./src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 TEMP_FILE="${PROJECT_FILE}.tmp"
 
 sed "s#^\( *\)<Version>[^<]*</Version>#\1<Version>${NEW_VERSION}</Version>#g" "${PROJECT_FILE}" > "${TEMP_FILE}"

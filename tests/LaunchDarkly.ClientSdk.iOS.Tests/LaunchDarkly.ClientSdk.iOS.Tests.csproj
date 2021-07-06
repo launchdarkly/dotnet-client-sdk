@@ -13,7 +13,7 @@
         <OutputType>Exe</OutputType>
         <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
         <RootNamespace>LaunchDarkly.XamarinSdk.iOS.Tests</RootNamespace>
-        <AssemblyName>LaunchDarkly.XamarinSdk.iOS.Tests</AssemblyName>
+        <AssemblyName>LaunchDarkly.ClientSdk.iOS.Tests</AssemblyName>
         <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
         <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
@@ -92,7 +92,7 @@
          conditional compilation, rather than by changing these includes; when we used
          to use individual file links, it was too easy to forget to update them.
     -->
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.XamarinSdk.Tests\bin\**\*.cs;..\LaunchDarkly.XamarinSdk.Tests\obj\**\*.cs" />
+        <Compile Include="..\LaunchDarkly.ClientSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.ClientSdk.Tests\bin\**\*.cs;..\LaunchDarkly.ClientSdk.Tests\obj\**\*.cs" />
 
         <!-- There are also some source files specific to the iOS test app; everything
              that's in our project directory is included automatically (because we are
@@ -154,7 +154,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
+      <ProjectReference Include="..\..\src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj">
       </ProjectReference>
     </ItemGroup>
 </Project>

@@ -17,4 +17,4 @@ fi
 # Since package.sh does a clean build, whichever .nupkg file now exists in the output directory
 # is the one we want to upload.
 
-nuget push ./src/LaunchDarkly.XamarinSdk/bin/$CONFIG/LaunchDarkly.XamarinSdk.*.nupkg -Source https://www.nuget.org
+nuget push ./src/LaunchDarkly.ClientSdk/bin/$CONFIG/LaunchDarkly.ClientSdk.*.nupkg -Source https://www.nuget.org

@@ -2,13 +2,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.XamarinSdk", "src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj", "{7717A2B2-9905-40A7-989F-790139D69543}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.ClientSdk", "src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj", "{7717A2B2-9905-40A7-989F-790139D69543}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.XamarinSdk.Tests", "tests\LaunchDarkly.XamarinSdk.Tests\LaunchDarkly.XamarinSdk.Tests.csproj", "{F6B71DFE-314C-4F27-A219-A14569C8CF48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.ClientSdk.Tests", "tests\LaunchDarkly.ClientSdk.Tests\LaunchDarkly.ClientSdk.Tests.csproj", "{F6B71DFE-314C-4F27-A219-A14569C8CF48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.XamarinSdk.iOS.Tests", "tests\LaunchDarkly.XamarinSdk.iOS.Tests\LaunchDarkly.XamarinSdk.iOS.Tests.csproj", "{5EFF7561-35C1-4C62-B0BE-A76E37DCEB32}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.ClientSdk.iOS.Tests", "tests\LaunchDarkly.ClientSdk.iOS.Tests\LaunchDarkly.ClientSdk.iOS.Tests.csproj", "{5EFF7561-35C1-4C62-B0BE-A76E37DCEB32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.XamarinSdk.Android.Tests", "tests\LaunchDarkly.XamarinSdk.Android.Tests\LaunchDarkly.XamarinSdk.Android.Tests.csproj", "{2E7720E4-01A0-403B-863C-C6C596DF5926}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LaunchDarkly.ClientSdk.Android.Tests", "tests\LaunchDarkly.ClientSdk.Android.Tests\LaunchDarkly.ClientSdk.Android.Tests.csproj", "{2E7720E4-01A0-403B-863C-C6C596DF5926}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

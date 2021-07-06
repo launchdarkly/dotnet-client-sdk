@@ -15,7 +15,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LaunchDarkly.XamarinSdk.Android.Tests</RootNamespace>
-    <AssemblyName>LaunchDarkly.XamarinSdk.Android.Tests</AssemblyName>
+    <AssemblyName>LaunchDarkly.ClientSdk.Android.Tests</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
@@ -87,7 +87,7 @@
          conditional compilation, rather than by changing these includes; when we used
          to use individual file links, it was too easy to forget to update them.
     -->
-    <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.XamarinSdk.Tests\bin\**\*.cs;..\LaunchDarkly.XamarinSdk.Tests\obj\**\*.cs" />
+    <Compile Include="..\LaunchDarkly.ClientSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.ClientSdk.Tests\bin\**\*.cs;..\LaunchDarkly.ClientSdk.Tests\obj\**\*.cs" />
 
     <!-- These source files are specific to the Android test app. In this older
          project file format, they need to be referenced explicitly even though
@@ -130,9 +130,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
+    <ProjectReference Include="..\..\src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj">
       <Project>{7717A2B2-9905-40A7-989F-790139D69543}</Project>
-      <Name>LaunchDarkly.XamarinSdk</Name>
+      <Name>LaunchDarkly.ClientSdk</Name>
     </ProjectReference>
   </ItemGroup>
 

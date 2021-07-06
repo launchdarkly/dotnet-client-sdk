@@ -14,7 +14,7 @@ if [ ! -d ./docs/build/html ]; then
 fi
 
 if [ -z "${LD_RELEASE_VERSION:-}" ]; then
-  LD_RELEASE_VERSION=$(sed -n -e "s%.*<Version>\([^<]*\)</Version>.*%\1%p" src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj)
+  LD_RELEASE_VERSION=$(sed -n -e "s%.*<Version>\([^<]*\)</Version>.*%\1%p" src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj)
   if [ -z "${LD_RELEASE_VERSION}" ]; then
     echo "Could not find SDK version string in project file"
     exit 1

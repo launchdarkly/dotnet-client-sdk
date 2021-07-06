@@ -8,4 +8,4 @@ $ErrorActionPreference = "Stop"
 $scriptDir = split-path -parent $MyInvocation.MyCommand.Definition
 Import-Module "$scriptDir/circleci/template/helpers.psm1" -Force
 
-ExecuteOrFail { msbuild /restore /p:TargetFramework=netstandard2.0 /p:Configuration=Debug src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj }
+ExecuteOrFail { msbuild /restore /p:TargetFramework=netstandard2.0 /p:Configuration=Debug src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj }

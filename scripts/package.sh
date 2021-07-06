@@ -16,15 +16,15 @@ fi
 # Remove any existing build products.
 
 msbuild /t:clean
-rm -f ./src/LaunchDarkly.XamarinSdk/bin/Debug/*.nupkg
-rm -f ./src/LaunchDarkly.XamarinSdk/bin/Release/*.nupkg
+rm -f ./src/LaunchDarkly.ClientSdk/bin/Debug/*.nupkg
+rm -f ./src/LaunchDarkly.ClientSdk/bin/Release/*.nupkg
 
 # Build the project for all target frameworks. This includes building the .nupkg, because of
 # the <GeneratePackageOnBuild> directive in our project file.
 
-msbuild /restore /p:Configuration=$CONFIG src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+msbuild /restore /p:Configuration=$CONFIG src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
 # Run the .NET Standard 2.0 unit tests. (Android and iOS tests are run by CI jobs in config.yml)
 
 export ASPNETCORE_SUPPRESSSTATUSMESSAGES=true  # suppresses some annoying test output
-dotnet test tests/LaunchDarkly.XamarinSdk.Tests/LaunchDarkly.XamarinSdk.Tests.csproj -f netcoreapp2.0
+dotnet test tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj -f netcoreapp2.0
