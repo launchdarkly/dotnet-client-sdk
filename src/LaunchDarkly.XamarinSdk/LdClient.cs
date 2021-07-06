@@ -5,8 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Xamarin.Interfaces;
 using LaunchDarkly.Sdk.Xamarin.Internal;
+using LaunchDarkly.Sdk.Xamarin.Internal.DataSources;
 using LaunchDarkly.Sdk.Xamarin.Internal.Events;
+using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
 
 namespace LaunchDarkly.Sdk.Xamarin

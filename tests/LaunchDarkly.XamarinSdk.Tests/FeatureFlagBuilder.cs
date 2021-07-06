@@ -1,4 +1,4 @@
-﻿using System;
+﻿using LaunchDarkly.Sdk.Xamarin.Internal;
 
 namespace LaunchDarkly.Sdk.Xamarin
 {

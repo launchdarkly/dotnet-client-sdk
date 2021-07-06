@@ -2,6 +2,9 @@
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Xamarin.Internal;
+using LaunchDarkly.Sdk.Xamarin.Internal.DataStores;
+using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 using Xunit;
 
 namespace LaunchDarkly.Sdk.Xamarin

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Xamarin.Interfaces;
 using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;

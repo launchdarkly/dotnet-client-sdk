@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Xamarin.Internal.Events;
+using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 
 namespace LaunchDarkly.Sdk.Xamarin
 {
@@ -93,7 +94,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         /// </summary>
         /// <remarks>
         /// The additional information will then be available through the client's "detail"
-        /// methods such as <see cref="ILdClient.BoolVariationDetail(string, bool)"/>. Since this
+        /// methods such as <see cref="LdClient.BoolVariationDetail(string, bool)"/>. Since this
         /// increases the size of network requests, such information is not sent unless you set this option
         /// to <see langword="true"/>.
         /// </remarks>

@@ -34,7 +34,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-   <ItemGroup>
+  <ItemGroup>
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="LaunchDarkly.CommonSdk" Version="5.0.2" />
@@ -45,6 +45,7 @@
     <Compile Include="*.cs" />
     <Compile Include="Properties\*.cs" />
     <Compile Include="**\*.shared.cs" />
+    <Compile Include="Interfaces\**\*.cs" />
     <Compile Include="Internal\**\*.cs" />
   </ItemGroup>
 

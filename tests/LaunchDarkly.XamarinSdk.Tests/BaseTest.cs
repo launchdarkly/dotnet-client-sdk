@@ -1,5 +1,6 @@
 ﻿using System;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Xamarin.Internal;
 using Xunit;
 using Xunit.Abstractions;
 

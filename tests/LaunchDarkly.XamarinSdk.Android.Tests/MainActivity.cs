@@ -5,6 +5,7 @@ using Android.OS;
 using Xunit.Runners.UI;
 using Xunit.Sdk;
 
+// For more details about how this test project works, see CONTRIBUTING.md
 namespace LaunchDarkly.Xamarin.Android.Tests
 {
     [Activity(Label = "LaunchDarkly.Xamarin.Android.Tests", MainLauncher = true)]

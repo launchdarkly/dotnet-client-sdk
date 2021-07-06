@@ -2,7 +2,7 @@
 
 namespace LaunchDarkly.Sdk.Xamarin.Internal
 {
-    public class ExtensionsTest
+    public class Base64Test
     {
         [Fact]
         public void TestUrlSafeBase64Encode()

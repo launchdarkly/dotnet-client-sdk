@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Xamarin.Internal;
+using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
 

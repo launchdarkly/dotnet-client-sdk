@@ -2,11 +2,12 @@
 using System.Linq;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Xamarin.Interfaces;
 
 namespace LaunchDarkly.Sdk.Xamarin
 {
     /// <summary>
-    /// An event object that is sent to handlers for the <see cref="ILdClient.FlagChanged"/> event.
+    /// An event object that is sent to handlers for the <see cref="LdClient.FlagChanged"/> event.
     /// </summary>
     public sealed class FlagChangedEventArgs
     {

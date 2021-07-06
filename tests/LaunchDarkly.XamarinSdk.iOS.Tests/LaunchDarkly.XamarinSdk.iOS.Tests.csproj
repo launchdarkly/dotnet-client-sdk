@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- For more details about how this test project works, see CONTRIBUTING.md -->
+
 <Project Sdk="MSBuild.Sdk.Extras">
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -61,6 +64,7 @@
         <ConsolePause>false</ConsolePause>
         <CodesignKey>iPhone Developer</CodesignKey>
     </PropertyGroup>
+
     <ItemGroup>
         <Reference Include="System" />
         <Reference Include="System.Xml" />
@@ -69,12 +73,32 @@
         <Reference Include="System.Numerics" />
         <Reference Include="System.Numerics.Vectors" />
     </ItemGroup>
+
     <ItemGroup>
       <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.0.1" />
       <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
       <PackageReference Include="xunit" Version="2.4.1" />
       <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661" />
     </ItemGroup>
+    
+    <ItemGroup>
+    <!-- Import all source files from the main test project, except for generated code
+         that may be in "bin" or "obj".
+
+         Unfortunately it doesn't seem to be possible to preserve the folder structure
+         when linking to files in this way.
+
+         If we ever need to disable some tests in Android/iOS, we should do that with
+         conditional compilation, rather than by changing these includes; when we used
+         to use individual file links, it was too easy to forget to update them.
+    -->
+        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.XamarinSdk.Tests\bin\**\*.cs;..\LaunchDarkly.XamarinSdk.Tests\obj\**\*.cs" />
+
+        <!-- There are also some source files specific to the iOS test app; everything
+             that's in our project directory is included automatically (because we are
+             using MSBuild.Sdk.Extras in this project). -->
+    </ItemGroup>
+
     <ItemGroup>
         <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
             <Visible>false</Visible>
@@ -119,10 +143,7 @@
             <Visible>false</Visible>
         </ImageAsset>
     </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Resources\" />
-        <Folder Include="SharedTestCode\" />
-    </ItemGroup>
+
     <ItemGroup>
         <InterfaceDefinition Include="LaunchScreen.storyboard" />
         <InterfaceDefinition Include="Main.storyboard" />
@@ -131,9 +152,7 @@
         <None Include="Info.plist" />
         <None Include="Entitlements.plist" />
     </ItemGroup>
-    <ItemGroup>
-        <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.XamarinSdk.Tests\bin\**\*.cs;..\LaunchDarkly.XamarinSdk.Tests\obj\**\*.cs" />
-    </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
       </ProjectReference>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Xamarin.Interfaces;
 using Xunit;
 
 namespace LaunchDarkly.Sdk.Xamarin

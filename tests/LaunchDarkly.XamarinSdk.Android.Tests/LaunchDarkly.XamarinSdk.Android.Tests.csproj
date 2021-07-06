@@ -1,4 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!-- For more details about how this test project works, see CONTRIBUTING.md -->
+
+<!-- Note that this project file uses a slightly different schema than the rest -
+     MSBuild.Sdk.Extras is not working correctly in Android for unknown reasons -->
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -51,6 +56,7 @@
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
   </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
@@ -59,16 +65,44 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
+
   <ItemGroup>
+    <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.0.1" />
+    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661" />
+    <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Import all source files from the main test project, except for generated code
+         that may be in "bin" or "obj".
+
+         Unfortunately it doesn't seem to be possible to preserve the folder structure
+         when linking to files in this way.
+
+         If we ever need to disable some tests in Android/iOS, we should do that with
+         conditional compilation, rather than by changing these includes; when we used
+         to use individual file links, it was too easy to forget to update them.
+    -->
+    <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.XamarinSdk.Tests\bin\**\*.cs;..\LaunchDarkly.XamarinSdk.Tests\obj\**\*.cs" />
+
+    <!-- These source files are specific to the Android test app. In this older
+         project file format, they need to be referenced explicitly even though
+         they're in the project directory. -->
     <Compile Include="AndroidSpecificTests.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\LaunchDarkly.XamarinSdk.Tests\**\*.cs" Exclude="..\LaunchDarkly.XamarinSdk.Tests\bin\**\*.cs;..\LaunchDarkly.XamarinSdk.Tests\obj\**\*.cs" />
+    <Folder Include="Assets\" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
+
   <ItemGroup>
     <AndroidResource Include="Resources\layout\activity_main.axml">
       <SubType>Designer</SubType>
@@ -94,24 +128,13 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_foreground.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_round.png" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
-    <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.0.1" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661" />
-    <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SharedTestCode\" />
-    <Folder Include="Assets\" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj">
       <Project>{7717A2B2-9905-40A7-989F-790139D69543}</Project>
       <Name>LaunchDarkly.XamarinSdk</Name>
     </ProjectReference>
   </ItemGroup>
+
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>
