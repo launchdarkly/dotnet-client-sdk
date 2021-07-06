@@ -24,7 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal enum ConnectionProfile
     {

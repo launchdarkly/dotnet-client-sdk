@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.Events
+namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
     internal interface IEventProcessor : IDisposable
     {

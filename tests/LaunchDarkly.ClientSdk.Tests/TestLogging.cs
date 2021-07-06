@@ -2,7 +2,7 @@
 using LaunchDarkly.Logging;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
     /// Allows logging from SDK components to appear in test output.

@@ -2,7 +2,7 @@
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Json;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
     [JsonStreamConverter(typeof(FeatureFlag.JsonConverter))]
     internal sealed class FeatureFlag : IEquatable<FeatureFlag>, IJsonSerializable

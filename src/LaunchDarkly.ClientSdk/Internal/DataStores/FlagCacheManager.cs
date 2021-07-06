@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataStores
+namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     internal sealed class FlagCacheManager : IFlagCacheManager
     {

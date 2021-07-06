@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.Interfaces
+namespace LaunchDarkly.Sdk.Client.Internal.Interfaces
 {
     internal interface IConnectivityStateManager
     {

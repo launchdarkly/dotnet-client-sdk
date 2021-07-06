@@ -1,7 +1,7 @@
 ﻿using System;
-using LaunchDarkly.Sdk.Xamarin.Interfaces;
+using LaunchDarkly.Sdk.Client.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
     /// Convenience methods that extend the <see cref="ILdClient"/> interface.

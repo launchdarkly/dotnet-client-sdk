@@ -2,10 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataSources
+namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     /// <summary>
     /// Manages our connection to LaunchDarkly, if any, and encapsulates all of the state that

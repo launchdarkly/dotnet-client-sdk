@@ -1,5 +1,5 @@
 ﻿
-namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     // This class and the rest of its partial class implementations are not derived from Xamarin Essentials.
 

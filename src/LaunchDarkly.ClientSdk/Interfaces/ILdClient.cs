@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LaunchDarkly.Sdk.Xamarin.Interfaces
+namespace LaunchDarkly.Sdk.Client.Interfaces
 {
     /// <summary>
     /// Interface for the standard SDK client methods and properties. The only implementation of this is <see cref="LdClient"/>.

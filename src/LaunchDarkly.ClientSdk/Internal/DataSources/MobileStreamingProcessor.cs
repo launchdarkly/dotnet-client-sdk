@@ -6,12 +6,12 @@ using System.Net.Http;
 using LaunchDarkly.EventSource;
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Xamarin.Internal;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataSources
+namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     internal sealed class MobileStreamingProcessor : IMobileUpdateProcessor
     {

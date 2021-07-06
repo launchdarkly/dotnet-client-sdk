@@ -5,7 +5,7 @@ using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataSources
+namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     // End-to-end tests of this component against an embedded HTTP server.
     public class FeatureFlagRequestorTests : BaseTest

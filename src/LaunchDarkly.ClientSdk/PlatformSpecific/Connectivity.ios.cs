@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 using CoreFoundation;
 using SystemConfiguration;
 
-namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class Connectivity
     {

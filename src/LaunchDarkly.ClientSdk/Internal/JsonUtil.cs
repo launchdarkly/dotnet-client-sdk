@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Json;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal class JsonUtil
     {

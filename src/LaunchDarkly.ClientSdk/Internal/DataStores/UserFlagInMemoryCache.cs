@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataStores
+namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     internal sealed class UserFlagInMemoryCache : IUserFlagCache
     {

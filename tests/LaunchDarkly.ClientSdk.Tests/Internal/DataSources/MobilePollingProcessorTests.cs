@@ -1,10 +1,10 @@
 ﻿using System;
-using LaunchDarkly.Sdk.Xamarin.Internal.DataStores;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataSources
+namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     public class MobilePollingProcessorTests : BaseTest
     {

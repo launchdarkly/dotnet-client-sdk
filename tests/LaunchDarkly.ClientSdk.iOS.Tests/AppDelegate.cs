@@ -5,7 +5,7 @@ using UIKit;
 using Xunit.Runner;
 using Xunit.Sdk;
 
-namespace LaunchDarkly.Xamarin.iOS.Tests
+namespace LaunchDarkly.Sdk.Client.iOS.Tests
 {
     // This is based on code that was generated automatically by the xunit.runner.devices package.
     // It configures the test-runner app that is implemented by that package, telling it where to

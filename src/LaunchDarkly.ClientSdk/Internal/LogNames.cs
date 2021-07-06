@@ -1,9 +1,9 @@
 ﻿
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal static class LogNames
     {
-        internal const string Base = "LaunchDarkly.Sdk.Xamarin.LdClient";
+        internal const string Base = "LaunchDarkly.Sdk.Client.LdClient";
 
         internal const string DataSourceSubLog = "DataSource";
 

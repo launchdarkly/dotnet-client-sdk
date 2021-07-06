@@ -1,10 +1,10 @@
 ﻿using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
-    // This just delegates to the conditionally-compiled code in LaunchDarkly.Xamarin.PlatformSpecific.
+    // This just delegates to the conditionally-compiled code in LaunchDarkly.Sdk.Client.PlatformSpecific.
     // The only reason it is a pluggable component is for unit tests; we don't currently expose IDeviceInfo.
     internal sealed class DefaultDeviceInfo : IDeviceInfo
     {

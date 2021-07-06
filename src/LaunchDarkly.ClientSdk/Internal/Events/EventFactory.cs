@@ -1,7 +1,7 @@
 ﻿
-using static LaunchDarkly.Sdk.Xamarin.Internal.Events.EventProcessorTypes;
+using static LaunchDarkly.Sdk.Client.Internal.Events.EventProcessorTypes;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.Events
+namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
     internal sealed class EventFactory
     {

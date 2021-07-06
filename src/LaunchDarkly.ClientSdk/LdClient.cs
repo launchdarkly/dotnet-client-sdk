@@ -4,15 +4,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.Internal.DataSources;
+using LaunchDarkly.Sdk.Client.Internal.Events;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.Sdk.Internal;
-using LaunchDarkly.Sdk.Xamarin.Interfaces;
-using LaunchDarkly.Sdk.Xamarin.Internal;
-using LaunchDarkly.Sdk.Xamarin.Internal.DataSources;
-using LaunchDarkly.Sdk.Xamarin.Internal.Events;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
-using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
     /// A client for the LaunchDarkly API. Client instances are thread-safe. Your application should instantiate
@@ -88,7 +88,7 @@ namespace LaunchDarkly.Sdk.Xamarin
         /// but rather which variant of the SDK is currently in use.
         /// </para>
         /// <para>
-        /// The <c>LaunchDarkly.XamarinSdk</c> package contains assemblies for multiple target platforms. In an Android
+        /// The <c>LaunchDarkly.ClientSdk</c> package contains assemblies for multiple target platforms. In an Android
         /// or iOS application, you will normally be using the Android or iOS variant of the SDK; that is done
         /// automatically when you install the NuGet package. On all other platforms, you will get the .NET Standard
         /// variant.

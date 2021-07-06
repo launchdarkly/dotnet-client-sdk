@@ -1,9 +1,9 @@
-﻿using LaunchDarkly.Sdk.Xamarin.Internal;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
+﻿using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataStores
+namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     public class FlagCacheManagerTests : BaseTest
     {

@@ -1,8 +1,8 @@
-﻿using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
+﻿using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
     // The DefaultDeviceInfo functionality is also tested by LdClientEndToEndTests.InitWithKeylessAnonUserAddsKeyAndReusesIt(),
     // which is a more realistic test since it uses a full client instance. However, currently LdClientEndToEndTests can't be

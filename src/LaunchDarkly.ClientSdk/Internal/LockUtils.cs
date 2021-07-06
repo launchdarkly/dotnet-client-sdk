@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal static class LockUtils
     {

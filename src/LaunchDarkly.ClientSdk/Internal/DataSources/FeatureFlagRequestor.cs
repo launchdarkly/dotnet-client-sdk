@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Xamarin.Internal;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataSources
+namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     internal struct WebResponse
     {

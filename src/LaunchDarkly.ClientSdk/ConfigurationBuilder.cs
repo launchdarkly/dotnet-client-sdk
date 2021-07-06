@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Xamarin.Internal.Events;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.Events;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
     /// A mutable object that uses the Builder pattern to specify properties for a <see cref="Configuration"/> object.

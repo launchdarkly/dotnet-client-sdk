@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LaunchDarkly.Sdk.Xamarin.Interfaces;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using Xunit;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     public class ILdClientExtensionsTest
     {

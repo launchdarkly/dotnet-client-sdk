@@ -3,7 +3,7 @@ using System.Net.Http;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     public class ConfigurationTest : BaseTest
     {

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>LaunchDarkly.ClientSdk.Tests</AssemblyName>
+    <RootNamespace>LaunchDarkly.Sdk.Client</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.0.1" />

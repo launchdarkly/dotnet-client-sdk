@@ -1,6 +1,6 @@
 ﻿using LaunchDarkly.Sdk.Internal.Events;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.Events
+namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
     internal sealed class DefaultEventProcessorWrapper : IEventProcessor
     {

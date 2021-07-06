@@ -2,12 +2,12 @@
 using System.Collections.Immutable;
 using System.Net.Http;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Internal.Events;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Xamarin.Internal.Events;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
     /// Configuration options for <see cref="LdClient"/>. 

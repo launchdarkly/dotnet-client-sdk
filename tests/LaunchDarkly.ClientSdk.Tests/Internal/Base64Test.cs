@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
     public class Base64Test
     {

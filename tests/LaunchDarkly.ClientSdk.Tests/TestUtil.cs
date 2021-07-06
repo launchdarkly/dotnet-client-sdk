@@ -2,12 +2,12 @@
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using LaunchDarkly.Sdk.Xamarin.Internal;
-using LaunchDarkly.Sdk.Xamarin.Internal.DataStores;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using Xunit;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     public static class TestUtil
     {

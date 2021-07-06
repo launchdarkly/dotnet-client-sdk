@@ -12,7 +12,7 @@
         <TargetFrameworks>Xamarin.iOS10</TargetFrameworks>
         <OutputType>Exe</OutputType>
         <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
-        <RootNamespace>LaunchDarkly.XamarinSdk.iOS.Tests</RootNamespace>
+        <RootNamespace>LaunchDarkly.Sdk.Client.iOS.Tests</RootNamespace>
         <AssemblyName>LaunchDarkly.ClientSdk.iOS.Tests</AssemblyName>
         <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
         <MtouchEnableSGenConc>true</MtouchEnableSGenConc>

@@ -24,7 +24,7 @@
       <DocumentationSource sourceFile="..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.CommonSdk.xml" />
       <DocumentationSource sourceFile="..\src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0\LaunchDarkly.CommonSdk.dll" />
     </DocumentationSources>
-    <HelpTitle>LaunchDarkly Client-Side SDK for Xamarin $(LD_RELEASE_VERSION)</HelpTitle>
+    <HelpTitle>LaunchDarkly Client-Side SDK for .NET $(LD_RELEASE_VERSION)</HelpTitle>
     <HelpFileVersion>1.0.0.0</HelpFileVersion>
     <RootNamespaceContainer>True</RootNamespaceContainer>
     <NamespaceGrouping>False</NamespaceGrouping>

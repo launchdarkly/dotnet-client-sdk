@@ -14,7 +14,7 @@
     <TemplateGuid>{122416d6-6b49-4ee2-a1e8-b825f31c79fe}</TemplateGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LaunchDarkly.XamarinSdk.Android.Tests</RootNamespace>
+    <RootNamespace>LaunchDarkly.Sdk.Client.Android.Tests</RootNamespace>
     <AssemblyName>LaunchDarkly.ClientSdk.Android.Tests</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>True</AndroidApplication>

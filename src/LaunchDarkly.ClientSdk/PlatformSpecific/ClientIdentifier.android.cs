@@ -5,7 +5,7 @@ using Android.Runtime;
 using Java.Interop;
 using LaunchDarkly.Logging;
 
-namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class ClientIdentifier
     {

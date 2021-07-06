@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 
-namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class Http
     {

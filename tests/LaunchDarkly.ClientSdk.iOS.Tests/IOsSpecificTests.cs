@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client.iOS.Tests
 {
     public class IOsSpecificTests : BaseTest
     {

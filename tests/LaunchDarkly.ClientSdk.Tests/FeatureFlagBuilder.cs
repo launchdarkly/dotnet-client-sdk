@@ -1,6 +1,6 @@
-﻿using LaunchDarkly.Sdk.Xamarin.Internal;
+﻿using LaunchDarkly.Sdk.Client.Internal;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     internal class FeatureFlagBuilder
     {

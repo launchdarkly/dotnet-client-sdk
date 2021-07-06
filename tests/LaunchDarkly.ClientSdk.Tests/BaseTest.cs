@@ -1,10 +1,10 @@
 ﻿using System;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Xamarin.Internal;
+using LaunchDarkly.Sdk.Client.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     [Collection("serialize all tests")]
     public class BaseTest : IDisposable

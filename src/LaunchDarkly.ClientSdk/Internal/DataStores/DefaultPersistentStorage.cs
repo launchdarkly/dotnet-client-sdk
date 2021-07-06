@@ -1,8 +1,8 @@
 ﻿using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
-using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataStores
+namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     internal sealed class DefaultPersistentStorage : IPersistentStorage
     {

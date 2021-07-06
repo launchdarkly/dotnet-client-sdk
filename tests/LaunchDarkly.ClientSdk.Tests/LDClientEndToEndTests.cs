@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using LaunchDarkly.Sdk.Xamarin.Interfaces;
-using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
+using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     // Tests of an LDClient instance doing actual HTTP against an embedded server. These aren't intended to cover
     // every possible type of interaction, since the lower-level component tests like FeatureFlagRequestorTests

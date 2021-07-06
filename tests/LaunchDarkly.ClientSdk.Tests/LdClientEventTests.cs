@@ -2,9 +2,9 @@
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Xamarin.Internal.Events.EventProcessorTypes;
+using static LaunchDarkly.Sdk.Client.Internal.Events.EventProcessorTypes;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientEventTests : BaseTest
     {

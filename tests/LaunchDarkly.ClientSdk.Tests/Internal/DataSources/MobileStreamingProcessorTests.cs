@@ -2,13 +2,13 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Xamarin.Internal.DataStores;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.DataSources
+namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     public class MobileStreamingProcessorTests : BaseTest
     {

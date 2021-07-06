@@ -1,5 +1,5 @@
 ﻿
-namespace LaunchDarkly.Sdk.Xamarin.Internal.Events
+namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
     /// <summary>
     /// Parameter types for use by <see cref="IEventProcessor"/> implementations.

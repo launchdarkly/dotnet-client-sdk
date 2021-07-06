@@ -1,13 +1,13 @@
 ﻿using System;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Internal.DataSources;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.Client.Internal.Events;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
-using LaunchDarkly.Sdk.Xamarin.Internal.DataSources;
-using LaunchDarkly.Sdk.Xamarin.Internal.DataStores;
-using LaunchDarkly.Sdk.Xamarin.Internal.Events;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal
+namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal static class Factory
     {

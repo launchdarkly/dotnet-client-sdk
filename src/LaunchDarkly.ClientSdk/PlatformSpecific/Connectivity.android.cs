@@ -28,7 +28,7 @@ using Android.Net;
 using Android.OS;
 using Debug = System.Diagnostics.Debug;
 
-namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal partial class Connectivity
     {

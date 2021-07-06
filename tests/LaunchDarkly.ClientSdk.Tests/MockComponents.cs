@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using LaunchDarkly.Sdk.Xamarin.Internal;
-using LaunchDarkly.Sdk.Xamarin.Internal.DataSources;
-using LaunchDarkly.Sdk.Xamarin.Internal.Events;
-using LaunchDarkly.Sdk.Xamarin.Internal.Interfaces;
-using LaunchDarkly.Sdk.Xamarin.PlatformSpecific;
+using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.Internal.DataSources;
+using LaunchDarkly.Sdk.Client.Internal.Events;
+using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 
-namespace LaunchDarkly.Sdk.Xamarin
+namespace LaunchDarkly.Sdk.Client
 {
     internal class MockBackgroundModeManager : IBackgroundModeManager
     {

@@ -25,7 +25,7 @@ using System.Globalization;
 using Foundation;
 using LaunchDarkly.Logging;
 
-namespace LaunchDarkly.Sdk.Xamarin.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     // Modified for LaunchDarkly: the SDK always serializes values to strings before using this class
     // to store them. Therefore, the overloads for non-string types have been removed, thereby

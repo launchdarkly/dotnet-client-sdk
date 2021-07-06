@@ -6,9 +6,9 @@ using Xunit.Runners.UI;
 using Xunit.Sdk;
 
 // For more details about how this test project works, see CONTRIBUTING.md
-namespace LaunchDarkly.Xamarin.Android.Tests
+namespace LaunchDarkly.Sdk.Client.Android.Tests
 {
-    [Activity(Label = "LaunchDarkly.Xamarin.Android.Tests", MainLauncher = true)]
+    [Activity(Label = "LaunchDarkly.Sdk.Client.Android.Tests", MainLauncher = true)]
     public class MainActivity : RunnerActivity
     {
         protected override void OnCreate(Bundle bundle)

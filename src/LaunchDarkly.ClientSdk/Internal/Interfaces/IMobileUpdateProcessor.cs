@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace LaunchDarkly.Sdk.Xamarin.Internal.Interfaces
+namespace LaunchDarkly.Sdk.Client.Internal.Interfaces
 {
     /// <summary>
     /// Interface for an object that receives updates to feature flags, user segments, and anything
