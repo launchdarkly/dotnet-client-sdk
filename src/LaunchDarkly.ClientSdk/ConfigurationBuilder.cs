@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
@@ -170,11 +171,55 @@ namespace LaunchDarkly.Sdk.Client
         IConfigurationBuilder IsStreamingEnabled(bool isStreamingEnabled);
 
         /// <summary>
-        /// Sets the implementation of logging that the SDK will use.
+        /// Sets the SDK's logging destination.
         /// </summary>
-        /// <param name="logAdapter">an <c>ILogAdapter</c></param>
+        /// <remarks>
+        /// <para>
+        /// This is a shortcut for <c>Logging(Components.Logging(logAdapter))</c>. You can use it when you
+        /// only want to specify the basic logging destination, and do not need to set other log properties.
+        /// </para>
+        /// <para>
+        /// For more about how logging works in the SDK, see the LaunchDarkly
+        /// <a href="https://docs.launchdarkly.com/sdk/features/logging#net-client-side">feature guide</a>.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        ///     var config = Configuration.Builder("my-sdk-key")
+        ///         .Logging(Logs.ToWriter(Console.Out))
+        ///         .Build();
+        /// </example>
+        /// <param name="logAdapter">an <c>ILogAdapter</c> for the desired logging implementation</param>
         /// <returns>the same builder</returns>
         IConfigurationBuilder Logging(ILogAdapter logAdapter);
+
+        /// <summary>
+        /// Sets the SDK's logging configuration, using a factory object.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This object is normally a configuration builder obtained from <see cref="Components.Logging()"/>
+        /// which has methods for setting individual logging-related properties. As a shortcut for disabling
+        /// logging, you may use <see cref="Components.NoLogging"/> instead. If all you want to do is to set
+        /// the basic logging destination, and you do not need to set other logging properties, you can use
+        /// <see cref="Logging(ILogAdapter)"/> instead.
+        /// </para>
+        /// <para>
+        /// For more about how logging works in the SDK, see the LaunchDarkly
+        /// <a href="https://docs.launchdarkly.com/sdk/features/logging#net-client-side">feature guide</a>.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        ///     var config = Configuration.Builder("my-sdk-key")
+        ///         .Logging(Components.Logging().Level(LogLevel.Warn)))
+        ///         .Build();
+        /// </example>
+        /// <param name="loggingConfigurationFactory">the factory object</param>
+        /// <returns>the same builder</returns>
+        /// <seealso cref="Components.Logging()" />
+        /// <seealso cref="Components.Logging(ILogAdapter) "/>
+        /// <seealso cref="Components.NoLogging" />
+        /// <seealso cref="Logging(ILogAdapter)"/>
+        IConfigurationBuilder Logging(ILoggingConfigurationFactory logAdapter);
 
         /// <summary>
         /// Sets the key for your LaunchDarkly environment.
@@ -301,7 +346,7 @@ namespace LaunchDarkly.Sdk.Client
         internal HttpMessageHandler _httpMessageHandler = DefaultHttpMessageHandlerInstance;
         internal bool _inlineUsersInEvents = false;
         internal bool _isStreamingEnabled = true;
-        internal ILogAdapter _logAdapter = Logs.None;
+        internal ILoggingConfigurationFactory _loggingConfigurationFactory = null;
         internal string _mobileKey;
         internal bool _offline = false;
         internal bool _persistFlagValues = true;
@@ -343,7 +388,7 @@ namespace LaunchDarkly.Sdk.Client
             _httpMessageHandler = copyFrom.HttpMessageHandler;
             _inlineUsersInEvents = copyFrom.InlineUsersInEvents;
             _isStreamingEnabled = copyFrom.IsStreamingEnabled;
-            _logAdapter = copyFrom.LogAdapter;
+            _loggingConfigurationFactory = copyFrom.LoggingConfigurationFactory;
             _mobileKey = copyFrom.MobileKey;
             _offline = copyFrom.Offline;
             _persistFlagValues = copyFrom.PersistFlagValues;
@@ -442,11 +487,14 @@ namespace LaunchDarkly.Sdk.Client
             return this;
         }
 
-        public IConfigurationBuilder Logging(ILogAdapter logAdapter)
+        public IConfigurationBuilder Logging(ILoggingConfigurationFactory loggingConfigurationFactory)
         {
-            _logAdapter = logAdapter ?? Logs.None;
+            _loggingConfigurationFactory = loggingConfigurationFactory;
             return this;
         }
+
+        public IConfigurationBuilder Logging(ILogAdapter logAdapter) =>
+            Logging(Components.Logging(logAdapter));
 
         public IConfigurationBuilder MobileKey(string mobileKey)
         {

@@ -188,8 +188,8 @@ namespace LaunchDarkly.Sdk.Client
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
                 .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
-                .EventProcessor(eventProcessor);
-            config.EventProcessor(eventProcessor);
+                .EventProcessor(eventProcessor)
+                .Logging(testLogging);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
             {
@@ -296,8 +296,8 @@ namespace LaunchDarkly.Sdk.Client
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
                 .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
-                .EventProcessor(eventProcessor);
-            config.EventProcessor(eventProcessor);
+                .EventProcessor(eventProcessor)
+                .Logging(testLogging);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
             {

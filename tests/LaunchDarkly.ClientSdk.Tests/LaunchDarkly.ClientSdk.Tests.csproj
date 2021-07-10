@@ -20,12 +20,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="TestLogging.cs">
-      <SubType></SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Internal\" />
-  </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Net.Http;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal;
@@ -31,7 +32,6 @@ namespace LaunchDarkly.Sdk.Client
         private readonly HttpMessageHandler _httpMessageHandler;
         private readonly bool _inlineUsersInEvents;
         private readonly bool _isStreamingEnabled;
-        private readonly ILogAdapter _logAdapter;
         private readonly string _mobileKey;
         private readonly bool _offline;
         private readonly bool _persistFlagValues;
@@ -148,7 +148,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         public bool IsStreamingEnabled => _isStreamingEnabled;
 
-        internal ILogAdapter LogAdapter => _logAdapter;
+        internal ILoggingConfigurationFactory LoggingConfigurationFactory { get; }
 
         /// <summary>
         /// The key for your LaunchDarkly environment.
@@ -329,7 +329,7 @@ namespace LaunchDarkly.Sdk.Client
                 builder._httpMessageHandler;
             _inlineUsersInEvents = builder._inlineUsersInEvents;
             _isStreamingEnabled = builder._isStreamingEnabled;
-            _logAdapter = builder._logAdapter;
+            LoggingConfigurationFactory = builder._loggingConfigurationFactory;
             _mobileKey = builder._mobileKey;
             _offline = builder._offline;
             _persistFlagValues = builder._persistFlagValues;

@@ -42,11 +42,8 @@
     <PackageReference Include="LaunchDarkly.InternalSdk" Version="1.1.2" />
     <PackageReference Include="LaunchDarkly.JsonStream" Version="1.0.2" />
     <PackageReference Include="LaunchDarkly.Logging" Version="1.0.1" />
-    <Compile Include="*.cs" />
-    <Compile Include="Properties\*.cs" />
-    <Compile Include="**\*.shared.cs" />
-    <Compile Include="Interfaces\**\*.cs" />
-    <Compile Include="Internal\**\*.cs" />
+    <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="PlatformSpecific\*.shared.cs" />
   </ItemGroup>
 
   <!-- dependencies and source files for .NET Standard (all versions) -->
@@ -71,5 +68,17 @@
     <Compile Include="**\*.ios.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Integrations\LoggingConfigurationBuilder.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Update="Interfaces\ILoggingConfigurationFactory.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Update="Interfaces\LoggingConfiguration.cs">
+      <SubType></SubType>
+    </Compile>
   </ItemGroup>
 </Project>

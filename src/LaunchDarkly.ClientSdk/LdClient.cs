@@ -129,7 +129,10 @@ namespace LaunchDarkly.Sdk.Client
 
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            _log = configuration.LogAdapter.Logger(LogNames.Base);
+            var logConfig = (configuration.LoggingConfigurationFactory ?? Components.Logging())
+                .CreateLoggingConfiguration();
+            var logAdapter = logConfig.LogAdapter ?? Logs.None;
+            _log = logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
