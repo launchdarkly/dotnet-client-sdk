@@ -237,8 +237,6 @@ namespace LaunchDarkly.Xamarin
         /// numeric metric value.
         /// </summary>
         /// <remarks>
-        /// Refer to the <a href="https://docs.launchdarkly.com/sdk/features/events#xamarin">SDK reference guide</a>
-        /// for the latest status.
         /// </remarks>
         /// <param name="eventName">the name of the event</param>
         /// <param name="data">a JSON value containing additional data associated with the event; pass
