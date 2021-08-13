@@ -240,7 +240,7 @@ namespace LaunchDarkly.Xamarin
         /// As of this version’s release date, the LaunchDarkly service does not support the <c>metricValue</c>
         /// parameter. As a result, calling this overload of <c>Track</c> will not yet produce any different
         /// behavior from calling <see cref="Track(String, LdValue)"/> without a <c>metricValue</c>.
-        /// Refer to the <a href="https://docs.launchdarkly.com/docs/xamarin-sdk-reference#section-track">SDK reference guide</a>
+        /// Refer to the <a href="https://docs.launchdarkly.com/sdk/features/events#xamarin">SDK reference guide</a>
         /// for the latest status.
         /// </remarks>
         /// <param name="eventName">the name of the event</param>
