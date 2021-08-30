@@ -10,6 +10,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
 
         void RecordCustomEvent(EventProcessorTypes.CustomEvent e);
 
+        void RecordAliasEvent(EventProcessorTypes.AliasEvent e);
+
         void SetOffline(bool offline);
 
         void Flush();

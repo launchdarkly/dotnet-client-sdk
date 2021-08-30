@@ -541,9 +541,11 @@ namespace LaunchDarkly.Sdk.Client
             }
 
             User newUser = DecorateUser(user);
+            User oldUser = newUser; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>
             {
+                oldUser = _user;
                 _user = newUser;
             });
 
@@ -554,12 +556,42 @@ namespace LaunchDarkly.Sdk.Client
                     Timestamp = UnixMillisecondTime.Now,
                     User = user
                 });
+                if (oldUser.Anonymous && !newUser.Anonymous && !_config.AutoAliasingOptOut)
+                {
+                    eventProcessor.RecordAliasEvent(new EventProcessorTypes.AliasEvent
+                    {
+                        Timestamp = UnixMillisecondTime.Now,
+                        User = user,
+                        PreviousUser = oldUser
+                    });
+                }
             }
 
             return await _connectionManager.SetUpdateProcessorFactory(
                 Factory.CreateUpdateProcessorFactory(_config, newUser, flagCacheManager, _log, _inBackground),
                 true
             );
+        }
+
+        /// <inheritdoc/>
+        public void Alias(User user, User previousUser)
+        {
+            if (user is null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (previousUser is null)
+            {
+                throw new ArgumentNullException(nameof(previousUser));
+            }
+            if (!_connectionManager.ForceOffline)
+            {
+                eventProcessor.RecordAliasEvent(new EventProcessorTypes.AliasEvent
+                {
+                    User = user,
+                    PreviousUser = previousUser
+                });
+            }
         }
 
         User DecorateUser(User user)
