@@ -4,7 +4,7 @@
 
 set -eu
 
-PROJECT_FILE=./src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+PROJECT_FILE=./src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 TEMP_FILE="${PROJECT_FILE}.tmp"
 
 sed "s#^\( *\)<Version>[^<]*</Version>#\1<Version>${LD_RELEASE_VERSION}</Version>#g" "${PROJECT_FILE}" > "${TEMP_FILE}"

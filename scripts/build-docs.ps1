@@ -28,14 +28,14 @@ function ExecuteOrFail {
     }
 }
 
-ExecuteOrFail { msbuild /restore /p:Configuration=Debug /p:TargetFramework=netstandard2.0 src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj }
+ExecuteOrFail { msbuild /restore /p:Configuration=Debug /p:TargetFramework=netstandard2.0 src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj }
 
 # Building the SDK causes the assemblies for all its package dependencies to be copied into bin\Debug\netstandard2.0.
 # The .shfbproj is configured to expect them to be there. However, we also need the XML documentation file
 # for LaunchDarkly.CommonSdk, which isn't automatically copied. We can get it out of the NuGet package
 # cache, but first we need to determine what version of it we're using.
 $match = Select-String `
-    -Path src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj `
+    -Path src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj `
     -Pattern "<PackageReference.*""LaunchDarkly.CommonSdk"".*""([^""]*)"""
 if ($match.Matches.Length -ne 1) {
     throw "Could not find LaunchDarkly.CommonSdk version in project file"
@@ -43,17 +43,17 @@ if ($match.Matches.Length -ne 1) {
 $commonSdkVersion = $match.Matches[0].Groups[1].Value
 Copy-Item `
     -Path $HOME\.nuget\packages\launchdarkly.commonsdk\$commonSdkVersion\lib\netstandard2.0\LaunchDarkly.CommonSdk.xml `
-    -Destination src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0
+    -Destination src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0
 Copy-Item `
     -Path $HOME\.nuget\packages\launchdarkly.commonsdk\$commonSdkVersion\lib\netstandard2.0\LaunchDarkly.CommonSdk.dll `
-    -Destination src\LaunchDarkly.XamarinSdk\bin\Debug\netstandard2.0
+    -Destination src\LaunchDarkly.ClientSdk\bin\Debug\netstandard2.0
 
 if (Test-Path docs\build) {
     Remove-Item -Path docs\build -Recurse -Force
 }
 
 $match = Select-String `
-    -Path src\LaunchDarkly.XamarinSdk\LaunchDarkly.XamarinSdk.csproj `
+    -Path src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj `
     -Pattern "<Version>([^<]*)</Version>"
 if ($match.Matches.Length -ne 1) {
     throw "Could not find SDK version string in project file"
