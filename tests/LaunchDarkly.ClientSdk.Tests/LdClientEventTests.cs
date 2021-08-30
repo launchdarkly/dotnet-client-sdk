@@ -93,7 +93,9 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void AliasSendsAliasEvent()
         {
-            User oldUser = User.Builder("xxx").Anonymous(true).Build();
+            User oldUser = User.Builder("anon-key").Anonymous(true).Build();
+            User newUser = User.WithKey("real-key");
+
             using (LdClient client = MakeClient(user, "{}"))
             {
                 client.Alias(user, oldUser);
@@ -115,15 +117,16 @@ namespace LaunchDarkly.Sdk.Client
 
             using (LdClient client = MakeClient(oldUser, "{}"))
             {
+                User actualOldUser = client.User; // so we can get any automatic properties that the client added
                 client.Identify(newUser, TimeSpan.FromSeconds(1));
 
                 Assert.Collection(eventProcessor.Events,
-                    e => CheckIdentifyEvent(e, oldUser),
+                    e => CheckIdentifyEvent(e, actualOldUser),
                     e => CheckIdentifyEvent(e, newUser),
                     e => {
                         AliasEvent ae = Assert.IsType<AliasEvent>(e);
                         Assert.Equal(newUser, ae.User);
-                        Assert.Equal(oldUser, ae.PreviousUser);
+                        Assert.Equal(actualOldUser, ae.PreviousUser);
                     });
             }
         }
@@ -140,10 +143,11 @@ namespace LaunchDarkly.Sdk.Client
             
             using (LdClient client = TestUtil.CreateClient(config.Build(), oldUser))
             {
+                User actualOldUser = client.User; // so we can get any automatic properties that the client added
                 client.Identify(newUser, TimeSpan.FromSeconds(1));
 
                 Assert.Collection(eventProcessor.Events,
-                    e => CheckIdentifyEvent(e, oldUser),
+                    e => CheckIdentifyEvent(e, actualOldUser),
                     e => CheckIdentifyEvent(e, newUser));
             }
         }
