@@ -67,7 +67,7 @@ namespace LaunchDarkly.Sdk.Client
 
         /// <summary>
         /// Whether to disable the automatic sending of an alias event when the current user is changed
-        /// to a non-anonymous user andthe previous user was anonymous.
+        /// to a non-anonymous user and the previous user was anonymous.
         /// </summary>
         /// <remarks>
         /// By default, if you call <see cref="LdClient.Identify(User, TimeSpan)"/> or
