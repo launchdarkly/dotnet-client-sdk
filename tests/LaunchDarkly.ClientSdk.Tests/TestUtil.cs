@@ -139,7 +139,7 @@ namespace LaunchDarkly.Sdk.Client
                 stubbedFlagCache.CacheFlagsForUser(flags, user);
             }
 
-            return Configuration.BuilderInternal(appKey)
+            return Configuration.Builder(appKey)
                                 .FlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
                                 .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                 .EventProcessor(new MockEventProcessor())

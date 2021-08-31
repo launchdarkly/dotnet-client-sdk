@@ -25,7 +25,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private TestEventSourceFactory eventSourceFactory;
         private IFlagCacheManager mockFlagCacheMgr;
         private IFeatureFlagRequestor mockRequestor;
-        private IConfigurationBuilder configBuilder;
+        private ConfigurationBuilder configBuilder;
 
         public MobileStreamingProcessorTests(ITestOutputHelper testOutput) : base(testOutput)
         {
@@ -33,7 +33,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
             mockFlagCacheMgr = new MockFlagCacheManager(new UserFlagInMemoryCache());
             mockRequestor = new MockFeatureFlagRequestor(initialFlagsJson);
-            configBuilder = Configuration.BuilderInternal("someKey")
+            configBuilder = Configuration.Builder("someKey")
                                          .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                          .FlagCacheManager(mockFlagCacheMgr)
                                          .IsStreamingEnabled(true)

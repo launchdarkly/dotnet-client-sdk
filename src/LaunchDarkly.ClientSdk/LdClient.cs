@@ -178,7 +178,7 @@ namespace LaunchDarkly.Sdk.Client
                 });
             }
             
-            _backgroundModeManager = _config._backgroundModeManager ?? new DefaultBackgroundModeManager();
+            _backgroundModeManager = _config.BackgroundModeManager ?? new DefaultBackgroundModeManager();
             _backgroundModeManager.BackgroundModeChanged += OnBackgroundModeChanged;
         }
 
