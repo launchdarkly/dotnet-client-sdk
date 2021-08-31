@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Version>2.0.0-alpha.1</Version>
     <TargetFrameworks></TargetFrameworks>
-    <BaseTargetFrameworks>netstandard2.0;xamarin.ios10;monoandroid71;monoandroid80;monoandroid81</BaseTargetFrameworks>
+    <BaseTargetFrameworks>netstandard2.0;xamarin.ios10;monoandroid81</BaseTargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">$(BaseTargetFrameworks);net452</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">$(BaseTargetFrameworks)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' != '' ">$(LD_TARGET_FRAMEWORKS)</TargetFrameworks>
