@@ -1,9 +1,23 @@
-﻿using System;
-using LaunchDarkly.Logging;
+﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Integrations;
+using LaunchDarkly.Sdk.Client.Interfaces;
 
 namespace LaunchDarkly.Sdk.Client
 {
+    /// <summary>
+    /// Provides configurable factories for the standard implementations of LaunchDarkly component interfaces.
+    /// </summary>
+    /// <remarks>
+    /// Some of the configuration options in <see cref="ConfigurationBuilder"/> affect the entire SDK,
+    /// but others are specific to one area of functionality, such as how the SDK receives feature flag
+    /// updates or processes analytics events. For the latter, the standard way to specify a configuration
+    /// is to call one of the static methods in <see cref="Components"/> (such as <see cref="Logging()"/>),
+    /// apply any desired configuration change to the object that that method returns (such as
+    /// <see cref="LoggingConfigurationBuilder.BaseLoggerName(string)"/>), and then use the
+    /// corresponding method in <see cref="ConfigurationBuilder"/> (such as
+    /// <see cref="ConfigurationBuilder.Logging(ILoggingConfigurationFactory)"/>) to use that
+    /// configured component in the SDK.
+    /// </remarks>
     public static class Components
     {
         /// <summary>
