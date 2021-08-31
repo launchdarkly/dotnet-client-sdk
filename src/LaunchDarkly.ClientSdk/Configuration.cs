@@ -66,6 +66,20 @@ namespace LaunchDarkly.Sdk.Client
         public bool AllAttributesPrivate => _allAttributesPrivate;
 
         /// <summary>
+        /// Whether to disable the automatic sending of an alias event when the current user is changed
+        /// to a non-anonymous user and the previous user was anonymous.
+        /// </summary>
+        /// <remarks>
+        /// By default, if you call <see cref="LdClient.Identify(User, TimeSpan)"/> or
+        /// <see cref="LdClient.IdentifyAsync(User)"/> with a non-anonymous user, and the current user
+        /// (previously specified either with one of those methods or when creating the <see cref="LdClient"/>)
+        /// was anonymous, the SDK assumes the two users should be correlated and sends an analytics
+        /// event equivalent to calling <see cref="LdClient.Alias(User, User)"/>. Setting
+        /// AutoAliasingOptOut to <see langword="true"/> disables this behavior.
+        /// </remarks>
+        public bool AutoAliasingOptOut { get; }
+
+        /// <summary>
         /// The interval between feature flag updates when the application is running in the background.
         /// </summary>
         /// <remarks>
@@ -316,6 +330,7 @@ namespace LaunchDarkly.Sdk.Client
         internal Configuration(ConfigurationBuilder builder)
         {
             _allAttributesPrivate = builder._allAttributesPrivate;
+            AutoAliasingOptOut = builder._autoAliasingOptOut;
             _backgroundPollingInterval = builder._backgroundPollingInterval;
             _baseUri = builder._baseUri;
             _connectionTimeout = builder._connectionTimeout;

@@ -48,6 +48,22 @@ namespace LaunchDarkly.Sdk.Client
         IConfigurationBuilder AllAttributesPrivate(bool allAttributesPrivate);
 
         /// <summary>
+        /// Whether to disable the automatic sending of an alias event when the current user is changed
+        /// to a non-anonymous user and the previous user was anonymous.
+        /// </summary>
+        /// <remarks>
+        /// By default, if you call <see cref="LdClient.Identify(User, TimeSpan)"/> or
+        /// <see cref="LdClient.IdentifyAsync(User)"/> with a non-anonymous user, and the current user
+        /// (previously specified either with one of those methods or when creating the <see cref="LdClient"/>)
+        /// was anonymous, the SDK assumes the two users should be correlated and sends an analytics
+        /// event equivalent to calling <see cref="LdClient.Alias(User, User)"/>. Setting
+        /// AutoAliasingOptOut to <see langword="true"/> disables this behavior.
+        /// </remarks>
+        /// <param name="autoAliasingOptOut">true to disable automatic user aliasing</param>
+        /// <returns>the same builder</returns>
+        IConfigurationBuilder AutoAliasingOptOut(bool autoAliasingOptOut);
+
+        /// <summary>
         /// Sets the interval between feature flag updates when the application is running in the background.
         /// </summary>
         /// <remarks>
@@ -334,6 +350,7 @@ namespace LaunchDarkly.Sdk.Client
         // will replace it with a platform-specific implementation.
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
+        internal bool _autoAliasingOptOut = false;
         internal bool _allAttributesPrivate = false;
         internal TimeSpan _backgroundPollingInterval = Configuration.DefaultBackgroundPollingInterval;
         internal Uri _baseUri = Configuration.DefaultUri;
@@ -377,6 +394,7 @@ namespace LaunchDarkly.Sdk.Client
         internal ConfigurationBuilder(Configuration copyFrom)
         {
             _allAttributesPrivate = copyFrom.AllAttributesPrivate;
+            _autoAliasingOptOut = copyFrom.AutoAliasingOptOut;
             _backgroundPollingInterval = copyFrom.BackgroundPollingInterval;
             _baseUri = copyFrom.BaseUri;
             _connectionTimeout = copyFrom.ConnectionTimeout;
@@ -411,6 +429,12 @@ namespace LaunchDarkly.Sdk.Client
         public IConfigurationBuilder AllAttributesPrivate(bool allAttributesPrivate)
         {
             _allAttributesPrivate = allAttributesPrivate;
+            return this;
+        }
+
+        public IConfigurationBuilder AutoAliasingOptOut(bool autoAliasingOptOut)
+        {
+            _autoAliasingOptOut = autoAliasingOptOut;
             return this;
         }
 

@@ -24,6 +24,7 @@ namespace LaunchDarkly.Sdk.Client
         private void VerifyDefaults(Configuration c)
         {
             Assert.False(c.AllAttributesPrivate);
+            Assert.False(c.AutoAliasingOptOut);
             Assert.Equal(Configuration.DefaultBackgroundPollingInterval, c.BackgroundPollingInterval);
             Assert.Equal(Configuration.DefaultUri, c.BaseUri);
             Assert.Equal(Configuration.DefaultConnectionTimeout, c.ConnectionTimeout);
@@ -50,11 +51,13 @@ namespace LaunchDarkly.Sdk.Client
         public void CanOverrideConfiguration()
         {
             var config = Configuration.Builder("AnyOtherSdkKey")
+                .AutoAliasingOptOut(true)
                 .BaseUri(new Uri("https://app.AnyOtherEndpoint.com"))
                 .EventCapacity(99)
                 .PollingInterval(TimeSpan.FromMinutes(45))
                 .Build();
 
+            Assert.True(config.AutoAliasingOptOut);
             Assert.Equal(new Uri("https://app.AnyOtherEndpoint.com"), config.BaseUri);
             Assert.Equal("AnyOtherSdkKey", config.MobileKey);
             Assert.Equal(99, config.EventCapacity);

@@ -121,5 +121,27 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             /// </summary>
             public double? MetricValue { get; set; }
         }
+
+        /// <summary>
+        /// Parameters for <see cref="IEventProcessor.RecordAliasEvent(AliasEvent)"/>.
+        /// </summary>
+        public struct AliasEvent
+        {
+            /// <summary>
+            /// Date/timestamp of the event.
+            /// </summary>
+            public UnixMillisecondTime Timestamp { get; set; }
+
+            /// <summary>
+            /// Attributes of the user who generated the event. Some attributes may not be sent
+            /// to LaunchDarkly if they are private.
+            /// </summary>
+            public User User { get; set; }
+
+            /// <summary>
+            /// Attributes of the previous user that should be considered equivalent to this user.
+            /// </summary>
+            public User PreviousUser { get; set; }
+        }
     }
 }

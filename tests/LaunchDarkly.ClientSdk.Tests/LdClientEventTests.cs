@@ -19,7 +19,7 @@ namespace LaunchDarkly.Sdk.Client
             config.EventProcessor(eventProcessor).Logging(testLogging);
             return TestUtil.CreateClient(config.Build(), user);
         }
-
+        
         [Fact]
         public void IdentifySendsIdentifyEvent()
         {
@@ -87,6 +87,88 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Equal(data, ce.Data);
                         Assert.Equal(metricValue, ce.MetricValue);
                     });
+            }
+        }
+
+        [Fact]
+        public void AliasSendsAliasEvent()
+        {
+            User oldUser = User.Builder("anon-key").Anonymous(true).Build();
+            User newUser = User.WithKey("real-key");
+
+            using (LdClient client = MakeClient(user, "{}"))
+            {
+                client.Alias(user, oldUser);
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, user),
+                    e => {
+                        AliasEvent ae = Assert.IsType<AliasEvent>(e);
+                        Assert.Equal(user, ae.User);
+                        Assert.Equal(oldUser, ae.PreviousUser);
+                    });
+            }
+        }
+
+        [Fact]
+        public void IdentifySendsAliasEventFromAnonUserToNonAnonUserIfNotOptedOut()
+        {
+            User oldUser = User.Builder("anon-key").Anonymous(true).Build();
+            User newUser = User.WithKey("real-key");
+
+            using (LdClient client = MakeClient(oldUser, "{}"))
+            {
+                User actualOldUser = client.User; // so we can get any automatic properties that the client added
+                client.Identify(newUser, TimeSpan.FromSeconds(1));
+
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, actualOldUser),
+                    e => CheckIdentifyEvent(e, newUser),
+                    e => {
+                        AliasEvent ae = Assert.IsType<AliasEvent>(e);
+                        Assert.Equal(newUser, ae.User);
+                        Assert.Equal(actualOldUser, ae.PreviousUser);
+                    });
+            }
+        }
+
+        [Fact]
+        public void IdentifyDoesNotSendAliasEventIfOptedOUt()
+        {
+            User oldUser = User.Builder("anon-key").Anonymous(true).Build();
+            User newUser = User.WithKey("real-key");
+
+            var config = TestUtil.ConfigWithFlagsJson(oldUser, "appkey", "{}");
+            config.EventProcessor(eventProcessor).Logging(testLogging);
+            config.AutoAliasingOptOut(true);
+            
+            using (LdClient client = TestUtil.CreateClient(config.Build(), oldUser))
+            {
+                User actualOldUser = client.User; // so we can get any automatic properties that the client added
+                client.Identify(newUser, TimeSpan.FromSeconds(1));
+
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, actualOldUser),
+                    e => CheckIdentifyEvent(e, newUser));
+            }
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public void IdentifyDoesNotSendAliasEventIfNewUserIsAnonymousOrOldUserIsNot(
+            bool oldAnon, bool newAnon)
+        {
+            User oldUser = User.Builder("old-key").Anonymous(oldAnon).Build();
+            User newUser = User.Builder("new-key").Anonymous(newAnon).Build();
+
+            using (LdClient client = MakeClient(oldUser, "{}"))
+            {
+                client.Identify(newUser, TimeSpan.FromSeconds(1));
+
+                Assert.Collection(eventProcessor.Events,
+                    e => CheckIdentifyEvent(e, oldUser),
+                    e => CheckIdentifyEvent(e, newUser));
             }
         }
 
