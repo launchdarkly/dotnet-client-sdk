@@ -15,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client
 
         public LdClientTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
-        IConfigurationBuilder BaseConfig() =>
+        ConfigurationBuilder BaseConfig() =>
             TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Logging(testLogging);
 
         LdClient Client()

@@ -39,7 +39,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <remarks>
         /// <para>
         /// This is initially <see langword="true"/> if you set it to <see langword="true"/> in the configuration with
-        /// <see cref="IConfigurationBuilder.Offline(bool)"/>. However, you can change it at any time to allow the client
+        /// <see cref="ConfigurationBuilder.Offline(bool)"/>. However, you can change it at any time to allow the client
         /// to go online, or force it to go offline, using <see cref="SetOffline(bool, TimeSpan)"/> or
         /// <see cref="SetOfflineAsync(bool)"/>.
         /// </para>
@@ -361,7 +361,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// When the LaunchDarkly client generates analytics events (from flag evaluations, or from
         /// <see cref="Identify(User, TimeSpan)"/> or <see cref="Track(string)"/>), they are queued on a worker thread.
         /// The event thread normally sends all queued events to LaunchDarkly at regular intervals, controlled by the
-        /// <see cref="IConfigurationBuilder.EventFlushInterval"/> option. Calling <see cref="Flush"/> triggers a send
+        /// <see cref="ConfigurationBuilder.EventFlushInterval"/> option. Calling <see cref="Flush"/> triggers a send
         /// without waiting for the next interval.
         /// </para>
         /// <para>

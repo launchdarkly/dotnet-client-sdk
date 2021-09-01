@@ -17,9 +17,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
                                                                  User user,
                                                                  Logger log)
         {
-            if (configuration._flagCacheManager != null)
+            if (configuration.FlagCacheManager != null)
             {
-                return configuration._flagCacheManager;
+                return configuration.FlagCacheManager;
             }
             else
             {
@@ -31,7 +31,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         internal static IConnectivityStateManager CreateConnectivityStateManager(Configuration configuration)
         {
-            return configuration._connectivityStateManager ?? new DefaultConnectivityStateManager();
+            return configuration.ConnectivityStateManager ?? new DefaultConnectivityStateManager();
         }
 
         internal static Func<IMobileUpdateProcessor> CreateUpdateProcessorFactory(Configuration configuration, User user,
@@ -40,9 +40,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
             Logger log = baseLog.SubLogger(LogNames.DataSourceSubLog);
             return () =>
             {
-                if (configuration._updateProcessorFactory != null)
+                if (configuration.UpdateProcessorFactory != null)
                 {
-                    return configuration._updateProcessorFactory(configuration, flagCacheManager, user);
+                    return configuration.UpdateProcessorFactory(configuration, flagCacheManager, user);
                 }
 
                 var featureFlagRequestor = new FeatureFlagRequestor(configuration, user, log);
@@ -64,9 +64,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         internal static IEventProcessor CreateEventProcessor(Configuration configuration, Logger baseLog)
         {
-            if (configuration._eventProcessor != null)
+            if (configuration.EventProcessor != null)
             {
-                return configuration._eventProcessor;
+                return configuration.EventProcessor;
             }
 
             var log = baseLog.SubLogger(LogNames.EventsSubLog);
@@ -99,17 +99,17 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         internal static IPersistentStorage CreatePersistentStorage(Configuration configuration, Logger log)
         {
-            return configuration._persistentStorage ?? new DefaultPersistentStorage(log);
+            return configuration.PersistentStorage ?? new DefaultPersistentStorage(log);
         }
 
         internal static IDeviceInfo CreateDeviceInfo(Configuration configuration, Logger log)
         {
-            return configuration._deviceInfo ?? new DefaultDeviceInfo(log);
+            return configuration.DeviceInfo ?? new DefaultDeviceInfo(log);
         }
 
         internal static IFlagChangedEventManager CreateFlagChangedEventManager(Configuration configuration, Logger log)
         {
-            return configuration._flagChangedEventManager ?? new FlagChangedEventManager(log);
+            return configuration.FlagChangedEventManager ?? new FlagChangedEventManager(log);
         }
     }
 }

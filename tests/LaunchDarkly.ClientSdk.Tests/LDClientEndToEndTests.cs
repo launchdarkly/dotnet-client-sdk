@@ -264,7 +264,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             using (var server = HttpServer.Start(Handlers.Status(202)))
             {
-                var config = Configuration.BuilderInternal(_mobileKey)
+                var config = Configuration.Builder(_mobileKey)
                     .UpdateProcessorFactory(MockPollingProcessor.Factory("{}"))
                     .EventsUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
                     .PersistFlagValues(false)
@@ -477,9 +477,9 @@ namespace LaunchDarkly.Sdk.Client
             }
         }
 
-        private Configuration BaseConfig(Uri serverUri, Func<ConfigurationBuilder, IConfigurationBuilder> extraConfig = null)
+        private Configuration BaseConfig(Uri serverUri, Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
-            var builderInternal = Configuration.BuilderInternal(_mobileKey)
+            var builderInternal = Configuration.Builder(_mobileKey)
                 .EventProcessor(new MockEventProcessor());
             builderInternal
                 .Logging(testLogging)
@@ -490,7 +490,7 @@ namespace LaunchDarkly.Sdk.Client
             return builder.Build();
         }
 
-        private Configuration BaseConfig(Uri serverUri, UpdateMode mode, Func<ConfigurationBuilder, IConfigurationBuilder> extraConfig = null)
+        private Configuration BaseConfig(Uri serverUri, UpdateMode mode, Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
             return BaseConfig(serverUri, builder =>
             {
