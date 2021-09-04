@@ -31,7 +31,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// <para>
     /// The base logger name is normally <c>LaunchDarkly.Sdk</c> (on iOS, this corresponds to a
     /// "subsystem" name of "LaunchDarkly" and a "category" name of "Sdk"). See <see cref="BaseLoggerName(string)"/>
-    /// for more about logger names and how to change the name. </item>
+    /// for more about logger names and how to change the name.
     /// </para>
     /// </remarks>
     /// <example>

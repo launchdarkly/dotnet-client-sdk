@@ -344,11 +344,8 @@ namespace LaunchDarkly.Sdk.Client
         /// </example>
         /// <param name="logAdapter">an <c>ILogAdapter</c> for the desired logging implementation</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder Logging(ILoggingConfigurationFactory loggingConfigurationFactory)
-        {
-            _loggingConfigurationFactory = loggingConfigurationFactory;
-            return this;
-        }
+        public ConfigurationBuilder Logging(ILogAdapter logAdapter) =>
+            Logging(Components.Logging(logAdapter));
 
         /// <summary>
         /// Sets the SDK's logging configuration, using a factory object.
@@ -377,8 +374,11 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="Components.Logging(ILogAdapter) "/>
         /// <seealso cref="Components.NoLogging" />
         /// <seealso cref="Logging(ILogAdapter)"/>
-        public ConfigurationBuilder Logging(ILogAdapter logAdapter) =>
-            Logging(Components.Logging(logAdapter));
+        public ConfigurationBuilder Logging(ILoggingConfigurationFactory loggingConfigurationFactory)
+        {
+            _loggingConfigurationFactory = loggingConfigurationFactory;
+            return this;
+        }
 
         /// <summary>
         /// Sets the key for your LaunchDarkly environment.
