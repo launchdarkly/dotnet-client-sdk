@@ -2,45 +2,68 @@
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Json;
 
-namespace LaunchDarkly.Sdk.Client.Internal
+namespace LaunchDarkly.Sdk.Client
 {
-    [JsonStreamConverter(typeof(FeatureFlag.JsonConverter))]
-    internal sealed class FeatureFlag : IEquatable<FeatureFlag>, IJsonSerializable
+    /// <summary>
+    /// Contains information about the internal data model for feature flag state.
+    /// </summary>
+    /// <remarks>
+    /// The details of the data model are not public to application code (although of course developers can easily
+    /// look at the code or the data) so that changes to LaunchDarkly SDK implementation details will not be breaking
+    /// changes to the application. Therefore, most of the members of this class are internal. The public members
+    /// provide a high-level description of model objects so that custom integration code or test code can store or
+    /// serialize them.
+    /// </remarks>
+    public static class DataModel
     {
-        public readonly LdValue value;
-        public readonly int version;
-        public readonly int? flagVersion;
-        public readonly bool trackEvents;
-        public readonly bool trackReason;
-        public readonly int? variation;
-        public readonly UnixMillisecondTime? debugEventsUntilDate;
-        public readonly EvaluationReason? reason;
-
-        public FeatureFlag(LdValue value, int version, int? flagVersion, bool trackEvents, bool trackReason,
-            int? variation, UnixMillisecondTime? debugEventsUntilDate, EvaluationReason? reason)
+        /// <summary>
+        /// Represents the state of a feature flag evaluation received from LaunchDarkly.
+        /// </summary>
+        [JsonStreamConverter(typeof(FeatureFlagJsonConverter))]
+        public sealed class FeatureFlag : IEquatable<FeatureFlag>, IJsonSerializable
         {
-            this.value = value;
-            this.version = version;
-            this.flagVersion = flagVersion;
-            this.trackEvents = trackEvents;
-            this.trackReason = trackReason;
-            this.variation = variation;
-            this.debugEventsUntilDate = debugEventsUntilDate;
-            this.reason = reason;
+            internal LdValue value { get; }
+            internal int? variation { get; }
+            internal EvaluationReason? reason { get; }
+            internal int version { get; }
+            internal int? flagVersion { get; }
+            internal bool trackEvents { get; }
+            internal bool trackReason { get; }
+            internal UnixMillisecondTime? debugEventsUntilDate { get; }
+
+            internal FeatureFlag(
+                LdValue value,
+                int? variation,
+                EvaluationReason? reason,
+                int version,
+                int? flagVersion,
+                bool trackEvents,
+                bool trackReason,
+                UnixMillisecondTime? debugEventsUntilDate
+                )
+            {
+                this.value = value;
+                this.variation = variation;
+                this.reason = reason;
+                this.version = version;
+                this.flagVersion = flagVersion;
+                this.trackEvents = trackEvents;
+                this.trackReason = trackReason;
+                this.debugEventsUntilDate = debugEventsUntilDate;
+            }
+
+            /// <inheritdoc/>
+            public bool Equals(FeatureFlag otherFlag) =>
+                value.Equals(otherFlag.value)
+                && variation == otherFlag.variation
+                && reason.Equals(otherFlag.reason)
+                && version == otherFlag.version
+                && flagVersion == otherFlag.flagVersion
+                && trackEvents == otherFlag.trackEvents
+                && debugEventsUntilDate == otherFlag.debugEventsUntilDate;
         }
 
-        public bool Equals(FeatureFlag otherFlag)
-        {
-            return value.Equals(otherFlag.value)
-                        && version == otherFlag.version
-                        && flagVersion == otherFlag.flagVersion
-                        && trackEvents == otherFlag.trackEvents
-                        && variation == otherFlag.variation
-                        && debugEventsUntilDate == otherFlag.debugEventsUntilDate
-                        && reason.Equals(otherFlag.reason);
-        }
-
-        internal sealed class JsonConverter : IJsonStreamConverter
+        internal sealed class FeatureFlagJsonConverter : IJsonStreamConverter
         {
             public object ReadJson(ref JReader reader)
             {
@@ -58,7 +81,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 bool trackReason = false;
                 UnixMillisecondTime? debugEventsUntilDate = null;
 
-                for (var or = reader.Object(); or.Next(ref reader); )
+                for (var or = reader.Object(); or.Next(ref reader);)
                 {
                     // The use of multiple == tests instead of switch allows for a slight optimization on
                     // some platforms where it wouldn't always need to allocate a string for or.Name. See:
@@ -102,8 +125,16 @@ namespace LaunchDarkly.Sdk.Client.Internal
                     }
                 }
 
-                return new FeatureFlag(value, version, flagVersion, trackEvents, trackReason, variation,
-                    debugEventsUntilDate, reason);
+                return new FeatureFlag(
+                    value,
+                    variation,
+                    reason,
+                    version,
+                    flagVersion,
+                    trackEvents,
+                    trackReason,
+                    debugEventsUntilDate
+                    );
             }
 
             public void WriteJson(object o, IValueWriter writer)

@@ -103,5 +103,78 @@ namespace LaunchDarkly.Sdk.Client
         /// </example>
         public static LoggingConfigurationBuilder NoLogging =>
             new LoggingConfigurationBuilder().Adapter(Logs.None);
+
+        /// <summary>
+        /// Returns a configurable factory for using polling mode to get feature flag data.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is not the default behavior; by default, the SDK uses a streaming connection to receive feature flag
+        /// data from LaunchDarkly. In polling mode, the SDK instead makes a new HTTP request to LaunchDarkly at regular
+        /// intervals. HTTP caching allows it to avoid redundantly downloading data if there have been no changes, but
+        /// polling is still less efficient than streaming and should only be used on the advice of LaunchDarkly support.
+        /// </para>
+        /// <para>
+        /// The SDK may still use polling mode sometimes even when streaming mode is enabled, such as
+        /// when an application is in the background. You do not need to specifically select polling
+        /// mode in order for that to happen.
+        /// </para>
+        /// <para>
+        /// To use only polling mode, call this method to obtain a builder, change its properties with the
+        /// <see cref="PollingDataSourceBuilder"/> methods, and pass it to
+        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>.
+        /// </para>
+        /// <para>
+        /// Setting <see cref="ConfigurationBuilder.Offline(bool)"/> to <see langword="true"/> will superseded this
+        /// setting and completely disable network requests.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(sdkKey)
+        ///         .DataSource(Components.PollingDataSource()
+        ///             .PollInterval(TimeSpan.FromSeconds(45)))
+        ///         .Build();
+        /// </code>
+        /// </example>
+        /// <returns>a builder for setting polling connection properties</returns>
+        /// <see cref="StreamingDataSource"/>
+        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>
+        public static PollingDataSourceBuilder PollingDataSource() =>
+            new PollingDataSourceBuilder();
+
+        /// <summary>
+        /// Returns a configurable factory for using streaming mode to get feature flag data.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// By default, the SDK uses a streaming connection to receive feature flag data from LaunchDarkly. To use
+        /// the default behavior, you do not need to call this method. However, if you want to customize the behavior
+        /// of the connection, call this method to obtain a builder, change its properties with the
+        /// <see cref="StreamingDataSourceBuilder"/> methods, and pass it to
+        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>.
+        /// </para>
+        /// <para>
+        /// The SDK may still use polling mode sometimes even when streaming mode is enabled, such as
+        /// when an application is in the background.
+        /// </para>
+        /// <para>
+        /// Setting <see cref="ConfigurationBuilder.Offline(bool)"/> to <see langword="true"/> will superseded this
+        /// setting and completely disable network requests.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(sdkKey)
+        ///         .DataSource(Components.StreamingDataSource()
+        ///             .InitialReconnectDelay(TimeSpan.FromMilliseconds(500)))
+        ///         .Build();
+        /// </code>
+        /// </example>
+        /// <returns>a builder for setting streaming connection properties</returns>
+        /// <see cref="PollingDataSource"/>
+        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>
+        public static StreamingDataSourceBuilder StreamingDataSource() =>
+            new StreamingDataSourceBuilder();
     }
 }

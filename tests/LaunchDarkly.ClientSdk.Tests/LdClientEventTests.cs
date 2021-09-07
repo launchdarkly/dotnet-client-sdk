@@ -269,7 +269,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
-                .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
+                .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
                 .EventProcessor(eventProcessor)
                 .Logging(testLogging);
 
@@ -377,7 +377,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
-                .UpdateProcessorFactory(MockUpdateProcessorThatNeverInitializes.Factory())
+                .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
                 .EventProcessor(eventProcessor)
                 .Logging(testLogging);
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
@@ -39,12 +38,15 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             using (var server = HttpServer.Start(Handlers.BodyJson(_allDataJson)))
             {
-                var config = Configuration.Builder(_mobileKey)
-                    .BaseUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
-                    .EvaluationReasons(withReasons)
-                    .Build();
+                var baseUri = new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath);
 
-                using (var requestor = new FeatureFlagRequestor(config, _user, testLogger))
+                using (var requestor = new FeatureFlagRequestor(
+                    baseUri,
+                    _user,
+                    false,
+                    withReasons,
+                    Configuration.Builder(_mobileKey).Build().HttpProperties,
+                    testLogger))
                 {
                     var resp = await requestor.FeatureFlagsAsync();
                     Assert.Equal(200, resp.statusCode);

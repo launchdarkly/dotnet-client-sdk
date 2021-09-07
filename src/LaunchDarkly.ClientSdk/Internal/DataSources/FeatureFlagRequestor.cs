@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 
@@ -35,25 +34,36 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     {
         private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
-        private readonly Configuration _configuration;
+        private readonly Uri _baseUri;
         private readonly User _currentUser;
+        private readonly bool _useReport;
+        private readonly bool _withReasons;
         private readonly HttpClient _httpClient;
         private readonly HttpProperties _httpProperties;
         private readonly Logger _log;
         private volatile EntityTagHeaderValue _etag;
 
-        internal FeatureFlagRequestor(Configuration configuration, User user, Logger log)
+        internal FeatureFlagRequestor(
+            Uri baseUri,
+            User user,
+            bool useReport,
+            bool withReasons,
+            HttpProperties httpProperties,
+            Logger log
+            )
         {
-            this._configuration = configuration;
-            this._httpProperties = configuration.HttpProperties;
-            this._httpClient = configuration.HttpProperties.NewHttpClient();
+            this._baseUri = baseUri;
+            this._httpProperties = httpProperties;
+            this._httpClient = httpProperties.NewHttpClient();
             this._currentUser = user;
+            this._useReport = useReport;
+            this._withReasons = withReasons;
             this._log = log;
         }
 
         public async Task<WebResponse> FeatureFlagsAsync()
         {
-            var requestMessage = _configuration.UseReport ? ReportRequestMessage() : GetRequestMessage();
+            var requestMessage = _useReport ? ReportRequestMessage() : GetRequestMessage();
             return await MakeRequest(requestMessage);
         }
 
@@ -72,14 +82,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private Uri MakeRequestUriWithPath(string path)
         {
-            var uri = _configuration.BaseUri.AddPath(path);
-            return _configuration.EvaluationReasons ? uri.AddQuery("withReasons=true") : uri;
+            var uri = _baseUri.AddPath(path);
+            return _withReasons ? uri.AddQuery("withReasons=true") : uri;
         }
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)
         {
             _httpProperties.AddHeaders(request);
-            using (var cts = new CancellationTokenSource(_configuration.ConnectionTimeout))
+            using (var cts = new CancellationTokenSource(_httpProperties.ConnectTimeout))
             {
                 if (_etag != null)
                 {
@@ -116,7 +126,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     }
                     //Otherwise this was a request timeout.
                     throw new TimeoutException("Get item with URL: " + request.RequestUri +
-                                                " timed out after : " + _configuration.ConnectionTimeout);
+                                                " timed out after : " + _httpProperties.ConnectTimeout);
                 }
             }
         }

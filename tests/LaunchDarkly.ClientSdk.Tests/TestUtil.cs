@@ -7,6 +7,8 @@ using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using Xunit;
 
+using static LaunchDarkly.Sdk.Client.DataModel;
+
 namespace LaunchDarkly.Sdk.Client
 {
     public static class TestUtil
@@ -143,7 +145,7 @@ namespace LaunchDarkly.Sdk.Client
                                 .FlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
                                 .ConnectivityStateManager(new MockConnectivityStateManager(true))
                                 .EventProcessor(new MockEventProcessor())
-                                .UpdateProcessorFactory(MockPollingProcessor.Factory(null))
+                                .DataSource(MockPollingProcessor.Factory(null))
                                 .PersistentStorage(new MockPersistentStorage())
                                 .DeviceInfo(new MockDeviceInfo());
         }

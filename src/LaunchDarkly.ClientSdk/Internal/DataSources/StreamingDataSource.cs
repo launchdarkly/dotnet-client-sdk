@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net.Http;
+using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Internal;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 
+using static LaunchDarkly.Sdk.Client.DataModel;
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
-    internal sealed class MobileStreamingProcessor : IMobileUpdateProcessor
+    internal sealed class StreamingDataSource : IDataSource
     {
         // The read timeout for the stream is not the same read timeout that can be set in the SDK configuration.
         // It is a fixed value that is set to be slightly longer than the expected interval between heartbeats
@@ -23,11 +24,15 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
-        private readonly Configuration _configuration;
-        private readonly IFlagCacheManager _cacheManager;
+        private readonly IDataSourceUpdateSink _updateSink;
+        private readonly Uri _baseUri;
         private readonly User _user;
-        private readonly EventSourceCreator _eventSourceCreator;
+        private readonly bool _useReport;
+        private readonly bool _withReasons;
+        private readonly TimeSpan _initialReconnectDelay;
         private readonly IFeatureFlagRequestor _requestor;
+        private readonly HttpProperties _httpProperties;
+        private readonly EventSourceCreator _eventSourceCreator;
         private readonly TaskCompletionSource<bool> _initTask;
         private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
         private readonly Logger _log;
@@ -41,32 +46,40 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             string jsonBody
             );
 
-        internal MobileStreamingProcessor(Configuration configuration,
-                                          IFlagCacheManager cacheManager,
-                                          IFeatureFlagRequestor requestor,
-                                          User user,
-                                          EventSourceCreator eventSourceCreator,
-                                          Logger log)
+        internal StreamingDataSource(
+            IDataSourceUpdateSink updateSink,
+            User user,
+            Uri baseUri,
+            bool useReport,
+            bool withReasons,
+            TimeSpan initialReconnectDelay,
+            IFeatureFlagRequestor requestor,
+            HttpProperties httpProperties,
+            Logger log,
+            EventSourceCreator eventSourceCreator // used only in tests
+            )
         {
-            this._configuration = configuration;
-            this._cacheManager = cacheManager;
-            this._requestor = requestor;
+            this._updateSink = updateSink;
             this._user = user;
-            this._eventSourceCreator = eventSourceCreator ?? CreateEventSource;
+            this._baseUri = baseUri;
+            this._useReport = useReport;
+            this._withReasons = withReasons;
+            this._initialReconnectDelay = initialReconnectDelay;
+            this._requestor = requestor;
+            this._httpProperties = httpProperties;
             this._initTask = new TaskCompletionSource<bool>();
             this._log = log;
+            this._eventSourceCreator = eventSourceCreator ?? CreateEventSource;
         }
 
-        #region IMobileUpdateProcessor
+        public bool Initialized => _initialized.Get();
 
-        bool IMobileUpdateProcessor.Initialized() => _initialized.Get();
-
-        Task<bool> IMobileUpdateProcessor.Start()
+        public Task<bool> Start()
         {
-            if (_configuration.UseReport)
+            if (_useReport)
             {
                 _eventSource = _eventSourceCreator(
-                    _configuration.HttpProperties,
+                    _httpProperties,
                     ReportMethod,
                     MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH),
                     JsonUtil.EncodeJson(_user)
@@ -75,7 +88,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             else
             {
                 _eventSource = _eventSourceCreator(
-                    _configuration.HttpProperties,
+                    _httpProperties,
                     HttpMethod.Get,
                     MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH +
                         Base64.UrlSafeEncode(JsonUtil.EncodeJson(_user))),
@@ -91,8 +104,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             return _initTask.Task;
         }
 
-        #endregion
-
         private IEventSource CreateEventSource(
             HttpProperties httpProperties,
             HttpMethod method,
@@ -103,8 +114,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var configBuilder = EventSource.Configuration.Builder(uri)
                 .Method(method)
                 .HttpMessageHandler(httpProperties.HttpMessageHandlerFactory(httpProperties))
-                .ConnectionTimeout(httpProperties.ConnectTimeout)
-                .InitialRetryDelay(_configuration.ReconnectTime)
+                .ResponseStartTimeout(httpProperties.ConnectTimeout)
+                .InitialRetryDelay(_initialReconnectDelay)
                 .ReadTimeout(LaunchDarklyStreamReadTimeout)
                 .RequestHeaders(httpProperties.BaseHeaders.ToDictionary(kv => kv.Key, kv => kv.Value))
                 .Logger(_log);
@@ -113,8 +124,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private Uri MakeRequestUriWithPath(string path)
         {
-            var uri = _configuration.StreamUri.AddPath(path);
-            return _configuration.EvaluationReasons ? uri.AddQuery("withReasons=true") : uri;
+            var uri = _baseUri.AddPath(path);
+            return _withReasons ? uri.AddQuery("withReasons=true") : uri;
         }
 
         private void OnOpen(object sender, EventSource.StateChangedEventArgs e)
@@ -150,12 +161,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 if (!HttpErrors.IsRecoverable(status))
                 {
                     _initTask.TrySetException(ex); // sends this exception to the client if we haven't already started up
-                    ((IDisposable)this).Dispose();
+                    Dispose(true);
                 }
             }
         }
-
-        #region IStreamProcessor
 
         void HandleMessage(string messageType, string messageData)
         {
@@ -163,7 +172,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 case Constants.PUT:
                     {
-                        _cacheManager.CacheFlagsFromService(JsonUtil.DeserializeFlags(messageData), _user);
+                        _updateSink.Init(new FullDataSet(JsonUtil.DeserializeFlags(messageData)), _user);
                         if (!_initialized.GetAndSet(true))
                         {
                             _initTask.SetResult(true);
@@ -177,7 +186,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                             var parsed = LdValue.Parse(messageData);
                             var flagkey = parsed.Get(Constants.KEY).AsString;
                             var featureFlag = JsonUtil.DecodeJson<FeatureFlag>(messageData);
-                            PatchFeatureFlag(flagkey, featureFlag);
+                            _updateSink.Upsert(flagkey, featureFlag.version, featureFlag, _user);
                         }
                         catch (Exception ex)
                         {
@@ -192,7 +201,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                             var parsed = LdValue.Parse(messageData);
                             int version = parsed.Get(Constants.VERSION).AsInt;
                             string flagKey = parsed.Get(Constants.KEY).AsString;
-                            DeleteFeatureFlag(flagKey, version);
+                            _updateSink.Delete(flagKey, version, _user);
                         }
                         catch (Exception ex)
                         {
@@ -209,7 +218,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                                 var response = await _requestor.FeatureFlagsAsync();
                                 var flagsAsJsonString = response.jsonResponse;
                                 var flagsDictionary = JsonUtil.DeserializeFlags(flagsAsJsonString);
-                                _cacheManager.CacheFlagsFromService(flagsDictionary, _user);
+                                _updateSink.Init(new FullDataSet(flagsDictionary), _user);
                                 if (!_initialized.GetAndSet(true))
                                 {
                                     _initTask.SetResult(true);
@@ -227,36 +236,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
         }
 
-        void PatchFeatureFlag(string flagKey, FeatureFlag featureFlag)
-        {
-            if (FeatureFlagShouldBeDeletedOrPatched(flagKey, featureFlag.version))
-            {
-                _cacheManager.UpdateFlagForUser(flagKey, featureFlag, _user);
-            }
-        }
-
-        void DeleteFeatureFlag(string flagKey, int version)
-        {
-            if (FeatureFlagShouldBeDeletedOrPatched(flagKey, version))
-            {
-                _cacheManager.RemoveFlagForUser(flagKey, _user);
-            }
-        }
-
-        bool FeatureFlagShouldBeDeletedOrPatched(string flagKey, int version)
-        {
-            var oldFlag = _cacheManager.FlagForUser(flagKey, _user);
-            if (oldFlag != null)
-            {
-                return oldFlag.version < version;
-            }
-
-            return true;
-        }
-
-        #endregion
-
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);

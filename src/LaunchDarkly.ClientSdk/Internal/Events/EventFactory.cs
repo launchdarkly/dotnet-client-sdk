@@ -1,4 +1,5 @@
 ﻿
+using static LaunchDarkly.Sdk.Client.DataModel;
 using static LaunchDarkly.Sdk.Client.Internal.Events.EventProcessorTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.Events

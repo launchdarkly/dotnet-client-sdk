@@ -2,6 +2,8 @@
 using System.Collections.Immutable;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
+using static LaunchDarkly.Sdk.Client.DataModel;
+
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     internal sealed class UserFlagInMemoryCache : IUserFlagCache

@@ -1,5 +1,7 @@
 ﻿using LaunchDarkly.Sdk.Client.Internal;
 
+using static LaunchDarkly.Sdk.Client.DataModel;
+
 namespace LaunchDarkly.Sdk.Client
 {
     internal class FeatureFlagBuilder
@@ -24,7 +26,7 @@ namespace LaunchDarkly.Sdk.Client
 
         public FeatureFlag Build()
         {
-            return new FeatureFlag(_value, _version, _flagVersion, _trackEvents, _trackReason, _variation, _debugEventsUntilDate, _reason);
+            return new FeatureFlag(_value, _variation, _reason, _version, _flagVersion, _trackEvents, _trackReason, _debugEventsUntilDate);
         }
 
         public FeatureFlagBuilder Value(LdValue value)

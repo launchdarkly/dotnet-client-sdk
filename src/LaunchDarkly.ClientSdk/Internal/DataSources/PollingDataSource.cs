@@ -1,37 +1,37 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
-    internal sealed class MobilePollingProcessor : IMobileUpdateProcessor
+    internal sealed class PollingDataSource : IDataSource
     {
         private readonly IFeatureFlagRequestor _featureFlagRequestor;
-        private readonly IFlagCacheManager _flagCacheManager;
+        private readonly IDataSourceUpdateSink _updateSink;
         private readonly User _user;
         private readonly TimeSpan _pollingInterval;
         private readonly TimeSpan _initialDelay;
         private readonly Logger _log;
         private readonly TaskCompletionSource<bool> _startTask;
         private readonly TaskCompletionSource<bool> _stopTask;
-        private const int UNINITIALIZED = 0;
-        private const int INITIALIZED = 1;
-        private int _initialized = UNINITIALIZED;
+        private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
         private volatile bool _disposed;
 
-        internal MobilePollingProcessor(IFeatureFlagRequestor featureFlagRequestor,
-                                      IFlagCacheManager cacheManager,
-                                      User user,
-                                      TimeSpan pollingInterval,
-                                      TimeSpan initialDelay,
-                                      Logger log)
+        internal PollingDataSource(
+            IDataSourceUpdateSink updateSink,
+            User user,
+            IFeatureFlagRequestor featureFlagRequestor,
+            TimeSpan pollingInterval,
+            TimeSpan initialDelay,
+            Logger log)
         {
             this._featureFlagRequestor = featureFlagRequestor;
-            this._flagCacheManager = cacheManager;
+            this._updateSink = updateSink;
             this._user = user;
             this._pollingInterval = pollingInterval;
             this._initialDelay = initialDelay;
@@ -40,7 +40,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _stopTask = new TaskCompletionSource<bool>();
         }
 
-        Task<bool> IMobileUpdateProcessor.Start()
+        public Task<bool> Start()
         {
             if (_pollingInterval.Equals(TimeSpan.Zero))
                 throw new Exception("Timespan for polling can't be zero");
@@ -58,10 +58,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             return _startTask.Task;
         }
 
-        bool IMobileUpdateProcessor.Initialized()
-        {
-            return _initialized == INITIALIZED;
-        }
+        public bool Initialized => _initialized.Get();
 
         private async Task UpdateTaskLoopAsync()
         {
@@ -85,10 +82,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 {
                     var flagsAsJsonString = response.jsonResponse;
                     var flagsDictionary = JsonUtil.DeserializeFlags(flagsAsJsonString);
-                    _flagCacheManager.CacheFlagsFromService(flagsDictionary, _user);
+                    _updateSink.Init(new FullDataSet(flagsDictionary), _user);
 
-                    // We can't use bool in CompareExchange because it is not a reference type.
-                    if (Interlocked.CompareExchange(ref _initialized, INITIALIZED, UNINITIALIZED) == UNINITIALIZED)
+                    if (_initialized.GetAndSet(true) == false)
                     {
                         _startTask.SetResult(true);
                         _log.Info("Initialized LaunchDarkly Polling Processor.");
@@ -99,7 +95,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 _log.Error("Error Updating features: '{0}'", LogValues.ExceptionSummary(ex));
                 _log.Error("Received 401 error, no further polling requests will be made since SDK key is invalid");
-                if (_initialized == UNINITIALIZED)
+                if (!_initialized.Get())
                 {
                     _startTask.SetException(ex);
                 }

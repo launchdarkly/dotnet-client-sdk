@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
@@ -13,7 +13,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     /// </summary>
     /// <remarks>
     /// Whenever the state of this object is modified by <see cref="SetForceOffline(bool)"/>,
-    /// <see cref="SetNetworkEnabled(bool)"/>, <see cref="SetUpdateProcessorFactory(Func{IMobileUpdateProcessor}, bool)"/>,
+    /// <see cref="SetNetworkEnabled(bool)"/>, <see cref="SetDataSourceConstructor(Func{IDataSource}, bool)"/>,
     /// or <see cref="Start"/>, it will decide whether to make a new connection, drop an existing
     /// connection, both, or neither. If the caller wants to know when a new connection (if any) is
     /// ready, it should <c>await</c> the returned task.
@@ -30,8 +30,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private bool _initialized = false;
         private bool _forceOffline = false;
         private bool _networkEnabled = false;
-        private IMobileUpdateProcessor _updateProcessor = null;
-        private Func<IMobileUpdateProcessor> _updateProcessorFactory = null;
+        private IDataSource _dataSource = null;
+        private Func<IDataSource> _dataSourceConstructor = null;
 
         // Note that these properties do not have simple setter methods, because the setters all
         // need to return Tasks.
@@ -173,21 +173,21 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         /// because we are in offline mode. In other words, the result is true if
         /// <see cref="Initialized"/> is true.
         /// </remarks>
-        /// <param name="updateProcessorFactory">a factory function or null</param>
+        /// <param name="dataSourceConstructor">a factory function or null</param>
         /// <param name="resetInitialized">true if we should reset the initialized state (e.g. if we
         /// are switching users</param>
         /// <returns>a task as described above</returns>
-        public Task<bool> SetUpdateProcessorFactory(Func<IMobileUpdateProcessor> updateProcessorFactory, bool resetInitialized)
+        public Task<bool> SetDataSourceConstructor(Func<IDataSource> dataSourceConstructor, bool resetInitialized)
         {
             return LockUtils.WithWriteLock(_lock, () =>
             {
-                if (_disposed || _updateProcessorFactory == updateProcessorFactory)
+                if (_disposed || _dataSourceConstructor == dataSourceConstructor)
                 {
                     return Task.FromResult(false);
                 }
-                _updateProcessorFactory = updateProcessorFactory;
-                _updateProcessor?.Dispose();
-                _updateProcessor = null;
+                _dataSourceConstructor = dataSourceConstructor;
+                _dataSource?.Dispose();
+                _dataSource = null;
                 if (resetInitialized)
                 {
                     _initialized = false;
@@ -216,19 +216,19 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         public void Dispose()
         {
-            IMobileUpdateProcessor processor = null;
+            IDataSource dataSource = null;
             LockUtils.WithWriteLock(_lock, () =>
             {
                 if (_disposed)
                 {
                     return;
                 }
-                processor = _updateProcessor;
-                _updateProcessor = null;
-                _updateProcessorFactory = null;
+                dataSource = _dataSource;
+                _dataSource = null;
+                _dataSourceConstructor = null;
                 _disposed = true;
             });
-            processor?.Dispose();
+            dataSource?.Dispose();
         }
 
         // This method is called while _lock is being held. If we're starting up a new connection, we do
@@ -243,17 +243,17 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
             if (_networkEnabled && !_forceOffline)
             {
-                if (_updateProcessor == null && _updateProcessorFactory != null)
+                if (_dataSource == null && _dataSourceConstructor != null)
                 {
-                    _updateProcessor = _updateProcessorFactory();
-                    return _updateProcessor.Start()
+                    _dataSource = _dataSourceConstructor();
+                    return _dataSource.Start()
                         .ContinueWith(SetInitializedIfUpdateProcessorStartedSuccessfully);
                 }
             }
             else
             {
-                _updateProcessor?.Dispose();
-                _updateProcessor = null;
+                _dataSource?.Dispose();
+                _dataSource = null;
                 _initialized = true;
                 return Task.FromResult(true);
             }

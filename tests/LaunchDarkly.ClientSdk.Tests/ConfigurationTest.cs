@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Net.Http;
+using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -7,79 +10,141 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class ConfigurationTest : BaseTest
     {
+        private readonly BuilderTestUtil<ConfigurationBuilder, Configuration> _tester =
+            BuilderTestUtil.For(() => Configuration.Builder(mobileKey), b => b.Build())
+                .WithCopyConstructor(c => Configuration.Builder(c));
+
+        const string mobileKey = "any-key";
+
         public ConfigurationTest(ITestOutputHelper testOutput) : base(testOutput) { }
 
         [Fact]
-        public void TestDefaultsFromDefaultFactoryMethod()
+        public void DefaultSetsKey()
         {
-            VerifyDefaults(Configuration.Default("my-key"));
+            var config = Configuration.Default(mobileKey);
+            Assert.Equal(mobileKey, config.MobileKey);
         }
 
         [Fact]
-        public void TestDefaultsFromBuilder()
+        public void BuilderSetsKey()
         {
-            VerifyDefaults(Configuration.Builder("my-key").Build());
-        }
-
-        private void VerifyDefaults(Configuration c)
-        {
-            Assert.False(c.AllAttributesPrivate);
-            Assert.False(c.AutoAliasingOptOut);
-            Assert.Equal(Configuration.DefaultBackgroundPollingInterval, c.BackgroundPollingInterval);
-            Assert.Equal(Configuration.DefaultUri, c.BaseUri);
-            Assert.Equal(Configuration.DefaultConnectionTimeout, c.ConnectionTimeout);
-            Assert.True(c.EnableBackgroundUpdating);
-            Assert.False(c.EvaluationReasons);
-            Assert.Equal(Configuration.DefaultEventCapacity, c.EventCapacity);
-            Assert.Equal(Configuration.DefaultEventFlushInterval, c.EventFlushInterval);
-            Assert.Equal(Configuration.DefaultEventsUri, c.EventsUri);
-            Assert.False(c.InlineUsersInEvents);
-            Assert.True(c.IsStreamingEnabled);
-            Assert.False(c.Offline);
-            Assert.True(c.PersistFlagValues);
-            Assert.Equal(Configuration.DefaultPollingInterval, c.PollingInterval);
-            Assert.Null(c.PrivateAttributeNames);
-            Assert.Equal(Configuration.DefaultReadTimeout, c.ReadTimeout);
-            Assert.Equal(Configuration.DefaultReconnectTime, c.ReconnectTime);
-            Assert.Equal(Configuration.DefaultStreamUri, c.StreamUri);
-            Assert.False(c.UseReport);
-            Assert.Equal(Configuration.DefaultUserKeysCapacity, c.UserKeysCapacity);
-            Assert.Equal(Configuration.DefaultUserKeysFlushInterval, c.UserKeysFlushInterval);
+            var config = Configuration.Builder(mobileKey).Build();
+            Assert.Equal(mobileKey, config.MobileKey);
         }
 
         [Fact]
-        public void CanOverrideConfiguration()
+        public void AutoAliasingOptOut()
         {
-            var config = Configuration.Builder("AnyOtherSdkKey")
-                .AutoAliasingOptOut(true)
-                .BaseUri(new Uri("https://app.AnyOtherEndpoint.com"))
-                .EventCapacity(99)
-                .PollingInterval(TimeSpan.FromMinutes(45))
-                .Build();
-
-            Assert.True(config.AutoAliasingOptOut);
-            Assert.Equal(new Uri("https://app.AnyOtherEndpoint.com"), config.BaseUri);
-            Assert.Equal("AnyOtherSdkKey", config.MobileKey);
-            Assert.Equal(99, config.EventCapacity);
-            Assert.Equal(TimeSpan.FromMinutes(45), config.PollingInterval);
+            var prop = _tester.Property(c => c.AutoAliasingOptOut, (b, v) => b.AutoAliasingOptOut(v));
+            prop.AssertDefault(false);
+            prop.AssertCanSet(true);
         }
 
         [Fact]
-        public void CanOverrideStreamConfiguration()
+        public void DataSource()
         {
-            var config = Configuration.Builder("AnyOtherSdkKey")
-                .StreamUri(new Uri("https://stream.AnyOtherEndpoint.com"))
-                .IsStreamingEnabled(false)
-                .ReadTimeout(TimeSpan.FromDays(1))
-                .ReconnectTime(TimeSpan.FromDays(1))
-                .Build();
-
-            Assert.Equal(new Uri("https://stream.AnyOtherEndpoint.com"), config.StreamUri);
-            Assert.False(config.IsStreamingEnabled);
-            Assert.Equal(TimeSpan.FromDays(1), config.ReadTimeout);
-            Assert.Equal(TimeSpan.FromDays(1), config.ReconnectTime);
+            var prop = _tester.Property(c => c.DataSourceFactory, (b, v) => b.DataSource(v));
+            prop.AssertDefault(null);
+            prop.AssertCanSet(new ComponentsImpl.NullDataSourceFactory());
         }
-        
+
+        [Fact]
+        public void AllAttributesPrivate()
+        {
+            var prop = _tester.Property(b => b.AllAttributesPrivate, (b, v) => b.AllAttributesPrivate(v));
+            prop.AssertDefault(false);
+            prop.AssertCanSet(true);
+        }
+
+        [Fact]
+        public void EventCapacity()
+        {
+            var prop = _tester.Property(b => b.EventCapacity, (b, v) => b.EventCapacity(v));
+            prop.AssertDefault(Configuration.DefaultEventCapacity);
+            prop.AssertCanSet(1);
+            prop.AssertSetIsChangedTo(0, Configuration.DefaultEventCapacity);
+            prop.AssertSetIsChangedTo(-1, Configuration.DefaultEventCapacity);
+        }
+
+        [Fact]
+        public void EventsUri()
+        {
+            var prop = _tester.Property(b => b.EventsUri, (b, v) => b.EventsUri(v));
+            prop.AssertDefault(Configuration.DefaultEventsUri);
+            prop.AssertCanSet(new Uri("http://x"));
+            prop.AssertSetIsChangedTo(null, Configuration.DefaultEventsUri);
+        }
+
+        [Fact]
+        public void FlushInterval()
+        {
+            var prop = _tester.Property(b => b.EventFlushInterval, (b, v) => b.EventFlushInterval(v));
+            prop.AssertDefault(Configuration.DefaultEventFlushInterval);
+            prop.AssertCanSet(TimeSpan.FromMinutes(7));
+            prop.AssertSetIsChangedTo(TimeSpan.Zero, Configuration.DefaultEventFlushInterval);
+            prop.AssertSetIsChangedTo(TimeSpan.FromMilliseconds(-1), Configuration.DefaultEventFlushInterval);
+        }
+
+        [Fact]
+        public void HttpMessageHandler()
+        {
+            var prop = _tester.Property(c => c.HttpMessageHandler, (b, v) => b.HttpMessageHandler(v));
+            // Can't test the default here because the default is platform-dependent.
+            prop.AssertCanSet(new HttpClientHandler());
+        }
+
+        [Fact]
+        public void InlineUsersInEvents()
+        {
+            var prop = _tester.Property(b => b.InlineUsersInEvents, (b, v) => b.InlineUsersInEvents(v));
+            prop.AssertDefault(false);
+            prop.AssertCanSet(true);
+        }
+
+        [Fact]
+        public void Logging()
+        {
+            var prop = _tester.Property(c => c.LoggingConfigurationFactory, (b, v) => b.Logging(v));
+            prop.AssertDefault(null);
+            prop.AssertCanSet(Components.Logging(Logs.ToWriter(Console.Out)));
+        }
+
+        [Fact]
+        public void LoggingAdapterShortcut()
+        {
+            var adapter = Logs.ToWriter(Console.Out);
+            var config = Configuration.Builder("key").Logging(adapter).Build();
+            var logConfig = config.LoggingConfigurationFactory.CreateLoggingConfiguration();
+            Assert.Same(adapter, logConfig.LogAdapter);
+        }
+
+        [Fact]
+        public void MobileKey()
+        {
+            var prop = _tester.Property(c => c.MobileKey, (b, v) => b.MobileKey(v));
+            prop.AssertCanSet("other-key");
+        }
+
+        [Fact]
+        public void Offline()
+        {
+            var prop = _tester.Property(c => c.Offline, (b, v) => b.Offline(v));
+            prop.AssertDefault(false);
+            prop.AssertCanSet(true);
+        }
+
+        [Fact]
+        public void PrivateAttributes()
+        {
+            var b = _tester.New();
+            Assert.Null(b.Build().PrivateAttributeNames);
+            b.PrivateAttribute(UserAttribute.Name);
+            b.PrivateAttribute(UserAttribute.Email);
+            b.PrivateAttribute(UserAttribute.ForName("other"));
+            Assert.Equal(ImmutableHashSet.Create<UserAttribute>(
+                UserAttribute.Name, UserAttribute.Email, UserAttribute.ForName("other")), b.Build().PrivateAttributeNames);
+        }
+
         [Fact]
         public void MobileKeyCannotBeNull()
         {
@@ -90,33 +155,6 @@ namespace LaunchDarkly.Sdk.Client
         public void MobileKeyCannotBeEmpty()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(""));
-        }
-
-        [Fact]
-        public void CannotSetTooSmallPollingInterval()
-        {
-            var config = Configuration.Builder("AnyOtherSdkKey").PollingInterval(TimeSpan.FromSeconds(299)).Build();
-
-            Assert.Equal(TimeSpan.FromSeconds(300), config.PollingInterval);
-        }
-
-        [Fact]
-        public void CannotSetTooSmallBackgroundPollingInterval()
-        {
-            var config = Configuration.Builder("SdkKey").BackgroundPollingInterval(TimeSpan.FromSeconds(899)).Build();
-
-            Assert.Equal(TimeSpan.FromSeconds(900), config.BackgroundPollingInterval);
-        }
-
-        [Fact]
-        public void CanSetHttpMessageHandler()
-        {
-            var handler = new HttpClientHandler();
-            var config = Configuration.Builder("AnyOtherSdkKey")
-                .HttpMessageHandler(handler)
-                .Build();
-
-            Assert.Same(handler, config.HttpMessageHandler);
         }
     }
 }

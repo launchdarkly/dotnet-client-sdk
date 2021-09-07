@@ -1,5 +1,7 @@
 ﻿using System.Collections.Immutable;
 
+using static LaunchDarkly.Sdk.Client.DataModel;
+
 namespace LaunchDarkly.Sdk.Client.Internal.Interfaces
 {
     internal interface IFlagCacheManager

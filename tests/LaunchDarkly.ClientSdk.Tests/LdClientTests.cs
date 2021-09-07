@@ -2,9 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Internal;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
+
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -59,7 +60,7 @@ namespace LaunchDarkly.Sdk.Client
             User testUser = User.WithKey("new-user");
 
             var config = TestUtil.ConfigWithFlagsJson(testUser, appKey, "{}")
-                .UpdateProcessorFactory(stub.AsFactory())
+                .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
 
@@ -78,7 +79,7 @@ namespace LaunchDarkly.Sdk.Client
             User anonUserIn = User.Builder((String)null).Anonymous(true).Build();
 
             var config = TestUtil.ConfigWithFlagsJson(anonUserIn, appKey, "{}")
-                .UpdateProcessorFactory(stub.AsFactory())
+                .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
 
@@ -123,25 +124,25 @@ namespace LaunchDarkly.Sdk.Client
             var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
             var finishedIdentifyUserB = new SemaphoreSlim(0, 1);
 
-            Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> updateProcessorFactory = (c, flags, user) =>
-                new MockUpdateProcessorFromLambda(user, async () =>
+            var dataSourceFactory = new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
+                new MockDataSourceFromLambda(user, async () =>
                 {
                     switch (user.Key)
                     {
                         case "a":
-                            flags.CacheFlagsFromService(userAFlags, user);
+                            updates.Init(new FullDataSet(userAFlags), user);
                             break;
 
                         case "b":
                             startedIdentifyUserB.Release();
                             await canFinishIdentifyUserB.WaitAsync();
-                            flags.CacheFlagsFromService(userBFlags, user);
+                            updates.Init(new FullDataSet(userBFlags), user);
                             break;
                     }
-                });
+                }));
 
             var config = TestUtil.ConfigWithFlagsJson(userA, appKey, "{}")
-                .UpdateProcessorFactory(updateProcessorFactory)
+                .DataSource(dataSourceFactory)
                 .Logging(testLogging)
                 .Build();
 
@@ -192,13 +193,13 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public async void IdentifyPassesUserToUpdateProcessorFactory()
+        public async void IdentifyPassesUserToDataSource()
         {
             MockPollingProcessor stub = new MockPollingProcessor("{}");
             User newUser = User.WithKey("new-user");
 
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .UpdateProcessorFactory(stub.AsFactory())
+                .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
 
@@ -223,7 +224,7 @@ namespace LaunchDarkly.Sdk.Client
             User anonUserIn = User.Builder((String)null).Anonymous(true).Build();
 
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .UpdateProcessorFactory(stub.AsFactory())
+                .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
 
@@ -275,7 +276,7 @@ namespace LaunchDarkly.Sdk.Client
             var mockUpdateProc = new MockPollingProcessor(null);
             var mockConnectivityStateManager = new MockConnectivityStateManager(true);
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .UpdateProcessorFactory(mockUpdateProc.AsFactory())
+                .DataSource(mockUpdateProc.AsFactory())
                 .ConnectivityStateManager(mockConnectivityStateManager)
                 .Logging(testLogging)
                 .Build();
@@ -449,7 +450,7 @@ namespace LaunchDarkly.Sdk.Client
             var flagsJson = "{\"flag\": {\"value\": 100}}";
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, flagsJson)
                 .FlagCacheManager(null)
-                .UpdateProcessorFactory(MockPollingProcessor.Factory(flagsJson))
+                .DataSource(MockPollingProcessor.Factory(flagsJson))
                 .PersistentStorage(storage)
                 .Logging(testLogging)
                 .Build();

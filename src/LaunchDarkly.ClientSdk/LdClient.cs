@@ -28,6 +28,9 @@ namespace LaunchDarkly.Sdk.Client
 
         // Immutable client state
         readonly Configuration _config;
+        readonly LdClientContext _context;
+        readonly IDataSourceFactory _dataSourceFactory;
+        readonly IDataSourceUpdateSink _dataSourceUpdateSink;
         readonly ConnectionManager _connectionManager;
         readonly IBackgroundModeManager _backgroundModeManager;
         readonly IDeviceInfo deviceInfo;
@@ -129,10 +132,8 @@ namespace LaunchDarkly.Sdk.Client
 
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            var logConfig = (configuration.LoggingConfigurationFactory ?? Components.Logging())
-                .CreateLoggingConfiguration();
-            var logAdapter = logConfig.LogAdapter ?? Logs.None;
-            _log = logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
+            _context = new LdClientContext(configuration);
+            _log = _context.BaseLogger;
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
@@ -143,6 +144,9 @@ namespace LaunchDarkly.Sdk.Client
             _user = DecorateUser(user);
 
             flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User, _log);
+            _dataSourceUpdateSink = new DataSourceUpdateSinkImpl(flagCacheManager);
+
+            _dataSourceFactory = configuration.DataSourceFactory ?? Components.StreamingDataSource();
 
             _connectionManager = new ConnectionManager(_log);
             _connectionManager.SetForceOffline(configuration.Offline);
@@ -150,8 +154,8 @@ namespace LaunchDarkly.Sdk.Client
             {
                 _log.Info("Starting LaunchDarkly client in offline mode");
             }
-            _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(configuration, User, flagCacheManager, _log, _inBackground),
+            _connectionManager.SetDataSourceConstructor(
+                MakeDataSourceConstructor(_user, _inBackground),
                 true
             );
 
@@ -567,8 +571,8 @@ namespace LaunchDarkly.Sdk.Client
                 }
             }
 
-            return await _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(_config, newUser, flagCacheManager, _log, _inBackground),
+            return await _connectionManager.SetDataSourceConstructor(
+                MakeDataSourceConstructor(newUser, _inBackground),
                 true
             );
         }
@@ -688,15 +692,25 @@ namespace LaunchDarkly.Sdk.Client
                 if (!Config.EnableBackgroundUpdating)
                 {
                     _log.Debug("Background updating is disabled");
-                    await _connectionManager.SetUpdateProcessorFactory(null, false);
+                    await _connectionManager.SetDataSourceConstructor(null, false);
                     return;
                 }
                 _log.Debug("Background updating is enabled, starting polling processor");
             }
-            await _connectionManager.SetUpdateProcessorFactory(
-                Factory.CreateUpdateProcessorFactory(_config, User, flagCacheManager, _log, goingIntoBackground),
+            await _connectionManager.SetDataSourceConstructor(
+                MakeDataSourceConstructor(User, goingIntoBackground),
                 false  // don't reset initialized state because the user is still the same
             );
+        }
+
+        internal Func<IDataSource> MakeDataSourceConstructor(User user, bool background)
+        {
+            return () => _dataSourceFactory.CreateDataSource(
+                    _context,
+                    _dataSourceUpdateSink,
+                    user,
+                    background
+                    );
         }
     }
 }

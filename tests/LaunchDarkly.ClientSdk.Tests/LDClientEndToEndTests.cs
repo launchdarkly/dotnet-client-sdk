@@ -80,8 +80,8 @@ namespace LaunchDarkly.Sdk.Client
             {
                 using (var pollServer = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
                 {
-                    var config = BaseConfig(streamServer.Uri, UpdateMode.Streaming,
-                        b => b.BaseUri(pollServer.Uri));
+                    var config = BaseConfig(b =>
+                        b.DataSource(Components.StreamingDataSource().BaseUri(streamServer.Uri).PollingBaseUri(pollServer.Uri)));
                     using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromSeconds(5)))
                     {
                         VerifyRequest(streamServer.Recorder, UpdateMode.Streaming);
@@ -98,7 +98,7 @@ namespace LaunchDarkly.Sdk.Client
             var handler = Handlers.Delay(TimeSpan.FromSeconds(2)).Then(SetupResponse(_flagData1, UpdateMode.Polling));
             using (var server = HttpServer.Start(handler))
             {
-                var config = BaseConfig(server.Uri, builder => builder.IsStreamingEnabled(false));
+                var config = BaseConfig(builder => builder.DataSource(Components.PollingDataSource().BaseUri(server.Uri)));
                 using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                 {
                     Assert.False(client.Initialized);
@@ -265,7 +265,7 @@ namespace LaunchDarkly.Sdk.Client
             using (var server = HttpServer.Start(Handlers.Status(202)))
             {
                 var config = Configuration.Builder(_mobileKey)
-                    .UpdateProcessorFactory(MockPollingProcessor.Factory("{}"))
+                    .DataSource(MockPollingProcessor.Factory("{}"))
                     .EventsUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
                     .PersistFlagValues(false)
                     .Build();
@@ -353,9 +353,9 @@ namespace LaunchDarkly.Sdk.Client
             {
                 switchable.Target = SetupResponse(_flagData1, UpdateMode.Streaming);
 
-                var config = BaseConfig(server.Uri, UpdateMode.Streaming, builder => builder
+                var config = BaseConfig(builder => builder
                     .BackgroundModeManager(mockBackgroundModeManager)
-                    .BackgroundPollingIntervalWithoutMinimum(backgroundInterval)
+                    .DataSource(Components.StreamingDataSource().BaseUri(server.Uri).BackgroundPollingIntervalWithoutMinimum(backgroundInterval))
                     .PersistFlagValues(false));
 
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -400,10 +400,10 @@ namespace LaunchDarkly.Sdk.Client
             {
                 switchable.Target = SetupResponse(_flagData1, UpdateMode.Streaming);
 
-                var config = BaseConfig(server.Uri, UpdateMode.Streaming, builder => builder
+                var config = BaseConfig(builder => builder
                     .BackgroundModeManager(mockBackgroundModeManager)
                     .EnableBackgroundUpdating(false)
-                    .BackgroundPollingInterval(backgroundInterval)
+                    .DataSource(Components.StreamingDataSource().BaseUri(server.Uri).BackgroundPollInterval(backgroundInterval))
                     .PersistFlagValues(false));
 
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -477,14 +477,12 @@ namespace LaunchDarkly.Sdk.Client
             }
         }
 
-        private Configuration BaseConfig(Uri serverUri, Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
+        private Configuration BaseConfig(Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
             var builderInternal = Configuration.Builder(_mobileKey)
                 .EventProcessor(new MockEventProcessor());
             builderInternal
                 .Logging(testLogging)
-                .BaseUri(serverUri)
-                .StreamUri(serverUri)
                 .PersistFlagValues(false);  // unless we're specifically testing flag caching, this helps to prevent test state contamination
             var builder = extraConfig == null ? builderInternal : extraConfig(builderInternal);
             return builder.Build();
@@ -492,9 +490,16 @@ namespace LaunchDarkly.Sdk.Client
 
         private Configuration BaseConfig(Uri serverUri, UpdateMode mode, Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
-            return BaseConfig(serverUri, builder =>
+            return BaseConfig(builder =>
             {
-                builder.IsStreamingEnabled(mode.IsStreaming);
+                if (mode.IsStreaming)
+                {
+                    builder.DataSource(Components.StreamingDataSource().BaseUri(serverUri));
+                }
+                else
+                {
+                    builder.DataSource(Components.PollingDataSource().BaseUri(serverUri));
+                }
                 return extraConfig == null ? builder : extraConfig(builder);
             });
         }

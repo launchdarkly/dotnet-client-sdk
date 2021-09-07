@@ -4,6 +4,8 @@ using System.Collections.Immutable;
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Json;
 
+using static LaunchDarkly.Sdk.Client.DataModel;
+
 namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal class JsonUtil
@@ -22,7 +24,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 var builder = ImmutableDictionary.CreateBuilder<string, FeatureFlag>();
                 for (var or = r.Object(); or.Next(ref r);)
                 {
-                    builder.Add(or.Name.ToString(), FeatureFlag.JsonConverter.ReadJsonValue(ref r));
+                    builder.Add(or.Name.ToString(), FeatureFlagJsonConverter.ReadJsonValue(ref r));
                 }
                 return builder.ToImmutable();
             }
@@ -39,7 +41,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
             {
                 foreach (var kv in flags)
                 {
-                    FeatureFlag.JsonConverter.WriteJsonValue(kv.Value, ow.Name(kv.Key));
+                    FeatureFlagJsonConverter.WriteJsonValue(kv.Value, ow.Name(kv.Key));
                 }
             }
             return w.GetString();

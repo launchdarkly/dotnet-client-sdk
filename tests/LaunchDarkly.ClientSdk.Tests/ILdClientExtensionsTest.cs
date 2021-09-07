@@ -118,7 +118,9 @@ namespace LaunchDarkly.Sdk.Client
 
             public bool Initialized => true;
             public bool Offline => false;
+#pragma warning disable CS0067 // FlagChanged isn't used in tests
             public event System.EventHandler<FlagChangedEventArgs> FlagChanged;
+#pragma warning restore CS0067
 
             public IDictionary<string, LdValue> AllFlags() =>
                 throw new System.NotImplementedException();

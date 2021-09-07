@@ -34,34 +34,6 @@ namespace LaunchDarkly.Sdk.Client.Internal
             return configuration.ConnectivityStateManager ?? new DefaultConnectivityStateManager();
         }
 
-        internal static Func<IMobileUpdateProcessor> CreateUpdateProcessorFactory(Configuration configuration, User user,
-            IFlagCacheManager flagCacheManager, Logger baseLog, bool inBackground)
-        {
-            Logger log = baseLog.SubLogger(LogNames.DataSourceSubLog);
-            return () =>
-            {
-                if (configuration.UpdateProcessorFactory != null)
-                {
-                    return configuration.UpdateProcessorFactory(configuration, flagCacheManager, user);
-                }
-
-                var featureFlagRequestor = new FeatureFlagRequestor(configuration, user, log);
-                if (configuration.IsStreamingEnabled && !inBackground)
-                {
-                    return new MobileStreamingProcessor(configuration, flagCacheManager, featureFlagRequestor, user, null, log);
-                }
-                else
-                {
-                    return new MobilePollingProcessor(featureFlagRequestor,
-                                                      flagCacheManager,
-                                                      user,
-                                                      inBackground ? configuration.BackgroundPollingInterval : configuration.PollingInterval,
-                                                      inBackground ? configuration.BackgroundPollingInterval : TimeSpan.Zero,
-                                                      log);
-                }
-            };
-        }
-
         internal static IEventProcessor CreateEventProcessor(Configuration configuration, Logger baseLog)
         {
             if (configuration.EventProcessor != null)
@@ -80,9 +52,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 EventsUri = configuration.EventsUri.AddPath(Constants.EVENTS_PATH),
                 InlineUsersInEvents = configuration.InlineUsersInEvents,
                 PrivateAttributeNames = configuration.PrivateAttributeNames,
-                RetryInterval = TimeSpan.FromSeconds(1),
-                UserKeysCapacity = configuration.UserKeysCapacity,
-                UserKeysFlushInterval = configuration.UserKeysFlushInterval
+                RetryInterval = TimeSpan.FromSeconds(1)
             };
             var httpProperties = configuration.HttpProperties;
             var eventProcessor = new EventProcessor(

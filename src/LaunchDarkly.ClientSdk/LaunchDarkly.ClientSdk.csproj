@@ -69,16 +69,4 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Integrations\LoggingConfigurationBuilder.cs">
-      <SubType></SubType>
-    </Compile>
-    <Compile Update="Interfaces\ILoggingConfigurationFactory.cs">
-      <SubType></SubType>
-    </Compile>
-    <Compile Update="Interfaces\LoggingConfiguration.cs">
-      <SubType></SubType>
-    </Compile>
-  </ItemGroup>
 </Project>

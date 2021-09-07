@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
+using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal.Http;
@@ -10,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
-    public class MobileStreamingProcessorTests : BaseTest
+    public class StreamingDataSourceTest : BaseTest
     {
         private const string initialFlagsJson = "{" +
             "\"int-flag\":{\"value\":15,\"version\":100}," +
@@ -25,27 +26,35 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private TestEventSourceFactory eventSourceFactory;
         private IFlagCacheManager mockFlagCacheMgr;
         private IFeatureFlagRequestor mockRequestor;
-        private ConfigurationBuilder configBuilder;
+        private Uri baseUri;
+        private TimeSpan initialReconnectDelay = StreamingDataSourceBuilder.DefaultInitialReconnectDelay;
+        private bool withReasons = false;
 
-        public MobileStreamingProcessorTests(ITestOutputHelper testOutput) : base(testOutput)
+        public StreamingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput)
         {
             mockEventSource = new EventSourceMock();
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
             mockFlagCacheMgr = new MockFlagCacheManager(new UserFlagInMemoryCache());
             mockRequestor = new MockFeatureFlagRequestor(initialFlagsJson);
-            configBuilder = Configuration.Builder("someKey")
-                                         .ConnectivityStateManager(new MockConnectivityStateManager(true))
-                                         .FlagCacheManager(mockFlagCacheMgr)
-                                         .IsStreamingEnabled(true)
-                                         .Logging(testLogging);
+            baseUri = new Uri("http://example");
         }
 
-        private IMobileUpdateProcessor MobileStreamingProcessorStarted()
+        private StreamingDataSource MakeStartedStreamingDataSource()
         {
-            IMobileUpdateProcessor processor = new MobileStreamingProcessor(configBuilder.Build(),
-                mockFlagCacheMgr, mockRequestor, user, eventSourceFactory.Create(), testLogger);
-            processor.Start();
-            return processor;
+            var dataSource = new StreamingDataSource(
+                new DataSourceUpdateSinkImpl(mockFlagCacheMgr),
+                user,
+                baseUri,
+                false,
+                withReasons,
+                initialReconnectDelay,
+                mockRequestor,
+                Configuration.Builder("key").Build().HttpProperties,
+                testLogger,
+                eventSourceFactory.Create()
+                );
+            dataSource.Start();
+            return dataSource;
         }
 
         [Theory]
@@ -64,9 +73,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             var fakeRootUri = "http://fake-stream-host";
             var fakeBaseUri = fakeRootUri + baseUriExtraPath;
-            configBuilder.StreamUri(new Uri(fakeBaseUri));
-            configBuilder.EvaluationReasons(withReasons);
-            MobileStreamingProcessorStarted();
+            this.baseUri = new Uri(fakeBaseUri);
+            this.withReasons = withReasons;
+            MakeStartedStreamingDataSource();
             Assert.Equal(HttpMethod.Get, eventSourceFactory.ReceivedMethod);
             Assert.Equal(new Uri(fakeRootUri + expectedPathWithoutUser + encodedUser + expectedQuery),
                 eventSourceFactory.ReceivedUri);
@@ -106,7 +115,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         [Fact]
         public void PutStoresFeatureFlags()
         {
-            MobileStreamingProcessorStarted();
+            MakeStartedStreamingDataSource();
             // should be empty before PUT message arrives
             var flagsInCache = mockFlagCacheMgr.FlagsForUser(user);
             Assert.Empty(flagsInCache);
@@ -122,7 +131,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public void PatchUpdatesFeatureFlag()
         {
             // before PATCH, fill in flags
-            MobileStreamingProcessorStarted();
+            MakeStartedStreamingDataSource();
             PUTMessageSentToProcessor();
             var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
@@ -140,7 +149,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public void PatchDoesnotUpdateFlagIfVersionIsLower()
         {
             // before PATCH, fill in flags
-            MobileStreamingProcessorStarted();
+            MakeStartedStreamingDataSource();
             PUTMessageSentToProcessor();
             var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
@@ -158,7 +167,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public void DeleteRemovesFeatureFlag()
         {
             // before DELETE, fill in flags, test it's there
-            MobileStreamingProcessorStarted();
+            MakeStartedStreamingDataSource();
             PUTMessageSentToProcessor();
             var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
@@ -175,7 +184,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public void DeleteDoesnotRemoveFeatureFlagIfVersionIsLower()
         {
             // before DELETE, fill in flags, test it's there
-            MobileStreamingProcessorStarted();
+            MakeStartedStreamingDataSource();
             PUTMessageSentToProcessor();
             var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
             Assert.Equal(15, intFlagFromPUT);
@@ -191,7 +200,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         [Fact]
         public async void PingCausesPoll()
         {
-            MobileStreamingProcessorStarted();
+            MakeStartedStreamingDataSource();
             mockEventSource.RaiseMessageRcvd(new MessageReceivedEventArgs(new MessageEvent("ping", null, null)));
             var deadline = DateTime.Now.Add(TimeSpan.FromSeconds(5));
             while (DateTime.Now < deadline)
@@ -250,7 +259,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _eventSource = eventSource;
         }
 
-        public MobileStreamingProcessor.EventSourceCreator Create()
+        public StreamingDataSource.EventSourceCreator Create()
         {
             return (httpProperties, method, uri, jsonBody) =>
             {

@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataSources;
 using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
+
+using static LaunchDarkly.Sdk.Client.DataModel;
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -183,9 +187,27 @@ namespace LaunchDarkly.Sdk.Client
         }
     }
 
-    internal class MockPollingProcessor : IMobileUpdateProcessor
+    internal class MockDataSourceFactoryFromLambda : IDataSourceFactory
     {
-        private IFlagCacheManager _cacheManager;
+        private readonly Func<LdClientContext, IDataSourceUpdateSink, User, bool, IDataSource> _fn;
+
+        internal MockDataSourceFactoryFromLambda(Func<LdClientContext, IDataSourceUpdateSink, User, bool, IDataSource> fn)
+        {
+            _fn = fn;
+        }
+
+        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, User currentUser, bool inBackground) =>
+            _fn(context, updateSink, currentUser, inBackground);
+    }
+
+    internal class SingleDataSourceFactory : MockDataSourceFactoryFromLambda
+    {
+        internal SingleDataSourceFactory(IDataSource instance) : base((c, up, u, bg) => instance) { }
+    }
+
+    internal class MockPollingProcessor : IDataSource
+    {
+        private IDataSourceUpdateSink _updateSink;
         private User _user;
         private string _flagsJson;
 
@@ -193,27 +215,24 @@ namespace LaunchDarkly.Sdk.Client
 
         public MockPollingProcessor(string flagsJson) : this(null, null, flagsJson) { }
 
-        private MockPollingProcessor(IFlagCacheManager cacheManager, User user, string flagsJson)
+        private MockPollingProcessor(IDataSourceUpdateSink updateSink, User user, string flagsJson)
         {
-            _cacheManager = cacheManager;
+            _updateSink = updateSink;
             _user = user;
             _flagsJson = flagsJson;
         }
 
-        public static Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> Factory(string flagsJson)
-        {
-            return (config, manager, user) => new MockPollingProcessor(manager, user, flagsJson);
-        }
+        public static IDataSourceFactory Factory(string flagsJson) =>
+            new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
+                new MockPollingProcessor(updates, user, flagsJson));
 
-        public Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> AsFactory()
-        {
-            return (config, manager, user) =>
+        public IDataSourceFactory AsFactory() =>
+            new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
             {
-                _cacheManager = manager;
-                _user = user;
+                this._updateSink = updates;
+                this._user = user;
                 return this;
-            };
-        }
+            });
 
         public bool IsRunning
         {
@@ -226,29 +245,26 @@ namespace LaunchDarkly.Sdk.Client
             IsRunning = false;
         }
 
-        public bool Initialized()
-        {
-            return IsRunning;
-        }
+        public bool Initialized => IsRunning;
 
         public Task<bool> Start()
         {
             IsRunning = true;
-            if (_cacheManager != null && _flagsJson != null)
+            if (_updateSink != null && _flagsJson != null)
             {
-                _cacheManager.CacheFlagsFromService(JsonUtil.DeserializeFlags(_flagsJson), _user);
+                _updateSink.Init(new FullDataSet(JsonUtil.DeserializeFlags(_flagsJson)), _user);
             }
             return Task.FromResult(true);
         }
     }
 
-    internal class MockUpdateProcessorFromLambda : IMobileUpdateProcessor
+    internal class MockDataSourceFromLambda : IDataSource
     {
         private readonly User _user;
         private readonly Func<Task> _startFn;
         private bool _initialized;
 
-        public MockUpdateProcessorFromLambda(User user, Func<Task> startFn)
+        public MockDataSourceFromLambda(User user, Func<Task> startFn)
         {
             _user = user;
             _startFn = startFn;
@@ -263,28 +279,21 @@ namespace LaunchDarkly.Sdk.Client
             });
         }
 
-        public bool Initialized() => _initialized;
+        public bool Initialized => _initialized;
 
         public void Dispose() { }
     }
 
-    internal class MockUpdateProcessorThatNeverInitializes : IMobileUpdateProcessor
+    internal class MockUpdateProcessorThatNeverInitializes : IDataSource
     {
-        public static Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> Factory()
-        {
-            return (config, manager, user) => new MockUpdateProcessorThatNeverInitializes();
-        }
+        public static IDataSourceFactory Factory() =>
+            new SingleDataSourceFactory(new MockUpdateProcessorThatNeverInitializes());
 
         public bool IsRunning => false;
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
-        public bool Initialized()
-        {
-            return false;
-        }
+        public bool Initialized => false;
 
         public Task<bool> Start()
         {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Net.Http;
-using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
@@ -20,6 +20,18 @@ namespace LaunchDarkly.Sdk.Client
     /// </remarks>
     public sealed class Configuration
     {
+        /// <summary>
+        /// Default value for <see cref="PollingDataSourceBuilder.BackgroundPollInterval"/> and
+        /// <see cref="StreamingDataSourceBuilder.BackgroundPollInterval"/>.
+        /// </summary>
+        public static readonly TimeSpan DefaultBackgroundPollInterval = TimeSpan.FromMinutes(60);
+
+        /// <summary>
+        /// Minimum value for <see cref="PollingDataSourceBuilder.BackgroundPollInterval"/> and
+        /// <see cref="StreamingDataSourceBuilder.BackgroundPollInterval"/>.
+        /// </summary>
+        public static readonly TimeSpan MinimumBackgroundPollInterval = TimeSpan.FromMinutes(15);
+
         // Settable only for testing
         internal IBackgroundModeManager BackgroundModeManager { get; }
         internal IConnectivityStateManager ConnectivityStateManager { get; }
@@ -28,7 +40,6 @@ namespace LaunchDarkly.Sdk.Client
         internal IFlagCacheManager FlagCacheManager { get; }
         internal IFlagChangedEventManager FlagChangedEventManager { get; }
         internal IPersistentStorage PersistentStorage { get; }
-        internal Func<Configuration, IFlagCacheManager, User, IMobileUpdateProcessor> UpdateProcessorFactory { get; }
 
         /// <summary>
         /// Whether or not user attributes (other than the key) should be private (not sent to
@@ -56,22 +67,15 @@ namespace LaunchDarkly.Sdk.Client
         public bool AutoAliasingOptOut { get; }
 
         /// <summary>
-        /// The interval between feature flag updates when the application is running in the background.
-        /// </summary>
-        /// <remarks>
-        /// This is only relevant on mobile platforms.
-        /// </remarks>
-        public TimeSpan BackgroundPollingInterval { get; }
-
-        /// <summary>
-        /// The base URI of the LaunchDarkly server.
-        /// </summary>
-        public Uri BaseUri { get; }
-
-        /// <summary>
         /// The connection timeout to the LaunchDarkly server.
         /// </summary>
         public TimeSpan ConnectionTimeout { get; }
+
+        /// <summary>
+        /// A factory object that creates an implementation of <see cref="IDataSource"/>, which will
+        /// receive feature flag data.
+        /// </summary>
+        public IDataSourceFactory DataSourceFactory { get; }
 
         /// <summary>
         /// Whether to enable feature flag updates when the application is running in the background.
@@ -130,14 +134,6 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         public bool InlineUsersInEvents { get; }
 
-        /// <summary>
-        /// Whether or not the streaming API should be used to receive flag updates.
-        /// </summary>
-        /// <remarks>
-        /// This is true by default. Streaming should only be disabled on the advice of LaunchDarkly support.
-        /// </remarks>
-        public bool IsStreamingEnabled { get; }
-
         internal ILoggingConfigurationFactory LoggingConfigurationFactory { get; }
 
         /// <summary>
@@ -163,11 +159,6 @@ namespace LaunchDarkly.Sdk.Client
         public bool PersistFlagValues { get; }
 
         /// <summary>
-        /// The polling interval (when streaming is disabled).
-        /// </summary>
-        public TimeSpan PollingInterval { get; }
-
-        /// <summary>
         /// Attribute names that have been marked as private for all users.
         /// </summary>
         /// <remarks>
@@ -183,20 +174,6 @@ namespace LaunchDarkly.Sdk.Client
         public TimeSpan ReadTimeout { get; }
 
         /// <summary>
-        /// The reconnect base time for the streaming connection.
-        /// </summary>
-        /// <remarks>
-        /// The streaming connection uses an exponential backoff algorithm (with jitter) for reconnects, but
-        /// will start the backoff with a value near the value specified here. The default value is 1 second.
-        /// </remarks>
-        public TimeSpan ReconnectTime { get; }
-
-        /// <summary>
-        /// The base URL of the LaunchDarkly streaming server.
-        /// </summary>
-        public Uri StreamUri { get; }
-
-        /// <summary>
         /// Whether to use the HTTP REPORT method for feature flag requests.
         /// </summary>
         /// <remarks>
@@ -207,30 +184,6 @@ namespace LaunchDarkly.Sdk.Client
         internal bool UseReport { get; }
         // UseReport is currently disabled due to Android HTTP issues (ch47341), but it's still implemented internally
 
-        /// <summary>
-        /// The number of user keys that the event processor can remember at any one time.
-        /// </summary>
-        /// <remarks>
-        /// The event processor keeps track of recently seen user keys so that duplicate user details will not
-        /// be sent in analytics events.
-        /// </remarks>
-        public int UserKeysCapacity { get; }
-
-        /// <summary>
-        /// The interval at which the event processor will reset its set of known user keys.
-        /// </summary>
-        public TimeSpan UserKeysFlushInterval { get; }
-
-        /// <summary>
-        /// Default value for <see cref="PollingInterval"/>.
-        /// </summary>
-        public static TimeSpan DefaultPollingInterval = TimeSpan.FromMinutes(5);
-
-        /// <summary>
-        /// Minimum value for <see cref="PollingInterval"/>.
-        /// </summary>
-        public static TimeSpan MinimumPollingInterval = TimeSpan.FromMinutes(5);
-
         internal static readonly Uri DefaultUri = new Uri("https://app.launchdarkly.com");
         internal static readonly Uri DefaultStreamUri = new Uri("https://clientstream.launchdarkly.com");
         internal static readonly Uri DefaultEventsUri = new Uri("https://mobile.launchdarkly.com");
@@ -238,10 +191,6 @@ namespace LaunchDarkly.Sdk.Client
         internal static readonly TimeSpan DefaultEventFlushInterval = TimeSpan.FromSeconds(5);
         internal static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromMinutes(5);
         internal  static readonly TimeSpan DefaultReconnectTime = TimeSpan.FromSeconds(1);
-        internal static readonly int DefaultUserKeysCapacity = 1000;
-        internal static readonly TimeSpan DefaultUserKeysFlushInterval = TimeSpan.FromMinutes(5);
-        internal static readonly TimeSpan DefaultBackgroundPollingInterval = TimeSpan.FromMinutes(60);
-        internal static readonly TimeSpan MinimumBackgroundPollingInterval = TimeSpan.FromMinutes(15);
         internal static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(10);
 
         /// <summary>
@@ -296,9 +245,8 @@ namespace LaunchDarkly.Sdk.Client
         {
             AllAttributesPrivate = builder._allAttributesPrivate;
             AutoAliasingOptOut = builder._autoAliasingOptOut;
-            BackgroundPollingInterval = builder._backgroundPollingInterval;
-            BaseUri = builder._baseUri;
             ConnectionTimeout = builder._connectionTimeout;
+            DataSourceFactory = builder._dataSourceFactory;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
             EvaluationReasons = builder._evaluationReasons;
             EventFlushInterval = builder._eventFlushInterval;
@@ -308,20 +256,13 @@ namespace LaunchDarkly.Sdk.Client
                 PlatformSpecific.Http.CreateHttpMessageHandler(builder._connectionTimeout, builder._readTimeout) :
                 builder._httpMessageHandler;
             InlineUsersInEvents = builder._inlineUsersInEvents;
-            IsStreamingEnabled = builder._isStreamingEnabled;
             LoggingConfigurationFactory = builder._loggingConfigurationFactory;
             MobileKey = builder._mobileKey;
             Offline = builder._offline;
             PersistFlagValues = builder._persistFlagValues;
-            PollingInterval = builder._pollingInterval;
             PrivateAttributeNames = builder._privateAttributeNames is null ? null :
                 builder._privateAttributeNames.ToImmutableHashSet();
-            ReadTimeout = builder._readTimeout;
-            ReconnectTime = builder._reconnectTime;
-            StreamUri = builder._streamUri;
             UseReport = builder._useReport;
-            UserKeysCapacity = builder._userKeysCapacity;
-            UserKeysFlushInterval = builder._userKeysFlushInterval;
 
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
@@ -330,7 +271,6 @@ namespace LaunchDarkly.Sdk.Client
             FlagCacheManager = builder._flagCacheManager;
             FlagChangedEventManager = builder._flagChangedEventManager;
             PersistentStorage = builder._persistentStorage;
-            UpdateProcessorFactory = builder._updateProcessorFactory;
         }
 
         internal HttpProperties HttpProperties => HttpProperties.Default
