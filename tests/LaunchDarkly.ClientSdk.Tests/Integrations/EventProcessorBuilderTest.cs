@@ -1,0 +1,76 @@
+﻿using System;
+using System.Collections.Generic;
+using LaunchDarkly.TestHelpers;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace LaunchDarkly.Sdk.Client.Integrations
+{
+    public class EventProcessorBuilderTest : BaseTest
+    {
+        private readonly BuilderBehavior.InternalStateTester<EventProcessorBuilder> _tester =
+            BuilderBehavior.For(Components.SendEvents);
+
+        public EventProcessorBuilderTest(ITestOutputHelper testOutput) : base(testOutput) { }
+
+        [Fact]
+        public void AllAttributesPrivate()
+        {
+            var prop = _tester.Property(b => b._allAttributesPrivate, (b, v) => b.AllAttributesPrivate(v));
+            prop.AssertDefault(false);
+            prop.AssertCanSet(true);
+        }
+
+        [Fact]
+        public void EventCapacity()
+        {
+            var prop = _tester.Property(b => b._capacity, (b, v) => b.Capacity(v));
+            prop.AssertDefault(EventProcessorBuilder.DefaultCapacity);
+            prop.AssertCanSet(1);
+            prop.AssertSetIsChangedTo(0, EventProcessorBuilder.DefaultCapacity);
+            prop.AssertSetIsChangedTo(-1, EventProcessorBuilder.DefaultCapacity);
+        }
+
+        [Fact]
+        public void EventsUri()
+        {
+            var prop = _tester.Property(b => b._baseUri, (b, v) => b.BaseUri(v));
+            prop.AssertDefault(null);
+            prop.AssertCanSet(new Uri("http://x"));
+        }
+
+        [Fact]
+        public void FlushInterval()
+        {
+            var prop = _tester.Property(b => b._flushInterval, (b, v) => b.FlushInterval(v));
+            prop.AssertDefault(EventProcessorBuilder.DefaultFlushInterval);
+            prop.AssertCanSet(TimeSpan.FromMinutes(7));
+            prop.AssertSetIsChangedTo(TimeSpan.Zero, EventProcessorBuilder.DefaultFlushInterval);
+            prop.AssertSetIsChangedTo(TimeSpan.FromMilliseconds(-1), EventProcessorBuilder.DefaultFlushInterval);
+        }
+
+        [Fact]
+        public void InlineUsersInEvents()
+        {
+            var prop = _tester.Property(b => b._inlineUsersInEvents, (b, v) => b.InlineUsersInEvents(v));
+            prop.AssertDefault(false);
+            prop.AssertCanSet(true);
+        }
+
+        [Fact]
+        public void PrivateAttributes()
+        {
+            var b = _tester.New();
+            Assert.Empty(b._privateAttributes);
+            b.PrivateAttributes(UserAttribute.Name);
+            b.PrivateAttributes(UserAttribute.Email, UserAttribute.ForName("other"));
+            b.PrivateAttributeNames("country");
+            Assert.Equal(
+                new HashSet<UserAttribute>
+                {
+                    UserAttribute.Name, UserAttribute.Email, UserAttribute.Country, UserAttribute.ForName("other")
+                },
+                b._privateAttributes);
+        }
+    }
+}

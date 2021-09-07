@@ -100,6 +100,18 @@ namespace LaunchDarkly.Sdk.Client
             Events.Add(e);
     }
 
+    internal class SingleEventProcessorFactory : IEventProcessorFactory
+    {
+        private readonly IEventProcessor _instance;
+
+        public SingleEventProcessorFactory(IEventProcessor instance)
+        {
+            _instance = instance;
+        }
+
+        public IEventProcessor CreateEventProcessor(LdClientContext context) => _instance;
+    }
+
     internal class MockFeatureFlagRequestor : IFeatureFlagRequestor
     {
         private readonly string _jsonFlags;

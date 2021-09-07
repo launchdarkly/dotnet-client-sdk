@@ -1,6 +1,7 @@
 ﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -89,6 +90,24 @@ namespace LaunchDarkly.Sdk.Client
             new LoggingConfigurationBuilder().Adapter(adapter);
 
         /// <summary>
+        /// Returns a configuration object that disables analytics events.
+        /// </summary>
+        /// <remarks>
+        /// Passing this to <see cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/> causes
+        /// the SDK to discard all analytics events and not send them to LaunchDarkly, regardless of
+        /// any other configuration.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(mobileKey)
+        ///         .Events(Components.NoEvents)
+        ///         .Build();
+        /// </code>
+        /// </example>
+        public static IEventProcessorFactory NoEvents =>
+            ComponentsImpl.NullEventProcessorFactory.Instance;
+
+        /// <summary>
         /// A configuration object that disables logging.
         /// </summary>
         /// <remarks>
@@ -96,7 +115,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <example>
         /// <code>
-        ///     var config = Configuration.Builder(sdkKey)
+        ///     var config = Configuration.Builder(mobileKey)
         ///         .Logging(Components.NoLogging)
         ///         .Build();
         /// </code>
@@ -131,7 +150,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <example>
         /// <code>
-        ///     var config = Configuration.Builder(sdkKey)
+        ///     var config = Configuration.Builder(mobileKey)
         ///         .DataSource(Components.PollingDataSource()
         ///             .PollInterval(TimeSpan.FromSeconds(45)))
         ///         .Build();
@@ -142,6 +161,32 @@ namespace LaunchDarkly.Sdk.Client
         /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>
         public static PollingDataSourceBuilder PollingDataSource() =>
             new PollingDataSourceBuilder();
+
+        /// <summary>
+        /// Returns a configuration builder for analytics event delivery.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The default configuration has events enabled with default settings. If you want to
+        /// customize this behavior, call this method to obtain a builder, change its properties
+        /// with the <see cref="EventProcessorBuilder"/> methods, and pass it to
+        /// <see cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>.
+        /// </para>
+        /// <para>
+        /// To completely disable sending analytics events, use <see cref="NoEvents"/> instead.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(mobileKey)
+        ///         .Events(Components.SendEvents()
+        ///             .Capacity(5000)
+        ///             .FlushInterval(TimeSpan.FromSeconds(2)))
+        ///         .Build();
+        /// </code>
+        /// </example>
+        /// <returns>a builder for setting event properties</returns>
+        public static EventProcessorBuilder SendEvents() => new EventProcessorBuilder();
 
         /// <summary>
         /// Returns a configurable factory for using streaming mode to get feature flag data.
@@ -165,7 +210,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <example>
         /// <code>
-        ///     var config = Configuration.Builder(sdkKey)
+        ///     var config = Configuration.Builder(mobileKey)
         ///         .DataSource(Components.StreamingDataSource()
         ///             .InitialReconnectDelay(TimeSpan.FromMilliseconds(500)))
         ///         .Build();

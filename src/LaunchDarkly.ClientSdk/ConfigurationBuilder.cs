@@ -34,21 +34,16 @@ namespace LaunchDarkly.Sdk.Client
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
         internal bool _autoAliasingOptOut = false;
-        internal bool _allAttributesPrivate = false;
         internal TimeSpan _connectionTimeout = Configuration.DefaultConnectionTimeout;
         internal IDataSourceFactory _dataSourceFactory = null;
         internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
-        internal int _eventCapacity = Configuration.DefaultEventCapacity;
-        internal TimeSpan _eventFlushInterval = Configuration.DefaultEventFlushInterval;
-        internal Uri _eventsUri = Configuration.DefaultEventsUri;
+        internal IEventProcessorFactory _eventProcessorFactory = null;
         internal HttpMessageHandler _httpMessageHandler = DefaultHttpMessageHandlerInstance;
-        internal bool _inlineUsersInEvents = false;
         internal ILoggingConfigurationFactory _loggingConfigurationFactory = null;
         internal string _mobileKey;
         internal bool _offline = false;
         internal bool _persistFlagValues = true;
-        internal HashSet<UserAttribute> _privateAttributeNames = null;
         internal TimeSpan _readTimeout = Configuration.DefaultReadTimeout;
         internal bool _useReport = false;
 
@@ -56,7 +51,6 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
         internal IDeviceInfo _deviceInfo;
-        internal IEventProcessor _eventProcessor;
         internal IFlagCacheManager _flagCacheManager;
         internal IFlagChangedEventManager _flagChangedEventManager;
         internal IPersistentStorage _persistentStorage;
@@ -68,22 +62,17 @@ namespace LaunchDarkly.Sdk.Client
 
         internal ConfigurationBuilder(Configuration copyFrom)
         {
-            _allAttributesPrivate = copyFrom.AllAttributesPrivate;
             _autoAliasingOptOut = copyFrom.AutoAliasingOptOut;
             _connectionTimeout = copyFrom.ConnectionTimeout;
+            _dataSourceFactory = copyFrom.DataSourceFactory;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
             _evaluationReasons = copyFrom.EvaluationReasons;
-            _eventCapacity = copyFrom.EventCapacity;
-            _eventFlushInterval = copyFrom.EventFlushInterval;
-            _eventsUri = copyFrom.EventsUri;
+            _eventProcessorFactory = copyFrom.EventProcessorFactory;
             _httpMessageHandler = copyFrom.HttpMessageHandler;
-            _inlineUsersInEvents = copyFrom.InlineUsersInEvents;
             _loggingConfigurationFactory = copyFrom.LoggingConfigurationFactory;
             _mobileKey = copyFrom.MobileKey;
             _offline = copyFrom.Offline;
             _persistFlagValues = copyFrom.PersistFlagValues;
-            _privateAttributeNames = copyFrom.PrivateAttributeNames is null ? null :
-                new HashSet<UserAttribute>(copyFrom.PrivateAttributeNames);
             _readTimeout = copyFrom.ReadTimeout;
             _useReport = copyFrom.UseReport;
         }
@@ -98,23 +87,6 @@ namespace LaunchDarkly.Sdk.Client
             return new Configuration(this);
         }
 
-        /// <summary>
-        /// Sets whether or not user attributes (other than the key) should be private (not sent to
-        /// the LaunchDarkly server).
-        /// </summary>
-        /// <remarks>
-        /// By default, this is <see langword="false"/>. If <see langword="true"/>, all of the user attributes
-        /// will be private, not just the attributes specified with <see cref="ConfigurationBuilder.PrivateAttribute(UserAttribute)"/>
-        /// or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/> method.
-        /// </remarks>
-        /// <param name="allAttributesPrivate">true if all attributes should be private</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder AllAttributesPrivate(bool allAttributesPrivate)
-        {
-            _allAttributesPrivate = allAttributesPrivate;
-            return this;
-        }
-        
         /// <summary>
         /// Whether to disable the automatic sending of an alias event when the current user is changed
         /// to a non-anonymous user and the previous user was anonymous.
@@ -211,45 +183,18 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Sets the capacity of the event buffer.
+        /// Sets the implementation of the component that processes analytics events.
         /// </summary>
         /// <remarks>
-        /// The client buffers up to this many events in memory before flushing. If the capacity is exceeded
-        /// before the buffer is flushed, events will be discarded. Increasing the capacity means that events
-        /// are less likely to be discarded, at the cost of consuming more memory.
+        /// The default is <see cref="Components.SendEvents"/>, but you may choose to set it to a customized
+        /// <see cref="EventProcessorBuilder"/>, a custom implementation (for instance, a test fixture), or
+        /// disable events with <see cref="Components.NoEvents"/>.
         /// </remarks>
-        /// <param name="eventCapacity">the capacity of the event buffer</param>
+        /// <param name="eventProcessorFactory">a builder/factory object for event configuration</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder EventCapacity(int eventCapacity)
+        public ConfigurationBuilder Events(IEventProcessorFactory eventProcessorFactory)
         {
-            _eventCapacity = eventCapacity <= 0 ? Configuration.DefaultEventCapacity : eventCapacity;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets the time between flushes of the event buffer.
-        /// </summary>
-        /// <remarks>
-        /// Decreasing the flush interval means that the event buffer is less likely to reach capacity. The
-        /// default value is 5 seconds.
-        /// </remarks>
-        /// <param name="eventflushInterval">the flush interval</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder EventFlushInterval(TimeSpan eventflushInterval)
-        {
-            _eventFlushInterval = eventflushInterval <= TimeSpan.Zero ?
-                Configuration.DefaultEventFlushInterval : eventflushInterval;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets the base URL of the LaunchDarkly analytics event server.
-        /// </summary>
-        /// <param name="eventsUri">the events URI</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder EventsUri(Uri eventsUri)
-        {
-            _eventsUri = eventsUri ?? Configuration.DefaultEventsUri;
+            _eventProcessorFactory = eventProcessorFactory;
             return this;
         }
 
@@ -270,21 +215,6 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler)
         {
             _httpMessageHandler = httpMessageHandler;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets whether to include full user details in every analytics event.
-        /// </summary>
-        /// <remarks>
-        /// The default is <see langword="false"/>: events will only include the user key, except for one
-        /// "index" event that provides the full details for the user.
-        /// </remarks>
-        /// <param name="inlineUsersInEvents">true or false</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder InlineUsersInEvents(bool inlineUsersInEvents)
-        {
-            _inlineUsersInEvents = inlineUsersInEvents;
             return this;
         }
 
@@ -385,31 +315,6 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Marks an attribute name as private for all users.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Any users sent to LaunchDarkly with this configuration active will have attributes with this name
-        /// removed, even if you did not use the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
-        /// method in <see cref="UserBuilder"/>.
-        /// </para>
-        /// <para>
-        /// You may call this method repeatedly to mark multiple attributes as private.
-        /// </para>
-        /// </remarks>
-        /// <param name="privateAttribute">the attribute</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder PrivateAttribute(UserAttribute privateAttribute)
-        {
-            if (_privateAttributeNames is null)
-            {
-                _privateAttributeNames = new HashSet<UserAttribute>();
-            }
-            _privateAttributeNames.Add(privateAttribute);
-            return this;
-        }
-
-        /// <summary>
         /// Sets the timeout when reading data from the streaming connection.
         /// </summary>
         /// <remarks>
@@ -440,12 +345,6 @@ namespace LaunchDarkly.Sdk.Client
         internal ConfigurationBuilder DeviceInfo(IDeviceInfo deviceInfo)
         {
             _deviceInfo = deviceInfo;
-            return this;
-        }
-
-        internal ConfigurationBuilder EventProcessor(IEventProcessor eventProcessor)
-        {
-            _eventProcessor = eventProcessor;
             return this;
         }
 

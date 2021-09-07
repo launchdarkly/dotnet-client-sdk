@@ -1,8 +1,9 @@
 ﻿using System;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Internal.Events.EventProcessorTypes;
+using static LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -10,13 +11,16 @@ namespace LaunchDarkly.Sdk.Client
     {
         private static readonly User user = User.WithKey("userkey");
         private MockEventProcessor eventProcessor = new MockEventProcessor();
+        private IEventProcessorFactory _factory;
 
-        public LdClientEventTests(ITestOutputHelper testOutput) : base(testOutput) { }
+        public LdClientEventTests(ITestOutputHelper testOutput) : base(testOutput) {
+            _factory = new SingleEventProcessorFactory(eventProcessor);
+        }
 
         public LdClient MakeClient(User user, string flagsJson)
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);
-            config.EventProcessor(eventProcessor).Logging(testLogging);
+            config.Events(_factory).Logging(testLogging);
             return TestUtil.CreateClient(config.Build(), user);
         }
         
@@ -138,7 +142,7 @@ namespace LaunchDarkly.Sdk.Client
             User newUser = User.WithKey("real-key");
 
             var config = TestUtil.ConfigWithFlagsJson(oldUser, "appkey", "{}");
-            config.EventProcessor(eventProcessor).Logging(testLogging);
+            config.Events(_factory).Logging(testLogging);
             config.AutoAliasingOptOut(true);
             
             using (LdClient client = TestUtil.CreateClient(config.Build(), oldUser))
@@ -270,7 +274,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
                 .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
-                .EventProcessor(eventProcessor)
+                .Events(_factory)
                 .Logging(testLogging);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
@@ -378,7 +382,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
                 .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
-                .EventProcessor(eventProcessor)
+                .Events(_factory)
                 .Logging(testLogging);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))

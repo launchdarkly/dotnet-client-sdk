@@ -36,21 +36,9 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager BackgroundModeManager { get; }
         internal IConnectivityStateManager ConnectivityStateManager { get; }
         internal IDeviceInfo DeviceInfo { get; }
-        internal IEventProcessor EventProcessor { get; }
         internal IFlagCacheManager FlagCacheManager { get; }
         internal IFlagChangedEventManager FlagChangedEventManager { get; }
         internal IPersistentStorage PersistentStorage { get; }
-
-        /// <summary>
-        /// Whether or not user attributes (other than the key) should be private (not sent to
-        /// the LaunchDarkly server).
-        /// </summary>
-        /// <remarks>
-        /// By default, this is <see langword="false"/>. If <see langword="true"/>, all of the user attributes
-        /// will be private, not just the attributes specified with <see cref="ConfigurationBuilder.PrivateAttribute(UserAttribute)"/>
-        /// or with the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/> method.
-        /// </remarks>
-        public bool AllAttributesPrivate { get; }
 
         /// <summary>
         /// Whether to disable the automatic sending of an alias event when the current user is changed
@@ -97,42 +85,17 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         public bool EvaluationReasons { get; }
 
-        /// <summary>
-        /// The capacity of the event buffer.
-        /// </summary>
-        /// <remarks>
-        /// The client buffers up to this many events in memory before flushing. If the capacity is exceeded
-        /// before the buffer is flushed, events will be discarded. Increasing the capacity means that events
-        /// are less likely to be discarded, at the cost of consuming more memory.
-        /// </remarks>
-        public int EventCapacity { get; }
 
         /// <summary>
-        /// The time between flushes of the event buffer.
+        /// A factory object that creates an implementation of <see cref="IEventProcessor"/>, responsible
+        /// for sending analytics events.
         /// </summary>
-        /// <remarks>
-        /// Decreasing the flush interval means that the event buffer is less likely to reach capacity.
-        /// </remarks>
-        public TimeSpan EventFlushInterval { get; }
-
-        /// <summary>
-        /// The base URL of the LaunchDarkly analytics event server.
-        /// </summary>
-        public Uri EventsUri { get; }
+        public IEventProcessorFactory EventProcessorFactory { get; }
 
         /// <summary>
         /// The object to be used for sending HTTP requests, if a specific implementation is desired.
         /// </summary>
         public HttpMessageHandler HttpMessageHandler { get; }
-
-        /// <summary>
-        /// Sets whether to include full user details in every analytics event.
-        /// </summary>
-        /// <remarks>
-        /// The default is <see langword="false"/>: events will only include the user key, except for one
-        /// "index" event that provides the full details for the user.
-        /// </remarks>
-        public bool InlineUsersInEvents { get; }
 
         internal ILoggingConfigurationFactory LoggingConfigurationFactory { get; }
 
@@ -159,16 +122,6 @@ namespace LaunchDarkly.Sdk.Client
         public bool PersistFlagValues { get; }
 
         /// <summary>
-        /// Attribute names that have been marked as private for all users.
-        /// </summary>
-        /// <remarks>
-        /// Any users sent to LaunchDarkly with this configuration active will have attributes with this name
-        /// removed, even if you did not use the <see cref="IUserBuilderCanMakeAttributePrivate.AsPrivateAttribute"/>
-        /// method when building the user.
-        /// </remarks>
-        public IImmutableSet<UserAttribute> PrivateAttributeNames { get; }
-
-        /// <summary>
         /// The timeout when reading data from the streaming connection.
         /// </summary>
         public TimeSpan ReadTimeout { get; }
@@ -184,11 +137,6 @@ namespace LaunchDarkly.Sdk.Client
         internal bool UseReport { get; }
         // UseReport is currently disabled due to Android HTTP issues (ch47341), but it's still implemented internally
 
-        internal static readonly Uri DefaultUri = new Uri("https://app.launchdarkly.com");
-        internal static readonly Uri DefaultStreamUri = new Uri("https://clientstream.launchdarkly.com");
-        internal static readonly Uri DefaultEventsUri = new Uri("https://mobile.launchdarkly.com");
-        internal static readonly int DefaultEventCapacity = 100;
-        internal static readonly TimeSpan DefaultEventFlushInterval = TimeSpan.FromSeconds(5);
         internal static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromMinutes(5);
         internal  static readonly TimeSpan DefaultReconnectTime = TimeSpan.FromSeconds(1);
         internal static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(10);
@@ -243,31 +191,24 @@ namespace LaunchDarkly.Sdk.Client
 
         internal Configuration(ConfigurationBuilder builder)
         {
-            AllAttributesPrivate = builder._allAttributesPrivate;
             AutoAliasingOptOut = builder._autoAliasingOptOut;
             ConnectionTimeout = builder._connectionTimeout;
             DataSourceFactory = builder._dataSourceFactory;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
             EvaluationReasons = builder._evaluationReasons;
-            EventFlushInterval = builder._eventFlushInterval;
-            EventCapacity = builder._eventCapacity;
-            EventsUri = builder._eventsUri;
+            EventProcessorFactory = builder._eventProcessorFactory;
             HttpMessageHandler = object.ReferenceEquals(builder._httpMessageHandler, ConfigurationBuilder.DefaultHttpMessageHandlerInstance) ?
                 PlatformSpecific.Http.CreateHttpMessageHandler(builder._connectionTimeout, builder._readTimeout) :
                 builder._httpMessageHandler;
-            InlineUsersInEvents = builder._inlineUsersInEvents;
             LoggingConfigurationFactory = builder._loggingConfigurationFactory;
             MobileKey = builder._mobileKey;
             Offline = builder._offline;
             PersistFlagValues = builder._persistFlagValues;
-            PrivateAttributeNames = builder._privateAttributeNames is null ? null :
-                builder._privateAttributeNames.ToImmutableHashSet();
             UseReport = builder._useReport;
 
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
             DeviceInfo = builder._deviceInfo;
-            EventProcessor = builder._eventProcessor;
             FlagCacheManager = builder._flagCacheManager;
             FlagChangedEventManager = builder._flagChangedEventManager;
             PersistentStorage = builder._persistentStorage;

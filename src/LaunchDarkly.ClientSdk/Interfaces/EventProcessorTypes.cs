@@ -1,5 +1,5 @@
 ﻿
-namespace LaunchDarkly.Sdk.Client.Internal.Events
+namespace LaunchDarkly.Sdk.Client.Interfaces
 {
     /// <summary>
     /// Parameter types for use by <see cref="IEventProcessor"/> implementations.
@@ -9,7 +9,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
     /// <see cref="IEventProcessor"/> functionality. They are provided to allow a custom implementation
     /// or test fixture to be substituted for the SDK's normal analytics event logic.
     /// </remarks>
-    internal static class EventProcessorTypes
+    public static class EventProcessorTypes
     {
         /// <summary>
         /// Parameters for <see cref="IEventProcessor.RecordEvaluationEvent(EvaluationEvent)"/>.

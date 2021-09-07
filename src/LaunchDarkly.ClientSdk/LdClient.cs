@@ -35,7 +35,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly IBackgroundModeManager _backgroundModeManager;
         readonly IDeviceInfo deviceInfo;
         readonly IConnectivityStateManager _connectivityStateManager;
-        readonly IEventProcessor eventProcessor;
+        readonly IEventProcessor _eventProcessor;
         readonly IFlagCacheManager flagCacheManager;
         internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
         readonly IPersistentStorage persister;
@@ -164,18 +164,20 @@ namespace LaunchDarkly.Sdk.Client
             {
                 _log.Debug("Setting online to {0} due to a connectivity change event", networkAvailable);
                 _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
-                eventProcessor.SetOffline(!networkAvailable || _connectionManager.ForceOffline);
+                _eventProcessor.SetOffline(!networkAvailable || _connectionManager.ForceOffline);
             };
             var isConnected = _connectivityStateManager.IsConnected;
             _connectionManager.SetNetworkEnabled(isConnected);
 
-            eventProcessor = Factory.CreateEventProcessor(configuration, _log);
-            eventProcessor.SetOffline(configuration.Offline || !isConnected);
+            _eventProcessor = (configuration.EventProcessorFactory ?? Components.SendEvents())
+                .CreateEventProcessor(_context);
+            _eventProcessor.SetOffline(configuration.Offline || !isConnected);
 
             // Send an initial identify event, but only if we weren't explicitly set to be offline
+
             if (!configuration.Offline)
             {
-                eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
+                _eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
                 {
                     Timestamp = UnixMillisecondTime.Now,
                     User = user
@@ -344,7 +346,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public async Task SetOfflineAsync(bool value)
         {
-            eventProcessor.SetOffline(value || !_connectionManager.NetworkEnabled);
+            _eventProcessor.SetOffline(value || !_connectionManager.NetworkEnabled);
             await _connectionManager.SetForceOffline(value);
         }
 
@@ -469,10 +471,7 @@ namespace LaunchDarkly.Sdk.Client
 
         private void SendEvaluationEventIfOnline(EventProcessorTypes.EvaluationEvent e)
         {
-            if (!_connectionManager.ForceOffline)
-            {
-                eventProcessor.RecordEvaluationEvent(e);
-            }
+            EventProcessorIfEnabled().RecordEvaluationEvent(e);
         }
 
         /// <inheritdoc/>
@@ -485,32 +484,26 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public void Track(string eventName, LdValue data, double metricValue)
         {
-            if (!_connectionManager.ForceOffline)
+            EventProcessorIfEnabled().RecordCustomEvent(new EventProcessorTypes.CustomEvent
             {
-                eventProcessor.RecordCustomEvent(new EventProcessorTypes.CustomEvent
-                {
-                    Timestamp = UnixMillisecondTime.Now,
-                    EventKey = eventName,
-                    User = User,
-                    Data = data,
-                    MetricValue = metricValue
-                });
-            }
+                Timestamp = UnixMillisecondTime.Now,
+                EventKey = eventName,
+                User = User,
+                Data = data,
+                MetricValue = metricValue
+            });
         }
 
         /// <inheritdoc/>
         public void Track(string eventName, LdValue data)
         {
-            if (!_connectionManager.ForceOffline)
+            EventProcessorIfEnabled().RecordCustomEvent(new EventProcessorTypes.CustomEvent
             {
-                eventProcessor.RecordCustomEvent(new EventProcessorTypes.CustomEvent
-                {
-                    Timestamp = UnixMillisecondTime.Now,
-                    EventKey = eventName,
-                    User = User,
-                    Data = data
-                });
-            }
+                Timestamp = UnixMillisecondTime.Now,
+                EventKey = eventName,
+                User = User,
+                Data = data
+            });
         }
 
         /// <inheritdoc/>
@@ -522,7 +515,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public void Flush()
         {
-            eventProcessor.Flush(); // eventProcessor will ignore this if it is offline
+            _eventProcessor.Flush(); // eventProcessor will ignore this if it is offline
         }
 
         /// <inheritdoc/>
@@ -553,22 +546,19 @@ namespace LaunchDarkly.Sdk.Client
                 _user = newUser;
             });
 
-            if (!_connectionManager.ForceOffline)
+            EventProcessorIfEnabled().RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
             {
-                eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
+                Timestamp = UnixMillisecondTime.Now,
+                User = user
+            });
+            if (oldUser.Anonymous && !newUser.Anonymous && !_config.AutoAliasingOptOut)
+            {
+                EventProcessorIfEnabled().RecordAliasEvent(new EventProcessorTypes.AliasEvent
                 {
                     Timestamp = UnixMillisecondTime.Now,
-                    User = user
+                    User = user,
+                    PreviousUser = oldUser
                 });
-                if (oldUser.Anonymous && !newUser.Anonymous && !_config.AutoAliasingOptOut)
-                {
-                    eventProcessor.RecordAliasEvent(new EventProcessorTypes.AliasEvent
-                    {
-                        Timestamp = UnixMillisecondTime.Now,
-                        User = user,
-                        PreviousUser = oldUser
-                    });
-                }
             }
 
             return await _connectionManager.SetDataSourceConstructor(
@@ -588,14 +578,11 @@ namespace LaunchDarkly.Sdk.Client
             {
                 throw new ArgumentNullException(nameof(previousUser));
             }
-            if (!_connectionManager.ForceOffline)
+            EventProcessorIfEnabled().RecordAliasEvent(new EventProcessorTypes.AliasEvent
             {
-                eventProcessor.RecordAliasEvent(new EventProcessorTypes.AliasEvent
-                {
-                    User = user,
-                    PreviousUser = previousUser
-                });
-            }
+                User = user,
+                PreviousUser = previousUser
+            });
         }
 
         User DecorateUser(User user)
@@ -656,7 +643,7 @@ namespace LaunchDarkly.Sdk.Client
 
                 _backgroundModeManager.BackgroundModeChanged -= OnBackgroundModeChanged;
                 _connectionManager.Dispose();
-                eventProcessor.Dispose();
+                _eventProcessor.Dispose();
 
                 // Reset the static Instance to null *if* it was referring to this instance
                 DetachInstance();
@@ -702,6 +689,12 @@ namespace LaunchDarkly.Sdk.Client
                 false  // don't reset initialized state because the user is still the same
             );
         }
+
+        // Returns our configured event processor (which might be the null implementation, if configured
+        // with NoEvents)-- or, a stub if we have been explicitly put offline. This way, during times
+        // when the application does not want any network activity, we won't bother buffering events.
+        internal IEventProcessor EventProcessorIfEnabled() =>
+            Offline ? ComponentsImpl.NullEventProcessor.Instance : _eventProcessor;
 
         internal Func<IDataSource> MakeDataSourceConstructor(User user, bool background)
         {

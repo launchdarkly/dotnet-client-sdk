@@ -467,7 +467,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var eventProcessor = new MockEventProcessor();
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .EventProcessor(eventProcessor)
+                .Events(new SingleEventProcessorFactory(eventProcessor))
                 .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
@@ -483,7 +483,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
                 .ConnectivityStateManager(connectivityStateManager)
-                .EventProcessor(eventProcessor)
+                .Events(new SingleEventProcessorFactory(eventProcessor))
                 .Offline(true)
                 .Logging(testLogging)
                 .Build();
@@ -513,7 +513,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
                 .ConnectivityStateManager(connectivityStateManager)
-                .EventProcessor(eventProcessor)
+                .Events(new SingleEventProcessorFactory(eventProcessor))
                 .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))

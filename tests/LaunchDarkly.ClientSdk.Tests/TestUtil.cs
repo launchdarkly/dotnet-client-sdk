@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
@@ -18,6 +19,8 @@ namespace LaunchDarkly.Sdk.Client
         private static readonly SemaphoreSlim ClientInstanceLock = new SemaphoreSlim(1);
 
         private static ThreadLocal<bool> InClientLock = new ThreadLocal<bool>();
+
+        public static LdClientContext SimpleContext => new LdClientContext(Configuration.Default("key"));
 
         public static T WithClientLock<T>(Func<T> f)
         {
@@ -144,7 +147,7 @@ namespace LaunchDarkly.Sdk.Client
             return Configuration.Builder(appKey)
                                 .FlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
                                 .ConnectivityStateManager(new MockConnectivityStateManager(true))
-                                .EventProcessor(new MockEventProcessor())
+                                .Events(new SingleEventProcessorFactory(new MockEventProcessor()))
                                 .DataSource(MockPollingProcessor.Factory(null))
                                 .PersistentStorage(new MockPersistentStorage())
                                 .DeviceInfo(new MockDeviceInfo());

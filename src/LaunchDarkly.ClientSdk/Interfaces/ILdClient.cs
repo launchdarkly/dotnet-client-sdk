@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Client.Integrations;
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
@@ -361,7 +362,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// When the LaunchDarkly client generates analytics events (from flag evaluations, or from
         /// <see cref="Identify(User, TimeSpan)"/> or <see cref="Track(string)"/>), they are queued on a worker thread.
         /// The event thread normally sends all queued events to LaunchDarkly at regular intervals, controlled by the
-        /// <see cref="ConfigurationBuilder.EventFlushInterval"/> option. Calling <see cref="Flush"/> triggers a send
+        /// <see cref="EventProcessorBuilder.FlushInterval"/> option. Calling <see cref="Flush"/> triggers a send
         /// without waiting for the next interval.
         /// </para>
         /// <para>

@@ -266,7 +266,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 var config = Configuration.Builder(_mobileKey)
                     .DataSource(MockPollingProcessor.Factory("{}"))
-                    .EventsUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
+                    .Events(Components.SendEvents().BaseUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath)))
                     .PersistFlagValues(false)
                     .Build();
 
@@ -480,7 +480,7 @@ namespace LaunchDarkly.Sdk.Client
         private Configuration BaseConfig(Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
             var builderInternal = Configuration.Builder(_mobileKey)
-                .EventProcessor(new MockEventProcessor());
+                .Events(new SingleEventProcessorFactory(new MockEventProcessor()));
             builderInternal
                 .Logging(testLogging)
                 .PersistFlagValues(false);  // unless we're specifically testing flag caching, this helps to prevent test state contamination

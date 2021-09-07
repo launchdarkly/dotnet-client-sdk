@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Net.Http;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -10,8 +10,8 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class ConfigurationTest : BaseTest
     {
-        private readonly BuilderTestUtil<ConfigurationBuilder, Configuration> _tester =
-            BuilderTestUtil.For(() => Configuration.Builder(mobileKey), b => b.Build())
+        private readonly BuilderBehavior.BuildTester<ConfigurationBuilder, Configuration> _tester =
+            BuilderBehavior.For(() => Configuration.Builder(mobileKey), b => b.Build())
                 .WithCopyConstructor(c => Configuration.Builder(c));
 
         const string mobileKey = "any-key";
@@ -49,40 +49,27 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void AllAttributesPrivate()
+        public void EnableBackgroundUpdating()
         {
-            var prop = _tester.Property(b => b.AllAttributesPrivate, (b, v) => b.AllAttributesPrivate(v));
+            var prop = _tester.Property(c => c.EnableBackgroundUpdating, (b, v) => b.EnableBackgroundUpdating(v));
+            prop.AssertDefault(true);
+            prop.AssertCanSet(false);
+        }
+
+        [Fact]
+        public void EvaluationReasons()
+        {
+            var prop = _tester.Property(c => c.EvaluationReasons, (b, v) => b.EvaluationReasons(v));
             prop.AssertDefault(false);
             prop.AssertCanSet(true);
         }
 
         [Fact]
-        public void EventCapacity()
+        public void Events()
         {
-            var prop = _tester.Property(b => b.EventCapacity, (b, v) => b.EventCapacity(v));
-            prop.AssertDefault(Configuration.DefaultEventCapacity);
-            prop.AssertCanSet(1);
-            prop.AssertSetIsChangedTo(0, Configuration.DefaultEventCapacity);
-            prop.AssertSetIsChangedTo(-1, Configuration.DefaultEventCapacity);
-        }
-
-        [Fact]
-        public void EventsUri()
-        {
-            var prop = _tester.Property(b => b.EventsUri, (b, v) => b.EventsUri(v));
-            prop.AssertDefault(Configuration.DefaultEventsUri);
-            prop.AssertCanSet(new Uri("http://x"));
-            prop.AssertSetIsChangedTo(null, Configuration.DefaultEventsUri);
-        }
-
-        [Fact]
-        public void FlushInterval()
-        {
-            var prop = _tester.Property(b => b.EventFlushInterval, (b, v) => b.EventFlushInterval(v));
-            prop.AssertDefault(Configuration.DefaultEventFlushInterval);
-            prop.AssertCanSet(TimeSpan.FromMinutes(7));
-            prop.AssertSetIsChangedTo(TimeSpan.Zero, Configuration.DefaultEventFlushInterval);
-            prop.AssertSetIsChangedTo(TimeSpan.FromMilliseconds(-1), Configuration.DefaultEventFlushInterval);
+            var prop = _tester.Property(c => c.EventProcessorFactory, (b, v) => b.Events(v));
+            prop.AssertDefault(null);
+            prop.AssertCanSet(new ComponentsImpl.NullEventProcessorFactory());
         }
 
         [Fact]
@@ -91,14 +78,6 @@ namespace LaunchDarkly.Sdk.Client
             var prop = _tester.Property(c => c.HttpMessageHandler, (b, v) => b.HttpMessageHandler(v));
             // Can't test the default here because the default is platform-dependent.
             prop.AssertCanSet(new HttpClientHandler());
-        }
-
-        [Fact]
-        public void InlineUsersInEvents()
-        {
-            var prop = _tester.Property(b => b.InlineUsersInEvents, (b, v) => b.InlineUsersInEvents(v));
-            prop.AssertDefault(false);
-            prop.AssertCanSet(true);
         }
 
         [Fact]
@@ -134,15 +113,11 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void PrivateAttributes()
+        public void PersistFlagValues()
         {
-            var b = _tester.New();
-            Assert.Null(b.Build().PrivateAttributeNames);
-            b.PrivateAttribute(UserAttribute.Name);
-            b.PrivateAttribute(UserAttribute.Email);
-            b.PrivateAttribute(UserAttribute.ForName("other"));
-            Assert.Equal(ImmutableHashSet.Create<UserAttribute>(
-                UserAttribute.Name, UserAttribute.Email, UserAttribute.ForName("other")), b.Build().PrivateAttributeNames);
+            var prop = _tester.Property(c => c.PersistFlagValues, (b, v) => b.PersistFlagValues(v));
+            prop.AssertDefault(true);
+            prop.AssertCanSet(false);
         }
 
         [Fact]
