@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 
@@ -46,17 +47,16 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         internal FeatureFlagRequestor(
             Uri baseUri,
             User user,
-            bool useReport,
             bool withReasons,
-            HttpProperties httpProperties,
+            HttpConfiguration httpConfig,
             Logger log
             )
         {
             this._baseUri = baseUri;
-            this._httpProperties = httpProperties;
-            this._httpClient = httpProperties.NewHttpClient();
+            this._httpProperties = httpConfig.HttpProperties;
+            this._httpClient = _httpProperties.NewHttpClient();
             this._currentUser = user;
-            this._useReport = useReport;
+            this._useReport = httpConfig.UseReport;
             this._withReasons = withReasons;
             this._log = log;
         }

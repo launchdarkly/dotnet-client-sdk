@@ -45,11 +45,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 new DataSourceUpdateSinkImpl(mockFlagCacheMgr),
                 user,
                 baseUri,
-                false,
                 withReasons,
                 initialReconnectDelay,
                 mockRequestor,
-                Configuration.Builder("key").Build().HttpProperties,
+                TestUtil.SimpleContext.Http,
                 testLogger,
                 eventSourceFactory.Create()
                 );

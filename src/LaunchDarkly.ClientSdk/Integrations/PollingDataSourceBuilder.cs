@@ -130,9 +130,8 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             var requestor = new FeatureFlagRequestor(
                 _baseUri ?? DefaultBaseUri,
                 currentUser,
-                context.UseReport,
                 context.EvaluationReasons,
-                context.HttpProperties,
+                context.Http,
                 logger
                 );
 

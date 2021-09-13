@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.TestHelpers;
@@ -73,17 +72,17 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void HttpMessageHandler()
+        public void Http()
         {
-            var prop = _tester.Property(c => c.HttpMessageHandler, (b, v) => b.HttpMessageHandler(v));
-            // Can't test the default here because the default is platform-dependent.
-            prop.AssertCanSet(new HttpClientHandler());
+            var prop = _tester.Property(c => c.HttpConfigurationBuilder, (b, v) => b.Http(v));
+            prop.AssertDefault(null);
+            prop.AssertCanSet(Components.HttpConfiguration());
         }
 
         [Fact]
         public void Logging()
         {
-            var prop = _tester.Property(c => c.LoggingConfigurationFactory, (b, v) => b.Logging(v));
+            var prop = _tester.Property(c => c.LoggingConfigurationBuilder, (b, v) => b.Logging(v));
             prop.AssertDefault(null);
             prop.AssertCanSet(Components.Logging(Logs.ToWriter(Console.Out)));
         }
@@ -93,7 +92,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var adapter = Logs.ToWriter(Console.Out);
             var config = Configuration.Builder("key").Logging(adapter).Build();
-            var logConfig = config.LoggingConfigurationFactory.CreateLoggingConfiguration();
+            var logConfig = config.LoggingConfigurationBuilder.CreateLoggingConfiguration();
             Assert.Same(adapter, logConfig.LogAdapter);
         }
 

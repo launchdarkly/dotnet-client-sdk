@@ -1,6 +1,5 @@
 ﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Internal;
-using LaunchDarkly.Sdk.Internal.Http;
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
@@ -15,9 +14,10 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     /// </remarks>
     public sealed class LdClientContext
     {
-        internal Configuration Configuration { get; }
-
-        internal HttpProperties HttpProperties { get; }
+        /// <summary>
+        /// The basic properties common to all components.
+        /// </summary>
+        public BasicConfiguration Basic { get; }
 
         /// <summary>
         /// The configured logger for the SDK.
@@ -30,9 +30,9 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         public bool EvaluationReasons { get; }
 
         /// <summary>
-        /// True if the HTTP REPORT method is enabled.
+        /// The HTTP configuration properties.
         /// </summary>
-        public bool UseReport { get; }
+        public HttpConfiguration Http { get; }
 
         /// <summary>
         /// Creates an instance.
@@ -42,14 +42,16 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             Configuration configuration
             )
         {
-            var logConfig = (configuration.LoggingConfigurationFactory ?? Components.Logging())
+            this.Basic = new BasicConfiguration(configuration.MobileKey);
+
+            var logConfig = (configuration.LoggingConfigurationBuilder ?? Components.Logging())
                 .CreateLoggingConfiguration();
             var logAdapter = logConfig.LogAdapter ?? Logs.None;
             this.BaseLogger = logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
 
             this.EvaluationReasons = configuration.EvaluationReasons;
-            this.HttpProperties = configuration.HttpProperties;
-            this.UseReport = configuration.UseReport;
+            this.Http = (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
+                .CreateHttpConfiguration(this.Basic);
         }
     }
 }

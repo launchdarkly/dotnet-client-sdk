@@ -50,11 +50,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             IDataSourceUpdateSink updateSink,
             User user,
             Uri baseUri,
-            bool useReport,
             bool withReasons,
             TimeSpan initialReconnectDelay,
             IFeatureFlagRequestor requestor,
-            HttpProperties httpProperties,
+            HttpConfiguration httpConfig,
             Logger log,
             EventSourceCreator eventSourceCreator // used only in tests
             )
@@ -62,11 +61,11 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             this._updateSink = updateSink;
             this._user = user;
             this._baseUri = baseUri;
-            this._useReport = useReport;
+            this._useReport = httpConfig.UseReport;
             this._withReasons = withReasons;
             this._initialReconnectDelay = initialReconnectDelay;
             this._requestor = requestor;
-            this._httpProperties = httpProperties;
+            this._httpProperties = httpConfig.HttpProperties;
             this._initTask = new TaskCompletionSource<bool>();
             this._log = log;
             this._eventSourceCreator = eventSourceCreator ?? CreateEventSource;

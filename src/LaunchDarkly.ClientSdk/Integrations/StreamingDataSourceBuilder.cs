@@ -185,9 +185,8 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             var requestor = new FeatureFlagRequestor(
                 pollingBaseUri,
                 currentUser,
-                context.UseReport,
                 context.EvaluationReasons,
-                context.HttpProperties,
+                context.Http,
                 logger
                 );
 
@@ -195,11 +194,10 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 updateSink,
                 currentUser,
                 baseUri,
-                context.UseReport,
                 context.EvaluationReasons,
                 _initialReconnectDelay,
                 requestor,
-                context.HttpProperties,
+                context.Http,
                 logger,
                 _eventSourceCreator
                 );

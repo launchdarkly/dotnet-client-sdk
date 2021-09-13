@@ -34,18 +34,15 @@ namespace LaunchDarkly.Sdk.Client
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
         internal bool _autoAliasingOptOut = false;
-        internal TimeSpan _connectionTimeout = Configuration.DefaultConnectionTimeout;
         internal IDataSourceFactory _dataSourceFactory = null;
         internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
         internal IEventProcessorFactory _eventProcessorFactory = null;
-        internal HttpMessageHandler _httpMessageHandler = DefaultHttpMessageHandlerInstance;
-        internal ILoggingConfigurationFactory _loggingConfigurationFactory = null;
+        internal HttpConfigurationBuilder _httpConfigurationBuilder = null;
+        internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
         internal string _mobileKey;
         internal bool _offline = false;
         internal bool _persistFlagValues = true;
-        internal TimeSpan _readTimeout = Configuration.DefaultReadTimeout;
-        internal bool _useReport = false;
 
         // Internal properties only settable for testing
         internal IBackgroundModeManager _backgroundModeManager;
@@ -63,18 +60,15 @@ namespace LaunchDarkly.Sdk.Client
         internal ConfigurationBuilder(Configuration copyFrom)
         {
             _autoAliasingOptOut = copyFrom.AutoAliasingOptOut;
-            _connectionTimeout = copyFrom.ConnectionTimeout;
             _dataSourceFactory = copyFrom.DataSourceFactory;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
             _evaluationReasons = copyFrom.EvaluationReasons;
             _eventProcessorFactory = copyFrom.EventProcessorFactory;
-            _httpMessageHandler = copyFrom.HttpMessageHandler;
-            _loggingConfigurationFactory = copyFrom.LoggingConfigurationFactory;
+            _httpConfigurationBuilder = copyFrom.HttpConfigurationBuilder;
+            _loggingConfigurationBuilder = copyFrom.LoggingConfigurationBuilder;
             _mobileKey = copyFrom.MobileKey;
             _offline = copyFrom.Offline;
             _persistFlagValues = copyFrom.PersistFlagValues;
-            _readTimeout = copyFrom.ReadTimeout;
-            _useReport = copyFrom.UseReport;
         }
 
         /// <summary>
@@ -104,20 +98,6 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder AutoAliasingOptOut(bool autoAliasingOptOut)
         {
             _autoAliasingOptOut = autoAliasingOptOut;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets the connection timeout for all HTTP requests.
-        /// </summary>
-        /// <remarks>
-        /// The default value is 10 seconds.
-        /// </remarks>
-        /// <param name="connectionTimeout">the connection timeout</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder ConnectionTimeout(TimeSpan connectionTimeout)
-        {
-            _connectionTimeout = connectionTimeout;
             return this;
         }
 
@@ -199,22 +179,15 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Sets the object to be used for sending HTTP requests, if a specific implementation is desired.
+        /// Sets the SDK's networking configuration, using a configuration builder obtained from
+        /// <see cref="Components.HttpConfiguration()"/>. The builder has methods for setting
+        /// individual HTTP-related properties.
         /// </summary>
-        /// <remarks>
-        /// This is exposed mainly for testing purposes; you should not normally need to change it. The default
-        /// value is an <see cref="System.Net.Http.HttpClientHandler"/>, but if you do not change this value,
-        /// on mobile platforms it will be replaced by the appropriate native HTTP handler for the current
-        /// current platform, if any (e.g. <c>Xamarin.Android.Net.AndroidClientHandler</c>). If you set it
-        /// explicitly to <see langword="null"/>, the SDK will call the default <see cref="HttpClient"/>
-        /// constructor without specifying a handler, which may or may not result in using a native HTTP handler
-        /// (depending on your application configuration).
-        /// </remarks>
-        /// <param name="httpMessageHandler">the <see cref="System.Net.Http.HttpMessageHandler"/> to use</param>
+        /// <param name="httpConfigurationBuilder">a builder for HTTP configuration</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder HttpMessageHandler(HttpMessageHandler httpMessageHandler)
+        public ConfigurationBuilder Http(HttpConfigurationBuilder httpConfigurationBuilder)
         {
-            _httpMessageHandler = httpMessageHandler;
+            _httpConfigurationBuilder = httpConfigurationBuilder;
             return this;
         }
 
@@ -242,15 +215,14 @@ namespace LaunchDarkly.Sdk.Client
             Logging(Components.Logging(logAdapter));
 
         /// <summary>
-        /// Sets the SDK's logging configuration, using a factory object.
+        /// Sets the SDK's logging configuration, using a configuration builder obtained from.
+        /// <see cref="Components.Logging()"/>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This object is normally a configuration builder obtained from <see cref="Components.Logging()"/>
-        /// which has methods for setting individual logging-related properties. As a shortcut for disabling
-        /// logging, you may use <see cref="Components.NoLogging"/> instead. If all you want to do is to set
-        /// the basic logging destination, and you do not need to set other logging properties, you can use
-        /// <see cref="Logging(ILogAdapter)"/> instead.
+        /// As a shortcut for disabling logging, you may use <see cref="Components.NoLogging"/> instead.
+        /// If all you want to do is to set the basic logging destination, and you do not need to set other
+        /// logging properties, you can use <see cref="Logging(ILogAdapter)"/> instead.
         /// </para>
         /// <para>
         /// For more about how logging works in the SDK, see the LaunchDarkly
@@ -262,15 +234,15 @@ namespace LaunchDarkly.Sdk.Client
         ///         .Logging(Components.Logging().Level(LogLevel.Warn)))
         ///         .Build();
         /// </example>
-        /// <param name="loggingConfigurationFactory">the factory object</param>
+        /// <param name="loggingConfigurationBuilder">the builder object</param>
         /// <returns>the same builder</returns>
         /// <seealso cref="Components.Logging()" />
         /// <seealso cref="Components.Logging(ILogAdapter) "/>
         /// <seealso cref="Components.NoLogging" />
         /// <seealso cref="Logging(ILogAdapter)"/>
-        public ConfigurationBuilder Logging(ILoggingConfigurationFactory loggingConfigurationFactory)
+        public ConfigurationBuilder Logging(LoggingConfigurationBuilder loggingConfigurationBuilder)
         {
-            _loggingConfigurationFactory = loggingConfigurationFactory;
+            _loggingConfigurationBuilder = loggingConfigurationBuilder;
             return this;
         }
 
@@ -311,20 +283,6 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder PersistFlagValues(bool persistFlagValues)
         {
             _persistFlagValues = persistFlagValues;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets the timeout when reading data from the streaming connection.
-        /// </summary>
-        /// <remarks>
-        /// The default value is 5 minutes.
-        /// </remarks>
-        /// <param name="readTimeout">the read timeout</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder ReadTimeout(TimeSpan readTimeout)
-        {
-            _readTimeout = readTimeout;
             return this;
         }
 

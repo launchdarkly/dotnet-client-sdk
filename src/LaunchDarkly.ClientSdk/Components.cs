@@ -12,21 +12,41 @@ namespace LaunchDarkly.Sdk.Client
     /// Some of the configuration options in <see cref="ConfigurationBuilder"/> affect the entire SDK,
     /// but others are specific to one area of functionality, such as how the SDK receives feature flag
     /// updates or processes analytics events. For the latter, the standard way to specify a configuration
-    /// is to call one of the static methods in <see cref="Components"/> (such as <see cref="Logging()"/>),
+    /// is to call one of the static methods in <see cref="Components"/> (such as <see cref="StreamingDataSource()"/>),
     /// apply any desired configuration change to the object that that method returns (such as
-    /// <see cref="LoggingConfigurationBuilder.BaseLoggerName(string)"/>), and then use the
+    /// <see cref="StreamingDataSourceBuilder.InitialReconnectDelay(System.TimeSpan)"/>), and then use the
     /// corresponding method in <see cref="ConfigurationBuilder"/> (such as
-    /// <see cref="ConfigurationBuilder.Logging(ILoggingConfigurationFactory)"/>) to use that
+    /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>) to use that
     /// configured component in the SDK.
     /// </remarks>
     public static class Components
     {
         /// <summary>
+        /// Returns a configuration builder for the SDK's networking configuration.
+        /// </summary>
+        /// <remarks>
+        /// Passing this to <see cref="ConfigurationBuilder.Http(HttpConfigurationBuilder)"/> applies this
+        /// configuration to all HTTP/HTTPS requests made by the SDK.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(sdkKey)
+        ///         .Http(
+        ///             Components.HttpConfiguration()
+        ///                 .ConnectTimeout(TimeSpan.FromMilliseconds(3000))
+        ///         )
+        ///         .Build();
+        /// </code>
+        /// </example>
+        /// <returns>a builder</returns>
+        public static HttpConfigurationBuilder HttpConfiguration() => new HttpConfigurationBuilder();
+
+        /// <summary>
         /// Returns a configuration builder for the SDK's logging configuration.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Passing this to <see cref="ConfigurationBuilder.Logging(ILoggingConfigurationFactory)" />,
+        /// Passing this to <see cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)" />,
         /// after setting any desired properties on the builder, applies this configuration to the SDK.
         /// </para>
         /// <para>
@@ -45,7 +65,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </code>
         /// </example>
         /// <returns>a configurable factory object</returns>
-        /// <seealso cref="ConfigurationBuilder.Logging(ILoggingConfigurationFactory)" />
+        /// <seealso cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)" />
         /// <seealso cref="Components.Logging(ILogAdapter) "/>
         /// <seealso cref="Components.NoLogging" />
         public static LoggingConfigurationBuilder Logging() =>
@@ -82,7 +102,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </example>
         /// <param name="adapter">an <c>ILogAdapter</c> for the desired logging implementation</param>
         /// <returns>a configurable factory object</returns>
-        /// <seealso cref="ConfigurationBuilder.Logging(ILoggingConfigurationFactory)" />
+        /// <seealso cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)" />
         /// <seealso cref="LoggingConfigurationBuilder.Adapter(ILogAdapter)" />
         /// <seealso cref="Logging() "/>
         /// <seealso cref="NoLogging" />

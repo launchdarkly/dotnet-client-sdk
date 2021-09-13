@@ -69,9 +69,5 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Interfaces\IEventProcessor.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+
 </Project>

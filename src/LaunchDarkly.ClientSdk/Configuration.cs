@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Immutable;
-using System.Net.Http;
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
-using LaunchDarkly.Sdk.Internal;
-using LaunchDarkly.Sdk.Internal.Http;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -55,11 +50,6 @@ namespace LaunchDarkly.Sdk.Client
         public bool AutoAliasingOptOut { get; }
 
         /// <summary>
-        /// The connection timeout to the LaunchDarkly server.
-        /// </summary>
-        public TimeSpan ConnectionTimeout { get; }
-
-        /// <summary>
         /// A factory object that creates an implementation of <see cref="IDataSource"/>, which will
         /// receive feature flag data.
         /// </summary>
@@ -93,11 +83,14 @@ namespace LaunchDarkly.Sdk.Client
         public IEventProcessorFactory EventProcessorFactory { get; }
 
         /// <summary>
-        /// The object to be used for sending HTTP requests, if a specific implementation is desired.
+        /// HTTP configuration properties for the SDK.
         /// </summary>
-        public HttpMessageHandler HttpMessageHandler { get; }
+        public HttpConfigurationBuilder HttpConfigurationBuilder { get; }
 
-        internal ILoggingConfigurationFactory LoggingConfigurationFactory { get; }
+        /// <summary>
+        /// Logging configuration properties for the SDK.
+        /// </summary>
+        public LoggingConfigurationBuilder LoggingConfigurationBuilder { get; }
 
         /// <summary>
         /// The key for your LaunchDarkly environment.
@@ -120,26 +113,6 @@ namespace LaunchDarkly.Sdk.Client
         /// The default is <see langword="true"/>.
         /// </remarks>
         public bool PersistFlagValues { get; }
-
-        /// <summary>
-        /// The timeout when reading data from the streaming connection.
-        /// </summary>
-        public TimeSpan ReadTimeout { get; }
-
-        /// <summary>
-        /// Whether to use the HTTP REPORT method for feature flag requests.
-        /// </summary>
-        /// <remarks>
-        /// By default, polling and streaming connections are made with the GET method, witht the user data
-        /// encoded into the request URI. Using REPORT allows the user data to be sent in the request body instead.
-        /// However, some network gateways do not support REPORT.
-        /// </remarks>
-        internal bool UseReport { get; }
-        // UseReport is currently disabled due to Android HTTP issues (ch47341), but it's still implemented internally
-
-        internal static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromMinutes(5);
-        internal  static readonly TimeSpan DefaultReconnectTime = TimeSpan.FromSeconds(1);
-        internal static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(10);
 
         /// <summary>
         /// Creates a configuration with all parameters set to the default.
@@ -192,19 +165,15 @@ namespace LaunchDarkly.Sdk.Client
         internal Configuration(ConfigurationBuilder builder)
         {
             AutoAliasingOptOut = builder._autoAliasingOptOut;
-            ConnectionTimeout = builder._connectionTimeout;
             DataSourceFactory = builder._dataSourceFactory;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
             EvaluationReasons = builder._evaluationReasons;
             EventProcessorFactory = builder._eventProcessorFactory;
-            HttpMessageHandler = object.ReferenceEquals(builder._httpMessageHandler, ConfigurationBuilder.DefaultHttpMessageHandlerInstance) ?
-                PlatformSpecific.Http.CreateHttpMessageHandler(builder._connectionTimeout, builder._readTimeout) :
-                builder._httpMessageHandler;
-            LoggingConfigurationFactory = builder._loggingConfigurationFactory;
+            HttpConfigurationBuilder = builder._httpConfigurationBuilder;
+            LoggingConfigurationBuilder = builder._loggingConfigurationBuilder;
             MobileKey = builder._mobileKey;
             Offline = builder._offline;
             PersistFlagValues = builder._persistFlagValues;
-            UseReport = builder._useReport;
 
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
@@ -213,12 +182,5 @@ namespace LaunchDarkly.Sdk.Client
             FlagChangedEventManager = builder._flagChangedEventManager;
             PersistentStorage = builder._persistentStorage;
         }
-
-        internal HttpProperties HttpProperties => HttpProperties.Default
-            .WithAuthorizationKey(this.MobileKey)
-            .WithConnectTimeout(this.ConnectionTimeout)
-            .WithHttpMessageHandlerFactory(_ => this.HttpMessageHandler)
-            .WithReadTimeout(this.ReadTimeout)
-            .WithUserAgent("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)));
     }
 }
