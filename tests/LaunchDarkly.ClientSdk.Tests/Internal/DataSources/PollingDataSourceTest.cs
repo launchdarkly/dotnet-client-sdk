@@ -24,7 +24,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var mockFeatureFlagRequestor = new MockFeatureFlagRequestor(flagsJson);
             user = User.WithKey("user1Key");
             return new PollingDataSource(
-                new DataSourceUpdateSinkImpl(_store, new FlagChangedEventManager(testLogger)),
+                new DataSourceUpdateSinkImpl(_store, new FlagTrackerImpl(testLogger)),
                 user,
                 mockFeatureFlagRequestor,
                 TimeSpan.FromSeconds(30),

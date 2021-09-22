@@ -39,7 +39,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly IDeviceInfo deviceInfo;
         readonly IConnectivityStateManager _connectivityStateManager;
         readonly IEventProcessor _eventProcessor;
-        internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
+        readonly IFlagTracker _flagTracker;
         private readonly Logger _log;
 
         // Mutable client state (some state is also in the ConnectionManager)
@@ -83,6 +83,9 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public bool Initialized => _connectionManager.Initialized;
 
+        /// <inheritdoc/>
+        public IFlagTracker FlagTracker => _flagTracker;
+
         /// <summary>
         /// Indicates which platform the SDK is built for.
         /// </summary>
@@ -107,19 +110,6 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         public static PlatformType PlatformType => UserMetadata.PlatformType;
 
-        /// <inheritdoc/>
-        public event EventHandler<FlagChangedEventArgs> FlagChanged
-        {
-            add
-            {
-                flagChangedEventManager.FlagChanged += value;
-            }
-            remove
-            {
-                flagChangedEventManager.FlagChanged -= value;
-            }
-        }
-
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
         LdClient() { }
@@ -139,9 +129,11 @@ namespace LaunchDarkly.Sdk.Client
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
             deviceInfo = Factory.CreateDeviceInfo(configuration, _log);
-            flagChangedEventManager = Factory.CreateFlagChangedEventManager(configuration, _log);
 
             _user = DecorateUser(user);
+
+            var flagTracker = new FlagTrackerImpl(_log);
+            _flagTracker = flagTracker;
 
             var persistentStore = configuration.PersistentDataStoreFactory is null ?
                 new DefaultPersistentDataStore(_log.SubLogger(LogNames.DataStoreSubLog)) :
@@ -151,7 +143,7 @@ namespace LaunchDarkly.Sdk.Client
                 persistentStore,
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
-            _dataSourceUpdateSink = new DataSourceUpdateSinkImpl(_dataStore, flagChangedEventManager);
+            _dataSourceUpdateSink = new DataSourceUpdateSinkImpl(_dataStore, flagTracker);
             _dataStore.Preload(_user);
 
             _dataSourceFactory = configuration.DataSourceFactory ?? Components.StreamingDataSource();

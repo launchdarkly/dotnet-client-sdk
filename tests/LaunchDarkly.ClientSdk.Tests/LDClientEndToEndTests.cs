@@ -369,7 +369,7 @@ namespace LaunchDarkly.Sdk.Client
                     // configure the polling endpoint, so if the client makes a streaming request here it'll fail.
                     switchable.Target = SetupResponse(_flagData2, UpdateMode.Polling);
                     var receivedChangeSignal = new SemaphoreSlim(0, 1);
-                    client.FlagChanged += (sender, args) =>
+                    client.FlagTracker.FlagValueChanged += (sender, args) =>
                     {
                         receivedChangeSignal.Release();
                     };
@@ -421,7 +421,7 @@ namespace LaunchDarkly.Sdk.Client
                     VerifyFlagValues(client, _flagData1);  // we should *not* have done a poll
 
                     var receivedChangeSignal = new SemaphoreSlim(0, 1);
-                    client.FlagChanged += (sender, args) =>
+                    client.FlagTracker.FlagValueChanged += (sender, args) =>
                     {
                         receivedChangeSignal.Release();
                     };

@@ -11,18 +11,18 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     internal sealed class DataSourceUpdateSinkImpl : IDataSourceUpdateSink
     {
         private readonly IDataStore _dataStore;
-        private readonly IFlagChangedEventManager _flagChangedEventManager;
+        private readonly FlagTrackerImpl _flagTracker;
         private readonly object _lastValuesLock = new object();
         private volatile ImmutableDictionary<string, ImmutableDictionary<string, FeatureFlag>> _lastValues =
             ImmutableDictionary.Create<string, ImmutableDictionary<string, FeatureFlag>>();
 
         public DataSourceUpdateSinkImpl(
             IDataStore dataStore,
-            IFlagChangedEventManager flagChangedEventManager
+            FlagTrackerImpl flagTracker
             )
         {
             _dataStore = dataStore;
-            _flagChangedEventManager = flagChangedEventManager;
+            _flagTracker = flagTracker;
         }
 
         public void Init(User user, FullDataSet data)
@@ -48,7 +48,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
             if (oldValues != null)
             {
-                List<FlagChangedEventArgs> events = new List<FlagChangedEventArgs>();
+                List<FlagValueChangeEvent> events = new List<FlagValueChangeEvent>();
 
                 foreach (var newEntry in newValues)
                 {
@@ -57,27 +57,27 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     {
                         if (newFlag.Variation != oldFlag.Variation)
                         {
-                            events.Add(new FlagChangedEventArgs(newEntry.Key,
-                                newFlag.Value, oldFlag.Value, false));
+                            events.Add(new FlagValueChangeEvent(newEntry.Key,
+                                oldFlag.Value, newFlag.Value, false));
                         }
                     }
                     else
                     {
-                        events.Add(new FlagChangedEventArgs(newEntry.Key,
-                            newFlag.Value, LdValue.Null, false));
+                        events.Add(new FlagValueChangeEvent(newEntry.Key,
+                            LdValue.Null, newFlag.Value, false));
                     }
                 }
                 foreach (var oldEntry in oldValues)
                 {
                     if (!newValues.ContainsKey(oldEntry.Key))
                     {
-                        events.Add(new FlagChangedEventArgs(oldEntry.Key,
-                            LdValue.Null, oldEntry.Value.Value, true));
+                        events.Add(new FlagValueChangeEvent(oldEntry.Key,
+                            oldEntry.Value.Value, LdValue.Null, true));
                     }
                 }
                 foreach (var e in events)
                 {
-                    _flagChangedEventManager.FireEvent(e);
+                    _flagTracker.FireEvent(e);
                 }
             }
         }
@@ -112,12 +112,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
             if (oldFlag?.Variation != data.Item?.Variation)
             {
-                var eventArgs = new FlagChangedEventArgs(key,
-                    data.Item?.Value ?? LdValue.Null,
+                var eventArgs = new FlagValueChangeEvent(key,
                     oldFlag?.Value ?? LdValue.Null,
+                    data.Item?.Value ?? LdValue.Null,
                     data.Item is null
                     );
-                _flagChangedEventManager.FireEvent(eventArgs);
+                _flagTracker.FireEvent(eventArgs);
             }
         }
     }

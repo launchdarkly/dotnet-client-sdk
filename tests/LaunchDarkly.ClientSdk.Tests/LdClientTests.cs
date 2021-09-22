@@ -391,22 +391,6 @@ namespace LaunchDarkly.Sdk.Client
         }
         
         [Fact]
-        public void CanRegisterAndUnregisterFlagChangedHandlers()
-        {
-            using (var client = Client())
-            {
-                EventHandler<FlagChangedEventArgs> handler1 = (sender, args) => { };
-                EventHandler<FlagChangedEventArgs> handler2 = (sender, args) => { };
-                var eventManager = client.flagChangedEventManager as FlagChangedEventManager;
-                client.FlagChanged += handler1;
-                client.FlagChanged += handler2;
-                client.FlagChanged -= handler1;
-                Assert.False(eventManager.IsHandlerRegistered(handler1));
-                Assert.True(eventManager.IsHandlerRegistered(handler2));
-            }
-        }
-
-        [Fact]
         public void FlagsAreLoadedFromPersistentStorageByDefault()
         {
             var storage = new MockPersistentDataStore();

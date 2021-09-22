@@ -1,4 +1,5 @@
-﻿using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -10,7 +11,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     public class DataSourceUpdateSinkImplTest : BaseTest
     {
         private readonly InMemoryDataStore _store;
-        private readonly FlagChangedEventManager _flagChangedEventManager;
+        private readonly FlagTrackerImpl _flagTracker;
         private readonly DataSourceUpdateSinkImpl _updateSink;
         private readonly User _basicUser = User.WithKey("user-key");
         private readonly User _otherUser = User.WithKey("other-key");
@@ -18,8 +19,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public DataSourceUpdateSinkImplTest(ITestOutputHelper testOutput) : base(testOutput)
         {
             _store = new InMemoryDataStore();
-            _flagChangedEventManager = new FlagChangedEventManager(testLogger);
-            _updateSink = new DataSourceUpdateSinkImpl(_store, _flagChangedEventManager);
+            _flagTracker = new FlagTrackerImpl(testLogger);
+            _updateSink = new DataSourceUpdateSinkImpl(_store, _flagTracker);
         }
 
         [Fact]
@@ -48,8 +49,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         [Fact]
         public void NoEventsAreSentForFirstInit()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData = new DataSetBuilder().Add("key1", new FeatureFlagBuilder().Build()).Build();
             _updateSink.Init(_basicUser, initData);
@@ -60,8 +61,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         [Fact]
         public void NoEventsAreSentForUpsertIfNeverInited()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             _updateSink.Upsert(_basicUser, "key1", new FeatureFlagBuilder().Build().ToItemDescriptor());
 
@@ -71,8 +72,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         [Fact]
         public void EventIsSentForChangedFlagOnInit()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData1 = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
@@ -90,14 +91,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             Assert.Equal("key1", e.Key);
             Assert.Equal(LdValue.Of(true), e.OldValue);
             Assert.Equal(LdValue.Of(false), e.NewValue);
-            Assert.False(e.FlagWasDeleted);
+            Assert.False(e.Deleted);
         }
 
         [Fact]
         public void EventIsSentForAddedFlagOnInit()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData1 = new DataSetBuilder()
                 .Add("key2", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
@@ -114,14 +115,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             Assert.Equal("key1", e.Key);
             Assert.Equal(LdValue.Null, e.OldValue);
             Assert.Equal(LdValue.Of(false), e.NewValue);
-            Assert.False(e.FlagWasDeleted);
+            Assert.False(e.Deleted);
         }
 
         [Fact]
         public void EventIsSentForDeletedFlagOnInit()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData1 = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
@@ -138,14 +139,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             Assert.Equal("key1", e.Key);
             Assert.Equal(LdValue.Of(true), e.OldValue);
             Assert.Equal(LdValue.Null, e.NewValue);
-            Assert.True(e.FlagWasDeleted);
+            Assert.True(e.Deleted);
         }
 
         [Fact]
         public void EventIsSentForChangedFlagOnUpsert()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of(true)).Variation(0).Build())
@@ -160,14 +161,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             Assert.Equal("key1", e.Key);
             Assert.Equal(LdValue.Of(true), e.OldValue);
             Assert.Equal(LdValue.Of(false), e.NewValue);
-            Assert.False(e.FlagWasDeleted);
+            Assert.False(e.Deleted);
         }
 
         [Fact]
         public void EventIsSentForAddedFlagOnUpsert()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData = new DataSetBuilder()
                 .Add("key2", new FeatureFlagBuilder().Version(200).Value(LdValue.Of(true)).Variation(0).Build())
@@ -181,14 +182,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             Assert.Equal("key1", e.Key);
             Assert.Equal(LdValue.Null, e.OldValue);
             Assert.Equal(LdValue.Of(false), e.NewValue);
-            Assert.False(e.FlagWasDeleted);
+            Assert.False(e.Deleted);
         }
 
         [Fact]
         public void EventIsSentForDeletedFlagOnUpsert()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of(true)).Variation(0).Build())
@@ -202,14 +203,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             Assert.Equal("key1", e.Key);
             Assert.Equal(LdValue.Of(true), e.OldValue);
             Assert.Equal(LdValue.Null, e.NewValue);
-            Assert.True(e.FlagWasDeleted);
+            Assert.True(e.Deleted);
         }
 
         [Fact]
         public void EventIsNotSentIfUpsertFailsDueToLowerVersion()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initData = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of(true)).Variation(0).Build())
@@ -226,8 +227,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         [Fact]
         public void ValueChangesAreTrackedSeparatelyForEachUser()
         {
-            var events = new EventSink<FlagChangedEventArgs>();
-            _flagChangedEventManager.FlagChanged += events.Add;
+            var events = new EventSink<FlagValueChangeEvent>();
+            _flagTracker.FlagValueChanged += events.Add;
 
             var initDataForBasicUser = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of("a")).Variation(1).Build())

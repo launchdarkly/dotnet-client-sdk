@@ -15,6 +15,15 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     public interface ILdClient : IDisposable
     {
         /// <summary>
+        /// A mechanism for tracking changes in feature flag configurations.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="IFlagTracker"/> contains methods for requesting notifications about feature flag
+        /// changes using an event listener model.
+        /// </remarks>
+        IFlagTracker FlagTracker { get; }
+
+        /// <summary>
         /// Returns a boolean value indicating LaunchDarkly connection and flag state within the client.
         /// </summary>
         /// <remarks>
@@ -265,38 +274,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </remarks>
         /// <returns>a map from feature flag keys to values for the current user</returns>
         IDictionary<string, LdValue> AllFlags();
-
-        /// <summary>
-        /// This event is triggered when the client has received an updated value for a feature flag.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This could mean that the flag configuration was changed in LaunchDarkly, or that you have changed the current
-        /// user and the flag values are different for this user than for the previous user. The event is only triggered
-        /// if the newly received flag value is actually different from the previous one.
-        /// </para>
-        /// <para>
-        /// The <see cref="FlagChangedEventArgs"/> properties will indicate the key of the feature flag, the new value,
-        /// and the previous value.
-        /// </para>
-        /// <para>
-        /// On platforms that have a main UI thread (such as iOS and Android), handlers for this event are guaranteed to
-        /// be called on that thread; on other platforms, the SDK uses a thread pool. Either way, the handler is called
-        /// called asynchronously after whichever SDK action triggered the flag change has already completed. This is to
-        /// avoid deadlocks, in case the action was also on the main thread, or on a thread that was holding a lock on
-        /// some application resource that the handler also uses.
-        /// </para>
-        /// </remarks>
-        /// <example>
-        /// <code>
-        ///     client.FlagChanged += (sender, eventArgs) => {
-        ///         if (eventArgs.Key == "key-for-flag-i-am-watching") {
-        ///             DoSomethingWithNewFlagValue(eventArgs.NewBoolValue);
-        ///         }
-        ///     };
-        /// </code>
-        /// </example>
-        event EventHandler<FlagChangedEventArgs> FlagChanged;
 
         /// <summary>
         /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates

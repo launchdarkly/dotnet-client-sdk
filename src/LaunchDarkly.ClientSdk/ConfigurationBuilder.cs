@@ -48,7 +48,6 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
         internal IDeviceInfo _deviceInfo;
-        internal IFlagChangedEventManager _flagChangedEventManager;
 
         internal ConfigurationBuilder(string mobileKey)
         {
@@ -310,12 +309,6 @@ namespace LaunchDarkly.Sdk.Client
         internal ConfigurationBuilder DeviceInfo(IDeviceInfo deviceInfo)
         {
             _deviceInfo = deviceInfo;
-            return this;
-        }
-
-        internal ConfigurationBuilder FlagChangedEventManager(IFlagChangedEventManager flagChangedEventManager)
-        {
-            _flagChangedEventManager = flagChangedEventManager;
             return this;
         }
     }

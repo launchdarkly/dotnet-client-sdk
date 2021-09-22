@@ -15,10 +15,5 @@ namespace LaunchDarkly.Sdk.Client.Internal
         {
             return configuration.DeviceInfo ?? new DefaultDeviceInfo(log);
         }
-
-        internal static IFlagChangedEventManager CreateFlagChangedEventManager(Configuration configuration, Logger log)
-        {
-            return configuration.FlagChangedEventManager ?? new FlagChangedEventManager(log);
-        }
     }
 }

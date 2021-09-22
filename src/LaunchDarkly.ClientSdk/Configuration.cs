@@ -31,7 +31,6 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager BackgroundModeManager { get; }
         internal IConnectivityStateManager ConnectivityStateManager { get; }
         internal IDeviceInfo DeviceInfo { get; }
-        internal IFlagChangedEventManager FlagChangedEventManager { get; }
 
         /// <summary>
         /// Whether to disable the automatic sending of an alias event when the current user is changed
@@ -173,7 +172,6 @@ namespace LaunchDarkly.Sdk.Client
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
             DeviceInfo = builder._deviceInfo;
-            FlagChangedEventManager = builder._flagChangedEventManager;
         }
     }
 }
