@@ -27,20 +27,20 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             // EventFactory passes the reason parameter to this method because the server-side SDK needs to
             // look at the reason; but in this client-side SDK, we don't look at that parameter, because
             // LD has already done the relevant calculation for us and sent us the result in trackReason.
-            var isExperiment = flag.trackReason;
+            var isExperiment = flag.TrackReason;
 
             return new EvaluationEvent
             {
                 Timestamp = UnixMillisecondTime.Now,
                 User = user,
                 FlagKey = flagKey,
-                FlagVersion = flag.flagVersion ?? flag.version,
+                FlagVersion = flag.FlagVersion ?? flag.Version,
                 Variation = result.VariationIndex,
                 Value = result.Value,
                 Default = defaultValue,
                 Reason = (_withReasons || isExperiment) ? result.Reason : (EvaluationReason?)null,
-                TrackEvents = flag.trackEvents || isExperiment,
-                DebugEventsUntilDate = flag.debugEventsUntilDate
+                TrackEvents = flag.TrackEvents || isExperiment,
+                DebugEventsUntilDate = flag.DebugEventsUntilDate
             };
         }
 
@@ -57,12 +57,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
                 Timestamp = UnixMillisecondTime.Now,
                 User = user,
                 FlagKey = flagKey,
-                FlagVersion = flag.flagVersion ?? flag.version,
+                FlagVersion = flag.FlagVersion ?? flag.Version,
                 Value = defaultValue,
                 Default = defaultValue,
                 Reason = _withReasons ? EvaluationReason.ErrorReason(errorKind) : (EvaluationReason?)null,
-                TrackEvents = flag.trackEvents,
-                DebugEventsUntilDate = flag.debugEventsUntilDate
+                TrackEvents = flag.TrackEvents,
+                DebugEventsUntilDate = flag.DebugEventsUntilDate
             };
         }
 

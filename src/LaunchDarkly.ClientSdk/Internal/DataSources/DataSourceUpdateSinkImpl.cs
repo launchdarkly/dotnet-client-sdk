@@ -25,7 +25,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _flagChangedEventManager = flagChangedEventManager;
         }
 
-        public void Init(FullDataSet data, User user)
+        public void Init(User user, FullDataSet data)
         {
             _dataStore.Init(user, data);
 
@@ -55,16 +55,16 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     var newFlag = newEntry.Value;
                     if (oldValues.TryGetValue(newEntry.Key, out var oldFlag))
                     {
-                        if (newFlag.variation != oldFlag.variation)
+                        if (newFlag.Variation != oldFlag.Variation)
                         {
                             events.Add(new FlagChangedEventArgs(newEntry.Key,
-                                newFlag.value, oldFlag.value, false));
+                                newFlag.Value, oldFlag.Value, false));
                         }
                     }
                     else
                     {
                         events.Add(new FlagChangedEventArgs(newEntry.Key,
-                            newFlag.value, LdValue.Null, false));
+                            newFlag.Value, LdValue.Null, false));
                     }
                 }
                 foreach (var oldEntry in oldValues)
@@ -72,7 +72,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     if (!newValues.ContainsKey(oldEntry.Key))
                     {
                         events.Add(new FlagChangedEventArgs(oldEntry.Key,
-                            LdValue.Null, oldEntry.Value.value, true));
+                            LdValue.Null, oldEntry.Value.Value, true));
                     }
                 }
                 foreach (var e in events)
@@ -82,7 +82,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
         }
 
-        public void Upsert(string key, ItemDescriptor data, User user)
+        public void Upsert(User user, string key, ItemDescriptor data)
         {
             var updated = _dataStore.Upsert(user, key, data);
             if (!updated)
@@ -110,11 +110,11 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     oldValues.Remove(key) : oldValues.SetItem(key, data.Item);
                 _lastValues = _lastValues.SetItem(user.Key, newValues);
             }
-            if (oldFlag?.variation != data.Item?.variation)
+            if (oldFlag?.Variation != data.Item?.Variation)
             {
                 var eventArgs = new FlagChangedEventArgs(key,
-                    data.Item?.value ?? LdValue.Null,
-                    oldFlag?.value ?? LdValue.Null,
+                    data.Item?.Value ?? LdValue.Null,
+                    oldFlag?.Value ?? LdValue.Null,
                     data.Item is null
                     );
                 _flagChangedEventManager.FireEvent(eventArgs);

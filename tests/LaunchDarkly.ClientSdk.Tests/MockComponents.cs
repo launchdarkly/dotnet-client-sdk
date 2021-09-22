@@ -70,10 +70,10 @@ namespace LaunchDarkly.Sdk.Client
 
         public readonly EventSink<object> Actions = new EventSink<object>();
 
-        public void Init(FullDataSet data, User user) =>
+        public void Init(User user, FullDataSet data) =>
             Actions.Add(null, new ReceivedInit { Data = data, User = user });
 
-        public void Upsert(string key, ItemDescriptor data, User user) =>
+        public void Upsert(User user, string key, ItemDescriptor data) =>
             Actions.Add(null, new ReceivedUpsert { Key = key, Data = data, User = user });
 
         public FullDataSet ExpectInit(User user)
@@ -264,7 +264,7 @@ namespace LaunchDarkly.Sdk.Client
             IsRunning = true;
             if (_updateSink != null && _flagsJson != null)
             {
-                _updateSink.Init(DataModelSerialization.DeserializeV1Schema(_flagsJson), _user);
+                _updateSink.Init(_user, DataModelSerialization.DeserializeV1Schema(_flagsJson));
             }
             return Task.FromResult(true);
         }

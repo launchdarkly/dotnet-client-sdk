@@ -80,7 +80,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 {
                     var flagsAsJsonString = response.jsonResponse;
                     var allData = DataModelSerialization.DeserializeV1Schema(flagsAsJsonString);
-                    _updateSink.Init(allData, _user);
+                    _updateSink.Init(_user, allData);
 
                     if (_initialized.GetAndSet(true) == false)
                     {

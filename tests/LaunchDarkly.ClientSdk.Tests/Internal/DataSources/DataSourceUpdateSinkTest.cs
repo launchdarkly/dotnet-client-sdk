@@ -26,7 +26,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public void InitPassesDataToStore()
         {
             var initData = new DataSetBuilder().Add("key1", new FeatureFlagBuilder().Build()).Build();
-            _updateSink.Init(initData, _basicUser);
+            _updateSink.Init(_basicUser, initData);
 
             Assert.Equal(initData.Items, _store.GetAll(_basicUser).Value.Items);
         }
@@ -36,11 +36,11 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             var flag1a = new FeatureFlagBuilder().Version(100).Value(LdValue.Of(false)).Build();
             var initData = new DataSetBuilder().Add("key1", flag1a).Build();
-            _updateSink.Init(initData, _basicUser);
+            _updateSink.Init(_basicUser, initData);
 
             var flag1b = new FeatureFlagBuilder().Version(101).Value(LdValue.Of(true)).Build();
 
-            _updateSink.Upsert("key1", flag1b.ToItemDescriptor(), _basicUser);
+            _updateSink.Upsert(_basicUser, "key1", flag1b.ToItemDescriptor());
 
             Assert.Equal(flag1b.ToItemDescriptor(), _store.Get(_basicUser, "key1"));
         }
@@ -52,7 +52,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _flagChangedEventManager.FlagChanged += events.Add;
 
             var initData = new DataSetBuilder().Add("key1", new FeatureFlagBuilder().Build()).Build();
-            _updateSink.Init(initData, _basicUser);
+            _updateSink.Init(_basicUser, initData);
 
             events.ExpectNoValue();
         }
@@ -63,7 +63,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var events = new EventSink<FlagChangedEventArgs>();
             _flagChangedEventManager.FlagChanged += events.Add;
 
-            _updateSink.Upsert("key1", new FeatureFlagBuilder().Build().ToItemDescriptor(), _basicUser);
+            _updateSink.Upsert(_basicUser, "key1", new FeatureFlagBuilder().Build().ToItemDescriptor());
 
             events.ExpectNoValue();
         }
@@ -78,13 +78,13 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .Add("key1", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Add("key2", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData1, _basicUser);
+            _updateSink.Init(_basicUser, initData1);
 
             var initData2 = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Value(LdValue.Of(false)).Variation(1).Build())
                 .Add("key2", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData2, _basicUser);
+            _updateSink.Init(_basicUser, initData2);
 
             var e = events.ExpectValue();
             Assert.Equal("key1", e.Key);
@@ -102,13 +102,13 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var initData1 = new DataSetBuilder()
                 .Add("key2", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData1, _basicUser);
+            _updateSink.Init(_basicUser, initData1);
 
             var initData2 = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Value(LdValue.Of(false)).Variation(1).Build())
                 .Add("key2", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData2, _basicUser);
+            _updateSink.Init(_basicUser, initData2);
 
             var e = events.ExpectValue();
             Assert.Equal("key1", e.Key);
@@ -127,12 +127,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .Add("key1", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Add("key2", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData1, _basicUser);
+            _updateSink.Init(_basicUser, initData1);
 
             var initData2 = new DataSetBuilder()
                 .Add("key2", new FeatureFlagBuilder().Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData2, _basicUser);
+            _updateSink.Init(_basicUser, initData2);
 
             var e = events.ExpectValue();
             Assert.Equal("key1", e.Key);
@@ -151,11 +151,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of(true)).Variation(0).Build())
                 .Add("key2", new FeatureFlagBuilder().Version(200).Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData, _basicUser);
+            _updateSink.Init(_basicUser, initData);
 
-            _updateSink.Upsert("key1",
-                new FeatureFlagBuilder().Version(101).Value(LdValue.Of(false)).Variation(1).Build().ToItemDescriptor(),
-                _basicUser);
+            _updateSink.Upsert(_basicUser, "key1",
+                new FeatureFlagBuilder().Version(101).Value(LdValue.Of(false)).Variation(1).Build().ToItemDescriptor());
 
             var e = events.ExpectValue();
             Assert.Equal("key1", e.Key);
@@ -173,11 +172,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var initData = new DataSetBuilder()
                 .Add("key2", new FeatureFlagBuilder().Version(200).Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData, _basicUser);
+            _updateSink.Init(_basicUser, initData);
 
-            _updateSink.Upsert("key1",
-                new FeatureFlagBuilder().Version(100).Value(LdValue.Of(false)).Variation(1).Build().ToItemDescriptor(),
-                _basicUser);
+            _updateSink.Upsert(_basicUser, "key1",
+                new FeatureFlagBuilder().Version(100).Value(LdValue.Of(false)).Variation(1).Build().ToItemDescriptor());
 
             var e = events.ExpectValue();
             Assert.Equal("key1", e.Key);
@@ -196,9 +194,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of(true)).Variation(0).Build())
                 .Add("key2", new FeatureFlagBuilder().Version(200).Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData, _basicUser);
+            _updateSink.Init(_basicUser, initData);
 
-            _updateSink.Upsert("key1", new ItemDescriptor(101, null), _basicUser);
+            _updateSink.Upsert(_basicUser, "key1", new ItemDescriptor(101, null));
 
             var e = events.ExpectValue();
             Assert.Equal("key1", e.Key);
@@ -217,11 +215,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of(true)).Variation(0).Build())
                 .Add("key2", new FeatureFlagBuilder().Version(200).Value(LdValue.Of(true)).Variation(0).Build())
                 .Build();
-            _updateSink.Init(initData, _basicUser);
+            _updateSink.Init(_basicUser, initData);
 
-            _updateSink.Upsert("key1",
-                new FeatureFlagBuilder().Version(99).Value(LdValue.Of(false)).Variation(1).Build().ToItemDescriptor(),
-                _basicUser);
+            _updateSink.Upsert(_basicUser, "key1",
+                new FeatureFlagBuilder().Version(99).Value(LdValue.Of(false)).Variation(1).Build().ToItemDescriptor());
 
             events.ExpectNoValue();
         }
@@ -236,19 +233,18 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of("a")).Variation(1).Build())
                 .Add("key2", new FeatureFlagBuilder().Version(200).Value(LdValue.Of("b")).Variation(2).Build())
                 .Build();
-            _updateSink.Init(initDataForBasicUser, _basicUser);
+            _updateSink.Init(_basicUser, initDataForBasicUser);
 
             var initDataForOtherUser = new DataSetBuilder()
                 .Add("key1", new FeatureFlagBuilder().Version(100).Value(LdValue.Of("c")).Variation(3).Build())
                 .Add("key2", new FeatureFlagBuilder().Version(200).Value(LdValue.Of("d")).Variation(4).Build())
                 .Build();
-            _updateSink.Init(initDataForOtherUser, _otherUser);
+            _updateSink.Init(_otherUser, initDataForOtherUser);
 
             events.ExpectNoValue();
 
-            _updateSink.Upsert("key1",
-                new FeatureFlagBuilder().Version(101).Value(LdValue.Of("c")).Variation(3).Build().ToItemDescriptor(),
-                _basicUser);
+            _updateSink.Upsert(_basicUser, "key1",
+                new FeatureFlagBuilder().Version(101).Value(LdValue.Of("c")).Variation(3).Build().ToItemDescriptor());
 
             var e = events.ExpectValue();
 

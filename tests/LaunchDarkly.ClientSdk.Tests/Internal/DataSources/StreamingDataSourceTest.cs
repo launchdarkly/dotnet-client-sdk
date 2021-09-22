@@ -120,7 +120,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
             var gotData = _updateSink.ExpectInit(user);
             var gotItem = gotData.Items.First(item => item.Key == "int-flag");
-            int intFlagValue = gotItem.Value.Item.value.AsInt;
+            int intFlagValue = gotItem.Value.Item.Value.AsInt;
             Assert.Equal(15, intFlagValue);
         }
 
@@ -138,7 +138,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
             //verify flag has changed
             var gotItem = _updateSink.ExpectUpsert(user, "int-flag");
-            Assert.Equal(99, gotItem.Item.value.AsInt);
+            Assert.Equal(99, gotItem.Item.Value.AsInt);
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
             var gotData = _updateSink.ExpectInit(user);
             var gotItem = gotData.Items.First(item => item.Key == "int-flag");
-            int intFlagValue = gotItem.Value.Item.value.AsInt;
+            int intFlagValue = gotItem.Value.Item.Value.AsInt;
             Assert.Equal(15, intFlagValue);
         }
 

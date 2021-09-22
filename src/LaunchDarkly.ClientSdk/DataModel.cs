@@ -24,14 +24,14 @@ namespace LaunchDarkly.Sdk.Client
         [JsonStreamConverter(typeof(FeatureFlagJsonConverter))]
         public sealed class FeatureFlag : IEquatable<FeatureFlag>, IJsonSerializable
         {
-            internal LdValue value { get; }
-            internal int? variation { get; }
-            internal EvaluationReason? reason { get; }
-            internal int version { get; }
-            internal int? flagVersion { get; }
-            internal bool trackEvents { get; }
-            internal bool trackReason { get; }
-            internal UnixMillisecondTime? debugEventsUntilDate { get; }
+            internal LdValue Value { get; }
+            internal int? Variation { get; }
+            internal EvaluationReason? Reason { get; }
+            internal int Version { get; }
+            internal int? FlagVersion { get; }
+            internal bool TrackEvents { get; }
+            internal bool TrackReason { get; }
+            internal UnixMillisecondTime? DebugEventsUntilDate { get; }
 
             internal FeatureFlag(
                 LdValue value,
@@ -44,14 +44,14 @@ namespace LaunchDarkly.Sdk.Client
                 UnixMillisecondTime? debugEventsUntilDate
                 )
             {
-                this.value = value;
-                this.variation = variation;
-                this.reason = reason;
-                this.version = version;
-                this.flagVersion = flagVersion;
-                this.trackEvents = trackEvents;
-                this.trackReason = trackReason;
-                this.debugEventsUntilDate = debugEventsUntilDate;
+                Value = value;
+                Variation = variation;
+                Reason = reason;
+                Version = version;
+                FlagVersion = flagVersion;
+                TrackEvents = trackEvents;
+                TrackReason = trackReason;
+                DebugEventsUntilDate = debugEventsUntilDate;
             }
 
             /// <inheritdoc/>
@@ -60,25 +60,25 @@ namespace LaunchDarkly.Sdk.Client
 
             /// <inheritdoc/>
             public bool Equals(FeatureFlag otherFlag) =>
-                value.Equals(otherFlag.value)
-                && variation == otherFlag.variation
-                && reason.Equals(otherFlag.reason)
-                && version == otherFlag.version
-                && flagVersion == otherFlag.flagVersion
-                && trackEvents == otherFlag.trackEvents
-                && debugEventsUntilDate == otherFlag.debugEventsUntilDate;
+                Value.Equals(otherFlag.Value)
+                && Variation == otherFlag.Variation
+                && Reason.Equals(otherFlag.Reason)
+                && Version == otherFlag.Version
+                && FlagVersion == otherFlag.FlagVersion
+                && TrackEvents == otherFlag.TrackEvents
+                && DebugEventsUntilDate == otherFlag.DebugEventsUntilDate;
 
             /// <inheritdoc/>
             public override int GetHashCode() =>
-                value.GetHashCode();
+                Value.GetHashCode();
 
             /// <inheritdoc/>
             public override string ToString() =>
                 string.Format("({0},{1},{2},{3},{4},{5},{6},{7})",
-                    value, variation, reason, version, flagVersion, trackEvents, trackReason, debugEventsUntilDate);
+                    Value, Variation, Reason, Version, FlagVersion, TrackEvents, TrackReason, DebugEventsUntilDate);
 
             internal ItemDescriptor ToItemDescriptor() =>
-                new ItemDescriptor(version, this);
+                new ItemDescriptor(Version, this);
         }
 
         internal sealed class FeatureFlagJsonConverter : IJsonStreamConverter
@@ -168,18 +168,18 @@ namespace LaunchDarkly.Sdk.Client
             {
                 using (var ow = writer.Object())
                 {
-                    LdJsonConverters.LdValueConverter.WriteJsonValue(value.value, ow.Name("value"));
-                    ow.Name("version").Int(value.version);
-                    ow.MaybeName("flagVersion", value.flagVersion.HasValue).Int(value.flagVersion.GetValueOrDefault());
-                    ow.MaybeName("variation", value.variation.HasValue).Int(value.variation.GetValueOrDefault());
-                    if (value.reason.HasValue)
+                    LdJsonConverters.LdValueConverter.WriteJsonValue(value.Value, ow.Name("value"));
+                    ow.Name("version").Int(value.Version);
+                    ow.MaybeName("flagVersion", value.FlagVersion.HasValue).Int(value.FlagVersion.GetValueOrDefault());
+                    ow.MaybeName("variation", value.Variation.HasValue).Int(value.Variation.GetValueOrDefault());
+                    if (value.Reason.HasValue)
                     {
-                        LdJsonConverters.EvaluationReasonConverter.WriteJsonValue(value.reason.Value, ow.Name("reason"));
+                        LdJsonConverters.EvaluationReasonConverter.WriteJsonValue(value.Reason.Value, ow.Name("reason"));
                     }
-                    ow.MaybeName("trackEvents", value.trackEvents).Bool(value.trackEvents);
-                    ow.MaybeName("trackReason", value.trackReason).Bool(value.trackReason);
-                    ow.MaybeName("debugEventsUntilDate", value.debugEventsUntilDate.HasValue)
-                        .Long(value.debugEventsUntilDate.GetValueOrDefault().Value);
+                    ow.MaybeName("trackEvents", value.TrackEvents).Bool(value.TrackEvents);
+                    ow.MaybeName("trackReason", value.TrackReason).Bool(value.TrackReason);
+                    ow.MaybeName("debugEventsUntilDate", value.DebugEventsUntilDate.HasValue)
+                        .Long(value.DebugEventsUntilDate.GetValueOrDefault().Value);
                 }
             }
         }

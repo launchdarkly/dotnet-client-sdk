@@ -130,13 +130,13 @@ namespace LaunchDarkly.Sdk.Client
                     switch (user.Key)
                     {
                         case "a":
-                            updates.Init(userAFlags, user);
+                            updates.Init(user, userAFlags);
                             break;
 
                         case "b":
                             startedIdentifyUserB.Release();
                             await canFinishIdentifyUserB.WaitAsync();
-                            updates.Init(userBFlags, user);
+                            updates.Init(user, userBFlags);
                             break;
                     }
                 }));
@@ -439,7 +439,7 @@ namespace LaunchDarkly.Sdk.Client
                 Assert.NotNull(storedData);
                 var flags = DataModelSerialization.DeserializeAll(storedData);
                 Assert.NotEmpty(flags.Items);
-                Assert.Equal(100, flags.Items[0].Value.Item.value.AsInt);
+                Assert.Equal(100, flags.Items[0].Value.Item.Value.AsInt);
             }
         }
 

@@ -453,26 +453,26 @@ namespace LaunchDarkly.Sdk.Client
 
             EvaluationDetail<T> result;
             LdValue valueJson;
-            if (flag.value.IsNull)
+            if (flag.Value.IsNull)
             {
                 valueJson = defaultJson;
-                result = new EvaluationDetail<T>(defaultValue, flag.variation, flag.reason ?? EvaluationReason.OffReason);
+                result = new EvaluationDetail<T>(defaultValue, flag.Variation, flag.Reason ?? EvaluationReason.OffReason);
             }
             else
             {
-                if (checkType && !defaultJson.IsNull && flag.value.Type != defaultJson.Type)
+                if (checkType && !defaultJson.IsNull && flag.Value.Type != defaultJson.Type)
                 {
                     valueJson = defaultJson;
                     result = new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
                 }
                 else
                 {
-                    valueJson = flag.value;
-                    result = new EvaluationDetail<T>(converter.ToType(flag.value), flag.variation, flag.reason ?? EvaluationReason.OffReason);
+                    valueJson = flag.Value;
+                    result = new EvaluationDetail<T>(converter.ToType(flag.Value), flag.Variation, flag.Reason ?? EvaluationReason.OffReason);
                 }
             }
             var featureEvent = eventFactory.NewEvaluationEvent(featureKey, flag, User,
-                new EvaluationDetail<LdValue>(valueJson, flag.variation, flag.reason ?? EvaluationReason.OffReason), defaultJson);
+                new EvaluationDetail<LdValue>(valueJson, flag.Variation, flag.Reason ?? EvaluationReason.OffReason), defaultJson);
             SendEvaluationEventIfOnline(featureEvent);
             return result;
         }
@@ -491,7 +491,7 @@ namespace LaunchDarkly.Sdk.Client
                 return ImmutableDictionary.Create<string, LdValue>();
             }
             return data.Value.Items.Where(entry => entry.Value.Item != null)
-                .ToDictionary(p => p.Key, p => p.Value.Item.value);
+                .ToDictionary(p => p.Key, p => p.Value.Item.Value);
         }
 
         /// <inheritdoc/>

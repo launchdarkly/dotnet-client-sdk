@@ -9,7 +9,6 @@ using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 
-using static LaunchDarkly.Sdk.Client.DataModel;
 using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
@@ -173,7 +172,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 case Constants.PUT:
                     {
                         var allData = DataModelSerialization.DeserializeV1Schema(messageData);
-                        _updateSink.Init(allData, _user);
+                        _updateSink.Init(_user, allData);
                         if (!_initialized.GetAndSet(true))
                         {
                             _initTask.SetResult(true);
@@ -187,7 +186,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                             var parsed = LdValue.Parse(messageData);
                             var flagkey = parsed.Get(Constants.KEY).AsString;
                             var featureFlag = DataModelSerialization.DeserializeFlag(messageData);
-                            _updateSink.Upsert(flagkey, featureFlag.ToItemDescriptor(), _user);
+                            _updateSink.Upsert(_user, flagkey, featureFlag.ToItemDescriptor());
                         }
                         catch (Exception ex)
                         {
@@ -204,7 +203,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                             int version = parsed.Get(Constants.VERSION).AsInt;
                             string flagKey = parsed.Get(Constants.KEY).AsString;
                             var deletedItem = new ItemDescriptor(version, null);
-                            _updateSink.Upsert(flagKey, deletedItem, _user);
+                            _updateSink.Upsert(_user, flagKey, deletedItem);
                         }
                         catch (Exception ex)
                         {
@@ -222,7 +221,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                                 var response = await _requestor.FeatureFlagsAsync();
                                 var flagsAsJsonString = response.jsonResponse;
                                 var allData = DataModelSerialization.DeserializeV1Schema(flagsAsJsonString);
-                                _updateSink.Init(allData, _user);
+                                _updateSink.Init(_user, allData);
                                 if (!_initialized.GetAndSet(true))
                                 {
                                     _initTask.SetResult(true);

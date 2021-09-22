@@ -535,7 +535,7 @@ namespace LaunchDarkly.Sdk.Client
             Assert.True(client.Initialized);
             foreach (var e in flags.Items)
             {
-                Assert.Equal(e.Value.Item.value, client.JsonVariation(e.Key, LdValue.Null));
+                Assert.Equal(e.Value.Item.Value, client.JsonVariation(e.Key, LdValue.Null));
             }
         }
 

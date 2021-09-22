@@ -14,18 +14,18 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <summary>
         /// Completely overwrites the current contents of the data store with a set of items for each collection.
         /// </summary>
-        /// <param name="data">the data set</param>
         /// <param name="user">the current user</param>
+        /// <param name="data">the data set</param>
         /// <returns>true if the update succeeded, false if it failed</returns>
-        void Init(FullDataSet data, User user);
+        void Init(User user, FullDataSet data);
 
         /// <summary>
         /// Updates or inserts an item. For updates, the object will only be updated if the existing
         /// version is less than the new version.
         /// </summary>
+        /// <param name="user">the current user</param>
         /// <param name="key">the feature flag key</param>
         /// <param name="data">the item data</param>
-        /// <param name="user">the current user</param>
-        void Upsert(string key, ItemDescriptor data, User user);
+        void Upsert(User user, string key, ItemDescriptor data);
     }
 }
