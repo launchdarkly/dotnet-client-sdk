@@ -124,6 +124,8 @@ namespace LaunchDarkly.Sdk.Client
         ///         .Build();
         /// </code>
         /// </example>
+        /// <seealso cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>
+        /// <seealso cref="SendEvents"/>
         public static IEventProcessorFactory NoEvents =>
             ComponentsImpl.NullEventProcessorFactory.Instance;
 
@@ -140,8 +142,25 @@ namespace LaunchDarkly.Sdk.Client
         ///         .Build();
         /// </code>
         /// </example>
+        /// <seealso cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)"/>
+        /// <seealso cref="Logging()"/>
+        /// <seealso cref="Logging(ILogAdapter)"/>
         public static LoggingConfigurationBuilder NoLogging =>
             new LoggingConfigurationBuilder().Adapter(Logs.None);
+
+        /// <summary>
+        /// A configuration object that disables persistent storage.
+        /// </summary>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(mobileKey)
+        ///         .Persistence(Components.NoPersistence)
+        ///         .Build();
+        /// </code>
+        /// </example>
+        /// <seealso cref="ConfigurationBuilder.Persistence(IPersistentDataStoreFactory)"/>
+        public static IPersistentDataStoreFactory NoPersistence =>
+            ComponentsImpl.NullPersistentDataStoreFactory.Instance;
 
         /// <summary>
         /// Returns a configurable factory for using polling mode to get feature flag data.
@@ -206,6 +225,8 @@ namespace LaunchDarkly.Sdk.Client
         /// </code>
         /// </example>
         /// <returns>a builder for setting event properties</returns>
+        /// <seealso cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>
+        /// <seealso cref="NoEvents"/>
         public static EventProcessorBuilder SendEvents() => new EventProcessorBuilder();
 
         /// <summary>

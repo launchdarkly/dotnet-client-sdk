@@ -42,15 +42,13 @@ namespace LaunchDarkly.Sdk.Client
         internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
         internal string _mobileKey;
         internal bool _offline = false;
-        internal bool _persistFlagValues = true;
+        internal IPersistentDataStoreFactory _persistentDataStoreFactory = null;
 
         // Internal properties only settable for testing
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
         internal IDeviceInfo _deviceInfo;
-        internal IFlagCacheManager _flagCacheManager;
         internal IFlagChangedEventManager _flagChangedEventManager;
-        internal IPersistentStorage _persistentStorage;
 
         internal ConfigurationBuilder(string mobileKey)
         {
@@ -68,7 +66,7 @@ namespace LaunchDarkly.Sdk.Client
             _loggingConfigurationBuilder = copyFrom.LoggingConfigurationBuilder;
             _mobileKey = copyFrom.MobileKey;
             _offline = copyFrom.Offline;
-            _persistFlagValues = copyFrom.PersistFlagValues;
+            _persistentDataStoreFactory = copyFrom.PersistentDataStoreFactory;
         }
 
         /// <summary>
@@ -252,7 +250,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <remarks>
         /// This should be the "mobile key" field for the environment on your LaunchDarkly dashboard.
         /// </remarks>
-        /// <param name="mobileKey"></param>
+        /// <param name="mobileKey">the mobile key</param>
         /// <returns>the same builder</returns>
         public ConfigurationBuilder MobileKey(string mobileKey)
         {
@@ -272,17 +270,26 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Sets whether the SDK should save flag values for each user in persistent storage, so they will be
-        /// immediately available the next time the SDK is started for the same user.
+        /// Sets the implementation of the component that saves flag values for each user in persistent storage.
         /// </summary>
         /// <remarks>
-        /// The default is <see langword="true"/>.
+        /// <para>
+        /// The persistent storage mechanism allows the SDK to immediately access the last known flag data
+        /// for the user, if any, if it is offline or has not yet received data from LaunchDarkly.
+        /// </para>
+        /// <para>
+        /// By default, the SDK uses a persistence mechanism that is specific to each platform: on Android and
+        /// iOS it is the native preferences store, and in the .NET Standard implementation for desktop apps
+        /// it is the <c>System.IO.IsolatedStorage</c> API. You may substitute a custom implementation, or
+        /// pass <see cref="Components.NoPersistence"/> to disable persistent storage and use only in-memory
+        /// storage.
+        /// </para>
         /// </remarks>
-        /// <param name="persistFlagValues"><see langword="true"/> to save flag values</param>
+        /// <param name="persistentDataStoreFactory">the factory object; null to use the default implementation</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder PersistFlagValues(bool persistFlagValues)
+        public ConfigurationBuilder Persistence(IPersistentDataStoreFactory persistentDataStoreFactory)
         {
-            _persistFlagValues = persistFlagValues;
+            _persistentDataStoreFactory = persistentDataStoreFactory;
             return this;
         }
 
@@ -306,21 +313,9 @@ namespace LaunchDarkly.Sdk.Client
             return this;
         }
 
-        internal ConfigurationBuilder FlagCacheManager(IFlagCacheManager flagCacheManager)
-        {
-            _flagCacheManager = flagCacheManager;
-            return this;
-        }
-
         internal ConfigurationBuilder FlagChangedEventManager(IFlagChangedEventManager flagChangedEventManager)
         {
             _flagChangedEventManager = flagChangedEventManager;
-            return this;
-        }
-
-        internal ConfigurationBuilder PersistentStorage(IPersistentStorage persistentStorage)
-        {
-            _persistentStorage = persistentStorage;
             return this;
         }
     }

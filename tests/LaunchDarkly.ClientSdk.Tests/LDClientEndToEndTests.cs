@@ -9,6 +9,8 @@ using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+
 namespace LaunchDarkly.Sdk.Client
 {
     // Tests of an LDClient instance doing actual HTTP against an embedded server. These aren't intended to cover
@@ -23,15 +25,13 @@ namespace LaunchDarkly.Sdk.Client
         private static readonly User _user = User.WithKey("foo");
         private static readonly User _otherUser = User.WithKey("bar");
 
-        private static readonly IDictionary<string, string> _flagData1 = new Dictionary<string, string>
-        {
-            { "flag1", "value1" }
-        };
+        private static readonly FullDataSet _flagData1 = new DataSetBuilder()
+            .Add("flag1", 1, LdValue.Of("value1"), 0)
+            .Build();
 
-        private static readonly IDictionary<string, string> _flagData2 = new Dictionary<string, string>
-        {
-            { "flag1", "value2" }
-        };
+        private static readonly FullDataSet _flagData2 = new DataSetBuilder()
+            .Add("flag1", 2, LdValue.Of("value2"), 1)
+            .Build();
 
         public static readonly IEnumerable<object[]> PollingAndStreaming = new List<object[]>
         {
@@ -102,7 +102,7 @@ namespace LaunchDarkly.Sdk.Client
                 using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                 {
                     Assert.False(client.Initialized);
-                    Assert.Null(client.StringVariation(_flagData1.First().Key, null));
+                    Assert.Null(client.StringVariation(_flagData1.Items.First().Key, null));
                     Assert.True(logCapture.HasMessageWithText(Logging.LogLevel.Warn,
                         "Client did not successfully initialize within 200 milliseconds."));
                 }
@@ -248,7 +248,7 @@ namespace LaunchDarkly.Sdk.Client
                     var success = client.Identify(_otherUser, TimeSpan.FromMilliseconds(100));
                     Assert.False(success);
                     Assert.False(client.Initialized);
-                    Assert.Null(client.StringVariation(_flagData1.First().Key, null));
+                    Assert.Null(client.StringVariation(_flagData1.Items.First().Key, null));
                 }
             }
         }
@@ -267,7 +267,7 @@ namespace LaunchDarkly.Sdk.Client
                 var config = Configuration.Builder(_mobileKey)
                     .DataSource(MockPollingProcessor.Factory("{}"))
                     .Events(Components.SendEvents().BaseUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath)))
-                    .PersistFlagValues(false)
+                    .Persistence(Components.NoPersistence)
                     .Build();
 
                 using (var client = TestUtil.CreateClient(config, _user))
@@ -291,7 +291,8 @@ namespace LaunchDarkly.Sdk.Client
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server.Uri, UpdateMode.Polling, builder => builder.PersistFlagValues(true));
+                    // resetting Persistence to the default enables persistent storage
+                    var config = BaseConfig(server.Uri, UpdateMode.Polling, builder => builder.Persistence(null));
                     using (var client = TestUtil.CreateClient(config, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
@@ -321,7 +322,8 @@ namespace LaunchDarkly.Sdk.Client
                 ClearCachedFlags(_user);
                 try
                 {
-                    var config = BaseConfig(server.Uri, UpdateMode.Polling, builder => builder.PersistFlagValues(true));
+                    // resetting Persistence to the default enables persistent storage
+                    var config = BaseConfig(server.Uri, UpdateMode.Polling, builder => builder.Persistence(null));
                     using (var client = await TestUtil.CreateClientAsync(config, _user))
                     {
                         VerifyFlagValues(client, _flagData1);
@@ -356,7 +358,7 @@ namespace LaunchDarkly.Sdk.Client
                 var config = BaseConfig(builder => builder
                     .BackgroundModeManager(mockBackgroundModeManager)
                     .DataSource(Components.StreamingDataSource().BaseUri(server.Uri).BackgroundPollingIntervalWithoutMinimum(backgroundInterval))
-                    .PersistFlagValues(false));
+                    );
 
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
@@ -374,14 +376,14 @@ namespace LaunchDarkly.Sdk.Client
 
                     mockBackgroundModeManager.UpdateBackgroundMode(true);
 
-                    await receivedChangeSignal.WaitAsync();
+                    Assert.True(await receivedChangeSignal.WaitAsync(TimeSpan.FromSeconds(5)));
                     VerifyFlagValues(client, _flagData2);
 
                     // Now switch back to streaming
                     switchable.Target = SetupResponse(_flagData1, UpdateMode.Streaming);
                     mockBackgroundModeManager.UpdateBackgroundMode(false);
 
-                    await receivedChangeSignal.WaitAsync();
+                    Assert.True(await receivedChangeSignal.WaitAsync(TimeSpan.FromSeconds(5)));
                     VerifyFlagValues(client, _flagData1);
                 }
             }
@@ -404,7 +406,7 @@ namespace LaunchDarkly.Sdk.Client
                     .BackgroundModeManager(mockBackgroundModeManager)
                     .EnableBackgroundUpdating(false)
                     .DataSource(Components.StreamingDataSource().BaseUri(server.Uri).BackgroundPollInterval(backgroundInterval))
-                    .PersistFlagValues(false));
+                    );
 
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
@@ -428,7 +430,7 @@ namespace LaunchDarkly.Sdk.Client
                     switchable.Target = SetupResponse(_flagData2, UpdateMode.Streaming);
                     mockBackgroundModeManager.UpdateBackgroundMode(false);
 
-                    await receivedChangeSignal.WaitAsync();
+                    Assert.True(await receivedChangeSignal.WaitAsync(TimeSpan.FromSeconds(5)));
                     VerifyFlagValues(client, _flagData2);
                 }
             }
@@ -441,7 +443,7 @@ namespace LaunchDarkly.Sdk.Client
             using (var server = HttpServer.Start(SetupResponse(_flagData1, mode)))
             {
                 ClearCachedFlags(_user);
-                var config = BaseConfig(server.Uri, mode, builder => builder.Offline(true).PersistFlagValues(false));
+                var config = BaseConfig(server.Uri, mode, builder => builder.Offline(true));
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
                     VerifyNoFlagValues(client, _flagData1);
@@ -462,11 +464,10 @@ namespace LaunchDarkly.Sdk.Client
             // definitely don't want that. Verify that we're disabling that behavior when we parse flags.
             const string dateLikeString1 = "1970-01-01T00:00:01.001Z";
             const string dateLikeString2 = "1970-01-01T00:00:01Z";
-            var flagData = new Dictionary<string, string>
-                {
-                    { "flag1", dateLikeString1 },
-                    { "flag2", dateLikeString2 }
-                };
+            var flagData = new DataSetBuilder()
+                .Add("flag1", 1, LdValue.Of(dateLikeString1), 0)
+                .Add("flag2", 1, LdValue.Of(dateLikeString2), 0)
+                .Build();
             using (var server = HttpServer.Start(SetupResponse(flagData, mode)))
             {
                 var config = BaseConfig(server.Uri, mode);
@@ -483,7 +484,7 @@ namespace LaunchDarkly.Sdk.Client
                 .Events(new SingleEventProcessorFactory(new MockEventProcessor()));
             builderInternal
                 .Logging(testLogging)
-                .PersistFlagValues(false);  // unless we're specifically testing flag caching, this helps to prevent test state contamination
+                .Persistence(Components.NoPersistence);  // unless we're specifically testing flag caching, this helps to prevent test state contamination
             var builder = extraConfig == null ? builderInternal : extraConfig(builderInternal);
             return builder.Build();
         }
@@ -504,7 +505,7 @@ namespace LaunchDarkly.Sdk.Client
             });
         }
 
-        private Handler SetupResponse(IDictionary<string, string> data, UpdateMode mode) =>
+        private Handler SetupResponse(FullDataSet data, UpdateMode mode) =>
             mode.IsStreaming
                 ? Handlers.SSE.Start()
                     .Then(Handlers.SSE.Event("put", PollingData(data)))
@@ -529,42 +530,26 @@ namespace LaunchDarkly.Sdk.Client
             return req;
         }
 
-        private void VerifyFlagValues(ILdClient client, IDictionary<string, string> flags)
+        private void VerifyFlagValues(ILdClient client, FullDataSet flags)
         {
             Assert.True(client.Initialized);
-            foreach (var e in flags)
+            foreach (var e in flags.Items)
             {
-                Assert.Equal(e.Value, client.StringVariation(e.Key, null));
+                Assert.Equal(e.Value.Item.value, client.JsonVariation(e.Key, LdValue.Null));
             }
         }
 
-        private void VerifyNoFlagValues(ILdClient client, IDictionary<string, string> flags)
+        private void VerifyNoFlagValues(ILdClient client, FullDataSet flags)
         {
             Assert.True(client.Initialized);
-            foreach (var e in flags)
+            foreach (var e in flags.Items)
             {
-                Assert.Null(client.StringVariation(e.Key, null));
+                Assert.Equal(LdValue.Null, client.JsonVariation(e.Key, LdValue.Null));
             }
         }
 
-        private static LdValue FlagJson(string key, string value)
-        {
-            return LdValue.ObjectFrom(new Dictionary<string, LdValue>
-            {
-                { "key", LdValue.Of(key) },
-                { "value", LdValue.Of(value) }
-            });
-        }
-
-        private static string PollingData(IDictionary<string, string> flags)
-        {
-            var d = new Dictionary<string, LdValue>();
-            foreach (var e in flags)
-            {
-                d.Add(e.Key, FlagJson(e.Key, e.Value));
-            }
-            return LdValue.ObjectFrom(d).ToJsonString();
-        }
+        private static string PollingData(FullDataSet flags) =>
+            TestUtil.MakeJsonData(flags);
     }
 
     public class UpdateMode

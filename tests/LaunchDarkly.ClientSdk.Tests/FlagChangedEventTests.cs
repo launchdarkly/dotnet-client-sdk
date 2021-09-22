@@ -1,7 +1,9 @@
-﻿using System.Collections.Concurrent;
-using System.Threading;
+﻿using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
+
+using static LaunchDarkly.Sdk.Client.TestUtil;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -21,18 +23,18 @@ namespace LaunchDarkly.Sdk.Client
         public void CanRegisterListeners()
         {
             var manager = Manager();
-            var listener1 = new FlagChangedEventSink();
-            var listener2 = new FlagChangedEventSink();
-            manager.FlagChanged += listener1.Handler;
-            manager.FlagChanged += listener2.Handler;
+            var listener1 = new EventSink<FlagChangedEventArgs>();
+            var listener2 = new EventSink<FlagChangedEventArgs>();
+            manager.FlagChanged += listener1.Add;
+            manager.FlagChanged += listener2.Add;
 
-            manager.FlagWasUpdated(INT_FLAG, LdValue.Of(7), LdValue.Of(6));
-            manager.FlagWasUpdated(DOUBLE_FLAG, LdValue.Of(10.5f), LdValue.Of(9.5f));
+            manager.FireEvent(new FlagChangedEventArgs(INT_FLAG, LdValue.Of(7), LdValue.Of(6), false));
+            var event1a = listener1.ExpectValue();
+            var event2a = listener2.ExpectValue();
 
-            var event1a = listener1.Await();
-            var event1b = listener1.Await();
-            var event2a = listener2.Await();
-            var event2b = listener2.Await();
+            manager.FireEvent(new FlagChangedEventArgs(DOUBLE_FLAG, LdValue.Of(10.5f), LdValue.Of(9.5f), false));
+            var event1b = listener1.ExpectValue();
+            var event2b = listener2.ExpectValue();
 
             Assert.Equal(INT_FLAG, event1a.Key);
             Assert.Equal(INT_FLAG, event2a.Key);
@@ -57,39 +59,21 @@ namespace LaunchDarkly.Sdk.Client
         public void CanUnregisterListeners()
         {
             var manager = Manager();
-            var listener1 = new FlagChangedEventSink();
-            var listener2 = new FlagChangedEventSink();
-            manager.FlagChanged += listener1.Handler;
-            manager.FlagChanged += listener2.Handler;
+            var listener1 = new EventSink<FlagChangedEventArgs>();
+            var listener2 = new EventSink<FlagChangedEventArgs>();
+            manager.FlagChanged += listener1.Add;
+            manager.FlagChanged += listener2.Add;
 
-            manager.FlagChanged -= listener1.Handler;
+            manager.FlagChanged -= listener1.Add;
 
-            manager.FlagWasUpdated(INT_FLAG, LdValue.Of(7), LdValue.Of(6));
+            manager.FireEvent(new FlagChangedEventArgs(INT_FLAG, LdValue.Of(7), LdValue.Of(6), false));
 
-            var e = listener2.Await();
+            var e = listener2.ExpectValue();
             Assert.Equal(INT_FLAG, e.Key);
             Assert.Equal(7, e.NewValue.AsInt);
             Assert.Equal(6, e.OldValue.AsInt);
 
-            // This is pretty hacky, but since we're testing for the *lack* of a call, there's no signal we can wait on.
-            Thread.Sleep(100);
-
-            Assert.True(listener1.IsEmpty);
-        }
-
-        [Fact]
-        public void ListenerGetsUpdatedWhenManagerFlagDeleted()
-        {
-            var manager = Manager();
-            var listener = new FlagChangedEventSink();
-            manager.FlagChanged += listener.Handler;
-
-            manager.FlagWasDeleted(INT_FLAG, LdValue.Of(1));
-
-            var e = listener.Await();
-            Assert.Equal(INT_FLAG, e.Key);
-            Assert.Equal(1, e.OldValue.AsInt);
-            Assert.True(e.FlagWasDeleted);
+            listener1.ExpectNoValue();
         }
 
         [Fact]
@@ -104,38 +88,21 @@ namespace LaunchDarkly.Sdk.Client
             //    ensures it won't set Called until after we have checked it. Pass.
             var manager = Manager();
             var locker = new object();
-            var called = false;
+            var called = new AtomicBoolean(false);
 
             manager.FlagChanged += (sender, args) =>
             {
                 lock (locker)
                 {
-                    Volatile.Write(ref called, true);
+                    called.GetAndSet(true);
                 }
             };
 
             lock (locker)
             {
-                manager.FlagWasUpdated(INT_FLAG, LdValue.Of(2), LdValue.Of(1));
-                Assert.False(Volatile.Read(ref called));
+                manager.FireEvent(new FlagChangedEventArgs(INT_FLAG, LdValue.Of(2), LdValue.Of(1), false));
+                Assert.False(called.Get());
             }
         }
-    }
-
-    public class FlagChangedEventSink
-    {
-        private BlockingCollection<FlagChangedEventArgs> _events = new BlockingCollection<FlagChangedEventArgs>();
-
-        public void Handler(object sender, FlagChangedEventArgs args)
-        {
-            _events.Add(args);
-        }
-
-        public FlagChangedEventArgs Await()
-        {
-            return _events.Take();
-        }
-
-        public bool IsEmpty => _events.Count == 0;
     }
 }

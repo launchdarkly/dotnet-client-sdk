@@ -5,8 +5,6 @@ using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
-
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     internal sealed class PollingDataSource : IDataSource
@@ -81,8 +79,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 if (response.statusCode == 200)
                 {
                     var flagsAsJsonString = response.jsonResponse;
-                    var flagsDictionary = JsonUtil.DeserializeFlags(flagsAsJsonString);
-                    _updateSink.Init(new FullDataSet(flagsDictionary), _user);
+                    var allData = DataModelSerialization.DeserializeV1Schema(flagsAsJsonString);
+                    _updateSink.Init(allData, _user);
 
                     if (_initialized.GetAndSet(true) == false)
                     {

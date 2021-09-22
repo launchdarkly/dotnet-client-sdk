@@ -5,8 +5,6 @@ using LaunchDarkly.Sdk.Client.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
-
 namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientTests : BaseTest
@@ -17,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client
         public LdClientTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
         ConfigurationBuilder BaseConfig() =>
-            TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Logging(testLogging);
+            TestUtil.TestConfig(appKey).Logging(testLogging);
 
         LdClient Client()
         {
@@ -117,8 +115,10 @@ namespace LaunchDarkly.Sdk.Client
             var userB = User.WithKey("b");
 
             var flagKey = "flag";
-            var userAFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("a-value"));
-            var userBFlags = TestUtil.MakeSingleFlagData(flagKey, LdValue.Of("b-value"));
+            var userAFlags = new DataSetBuilder()
+                .Add(flagKey, 1, LdValue.Of("a-value"), 0).Build();
+            var userBFlags = new DataSetBuilder()
+                .Add(flagKey, 2, LdValue.Of("b-value"), 1).Build();
 
             var startedIdentifyUserB = new SemaphoreSlim(0, 1);
             var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
@@ -130,13 +130,13 @@ namespace LaunchDarkly.Sdk.Client
                     switch (user.Key)
                     {
                         case "a":
-                            updates.Init(new FullDataSet(userAFlags), user);
+                            updates.Init(userAFlags, user);
                             break;
 
                         case "b":
                             startedIdentifyUserB.Release();
                             await canFinishIdentifyUserB.WaitAsync();
-                            updates.Init(new FullDataSet(userBFlags), user);
+                            updates.Init(userBFlags, user);
                             break;
                     }
                 }));
@@ -409,12 +409,11 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void FlagsAreLoadedFromPersistentStorageByDefault()
         {
-            var storage = new MockPersistentStorage();
-            var flagsJson = "{\"flag\": {\"value\": 100}}";
-            storage.Save(Constants.FLAGS_KEY_PREFIX + simpleUser.Key, flagsJson);
+            var storage = new MockPersistentDataStore();
+            var flags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
+            storage.Init(simpleUser, DataModelSerialization.SerializeAll(flags));
             var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .PersistentStorage(storage)
-                .FlagCacheManager(null) // use actual cache logic, not mock component (even though persistence layer is a mock)
+                .Persistence(new SinglePersistentDataStoreFactory(storage))
                 .Offline(true)
                 .Logging(testLogging)
                 .Build();
@@ -425,40 +424,22 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void FlagsAreNotLoadedFromPersistentStorageIfPersistFlagValuesIsFalse()
-        {
-            var storage = new MockPersistentStorage();
-            var flagsJson = "{\"flag\": {\"value\": 100}}";
-            storage.Save(Constants.FLAGS_KEY_PREFIX + simpleUser.Key, flagsJson);
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
-                .PersistentStorage(storage)
-                .FlagCacheManager(null) // use actual cache logic, not mock component (even though persistence layer is a mock)
-                .PersistFlagValues(false)
-                .Offline(true)
-                .Logging(testLogging)
-                .Build();
-            using (var client = TestUtil.CreateClient(config, simpleUser))
-            {
-                Assert.Equal(99, client.IntVariation("flag", 99)); // returns default value
-            }
-        }
-
-        [Fact]
         public void FlagsAreSavedToPersistentStorageByDefault()
         {
-            var storage = new MockPersistentStorage();
-            var flagsJson = "{\"flag\": {\"value\": 100}}";
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, flagsJson)
-                .FlagCacheManager(null)
-                .DataSource(MockPollingProcessor.Factory(flagsJson))
-                .PersistentStorage(storage)
+            var storage = new MockPersistentDataStore();
+            var initialFlags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
+            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+                .DataSource(MockPollingProcessor.Factory(TestUtil.MakeJsonData(initialFlags)))
+                .Persistence(new SinglePersistentDataStoreFactory(storage))
                 .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
             {
-                var storedJson = storage.GetValue(Constants.FLAGS_KEY_PREFIX + simpleUser.Key);
-                var flags = JsonUtil.DeserializeFlags(storedJson);
-                Assert.Equal(100, flags["flag"].value.AsInt);
+                var storedData = storage.GetAll(simpleUser);
+                Assert.NotNull(storedData);
+                var flags = DataModelSerialization.DeserializeAll(storedData);
+                Assert.NotEmpty(flags.Items);
+                Assert.Equal(100, flags.Items[0].Value.Item.value.AsInt);
             }
         }
 

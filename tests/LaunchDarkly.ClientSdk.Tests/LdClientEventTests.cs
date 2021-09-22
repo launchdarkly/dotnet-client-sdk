@@ -1,8 +1,10 @@
 ﻿using System;
 using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 using static LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes;
 
 namespace LaunchDarkly.Sdk.Client
@@ -17,6 +19,12 @@ namespace LaunchDarkly.Sdk.Client
             _factory = new SingleEventProcessorFactory(eventProcessor);
         }
 
+        public LdClient MakeClient(User user) =>
+            MakeClient(user, new DataSetBuilder().Build());
+
+        public LdClient MakeClient(User user, FullDataSet initialData) =>
+            MakeClient(user, DataModelSerialization.SerializeAll(initialData));
+
         public LdClient MakeClient(User user, string flagsJson)
         {
             var config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);
@@ -27,7 +35,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void IdentifySendsIdentifyEvent()
         {
-            using (LdClient client = MakeClient(user, "{}"))
+            using (LdClient client = MakeClient(user))
             {
                 User user1 = User.WithKey("userkey1");
                 client.Identify(user1, TimeSpan.FromSeconds(1));
@@ -40,7 +48,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void TrackSendsCustomEvent()
         {
-            using (LdClient client = MakeClient(user, "{}"))
+            using (LdClient client = MakeClient(user))
             {
                 client.Track("eventkey");
                 Assert.Collection(eventProcessor.Events, 
@@ -58,7 +66,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void TrackWithDataSendsCustomEvent()
         {
-            using (LdClient client = MakeClient(user, "{}"))
+            using (LdClient client = MakeClient(user))
             {
                 LdValue data = LdValue.Of("hi");
                 client.Track("eventkey", data);
@@ -77,7 +85,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void TrackWithMetricValueSendsCustomEvent()
         {
-            using (LdClient client = MakeClient(user, "{}"))
+            using (LdClient client = MakeClient(user))
             {
                 LdValue data = LdValue.Of("hi");
                 double metricValue = 1.5;
@@ -100,7 +108,7 @@ namespace LaunchDarkly.Sdk.Client
             User oldUser = User.Builder("anon-key").Anonymous(true).Build();
             User newUser = User.WithKey("real-key");
 
-            using (LdClient client = MakeClient(user, "{}"))
+            using (LdClient client = MakeClient(user))
             {
                 client.Alias(user, oldUser);
                 Assert.Collection(eventProcessor.Events,
@@ -119,7 +127,7 @@ namespace LaunchDarkly.Sdk.Client
             User oldUser = User.Builder("anon-key").Anonymous(true).Build();
             User newUser = User.WithKey("real-key");
 
-            using (LdClient client = MakeClient(oldUser, "{}"))
+            using (LdClient client = MakeClient(oldUser))
             {
                 User actualOldUser = client.User; // so we can get any automatic properties that the client added
                 client.Identify(newUser, TimeSpan.FromSeconds(1));
@@ -166,7 +174,7 @@ namespace LaunchDarkly.Sdk.Client
             User oldUser = User.Builder("old-key").Anonymous(oldAnon).Build();
             User newUser = User.Builder("new-key").Anonymous(newAnon).Build();
 
-            using (LdClient client = MakeClient(oldUser, "{}"))
+            using (LdClient client = MakeClient(oldUser))
             {
                 client.Identify(newUser, TimeSpan.FromSeconds(1));
 
@@ -179,10 +187,11 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventForValidFlag()
         {
-            string flagsJson = @"{""flag"":{
-                ""value"":""a"",""variation"":1,""version"":1000,
-                ""trackEvents"":true, ""debugEventsUntilDate"":2000 }}";
-            using (LdClient client = MakeClient(user, flagsJson))
+            var data = new DataSetBuilder()
+                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                    .TrackEvents(true).DebugEventsUntilDate(UnixMillisecondTime.OfMillis(2000)).Build())
+                .Build();
+            using (LdClient client = MakeClient(user, data))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("a", result);
@@ -205,10 +214,11 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void FeatureEventUsesFlagVersionIfProvided()
         {
-            string flagsJson = @"{""flag"":{
-                ""value"":""a"",""variation"":1,""version"":1000,
-                ""flagVersion"":1500 }}";
-            using (LdClient client = MakeClient(user, flagsJson))
+            var data = new DataSetBuilder()
+                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                    .FlagVersion(1500).Build())
+                .Build();
+            using (LdClient client = MakeClient(user, data))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("a", result);
@@ -228,9 +238,10 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventForDefaultValue()
         {
-            string flagsJson = @"{""flag"":{
-                ""value"":null,""variation"":null,""version"":1000 }}";
-            using (LdClient client = MakeClient(user, flagsJson))
+            var data = new DataSetBuilder()
+                .Add("flag", new FeatureFlagBuilder().Version(1000).Build())
+                .Build();
+            using (LdClient client = MakeClient(user, data))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("b", result);
@@ -251,7 +262,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventForUnknownFlag()
         {
-            using (LdClient client = MakeClient(user, "{}"))
+            using (LdClient client = MakeClient(user))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("b", result);
@@ -299,11 +310,11 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventWithTrackingAndReasonIfTrackReasonIsTrue()
         {
-            string flagsJson = @"{""flag"":{
-                ""value"":""a"",""variation"":1,""version"":1000,
-                ""trackReason"":true, ""reason"":{""kind"":""OFF""}
-                }}";
-            using (LdClient client = MakeClient(user, flagsJson))
+            var data = new DataSetBuilder()
+                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                    .TrackReason(true).Reason(EvaluationReason.OffReason).Build())
+                .Build();
+            using (LdClient client = MakeClient(user, data))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("a", result);
@@ -326,12 +337,12 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationDetailSendsFeatureEventWithReasonForValidFlag()
         {
-            string flagsJson = @"{""flag"":{
-                ""value"":""a"",""variation"":1,""version"":1000,
-                ""trackEvents"":true, ""debugEventsUntilDate"":2000,
-                ""reason"":{""kind"":""OFF""}
-                }}";
-            using (LdClient client = MakeClient(user, flagsJson))
+            var data = new DataSetBuilder()
+                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                    .TrackEvents(true).DebugEventsUntilDate(UnixMillisecondTime.OfMillis(2000))
+                    .Reason(EvaluationReason.OffReason).Build())
+                .Build();
+            using (LdClient client = MakeClient(user, data))
             {
                 EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
                 Assert.Equal("a", result.Value);
@@ -355,7 +366,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationDetailSendsFeatureEventWithReasonForUnknownFlag()
         {
-            using (LdClient client = MakeClient(user, "{}"))
+            using (LdClient client = MakeClient(user))
             {
                 EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
                 var expectedReason = EvaluationReason.ErrorReason(EvaluationErrorKind.FlagNotFound);

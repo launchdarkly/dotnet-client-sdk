@@ -2,6 +2,8 @@
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Json;
 
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+
 namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
@@ -53,6 +55,10 @@ namespace LaunchDarkly.Sdk.Client
             }
 
             /// <inheritdoc/>
+            public override bool Equals(object obj) =>
+                Equals(obj as FeatureFlag);
+
+            /// <inheritdoc/>
             public bool Equals(FeatureFlag otherFlag) =>
                 value.Equals(otherFlag.value)
                 && variation == otherFlag.variation
@@ -61,6 +67,18 @@ namespace LaunchDarkly.Sdk.Client
                 && flagVersion == otherFlag.flagVersion
                 && trackEvents == otherFlag.trackEvents
                 && debugEventsUntilDate == otherFlag.debugEventsUntilDate;
+
+            /// <inheritdoc/>
+            public override int GetHashCode() =>
+                value.GetHashCode();
+
+            /// <inheritdoc/>
+            public override string ToString() =>
+                string.Format("({0},{1},{2},{3},{4},{5},{6},{7})",
+                    value, variation, reason, version, flagVersion, trackEvents, trackReason, debugEventsUntilDate);
+
+            internal ItemDescriptor ToItemDescriptor() =>
+                new ItemDescriptor(version, this);
         }
 
         internal sealed class FeatureFlagJsonConverter : IJsonStreamConverter

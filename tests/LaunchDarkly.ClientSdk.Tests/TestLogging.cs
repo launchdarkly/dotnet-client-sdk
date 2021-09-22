@@ -1,5 +1,4 @@
-﻿using System;
-using LaunchDarkly.Logging;
+﻿using LaunchDarkly.Logging;
 using Xunit.Abstractions;
 
 namespace LaunchDarkly.Sdk.Client
@@ -29,20 +28,5 @@ namespace LaunchDarkly.Sdk.Client
         /// <returns>a log adapter</returns>
         public static ILogAdapter TestOutputAdapter(ITestOutputHelper testOutputHelper) =>
             Logs.ToMethod(line => testOutputHelper.WriteLine("LOG OUTPUT >> " + line));
-
-        /// <summary>
-        /// Creates a <see cref="Logger"/> that sends logging to the Xunit output buffer. Use this when testing
-        /// lower-level components that want a specific logger instance instead of an <see cref="ILogAdapter"/>.
-        /// </summary>
-        /// <param name="testOutputHelper">the <see cref="ITestOutputHelper"/> that Xunit passed to the test
-        /// class constructor</param>
-        /// <returns>a logger</returns>
-        public static Logger TestLogger(ITestOutputHelper testOutputHelper) =>
-            TestOutputAdapter(testOutputHelper).Logger("");
-
-        /// <summary>
-        /// Convenience property for getting a millisecond timestamp string.
-        /// </summary>
-        public static string TimestampString => DateTime.Now.ToString("O");
     }
 }

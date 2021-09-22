@@ -112,11 +112,11 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void PersistFlagValues()
+        public void Persistence()
         {
-            var prop = _tester.Property(c => c.PersistFlagValues, (b, v) => b.PersistFlagValues(v));
-            prop.AssertDefault(true);
-            prop.AssertCanSet(false);
+            var prop = _tester.Property(c => c.PersistentDataStoreFactory, (b, v) => b.Persistence(v));
+            prop.AssertDefault(null);
+            prop.AssertCanSet(Components.NoPersistence);
         }
 
         [Fact]

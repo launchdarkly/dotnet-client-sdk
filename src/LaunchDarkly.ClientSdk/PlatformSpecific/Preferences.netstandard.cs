@@ -1,13 +1,10 @@
-﻿#if NETSTANDARD1_6
-#else
-using System;
+﻿using System;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Internal;
-#endif
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
@@ -20,8 +17,6 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     //
     // This is based on the Plugin.Settings plugin (which is what Xamarin Essentials uses for preferences), but greatly
     // simplified since we only need one data type. See: https://github.com/jamesmontemagno/SettingsPlugin/blob/master/src/Plugin.Settings/Settings.dotnet.cs
-    //
-    // In .NET Standard 1.6, there is no data store.
 
     internal static partial class Preferences
     {
@@ -103,17 +98,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
                 var store = IsolatedStorageFile.GetUserStoreForDomain();
                 return callback(store);
             }
-            catch (Exception e)
-            {
-                HandleStoreException(e, log);
-                return default;
-            }
-        }
-
-        private static void HandleStoreException(Exception e, Logger log)
-        {
-            if (e is IsolatedStorageException ||
-                e is InvalidOperationException)
+            catch (Exception e) when (e is IsolatedStorageException || e is InvalidOperationException)
             {
                 // These exceptions are ones that IsolatedStorageFile methods may throw under conditions that are
                 // unrelated to our code, e.g. filesystem permissions don't allow the store to be used. Since such a
@@ -128,12 +113,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
                 {
                     log.Warn("Persistent storage is unavailable and has been disabled ({0}: {1})", e.GetType(), e.Message);
                 }
-            }
-            else
-            {
-                // All other errors probably indicate an error in our own code. We don't want to throw these up
-                // into the SDK; the Preferences API is expected to either work or silently fail.
-                LogHelpers.LogException(log, "Error in accessing persistent storage", e);
+                return default(T);
             }
         }
 

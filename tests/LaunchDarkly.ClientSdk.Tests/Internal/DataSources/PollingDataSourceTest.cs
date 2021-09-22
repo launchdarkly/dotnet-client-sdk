@@ -1,7 +1,6 @@
 ﻿using System;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,7 +14,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             "\"string-flag\":{\"value\":\"markw@magenic.com\"}" +
             "}";
 
-        IFlagCacheManager mockFlagCacheManager;
+        private InMemoryDataStore _store = new InMemoryDataStore();
         User user;
 
         public PollingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
@@ -23,11 +22,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         IDataSource MakeDataSource()
         {
             var mockFeatureFlagRequestor = new MockFeatureFlagRequestor(flagsJson);
-            var stubbedFlagCache = new UserFlagInMemoryCache();
-            mockFlagCacheManager = new MockFlagCacheManager(stubbedFlagCache);
             user = User.WithKey("user1Key");
             return new PollingDataSource(
-                new DataSourceUpdateSinkImpl(mockFlagCacheManager),
+                new DataSourceUpdateSinkImpl(_store, new FlagChangedEventManager(testLogger)),
                 user,
                 mockFeatureFlagRequestor,
                 TimeSpan.FromSeconds(30),
@@ -48,8 +45,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var dataSource = MakeDataSource();
             var initTask = dataSource.Start();
             var unused = initTask.Wait(TimeSpan.FromSeconds(1));
-            var flags = mockFlagCacheManager.FlagsForUser(user);
-            Assert.Equal(3, flags.Count);
+            var flags = _store.GetAll(user);
+            Assert.Equal(3, flags.Value.Items.Count);
         }
     }
 }

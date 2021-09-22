@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Immutable;
-
-using static LaunchDarkly.Sdk.Client.DataModel;
+﻿using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
@@ -20,24 +17,15 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <param name="data">the data set</param>
         /// <param name="user">the current user</param>
         /// <returns>true if the update succeeded, false if it failed</returns>
-        void Init(DataStoreTypes.FullDataSet data, User user);
+        void Init(FullDataSet data, User user);
 
         /// <summary>
         /// Updates or inserts an item. For updates, the object will only be updated if the existing
         /// version is less than the new version.
         /// </summary>
         /// <param name="key">the feature flag key</param>
-        /// <param name="version">the data version</param>
-        /// <param name="data">the flag data</param>
+        /// <param name="data">the item data</param>
         /// <param name="user">the current user</param>
-        void Upsert(string key, int version, FeatureFlag data, User user);
-
-        /// <summary>
-        /// Deletes an item, if the version is greater than any existing version.
-        /// </summary>
-        /// <param name="key">the feature flag key</param>
-        /// <param name="version">the deletion version</param>
-        /// <param name="user">the current user</param>
-        void Delete(string key, int version, User user);
+        void Upsert(string key, ItemDescriptor data, User user);
     }
 }

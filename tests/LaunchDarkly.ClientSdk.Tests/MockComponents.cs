@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataSources;
-using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
+using LaunchDarkly.TestHelpers;
+using Xunit;
 
-using static LaunchDarkly.Sdk.Client.DataModel;
 using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
@@ -51,6 +50,45 @@ namespace LaunchDarkly.Sdk.Client
         {
             IsConnected = online;
             ConnectionChanged?.Invoke(IsConnected);
+        }
+    }
+
+    internal class MockDataSourceUpdateSink : IDataSourceUpdateSink
+    {
+        internal class ReceivedInit
+        {
+            public FullDataSet Data { get; set; }
+            public User User { get; set; }
+        }
+
+        internal class ReceivedUpsert
+        {
+            public string Key { get; set; }
+            public ItemDescriptor Data { get; set; }
+            public User User { get; set; }
+        }
+
+        public readonly EventSink<object> Actions = new EventSink<object>();
+
+        public void Init(FullDataSet data, User user) =>
+            Actions.Add(null, new ReceivedInit { Data = data, User = user });
+
+        public void Upsert(string key, ItemDescriptor data, User user) =>
+            Actions.Add(null, new ReceivedUpsert { Key = key, Data = data, User = user });
+
+        public FullDataSet ExpectInit(User user)
+        {
+            var action = Assert.IsType<ReceivedInit>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
+            Assert.Equal(user, action.User);
+            return action.Data;
+        }
+
+        public ItemDescriptor ExpectUpsert(User user, string key)
+        {
+            var action = Assert.IsType<ReceivedUpsert>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
+            Assert.Equal(user, action.User);
+            Assert.Equal(key, action.Key);
+            return action.Data;
         }
     }
 
@@ -133,70 +171,32 @@ namespace LaunchDarkly.Sdk.Client
         }
     }
 
-    internal class MockFlagCacheManager : IFlagCacheManager
-    {
-        private readonly IUserFlagCache _flagCache;
-
-        public MockFlagCacheManager(IUserFlagCache flagCache)
-        {
-            _flagCache = flagCache;
-        }
-
-        public void CacheFlagsFromService(IImmutableDictionary<string, FeatureFlag> flags, User user)
-        {
-            _flagCache.CacheFlagsForUser(flags, user);
-        }
-
-        public FeatureFlag FlagForUser(string flagKey, User user)
-        {
-            var flags = FlagsForUser(user);
-            FeatureFlag featureFlag;
-            if (flags != null && flags.TryGetValue(flagKey, out featureFlag))
-            {
-                return featureFlag;
-            }
-
-            return null;
-        }
-
-        public IImmutableDictionary<string, FeatureFlag> FlagsForUser(User user)
-        {
-            return _flagCache.RetrieveFlags(user);
-        }
-
-        public void RemoveFlagForUser(string flagKey, User user)
-        {
-            var flagsForUser = FlagsForUser(user);
-            var updatedDict = flagsForUser.Remove(flagKey);
-
-            CacheFlagsFromService(updatedDict, user);
-        }
-
-        public void UpdateFlagForUser(string flagKey, FeatureFlag featureFlag, User user)
-        {
-            var flagsForUser = FlagsForUser(user);
-            var updatedDict = flagsForUser.SetItem(flagKey, featureFlag);
-
-            CacheFlagsFromService(updatedDict, user);
-        }
-    }
-
-    internal class MockPersistentStorage : IPersistentStorage
+    internal class MockPersistentDataStore : IPersistentDataStore
     {
         private IDictionary<string, string> map = new Dictionary<string, string>();
 
-        public string GetValue(string key)
-        {
-            if (!map.ContainsKey(key))
-                return null;
+        public void Dispose() { }
 
-            return map[key];
+        public string GetAll(User user) =>
+            map.TryGetValue(user.Key, out var value) ? value : null;
+
+        public void Init(User user, string allData)
+        {
+            map[user.Key] = allData;
+        }
+    }
+
+    internal class SinglePersistentDataStoreFactory : IPersistentDataStoreFactory
+    {
+        private readonly IPersistentDataStore _instance;
+
+        public SinglePersistentDataStoreFactory(IPersistentDataStore instance)
+        {
+            _instance = instance;
         }
 
-        public void Save(string key, string value)
-        {
-            map[key] = value;
-        }
+        public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) =>
+            _instance;
     }
 
     internal class MockDataSourceFactoryFromLambda : IDataSourceFactory
@@ -264,7 +264,7 @@ namespace LaunchDarkly.Sdk.Client
             IsRunning = true;
             if (_updateSink != null && _flagsJson != null)
             {
-                _updateSink.Init(new FullDataSet(JsonUtil.DeserializeFlags(_flagsJson)), _user);
+                _updateSink.Init(DataModelSerialization.DeserializeV1Schema(_flagsJson), _user);
             }
             return Task.FromResult(true);
         }

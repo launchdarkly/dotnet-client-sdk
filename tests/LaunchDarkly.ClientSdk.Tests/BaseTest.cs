@@ -1,5 +1,6 @@
 ﻿using System;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -9,21 +10,21 @@ namespace LaunchDarkly.Sdk.Client
     [Collection("serialize all tests")]
     public class BaseTest : IDisposable
     {
-        protected readonly ILogAdapter testLogging;
+        protected readonly LoggingConfigurationBuilder testLogging;
         protected readonly Logger testLogger;
-        protected readonly LogCapture logCapture;
+        protected readonly LogCapture logCapture = Logs.Capture();
 
-        public BaseTest()
-        {
-            logCapture = Logs.Capture();
-            testLogging = logCapture;
-            testLogger = logCapture.Logger("");
-        }
+        public BaseTest() : this(capture => capture) { }
 
-        public BaseTest(ITestOutputHelper testOutput) : this()
+        public BaseTest(ITestOutputHelper testOutput) :
+            this(capture => Logs.ToMultiple(TestLogging.TestOutputAdapter(testOutput), capture))
+        { }
+
+        protected BaseTest(Func<ILogAdapter, ILogAdapter> adapterFn)
         {
-            testLogging = Logs.ToMultiple(TestLogging.TestOutputAdapter(testOutput), logCapture);
-            testLogger = testLogging.Logger("");
+            var adapter = adapterFn(logCapture);
+            testLogger = adapter.Level(LogLevel.Debug).Logger("");
+            testLogging = Components.Logging(adapter).Level(LogLevel.Debug);
         }
 
         protected void ClearCachedFlags(User user)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataSources;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
@@ -31,14 +33,13 @@ namespace LaunchDarkly.Sdk.Client
         readonly LdClientContext _context;
         readonly IDataSourceFactory _dataSourceFactory;
         readonly IDataSourceUpdateSink _dataSourceUpdateSink;
+        readonly IDataStore _dataStore;
         readonly ConnectionManager _connectionManager;
         readonly IBackgroundModeManager _backgroundModeManager;
         readonly IDeviceInfo deviceInfo;
         readonly IConnectivityStateManager _connectivityStateManager;
         readonly IEventProcessor _eventProcessor;
-        readonly IFlagCacheManager flagCacheManager;
         internal readonly IFlagChangedEventManager flagChangedEventManager; // exposed for testing
-        readonly IPersistentStorage persister;
         private readonly Logger _log;
 
         // Mutable client state (some state is also in the ConnectionManager)
@@ -137,14 +138,21 @@ namespace LaunchDarkly.Sdk.Client
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
-            persister = Factory.CreatePersistentStorage(configuration, _log);
             deviceInfo = Factory.CreateDeviceInfo(configuration, _log);
             flagChangedEventManager = Factory.CreateFlagChangedEventManager(configuration, _log);
 
             _user = DecorateUser(user);
 
-            flagCacheManager = Factory.CreateFlagCacheManager(configuration, persister, flagChangedEventManager, User, _log);
-            _dataSourceUpdateSink = new DataSourceUpdateSinkImpl(flagCacheManager);
+            var persistentStore = configuration.PersistentDataStoreFactory is null ?
+                new DefaultPersistentDataStore(_log.SubLogger(LogNames.DataStoreSubLog)) :
+                configuration.PersistentDataStoreFactory.CreatePersistentDataStore(_context);
+            _dataStore = new PersistentDataStoreWrapper(
+                new InMemoryDataStore(),
+                persistentStore,
+                _log.SubLogger(LogNames.DataStoreSubLog)
+                );
+            _dataSourceUpdateSink = new DataSourceUpdateSinkImpl(_dataStore, flagChangedEventManager);
+            _dataStore.Preload(_user);
 
             _dataSourceFactory = configuration.DataSourceFactory ?? Components.StreamingDataSource();
 
@@ -417,7 +425,7 @@ namespace LaunchDarkly.Sdk.Client
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
                 new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(kind));
 
-            var flag = flagCacheManager.FlagForUser(featureKey, User);
+            var flag = _dataStore.Get(User, featureKey)?.Item;
             if (flag == null)
             {
                 if (!Initialized)
@@ -477,8 +485,13 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public IDictionary<string, LdValue> AllFlags()
         {
-            return flagCacheManager.FlagsForUser(User)
-                                    .ToDictionary(p => p.Key, p => p.Value.value);
+            var data = _dataStore.GetAll(User);
+            if (data is null)
+            {
+                return ImmutableDictionary.Create<string, LdValue>();
+            }
+            return data.Value.Items.Where(entry => entry.Value.Item != null)
+                .ToDictionary(p => p.Key, p => p.Value.Item.value);
         }
 
         /// <inheritdoc/>
@@ -545,6 +558,8 @@ namespace LaunchDarkly.Sdk.Client
                 oldUser = _user;
                 _user = newUser;
             });
+
+            _dataStore.Preload(newUser);
 
             EventProcessorIfEnabled().RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
             {
@@ -643,6 +658,7 @@ namespace LaunchDarkly.Sdk.Client
 
                 _backgroundModeManager.BackgroundModeChanged -= OnBackgroundModeChanged;
                 _connectionManager.Dispose();
+                _dataStore.Dispose();
                 _eventProcessor.Dispose();
 
                 // Reset the static Instance to null *if* it was referring to this instance

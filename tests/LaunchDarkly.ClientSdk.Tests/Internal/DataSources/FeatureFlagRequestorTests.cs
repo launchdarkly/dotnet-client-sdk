@@ -6,6 +6,8 @@ using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
+using static LaunchDarkly.TestHelpers.JsonAssertions;
+
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     // End-to-end tests of this component against an embedded HTTP server.
@@ -105,7 +107,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     Assert.Equal(expectedPath, req.Path);
                     Assert.Equal(expectedQuery, req.Query);
                     Assert.Equal(_mobileKey, req.Headers["Authorization"]);
-                    TestUtil.AssertJsonEquals(LdValue.Parse(LdJsonSerialization.SerializeObject(_user)),
+                    AssertJsonEqual(LdJsonSerialization.SerializeObject(_user),
                         TestUtil.NormalizeJsonUser(LdValue.Parse(req.Body)));
                 }
             }

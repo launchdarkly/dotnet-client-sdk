@@ -51,5 +51,24 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
             public void SetOffline(bool offline) { }
         }
+
+        internal sealed class NullPersistentDataStoreFactory : IPersistentDataStoreFactory
+        {
+            internal static NullPersistentDataStoreFactory Instance = new NullPersistentDataStoreFactory();
+
+            public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) =>
+                NullPersistentDataStore.Instance;
+        }
+
+        internal sealed class NullPersistentDataStore : IPersistentDataStore
+        {
+            internal static NullPersistentDataStore Instance = new NullPersistentDataStore();
+
+            public string GetAll(User user) => null;
+
+            public void Init(User user, string allData) { }
+
+            public void Dispose() { }
+        }
     }
 }

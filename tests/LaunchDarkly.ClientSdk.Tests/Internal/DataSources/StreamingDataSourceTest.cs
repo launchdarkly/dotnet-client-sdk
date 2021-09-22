@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using LaunchDarkly.Sdk.Client.Integrations;
-using LaunchDarkly.Sdk.Client.Internal.DataStores;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal.Http;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,7 +23,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private EventSourceMock mockEventSource;
         private TestEventSourceFactory eventSourceFactory;
-        private IFlagCacheManager mockFlagCacheMgr;
+        private MockDataSourceUpdateSink _updateSink = new MockDataSourceUpdateSink();
         private IFeatureFlagRequestor mockRequestor;
         private Uri baseUri;
         private TimeSpan initialReconnectDelay = StreamingDataSourceBuilder.DefaultInitialReconnectDelay;
@@ -34,7 +33,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             mockEventSource = new EventSourceMock();
             eventSourceFactory = new TestEventSourceFactory(mockEventSource);
-            mockFlagCacheMgr = new MockFlagCacheManager(new UserFlagInMemoryCache());
             mockRequestor = new MockFeatureFlagRequestor(initialFlagsJson);
             baseUri = new Uri("http://example");
         }
@@ -42,7 +40,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private StreamingDataSource MakeStartedStreamingDataSource()
         {
             var dataSource = new StreamingDataSource(
-                new DataSourceUpdateSinkImpl(mockFlagCacheMgr),
+                _updateSink,
                 user,
                 baseUri,
                 withReasons,
@@ -116,13 +114,13 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             MakeStartedStreamingDataSource();
             // should be empty before PUT message arrives
-            var flagsInCache = mockFlagCacheMgr.FlagsForUser(user);
-            Assert.Empty(flagsInCache);
+            _updateSink.Actions.ExpectNoValue();
 
             PUTMessageSentToProcessor();
-            flagsInCache = mockFlagCacheMgr.FlagsForUser(user);
-            Assert.NotEmpty(flagsInCache);
-            int intFlagValue = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
+
+            var gotData = _updateSink.ExpectInit(user);
+            var gotItem = gotData.Items.First(item => item.Key == "int-flag");
+            int intFlagValue = gotItem.Value.Item.value.AsInt;
             Assert.Equal(15, intFlagValue);
         }
 
@@ -132,34 +130,15 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             // before PATCH, fill in flags
             MakeStartedStreamingDataSource();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
-            Assert.Equal(15, intFlagFromPUT);
+            _updateSink.ExpectInit(user);
 
             //PATCH to update 1 flag
             MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("patch", UpdatedFlag(), null));
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             //verify flag has changed
-            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
-            Assert.Equal(99, flagFromPatch);
-        }
-
-        [Fact]
-        public void PatchDoesnotUpdateFlagIfVersionIsLower()
-        {
-            // before PATCH, fill in flags
-            MakeStartedStreamingDataSource();
-            PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
-            Assert.Equal(15, intFlagFromPUT);
-
-            //PATCH to update 1 flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("patch", UpdatedFlagWithLowerVersion(), null));
-            mockEventSource.RaiseMessageRcvd(eventArgs);
-
-            //verify flag has not changed
-            int flagFromPatch = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
-            Assert.Equal(15, flagFromPatch);
+            var gotItem = _updateSink.ExpectUpsert(user, "int-flag");
+            Assert.Equal(99, gotItem.Item.value.AsInt);
         }
 
         [Fact]
@@ -168,50 +147,27 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             // before DELETE, fill in flags, test it's there
             MakeStartedStreamingDataSource();
             PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
-            Assert.Equal(15, intFlagFromPUT);
+            _updateSink.ExpectInit(user);
 
             // DELETE int-flag
             MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("delete", DeleteFlag(), null));
             mockEventSource.RaiseMessageRcvd(eventArgs);
 
             // verify flag was deleted
-            Assert.Null(mockFlagCacheMgr.FlagForUser("int-flag", user));
+            var gotItem = _updateSink.ExpectUpsert(user, "int-flag");
+            Assert.Null(gotItem.Item);
         }
 
         [Fact]
-        public void DeleteDoesnotRemoveFeatureFlagIfVersionIsLower()
-        {
-            // before DELETE, fill in flags, test it's there
-            MakeStartedStreamingDataSource();
-            PUTMessageSentToProcessor();
-            var intFlagFromPUT = mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt;
-            Assert.Equal(15, intFlagFromPUT);
-
-            // DELETE int-flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("delete", DeleteFlagWithLowerVersion(), null));
-            mockEventSource.RaiseMessageRcvd(eventArgs);
-
-            // verify flag was not deleted
-            Assert.NotNull(mockFlagCacheMgr.FlagForUser("int-flag", user));
-        }
-
-        [Fact]
-        public async void PingCausesPoll()
+        public void PingCausesPoll()
         {
             MakeStartedStreamingDataSource();
             mockEventSource.RaiseMessageRcvd(new MessageReceivedEventArgs(new MessageEvent("ping", null, null)));
-            var deadline = DateTime.Now.Add(TimeSpan.FromSeconds(5));
-            while (DateTime.Now < deadline)
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(10));
-                if (mockFlagCacheMgr.FlagsForUser(user).Count > 0)
-                {
-                    Assert.Equal(15, mockFlagCacheMgr.FlagForUser("int-flag", user).value.AsInt);
-                    return;
-                }
-            }
-            Assert.True(false, "timed out waiting for polled flags");
+
+            var gotData = _updateSink.ExpectInit(user);
+            var gotItem = gotData.Items.First(item => item.Key == "int-flag");
+            int intFlagValue = gotItem.Value.Item.value.AsInt;
+            Assert.Equal(15, intFlagValue);
         }
 
         string UpdatedFlag()

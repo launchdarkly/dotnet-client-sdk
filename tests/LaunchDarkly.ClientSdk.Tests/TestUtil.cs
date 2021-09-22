@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal;
-using LaunchDarkly.Sdk.Client.Internal.DataStores;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
-using Xunit;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
+using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -119,46 +116,46 @@ namespace LaunchDarkly.Sdk.Client
             });
         }
 
-        internal static IImmutableDictionary<string, FeatureFlag> MakeSingleFlagData(string flagKey, LdValue value, int? variation = null, EvaluationReason? reason = null)
+        internal static string MakeJsonData(FullDataSet data)
         {
-            var flag = new FeatureFlagBuilder().Value(value).Variation(variation).Reason(reason).Build();
-            return ImmutableDictionary.Create<string, FeatureFlag>().SetItem(flagKey, flag);
+            var w = JWriter.New();
+            using (var ow = w.Object())
+            {
+                foreach (var item in data.Items)
+                {
+                    if (item.Value.Item != null)
+                    {
+                        FeatureFlagJsonConverter.WriteJsonValue(item.Value.Item, ow.Name(item.Key));
+                    }
+                }
+            }
+            return w.GetString();
         }
 
-        internal static string JsonFlagsWithSingleFlag(string flagKey, LdValue value, int? variation = null, EvaluationReason? reason = null)
-        {
-            return JsonUtil.SerializeFlags(MakeSingleFlagData(flagKey, value, variation, reason));
-        }
+        internal static string JsonFlagsWithSingleFlag(string flagKey, LdValue value, int? variation = null, EvaluationReason? reason = null) =>
+            MakeJsonData(new DataSetBuilder()
+                .Add(flagKey, new FeatureFlagBuilder().Value(value).Variation(variation).Reason(reason).Build())
+                .Build());
 
-        internal static IImmutableDictionary<string, FeatureFlag> DecodeFlagsJson(string flagsJson)
-        {
-            return JsonUtil.DeserializeFlags(flagsJson);
-        }
-
+        internal static ConfigurationBuilder TestConfig(string appKey) =>
+            Configuration.Builder(appKey)
+                .ConnectivityStateManager(new MockConnectivityStateManager(true))
+                .Events(new SingleEventProcessorFactory(new MockEventProcessor()))
+                .DataSource(MockPollingProcessor.Factory(null))
+                .Persistence(Components.NoPersistence)
+                .DeviceInfo(new MockDeviceInfo());
+        
         internal static ConfigurationBuilder ConfigWithFlagsJson(User user, string appKey, string flagsJson)
         {
-            var flags = DecodeFlagsJson(flagsJson);
-            IUserFlagCache stubbedFlagCache = new UserFlagInMemoryCache();
+            var mockStore = new MockPersistentDataStore();
             if (user != null && user.Key != null)
             {
-                stubbedFlagCache.CacheFlagsForUser(flags, user);
+                mockStore.Init(user, flagsJson);
             }
-
-            return Configuration.Builder(appKey)
-                                .FlagCacheManager(new MockFlagCacheManager(stubbedFlagCache))
-                                .ConnectivityStateManager(new MockConnectivityStateManager(true))
-                                .Events(new SingleEventProcessorFactory(new MockEventProcessor()))
-                                .DataSource(MockPollingProcessor.Factory(null))
-                                .PersistentStorage(new MockPersistentStorage())
-                                .DeviceInfo(new MockDeviceInfo());
+            return TestConfig(appKey).Persistence(new SinglePersistentDataStoreFactory(mockStore));
         }
 
-        public static void AssertJsonEquals(LdValue expected, LdValue actual)
-        {
-            Assert.Equal(expected, actual);
-        }
-
-        public static LdValue NormalizeJsonUser(LdValue json)
+        public static string NormalizeJsonUser(LdValue json)
         {
             // It's undefined whether a user with no custom attributes will have "custom":{} or not
             if (json.Type == LdValueType.Object && json.Get("custom").Type == LdValueType.Object)
@@ -173,10 +170,10 @@ namespace LaunchDarkly.Sdk.Client
                             o1.Add(kv.Key, kv.Value);
                         }
                     }
-                    return o1.Build();
+                    return o1.Build().ToJsonString();
                 }
             }
-            return json;
+            return json.ToJsonString();
         }
     }
 }

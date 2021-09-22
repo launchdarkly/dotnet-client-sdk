@@ -31,9 +31,7 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager BackgroundModeManager { get; }
         internal IConnectivityStateManager ConnectivityStateManager { get; }
         internal IDeviceInfo DeviceInfo { get; }
-        internal IFlagCacheManager FlagCacheManager { get; }
         internal IFlagChangedEventManager FlagChangedEventManager { get; }
-        internal IPersistentStorage PersistentStorage { get; }
 
         /// <summary>
         /// Whether to disable the automatic sending of an alias event when the current user is changed
@@ -106,13 +104,10 @@ namespace LaunchDarkly.Sdk.Client
         public bool Offline { get; }
 
         /// <summary>
-        /// Whether the SDK should save flag values for each user in persistent storage, so they will be
-        /// immediately available the next time the SDK is started for the same user.
+        /// A factory object that creates an implementation of <see cref="IPersistentDataStore"/>, for
+        /// saving flag values in persistent storage.
         /// </summary>
-        /// <remarks>
-        /// The default is <see langword="true"/>.
-        /// </remarks>
-        public bool PersistFlagValues { get; }
+        public IPersistentDataStoreFactory PersistentDataStoreFactory { get; }
 
         /// <summary>
         /// Creates a configuration with all parameters set to the default.
@@ -173,14 +168,12 @@ namespace LaunchDarkly.Sdk.Client
             LoggingConfigurationBuilder = builder._loggingConfigurationBuilder;
             MobileKey = builder._mobileKey;
             Offline = builder._offline;
-            PersistFlagValues = builder._persistFlagValues;
+            PersistentDataStoreFactory = builder._persistentDataStoreFactory;
 
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
             DeviceInfo = builder._deviceInfo;
-            FlagCacheManager = builder._flagCacheManager;
             FlagChangedEventManager = builder._flagChangedEventManager;
-            PersistentStorage = builder._persistentStorage;
         }
     }
 }

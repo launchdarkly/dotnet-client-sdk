@@ -81,7 +81,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     _httpProperties,
                     ReportMethod,
                     MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH),
-                    JsonUtil.EncodeJson(_user)
+                    DataModelSerialization.SerializeUser(_user)
                     );
             }
             else
@@ -90,7 +90,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     _httpProperties,
                     HttpMethod.Get,
                     MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH +
-                        Base64.UrlSafeEncode(JsonUtil.EncodeJson(_user))),
+                        Base64.UrlSafeEncode(DataModelSerialization.SerializeUser(_user))),
                     null
                     );
             }
@@ -167,11 +167,13 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         void HandleMessage(string messageType, string messageData)
         {
+            _log.Debug("Event '{0}': {1}", messageType, messageData);
             switch (messageType)
             {
                 case Constants.PUT:
                     {
-                        _updateSink.Init(new FullDataSet(JsonUtil.DeserializeFlags(messageData)), _user);
+                        var allData = DataModelSerialization.DeserializeV1Schema(messageData);
+                        _updateSink.Init(allData, _user);
                         if (!_initialized.GetAndSet(true))
                         {
                             _initTask.SetResult(true);
@@ -184,12 +186,13 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                         {
                             var parsed = LdValue.Parse(messageData);
                             var flagkey = parsed.Get(Constants.KEY).AsString;
-                            var featureFlag = JsonUtil.DecodeJson<FeatureFlag>(messageData);
-                            _updateSink.Upsert(flagkey, featureFlag.version, featureFlag, _user);
+                            var featureFlag = DataModelSerialization.DeserializeFlag(messageData);
+                            _updateSink.Upsert(flagkey, featureFlag.ToItemDescriptor(), _user);
                         }
                         catch (Exception ex)
                         {
-                            _log.Error("Error parsing PATCH message {0}: {1}", messageData, LogValues.ExceptionSummary(ex));
+                            LogHelpers.LogException(_log, "Error parsing PATCH message", ex);
+                            _log.Debug("Message data follows: {0}", messageData);
                         }
                         break;
                     }
@@ -200,34 +203,36 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                             var parsed = LdValue.Parse(messageData);
                             int version = parsed.Get(Constants.VERSION).AsInt;
                             string flagKey = parsed.Get(Constants.KEY).AsString;
-                            _updateSink.Delete(flagKey, version, _user);
+                            var deletedItem = new ItemDescriptor(version, null);
+                            _updateSink.Upsert(flagKey, deletedItem, _user);
                         }
                         catch (Exception ex)
                         {
-                            _log.Error("Error parsing DELETE message {0}: {1}", messageData, LogValues.ExceptionSummary(ex));
+                            LogHelpers.LogException(_log, "Error parsing DELETE message", ex);
+                            _log.Debug("Message data follows: {0}", messageData);
                         }
                         break;
                     }
                 case Constants.PING:
                     {
-                        try
+                        Task.Run(async () =>
                         {
-                            Task.Run(async () =>
+                            try
                             {
                                 var response = await _requestor.FeatureFlagsAsync();
                                 var flagsAsJsonString = response.jsonResponse;
-                                var flagsDictionary = JsonUtil.DeserializeFlags(flagsAsJsonString);
-                                _updateSink.Init(new FullDataSet(flagsDictionary), _user);
+                                var allData = DataModelSerialization.DeserializeV1Schema(flagsAsJsonString);
+                                _updateSink.Init(allData, _user);
                                 if (!_initialized.GetAndSet(true))
                                 {
                                     _initTask.SetResult(true);
                                 }
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            _log.Error("Error in handling PING message: {0}", LogValues.ExceptionSummary(ex));
-                        }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelpers.LogException(_log, "Error in handling PING message", ex);
+                            }
+                        });
                         break;
                     }
                 default:

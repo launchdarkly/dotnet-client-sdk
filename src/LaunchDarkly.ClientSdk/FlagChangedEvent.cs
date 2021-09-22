@@ -68,8 +68,7 @@ namespace LaunchDarkly.Sdk.Client
     internal interface IFlagChangedEventManager
     {
         event EventHandler<FlagChangedEventArgs> FlagChanged;
-        void FlagWasDeleted(string flagKey, LdValue oldValue);
-        void FlagWasUpdated(string flagKey, LdValue newValue, LdValue oldValue);
+        void FireEvent(FlagChangedEventArgs e);
     }
 
     internal sealed class FlagChangedEventManager : IFlagChangedEventManager
@@ -88,17 +87,7 @@ namespace LaunchDarkly.Sdk.Client
             return FlagChanged != null && FlagChanged.GetInvocationList().Contains(handler);
         }
 
-        public void FlagWasDeleted(string flagKey, LdValue oldValue)
-        {
-            FireEvent(new FlagChangedEventArgs(flagKey, LdValue.Null, oldValue, true));
-        }
-
-        public void FlagWasUpdated(string flagKey, LdValue newValue, LdValue oldValue)
-        {
-            FireEvent(new FlagChangedEventArgs(flagKey, newValue, oldValue, false));
-        }
-
-        private void FireEvent(FlagChangedEventArgs eventArgs)
+        public void FireEvent(FlagChangedEventArgs eventArgs)
         {
             var copyOfHandlers = FlagChanged;
             var sender = this;
