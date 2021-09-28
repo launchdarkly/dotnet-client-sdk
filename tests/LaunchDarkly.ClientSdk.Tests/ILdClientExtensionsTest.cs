@@ -118,6 +118,7 @@ namespace LaunchDarkly.Sdk.Client
 
             public bool Initialized => true;
             public bool Offline => false;
+            public IDataSourceStatusProvider DataSourceStatusProvider => null;
             public IFlagTracker FlagTracker => null;
 
             public IDictionary<string, LdValue> AllFlags() =>

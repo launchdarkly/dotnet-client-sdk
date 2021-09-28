@@ -1,33 +1,24 @@
 ﻿using System;
-using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Client.Internal.DataSources;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal sealed class FlagTrackerImpl : IFlagTracker
     {
-        public event EventHandler<FlagValueChangeEvent> FlagValueChanged;
+        private readonly DataSourceUpdateSinkImpl _updateSink;
 
-        private readonly TaskExecutor _taskExecutor;
-        private readonly Logger _log;
-
-        internal FlagTrackerImpl(
-            TaskExecutor taskExecutor,
-            Logger log
-            )
+        public event EventHandler<FlagValueChangeEvent> FlagValueChanged
         {
-            _taskExecutor = taskExecutor;
-            _log = log;
+            add =>_updateSink.FlagValueChanged += value;
+            remove => _updateSink.FlagValueChanged -= value;
         }
 
-        internal void FireEvent(FlagValueChangeEvent ev)
+        internal FlagTrackerImpl(
+            DataSourceUpdateSinkImpl updateSink
+            )
         {
-            var copyOfHandlers = FlagValueChanged;
-            if (copyOfHandlers != null)
-            {
-                _taskExecutor.ScheduleEvent(ev, copyOfHandlers);
-            }
+            _updateSink = updateSink;
         }
     }
 }

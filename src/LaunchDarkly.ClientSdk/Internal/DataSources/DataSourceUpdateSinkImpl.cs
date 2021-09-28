@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
+using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Concurrent;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
 using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
@@ -11,18 +16,34 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     internal sealed class DataSourceUpdateSinkImpl : IDataSourceUpdateSink
     {
         private readonly IDataStore _dataStore;
-        private readonly FlagTrackerImpl _flagTracker;
         private readonly object _lastValuesLock = new object();
+        private readonly TaskExecutor _taskExecutor;
+
         private volatile ImmutableDictionary<string, ImmutableDictionary<string, FeatureFlag>> _lastValues =
             ImmutableDictionary.Create<string, ImmutableDictionary<string, FeatureFlag>>();
 
-        public DataSourceUpdateSinkImpl(
+        private readonly StateMonitor<DataSourceStatus, StateAndError> _status;
+        internal DataSourceStatus CurrentStatus => _status.Current;
+
+        internal event EventHandler<FlagValueChangeEvent> FlagValueChanged;
+        internal event EventHandler<DataSourceStatus> StatusChanged;
+
+        internal DataSourceUpdateSinkImpl(
             IDataStore dataStore,
-            FlagTrackerImpl flagTracker
+            bool isConfiguredOffline,
+            TaskExecutor taskExecutor,
+            Logger log
             )
         {
             _dataStore = dataStore;
-            _flagTracker = flagTracker;
+            _taskExecutor = taskExecutor;
+            var initialStatus = new DataSourceStatus
+            {
+                State = isConfiguredOffline ? DataSourceState.SetOffline : DataSourceState.Initializing,
+                StateSince = DateTime.Now,
+                LastError = null
+            };
+            _status = new StateMonitor<DataSourceStatus, StateAndError>(initialStatus, MaybeUpdateStatus, log);
         }
 
         public void Init(User user, FullDataSet data)
@@ -45,6 +66,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 newValues = builder.ToImmutable();
                 _lastValues = _lastValues.SetItem(user.Key, newValues);
             }
+
+            UpdateStatus(DataSourceState.Valid, null);
 
             if (oldValues != null)
             {
@@ -77,7 +100,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 }
                 foreach (var e in events)
                 {
-                    _flagTracker.FireEvent(e);
+                    _taskExecutor.ScheduleEvent(e, FlagValueChanged);
                 }
             }
         }
@@ -117,8 +140,56 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     data.Item?.Value ?? LdValue.Null,
                     data.Item is null
                     );
-                _flagTracker.FireEvent(eventArgs);
+                _taskExecutor.ScheduleEvent(eventArgs, FlagValueChanged);
             }
+        }
+
+        private struct StateAndError
+        {
+            public DataSourceState State { get; set; }
+            public DataSourceStatus.ErrorInfo? Error { get; set; }
+        }
+
+        private static DataSourceStatus? MaybeUpdateStatus(
+            DataSourceStatus oldStatus,
+            StateAndError update
+            )
+        {
+            var newState =
+                (update.State == DataSourceState.Interrupted && oldStatus.State == DataSourceState.Initializing)
+                ? DataSourceState.Initializing  // see comment on IDataSourceUpdateSink.UpdateStatus
+                : update.State;
+
+            if (newState == oldStatus.State && !update.Error.HasValue)
+            {
+                return null;
+            }
+            return new DataSourceStatus
+            {
+                State = newState,
+                StateSince = newState == oldStatus.State ? oldStatus.StateSince : DateTime.Now,
+                LastError = update.Error ?? oldStatus.LastError
+            };
+        }
+
+        public void UpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError)
+        {
+            var updated = _status.Update(new StateAndError { State = newState, Error = newError },
+                out var newStatus);
+
+            if (updated)
+            {
+                _taskExecutor.ScheduleEvent(newStatus, StatusChanged);
+            }
+        }
+
+        internal async Task<bool> WaitForAsync(DataSourceState desiredState, TimeSpan timeout)
+        {
+            var newStatus = await _status.WaitForAsync(
+                status => status.State == desiredState || status.State == DataSourceState.Shutdown,
+                timeout
+                );
+            return newStatus.HasValue && newStatus.Value.State == desiredState;
         }
     }
 }

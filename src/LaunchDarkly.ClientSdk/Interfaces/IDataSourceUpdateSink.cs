@@ -2,6 +2,10 @@
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
+    // Note: In .NET server-side SDK 6.x, Java SDK 5.x, and Go SDK 5.x, where this component was added, it
+    // is called "DataSourceUpdates". This name was thought to be a bit confusing, since it receives updates
+    // rather than providing them, so as of .NET client-side SDK 2.x we are calling it an "update sink".
+
     /// <summary>
     /// Interface that an implementation of <see cref="IDataSource"/> will use to push data into the SDK.
     /// </summary>
@@ -27,5 +31,31 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <param name="key">the feature flag key</param>
         /// <param name="data">the item data</param>
         void Upsert(User user, string key, ItemDescriptor data);
+
+        /// <summary>
+        /// Informs the SDK of a change in the data source's status.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Data source implementations should use this method if they have any concept of being in a valid
+        /// state, a temporarily disconnected state, or a permanently stopped state.
+        /// </para>
+        /// <para>
+        /// If <paramref name="newState"/> is different from the previous state, and/or <paramref name="newError"/>
+        /// is non-null, the SDK will start returning the new status(adding a timestamp for the change) from
+        /// <see cref="IDataSourceStatusProvider.Status"/>, and will trigger status change events to any
+        /// registered listeners.
+        /// </para>
+        /// <para>
+        /// A special case is that if <paramref name="newState"/> is <see cref="DataSourceState.Interrupted"/>,
+        /// but the previous state was <see cref="DataSourceState.Initializing"/>, the state will
+        /// remain at <see cref="DataSourceState.Initializing"/> because
+        /// <see cref="DataSourceState.Interrupted"/> is only meaningful after a successful startup.
+        /// </para>
+        /// </remarks>
+        /// <param name="newState">the data source state</param>
+        /// <param name="newError">information about a new error, if any</param>
+        /// <seealso cref="IDataSourceStatusProvider"/>
+        void UpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
@@ -21,7 +22,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly TaskCompletionSource<bool> _startTask;
         private volatile CancellationTokenSource _canceller;
         private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
-        private volatile bool _disposed;
 
         internal PollingDataSource(
             IDataSourceUpdateSink updateSink,
@@ -80,15 +80,35 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     }
                 }
             }
-            catch (UnsuccessfulResponseException ex) when (ex.StatusCode == 401)
+            catch (UnsuccessfulResponseException ex)
             {
-                _log.Error("Error Updating features: '{0}'", LogValues.ExceptionSummary(ex));
-                _log.Error("Received 401 error, no further polling requests will be made since SDK key is invalid");
-                if (!_initialized.Get())
+                var errorInfo = DataSourceStatus.ErrorInfo.FromHttpError(ex.StatusCode);
+
+                if (HttpErrors.IsRecoverable(ex.StatusCode))
                 {
-                    _startTask.SetException(ex);
+                    _log.Warn(HttpErrors.ErrorMessage(ex.StatusCode, "polling request", "will retry"));
+                    _updateSink.UpdateStatus(DataSourceState.Interrupted, errorInfo);
                 }
-                ((IDisposable)this).Dispose();
+                else
+                {
+                    _log.Error(HttpErrors.ErrorMessage(ex.StatusCode, "polling request", ""));
+                    _updateSink.UpdateStatus(DataSourceState.Shutdown, errorInfo);
+
+                    // if client is initializing, make it stop waiting
+                    _startTask.TrySetResult(false);
+
+                    ((IDisposable)this).Dispose();
+                }
+            }
+            catch (JsonReadException ex)
+            {
+                _log.Error("Polling request received malformed data: {0}", LogValues.ExceptionSummary(ex));
+                _updateSink.UpdateStatus(DataSourceState.Interrupted,
+                    new DataSourceStatus.ErrorInfo
+                    {
+                        Kind = DataSourceStatus.ErrorKind.InvalidData,
+                        Time = DateTime.Now
+                    });
             }
             catch (Exception ex)
             {
