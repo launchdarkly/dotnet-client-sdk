@@ -1,6 +1,7 @@
 ﻿using System;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,12 +24,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             var mockFeatureFlagRequestor = new MockFeatureFlagRequestor(flagsJson);
             user = User.WithKey("user1Key");
+            var executor = new TaskExecutor(null, testLogger);
             return new PollingDataSource(
-                new DataSourceUpdateSinkImpl(_store, new FlagTrackerImpl(testLogger)),
+                new DataSourceUpdateSinkImpl(_store, new FlagTrackerImpl(executor, testLogger)),
                 user,
                 mockFeatureFlagRequestor,
                 TimeSpan.FromSeconds(30),
                 TimeSpan.Zero,
+                executor,
                 testLogger
                 );
         }

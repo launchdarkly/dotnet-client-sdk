@@ -141,6 +141,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 requestor,
                 _pollInterval,
                 TimeSpan.Zero,
+                context.TaskExecutor,
                 logger
                 );
         }

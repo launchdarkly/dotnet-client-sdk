@@ -4,7 +4,7 @@ using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Concurrent;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {

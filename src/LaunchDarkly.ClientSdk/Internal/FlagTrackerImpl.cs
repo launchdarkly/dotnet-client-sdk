@@ -9,36 +9,24 @@ namespace LaunchDarkly.Sdk.Client.Internal
     {
         public event EventHandler<FlagValueChangeEvent> FlagValueChanged;
 
+        private readonly TaskExecutor _taskExecutor;
         private readonly Logger _log;
 
         internal FlagTrackerImpl(
+            TaskExecutor taskExecutor,
             Logger log
             )
         {
+            _taskExecutor = taskExecutor;
             _log = log;
         }
 
         internal void FireEvent(FlagValueChangeEvent ev)
         {
             var copyOfHandlers = FlagValueChanged;
-            var sender = this;
             if (copyOfHandlers != null)
             {
-                foreach (var h in copyOfHandlers.GetInvocationList())
-                {
-                    // Note, this schedules the listeners separately, rather than scheduling a single task that runs them all.
-                    PlatformSpecific.AsyncScheduler.ScheduleAction(() =>
-                    {
-                        try
-                        {
-                            h.DynamicInvoke(sender, ev);
-                        }
-                        catch (Exception e)
-                        {
-                            LogHelpers.LogException(_log, "Unexpected exception from FlagValueChanged event handler", e);
-                        }
-                    });
-                }
+                _taskExecutor.ScheduleEvent(ev, copyOfHandlers);
             }
         }
     }

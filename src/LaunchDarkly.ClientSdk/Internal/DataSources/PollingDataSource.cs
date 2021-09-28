@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Internal.Http;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
@@ -15,8 +17,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly TimeSpan _pollingInterval;
         private readonly TimeSpan _initialDelay;
         private readonly Logger _log;
+        private readonly TaskExecutor _taskExecutor;
         private readonly TaskCompletionSource<bool> _startTask;
-        private readonly TaskCompletionSource<bool> _stopTask;
+        private volatile CancellationTokenSource _canceller;
         private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
         private volatile bool _disposed;
 
@@ -26,6 +29,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             IFeatureFlagRequestor featureFlagRequestor,
             TimeSpan pollingInterval,
             TimeSpan initialDelay,
+            TaskExecutor taskExecutor,
             Logger log)
         {
             this._featureFlagRequestor = featureFlagRequestor;
@@ -33,9 +37,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             this._user = user;
             this._pollingInterval = pollingInterval;
             this._initialDelay = initialDelay;
+            this._taskExecutor = taskExecutor;
             this._log = log;
             _startTask = new TaskCompletionSource<bool>();
-            _stopTask = new TaskCompletionSource<bool>();
         }
 
         public Task<bool> Start()
@@ -52,24 +56,11 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 _log.Info("Starting LaunchDarkly PollingProcessor with interval: {0}", _pollingInterval);
             }
 
-            Task.Run(() => UpdateTaskLoopAsync());
+            _canceller = _taskExecutor.StartRepeatingTask(_initialDelay, _pollingInterval, UpdateTaskAsync);
             return _startTask.Task;
         }
 
         public bool Initialized => _initialized.Get();
-
-        private async Task UpdateTaskLoopAsync()
-        {
-            if (_initialDelay > TimeSpan.Zero)
-            {
-                await Task.Delay(_initialDelay);
-            }
-            while (!_disposed)
-            {
-                await UpdateTaskAsync();
-                await Task.Delay(_pollingInterval);
-            }
-        }
 
         private async Task UpdateTaskAsync()
         {
@@ -115,8 +106,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             if (disposing)
             {
-                // Log that the polling has stopped
-                _disposed = true;
+                _canceller?.Cancel();
                 _featureFlagRequestor.Dispose();
             }
         }

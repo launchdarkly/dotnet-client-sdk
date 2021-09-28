@@ -13,6 +13,7 @@ using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Concurrent;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -40,6 +41,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly IConnectivityStateManager _connectivityStateManager;
         readonly IEventProcessor _eventProcessor;
         readonly IFlagTracker _flagTracker;
+        readonly TaskExecutor _taskExecutor;
         private readonly Logger _log;
 
         // Mutable client state (some state is also in the ConnectionManager)
@@ -123,8 +125,9 @@ namespace LaunchDarkly.Sdk.Client
 
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            _context = new LdClientContext(configuration);
+            _context = new LdClientContext(configuration, this);
             _log = _context.BaseLogger;
+            _taskExecutor = _context.TaskExecutor;
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
@@ -132,7 +135,7 @@ namespace LaunchDarkly.Sdk.Client
 
             _user = DecorateUser(user);
 
-            var flagTracker = new FlagTrackerImpl(_log);
+            var flagTracker = new FlagTrackerImpl(_taskExecutor, _log);
             _flagTracker = flagTracker;
 
             var persistentStore = configuration.PersistentDataStoreFactory is null ?

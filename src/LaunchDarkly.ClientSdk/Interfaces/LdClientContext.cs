@@ -1,5 +1,6 @@
 ﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Internal;
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
@@ -34,12 +35,23 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </summary>
         public HttpConfiguration Http { get; }
 
+        internal TaskExecutor TaskExecutor { get; }
+
         /// <summary>
         /// Creates an instance.
         /// </summary>
         /// <param name="configuration">the SDK configuration</param>
         public LdClientContext(
             Configuration configuration
+            ) : this(configuration, null) { }
+
+        /// <summary>
+        /// Creates an instance.
+        /// </summary>
+        /// <param name="configuration">the SDK configuration</param>
+        internal LdClientContext(
+            Configuration configuration,
+            object eventSender
             )
         {
             this.Basic = new BasicConfiguration(configuration.MobileKey);
@@ -52,6 +64,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             this.EvaluationReasons = configuration.EvaluationReasons;
             this.Http = (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
                 .CreateHttpConfiguration(this.Basic);
+
+            this.TaskExecutor = new TaskExecutor(eventSender, this.BaseLogger);
         }
     }
 }

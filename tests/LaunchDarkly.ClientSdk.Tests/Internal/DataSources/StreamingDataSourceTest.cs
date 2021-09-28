@@ -182,18 +182,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             return flagToDelete;
         }
 
-        string UpdatedFlagWithLowerVersion()
-        {
-            var updatedFlagAsJson = "{\"key\":\"int-flag\",\"version\":1,\"flagVersion\":192,\"value\":99,\"variation\":0,\"trackEvents\":false}";
-            return updatedFlagAsJson;
-        }
-
-        string DeleteFlagWithLowerVersion()
-        {
-            var flagToDelete = "{\"key\":\"int-flag\",\"version\":1}";
-            return flagToDelete;
-        }
-
         void PUTMessageSentToProcessor()
         {
             MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("put", initialFlagsJson, null));
