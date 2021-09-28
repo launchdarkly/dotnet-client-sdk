@@ -1,6 +1,6 @@
 ﻿using System;
+using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,26 +15,17 @@ namespace LaunchDarkly.Sdk.Client
         public void ClientSendsFlagValueChangeEvents()
         {
             var user = User.WithKey("user-key");
-            IDataSourceUpdateSink updateSink = null;
-            var mockDataSourceFactory = new MockDataSourceFactoryFromLambda((ctx, up, u, bg) =>
-            {
-                updateSink = up;
-                return new ComponentsImpl.NullDataSource();
-            });
+            var testData = TestData.DataSource();
             var config = TestUtil.TestConfig("mobile-key")
-                .DataSource(mockDataSourceFactory)
+                .DataSource(testData)
                 .Logging(testLogging)
                 .Build();
 
             var flagKey = "flagkey";
-            var initialData = new DataSetBuilder()
-                .Add(flagKey, 1, LdValue.Of(true), 0)
-                .Build();
+            testData.Update(testData.Flag(flagKey).Variation(true));
 
             using (var client = TestUtil.CreateClient(config, user))
             {
-                updateSink.Init(user, initialData);
-
                 var eventSink1 = new EventSink<FlagValueChangeEvent>();
                 var eventSink2 = new EventSink<FlagValueChangeEvent>();
                 EventHandler<FlagValueChangeEvent> listener1 = eventSink1.Add;
@@ -45,12 +36,7 @@ namespace LaunchDarkly.Sdk.Client
                 eventSink1.ExpectNoValue();
                 eventSink2.ExpectNoValue();
 
-                var updatedFlag = new FeatureFlagBuilder()
-                    .Version(2)
-                    .Value(LdValue.Of(false))
-                    .Variation(1)
-                    .Build();
-                updateSink.Upsert(user, flagKey, updatedFlag.ToItemDescriptor());
+                testData.Update(testData.Flag(flagKey).Variation(false));
 
                 var event1 = eventSink1.ExpectValue();
                 var event2 = eventSink2.ExpectValue();

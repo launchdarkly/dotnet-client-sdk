@@ -20,6 +20,17 @@ namespace LaunchDarkly.Sdk.Client
         {
         }
 
+        public FeatureFlagBuilder(FeatureFlag from)
+        {
+            _value = from.Value;
+            _version = from.Version;
+            _variation = from.Variation;
+            _trackEvents = from.TrackEvents;
+            _trackReason = from.TrackReason;
+            _debugEventsUntilDate = from.DebugEventsUntilDate;
+            _reason = from.Reason;
+        }
+
         public FeatureFlag Build()
         {
             return new FeatureFlag(_value, _variation, _reason, _version, _flagVersion, _trackEvents, _trackReason, _debugEventsUntilDate);

@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.JsonStream;
+using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
@@ -132,29 +133,16 @@ namespace LaunchDarkly.Sdk.Client
             return w.GetString();
         }
 
-        internal static string JsonFlagsWithSingleFlag(string flagKey, LdValue value, int? variation = null, EvaluationReason? reason = null) =>
-            MakeJsonData(new DataSetBuilder()
-                .Add(flagKey, new FeatureFlagBuilder().Value(value).Variation(variation).Reason(reason).Build())
-                .Build());
+        internal static ConfigurationBuilder TestConfig() => TestConfig("mobile-key");
 
         internal static ConfigurationBuilder TestConfig(string appKey) =>
             Configuration.Builder(appKey)
                 .ConnectivityStateManager(new MockConnectivityStateManager(true))
-                .Events(new SingleEventProcessorFactory(new MockEventProcessor()))
-                .DataSource(MockPollingProcessor.Factory(null))
+                .Events(Components.NoEvents)
+                .DataSource(TestData.DataSource())
                 .Persistence(Components.NoPersistence)
                 .DeviceInfo(new MockDeviceInfo());
         
-        internal static ConfigurationBuilder ConfigWithFlagsJson(User user, string appKey, string flagsJson)
-        {
-            var mockStore = new MockPersistentDataStore();
-            if (user != null && user.Key != null)
-            {
-                mockStore.Init(user, flagsJson);
-            }
-            return TestConfig(appKey).Persistence(new SinglePersistentDataStoreFactory(mockStore));
-        }
-
         public static string NormalizeJsonUser(LdValue json)
         {
             // It's undefined whether a user with no custom attributes will have "custom":{} or not

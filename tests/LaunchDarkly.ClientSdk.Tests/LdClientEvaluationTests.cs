@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using LaunchDarkly.Sdk.Client.Integrations;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -6,32 +7,32 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientEvaluationTests : BaseTest
     {
-        static readonly string appKey = "some app key";
-        static readonly string nonexistentFlagKey = "some flag key";
+        const string appKey = "some app key";
+        const string flagKey = "flag-key";
+        const string nonexistentFlagKey = "some flag key";
         static readonly User user = User.WithKey("userkey");
+
+        private readonly TestData _testData = TestData.DataSource();
 
         public LdClientEvaluationTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
-        private LdClient ClientWithFlagsJson(string flagsJson)
-        {
-            var config = TestUtil.ConfigWithFlagsJson(user, appKey, flagsJson).Logging(testLogging).Build();
-            return TestUtil.CreateClient(config, user);
-        }
+        private LdClient MakeClient() =>
+            LdClient.Init(TestUtil.TestConfig("mobile-key").DataSource(_testData).Build(), user, TimeSpan.FromSeconds(1));
 
         [Fact]
         public void BoolVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(true));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(true));
+            using (var client = MakeClient())
             {
-                Assert.True(client.BoolVariation("flag-key", false));
+                Assert.True(client.BoolVariation(flagKey, false));
             }
         }
 
         [Fact]
         public void BoolVariationReturnsDefaultForUnknownFlag()
         {
-            using (var client = ClientWithFlagsJson("{}"))
+            using (var client = MakeClient())
             {
                 Assert.False(client.BoolVariation(nonexistentFlagKey));
             }
@@ -41,38 +42,39 @@ namespace LaunchDarkly.Sdk.Client
         public void BoolVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.OffReason;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(true), 1, reason);
-            using (var client = ClientWithFlagsJson(flagsJson))
+            var flag = new FeatureFlagBuilder().Value(true).Variation(1).Reason(reason).Build();
+            _testData.Update(_testData.Flag(flagKey).PreconfiguredFlag(flag));
+            using (var client = MakeClient())
             {
                 var expected = new EvaluationDetail<bool>(true, 1, reason);
-                Assert.Equal(expected, client.BoolVariationDetail("flag-key", false));
+                Assert.Equal(expected, client.BoolVariationDetail(flagKey, false));
             }
         }
 
         [Fact]
         public void IntVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(3));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of(3)));
+            using (var client = MakeClient())
             {
-                Assert.Equal(3, client.IntVariation("flag-key", 0));
+                Assert.Equal(3, client.IntVariation(flagKey, 0));
             }
         }
 
         [Fact]
         public void IntVariationCoercesFloatValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(3.0f));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of(3.25f)));
+            using (var client = MakeClient())
             {
-                Assert.Equal(3, client.IntVariation("flag-key", 0));
+                Assert.Equal(3, client.IntVariation(flagKey, 0));
             }
         }
 
         [Fact]
         public void IntVariationReturnsDefaultForUnknownFlag()
         {
-            using (var client = ClientWithFlagsJson("{}"))
+            using (var client = MakeClient())
             {
                 Assert.Equal(1, client.IntVariation(nonexistentFlagKey, 1));
             }
@@ -82,38 +84,39 @@ namespace LaunchDarkly.Sdk.Client
         public void IntVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.OffReason;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(3), 1, reason);
-            using (var client = ClientWithFlagsJson(flagsJson))
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of(3)).Variation(1).Reason(reason).Build();
+            _testData.Update(_testData.Flag(flagKey).PreconfiguredFlag(flag));
+            using (var client = MakeClient())
             {
                 var expected = new EvaluationDetail<int>(3, 1, reason);
-                Assert.Equal(expected, client.IntVariationDetail("flag-key", 0));
+                Assert.Equal(expected, client.IntVariationDetail(flagKey, 0));
             }
         }
 
         [Fact]
         public void FloatVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(2.5f));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of(2.5f)));
+            using (var client = MakeClient())
             {
-                Assert.Equal(2.5f, client.FloatVariation("flag-key", 0));
+                Assert.Equal(2.5f, client.FloatVariation(flagKey, 0));
             }
         }
 
         [Fact]
         public void FloatVariationCoercesIntValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(2));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of(2)));
+            using (var client = MakeClient())
             {
-                Assert.Equal(2.0f, client.FloatVariation("flag-key", 0));
+                Assert.Equal(2.0f, client.FloatVariation(flagKey, 0));
             }
         }
 
         [Fact]
         public void FloatVariationReturnsDefaultForUnknownFlag()
         {
-            using (var client = ClientWithFlagsJson("{}"))
+            using (var client = MakeClient())
             {
                 Assert.Equal(0.5f, client.FloatVariation(nonexistentFlagKey, 0.5f));
             }
@@ -123,28 +126,29 @@ namespace LaunchDarkly.Sdk.Client
         public void FloatVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.OffReason;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of(2.5f), 1, reason);
-            using (var client = ClientWithFlagsJson(flagsJson))
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of(2.5f)).Variation(1).Reason(reason).Build();
+            _testData.Update(_testData.Flag(flagKey).PreconfiguredFlag(flag));
+            using (var client = MakeClient())
             {
                 var expected = new EvaluationDetail<float>(2.5f, 1, reason);
-                Assert.Equal(expected, client.FloatVariationDetail("flag-key", 0.5f));
+                Assert.Equal(expected, client.FloatVariationDetail(flagKey, 0.5f));
             }
         }
 
         [Fact]
         public void StringVariationReturnsValue()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of("string value")));
+            using (var client = MakeClient())
             {
-                Assert.Equal("string value", client.StringVariation("flag-key", ""));
+                Assert.Equal("string value", client.StringVariation(flagKey, ""));
             }
         }
 
         [Fact]
         public void StringVariationReturnsDefaultForUnknownFlag()
         {
-            using (var client = ClientWithFlagsJson("{}"))
+            using (var client = MakeClient())
             {
                 Assert.Equal("d", client.StringVariation(nonexistentFlagKey, "d"));
             }
@@ -154,29 +158,30 @@ namespace LaunchDarkly.Sdk.Client
         public void StringVariationDetailReturnsValue()
         {
             var reason = EvaluationReason.OffReason;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"), 1, reason);
-            using (var client = ClientWithFlagsJson(flagsJson))
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of("string value")).Variation(1).Reason(reason).Build();
+            _testData.Update(_testData.Flag(flagKey).PreconfiguredFlag(flag));
+            using (var client = MakeClient())
             {
                 var expected = new EvaluationDetail<string>("string value", 1, reason);
-                Assert.Equal(expected, client.StringVariationDetail("flag-key", ""));
+                Assert.Equal(expected, client.StringVariationDetail(flagKey, ""));
             }
         }
 
         [Fact]
         public void JsonVariationReturnsValue()
         {
-            var jsonValue = LdValue.Convert.String.ObjectFrom(new Dictionary<string, string> { { "thing", "stuff" } });
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue);
-            using (var client = ClientWithFlagsJson(flagsJson))
+            var jsonValue = LdValue.BuildObject().Add("thing", "stuff").Build();
+            _testData.Update(_testData.Flag(flagKey).Variation(jsonValue));
+            using (var client = MakeClient())
             {
-                Assert.Equal(jsonValue, client.JsonVariation("flag-key", LdValue.Of(3)));
+                Assert.Equal(jsonValue, client.JsonVariation(flagKey, LdValue.Of(3)));
             }
         }
 
         [Fact]
         public void JsonVariationReturnsDefaultForUnknownFlag()
         {
-            using (var client = ClientWithFlagsJson("{}"))
+            using (var client = MakeClient())
             {
                 var defaultVal = LdValue.Of(3);
                 Assert.Equal(defaultVal, client.JsonVariation(nonexistentFlagKey, defaultVal));
@@ -186,13 +191,14 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void JsonVariationDetailReturnsValue()
         {
-            var jsonValue = LdValue.Convert.String.ObjectFrom(new Dictionary<string, string> { { "thing", "stuff" } });
+            var jsonValue = LdValue.BuildObject().Add("thing", "stuff").Build();
             var reason = EvaluationReason.OffReason;
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", jsonValue, 1, reason);
-            using (var client = ClientWithFlagsJson(flagsJson))
+            var flag = new FeatureFlagBuilder().Value(jsonValue).Variation(1).Reason(reason).Build();
+            _testData.Update(_testData.Flag(flagKey).PreconfiguredFlag(flag));
+            using (var client = MakeClient())
             {
                 var expected = new EvaluationDetail<LdValue>(jsonValue, 1, reason);
-                var result = client.JsonVariationDetail("flag-key", LdValue.Of(3));
+                var result = client.JsonVariationDetail(flagKey, LdValue.Of(3));
                 Assert.Equal(expected.Value, result.Value);
                 Assert.Equal(expected.VariationIndex, result.VariationIndex);
                 Assert.Equal(expected.Reason, result.Reason);
@@ -202,8 +208,9 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void AllFlagsReturnsAllFlagValues()
         {
-            var flagsJson = @"{""flag1"":{""value"":""a""},""flag2"":{""value"":""b""}}";
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag("flag1").Variation(LdValue.Of("a")));
+            _testData.Update(_testData.Flag("flag2").Variation(LdValue.Of("b")));
+            using (var client = MakeClient())
             {
                 var result = client.AllFlags();
                 Assert.Equal(2, result.Count);
@@ -215,31 +222,31 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void DefaultValueReturnedIfValueTypeIsDifferent()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of("string value")));
+            using (var client = MakeClient())
             {
-                Assert.Equal(3, client.IntVariation("flag-key", 3));
+                Assert.Equal(3, client.IntVariation(flagKey, 3));
             }
         }
 
         [Fact]
         public void DefaultValueAndReasonIsReturnedIfValueTypeIsDifferent()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Of("string value"));
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of("string value")));
+            using (var client = MakeClient())
             {
                 var expected = new EvaluationDetail<int>(3, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
-                Assert.Equal(expected, client.IntVariationDetail("flag-key", 3));
+                Assert.Equal(expected, client.IntVariationDetail(flagKey, 3));
             }
         }
 
         [Fact]
         public void DefaultValueReturnedIfFlagValueIsNull()
         {
-            string flagsJson = TestUtil.JsonFlagsWithSingleFlag("flag-key", LdValue.Null);
-            using (var client = ClientWithFlagsJson(flagsJson))
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Null));
+            using (var client = MakeClient())
             {
-                Assert.Equal(3, client.IntVariation("flag-key", 3));
+                Assert.Equal(3, client.IntVariation(flagKey, 3));
             }
         }
     }

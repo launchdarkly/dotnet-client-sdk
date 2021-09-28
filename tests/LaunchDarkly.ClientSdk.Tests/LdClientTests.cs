@@ -57,7 +57,7 @@ namespace LaunchDarkly.Sdk.Client
             MockPollingProcessor stub = new MockPollingProcessor("{}");
             User testUser = User.WithKey("new-user");
 
-            var config = TestUtil.ConfigWithFlagsJson(testUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
@@ -76,7 +76,7 @@ namespace LaunchDarkly.Sdk.Client
             MockPollingProcessor stub = new MockPollingProcessor("{}");
             User anonUserIn = User.Builder((String)null).Anonymous(true).Build();
 
-            var config = TestUtil.ConfigWithFlagsJson(anonUserIn, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
@@ -141,7 +141,7 @@ namespace LaunchDarkly.Sdk.Client
                     }
                 }));
 
-            var config = TestUtil.ConfigWithFlagsJson(userA, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(dataSourceFactory)
                 .Logging(testLogging)
                 .Build();
@@ -198,7 +198,7 @@ namespace LaunchDarkly.Sdk.Client
             MockPollingProcessor stub = new MockPollingProcessor("{}");
             User newUser = User.WithKey("new-user");
 
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
@@ -223,7 +223,7 @@ namespace LaunchDarkly.Sdk.Client
             MockPollingProcessor stub = new MockPollingProcessor("{}");
             User anonUserIn = User.Builder((String)null).Anonymous(true).Build();
 
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(stub.AsFactory())
                 .Logging(testLogging)
                 .Build();
@@ -262,7 +262,7 @@ namespace LaunchDarkly.Sdk.Client
             TestUtil.WithClientLock(() =>
             {
                 TestUtil.ClearClient();
-                var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}").Logging(testLogging).Build();
+                var config = TestUtil.TestConfig().Logging(testLogging).Build();
                 using (var client0 = LdClient.Init(config, simpleUser, TimeSpan.Zero)) { }
                 Assert.Null(LdClient.Instance);
                 // Dispose() is called automatically at end of "using" block
@@ -275,7 +275,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var mockUpdateProc = new MockPollingProcessor(null);
             var mockConnectivityStateManager = new MockConnectivityStateManager(true);
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(mockUpdateProc.AsFactory())
                 .ConnectivityStateManager(mockConnectivityStateManager)
                 .Logging(testLogging)
@@ -292,7 +292,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var userWithNullKey = User.WithKey(null);
             var uniqueId = "some-unique-key";
-            var config = TestUtil.ConfigWithFlagsJson(userWithNullKey, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DeviceInfo(new MockDeviceInfo(uniqueId))
                 .Logging(testLogging)
                 .Build();
@@ -308,7 +308,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var userWithEmptyKey = User.WithKey("");
             var uniqueId = "some-unique-key";
-            var config = TestUtil.ConfigWithFlagsJson(userWithEmptyKey, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DeviceInfo(new MockDeviceInfo(uniqueId))
                 .Logging(testLogging)
                 .Build();
@@ -324,7 +324,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var userWithNullKey = User.WithKey(null);
             var uniqueId = "some-unique-key";
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DeviceInfo(new MockDeviceInfo(uniqueId))
                 .Logging(testLogging)
                 .Build();
@@ -341,7 +341,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var userWithEmptyKey = User.WithKey("");
             var uniqueId = "some-unique-key";
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DeviceInfo(new MockDeviceInfo(uniqueId))
                 .Logging(testLogging)
                 .Build();
@@ -368,7 +368,7 @@ namespace LaunchDarkly.Sdk.Client
                 .Custom("attr", "value")
                 .Build();
             var uniqueId = "some-unique-key";
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DeviceInfo(new MockDeviceInfo(uniqueId))
                 .Logging(testLogging)
                 .Build();
@@ -396,7 +396,7 @@ namespace LaunchDarkly.Sdk.Client
             var storage = new MockPersistentDataStore();
             var flags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
             storage.Init(simpleUser, DataModelSerialization.SerializeAll(flags));
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .Persistence(new SinglePersistentDataStoreFactory(storage))
                 .Offline(true)
                 .Logging(testLogging)
@@ -412,7 +412,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var storage = new MockPersistentDataStore();
             var initialFlags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(MockPollingProcessor.Factory(TestUtil.MakeJsonData(initialFlags)))
                 .Persistence(new SinglePersistentDataStoreFactory(storage))
                 .Logging(testLogging)
@@ -431,7 +431,7 @@ namespace LaunchDarkly.Sdk.Client
         public void EventProcessorIsOnlineByDefault()
         {
             var eventProcessor = new MockEventProcessor();
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .Events(new SingleEventProcessorFactory(eventProcessor))
                 .Logging(testLogging)
                 .Build();
@@ -446,7 +446,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var connectivityStateManager = new MockConnectivityStateManager(true);
             var eventProcessor = new MockEventProcessor();
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .ConnectivityStateManager(connectivityStateManager)
                 .Events(new SingleEventProcessorFactory(eventProcessor))
                 .Offline(true)
@@ -476,7 +476,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var connectivityStateManager = new MockConnectivityStateManager(false);
             var eventProcessor = new MockEventProcessor();
-            var config = TestUtil.ConfigWithFlagsJson(simpleUser, appKey, "{}")
+            var config = TestUtil.TestConfig()
                 .ConnectivityStateManager(connectivityStateManager)
                 .Events(new SingleEventProcessorFactory(eventProcessor))
                 .Logging(testLogging)

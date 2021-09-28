@@ -1,6 +1,6 @@
 ﻿using System;
+using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,26 +12,19 @@ namespace LaunchDarkly.Sdk.Client
     public class LdClientEventTests : BaseTest
     {
         private static readonly User user = User.WithKey("userkey");
+        private readonly TestData _testData = TestData.DataSource();
         private MockEventProcessor eventProcessor = new MockEventProcessor();
         private IEventProcessorFactory _factory;
 
-        public LdClientEventTests(ITestOutputHelper testOutput) : base(testOutput) {
+        public LdClientEventTests(ITestOutputHelper testOutput) : base(testOutput)
+        {
             _factory = new SingleEventProcessorFactory(eventProcessor);
         }
 
-        public LdClient MakeClient(User user) =>
-            MakeClient(user, new DataSetBuilder().Build());
+        private LdClient MakeClient(User u) =>
+            LdClient.Init(TestUtil.TestConfig().DataSource(_testData).Events(_factory).Build(),
+                u, TimeSpan.FromSeconds(1));
 
-        public LdClient MakeClient(User user, FullDataSet initialData) =>
-            MakeClient(user, DataModelSerialization.SerializeAll(initialData));
-
-        public LdClient MakeClient(User user, string flagsJson)
-        {
-            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", flagsJson);
-            config.Events(_factory).Logging(testLogging);
-            return TestUtil.CreateClient(config.Build(), user);
-        }
-        
         [Fact]
         public void IdentifySendsIdentifyEvent()
         {
@@ -149,11 +142,13 @@ namespace LaunchDarkly.Sdk.Client
             User oldUser = User.Builder("anon-key").Anonymous(true).Build();
             User newUser = User.WithKey("real-key");
 
-            var config = TestUtil.ConfigWithFlagsJson(oldUser, "appkey", "{}");
-            config.Events(_factory).Logging(testLogging);
-            config.AutoAliasingOptOut(true);
+            var config = TestUtil.TestConfig()
+                .Events(_factory)
+                .Logging(testLogging)
+                .AutoAliasingOptOut(true)
+                .Build();
             
-            using (LdClient client = TestUtil.CreateClient(config.Build(), oldUser))
+            using (LdClient client = TestUtil.CreateClient(config, oldUser))
             {
                 User actualOldUser = client.User; // so we can get any automatic properties that the client added
                 client.Identify(newUser, TimeSpan.FromSeconds(1));
@@ -187,11 +182,10 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventForValidFlag()
         {
-            var data = new DataSetBuilder()
-                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
-                    .TrackEvents(true).DebugEventsUntilDate(UnixMillisecondTime.OfMillis(2000)).Build())
-                .Build();
-            using (LdClient client = MakeClient(user, data))
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                .TrackEvents(true).DebugEventsUntilDate(UnixMillisecondTime.OfMillis(2000)).Build();
+            _testData.Update(_testData.Flag("flag").PreconfiguredFlag(flag));
+            using (LdClient client = MakeClient(user))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("a", result);
@@ -214,11 +208,10 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void FeatureEventUsesFlagVersionIfProvided()
         {
-            var data = new DataSetBuilder()
-                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
-                    .FlagVersion(1500).Build())
-                .Build();
-            using (LdClient client = MakeClient(user, data))
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                .FlagVersion(1500).Build();
+            _testData.Update(_testData.Flag("flag").PreconfiguredFlag(flag));
+            using (LdClient client = MakeClient(user))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("a", result);
@@ -238,10 +231,9 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventForDefaultValue()
         {
-            var data = new DataSetBuilder()
-                .Add("flag", new FeatureFlagBuilder().Version(1000).Build())
-                .Build();
-            using (LdClient client = MakeClient(user, data))
+            var flag = new FeatureFlagBuilder().Version(1000).Build();
+            _testData.Update(_testData.Flag("flag").PreconfiguredFlag(flag));
+            using (LdClient client = MakeClient(user))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("b", result);
@@ -283,7 +275,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
         {
-            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
                 .Events(_factory)
                 .Logging(testLogging);
@@ -310,11 +302,10 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventWithTrackingAndReasonIfTrackReasonIsTrue()
         {
-            var data = new DataSetBuilder()
-                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
-                    .TrackReason(true).Reason(EvaluationReason.OffReason).Build())
-                .Build();
-            using (LdClient client = MakeClient(user, data))
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                .TrackReason(true).Reason(EvaluationReason.OffReason).Build();
+            _testData.Update(_testData.Flag("flag").PreconfiguredFlag(flag));
+            using (LdClient client = MakeClient(user))
             {
                 string result = client.StringVariation("flag", "b");
                 Assert.Equal("a", result);
@@ -337,12 +328,11 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationDetailSendsFeatureEventWithReasonForValidFlag()
         {
-            var data = new DataSetBuilder()
-                .Add("flag", new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
-                    .TrackEvents(true).DebugEventsUntilDate(UnixMillisecondTime.OfMillis(2000))
-                    .Reason(EvaluationReason.OffReason).Build())
-                .Build();
-            using (LdClient client = MakeClient(user, data))
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of("a")).Variation(1).Version(1000)
+                .TrackEvents(true).DebugEventsUntilDate(UnixMillisecondTime.OfMillis(2000))
+                .Reason(EvaluationReason.OffReason).Build();
+            _testData.Update(_testData.Flag("flag").PreconfiguredFlag(flag));
+            using (LdClient client = MakeClient(user))
             {
                 EvaluationDetail<string> result = client.StringVariationDetail("flag", "b");
                 Assert.Equal("a", result.Value);
@@ -391,7 +381,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
         {
-            var config = TestUtil.ConfigWithFlagsJson(user, "appkey", "{}")
+            var config = TestUtil.TestConfig()
                 .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
                 .Events(_factory)
                 .Logging(testLogging);
