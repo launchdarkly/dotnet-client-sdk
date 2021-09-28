@@ -1,4 +1,3 @@
-<div style="border: 2px solid yellow; padding: 20px;">
 # This project is being renamed
 
 Xamarin is just one of several .NET-based platforms that this SDK supports. The **LaunchDarkly Client-Side SDK for Xamarin** is being renamed to the **LaunchDarkly Client-Side SDK for .NET**.
@@ -6,7 +5,6 @@ Xamarin is just one of several .NET-based platforms that this SDK supports. The 
 Future releases of the package on NuGet, starting with 2.0.0, will be named **LaunchDarkly.ClientSdk**. The old package name, **LaunchDarkly.XamarinSdk**, will have only maintenance/patch releases.
 
 The GitHub repository has been renamed from `launchdarkly/xamarin-client-sdk` to `launchdarkly/dotnet-client-sdk`. Links to the old repository are automatically redirected by GitHub.
-</div>
 
 # LaunchDarkly Client-Side SDK for .NET
 
