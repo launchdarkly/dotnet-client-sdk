@@ -1,8 +1,7 @@
 <Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>LaunchDarkly.XamarinSdk.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
