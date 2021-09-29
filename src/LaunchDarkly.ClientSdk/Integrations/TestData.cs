@@ -179,7 +179,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </remarks>
         /// <param name="newState">one of the constants defined by <see cref="DataSourceState"/></param>
         /// <param name="newError">an optional <see cref="DataSourceStatus.ErrorInfo"/> instance</param>
-        /// <returns></returns>
+        /// <returns>the same <see cref="TestData"/> instance</returns>
         public TestData UpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError)
         {
             DataSourceImpl[] instances;
