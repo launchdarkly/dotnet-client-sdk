@@ -52,6 +52,11 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// remain at <see cref="DataSourceState.Initializing"/> because
         /// <see cref="DataSourceState.Interrupted"/> is only meaningful after a successful startup.
         /// </para>
+        /// <para>
+        /// Data source implementations normally should not need to set the state to
+        /// <see cref="DataSourceState.Valid"/>, because that will happen automatically if they call
+        /// <see cref="Init(User, FullDataSet)"/>.
+        /// </para>
         /// </remarks>
         /// <param name="newState">the data source state</param>
         /// <param name="newError">information about a new error, if any</param>

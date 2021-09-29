@@ -703,6 +703,9 @@ namespace LaunchDarkly.Sdk.Client
                 {
                     _log.Debug("Background updating is disabled");
                     await _connectionManager.SetDataSourceConstructor(null, false);
+                    // Normally the data source status is updated by ConnectionManager and/or by the
+                    // data source itself, but in this particular case neither of those are involved,
+                    // so we need to explicitly set the state to BackgroundDisabled.
                     _dataSourceUpdateSink.UpdateStatus(DataSourceState.BackgroundDisabled, null);
                     return;
                 }
