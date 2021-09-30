@@ -22,14 +22,20 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <remarks>
         /// The meaning of this depends on the current state:
         /// <list type="bullet">
-        /// <item>For <see cref="DataSourceState.Initializing"/>, it is the time that the SDK started initializing.</item>
-        /// <item>For <see cref="DataSourceState.Valid"/>, it is the time that the data source most recently entered a valid
-        /// state, after previously having been either <see cref="DataSourceState.Initializing"/> or
-        /// <see cref="DataSourceState.Interrupted"/>.</item>
-        /// <item>For <see cref="DataSourceState.Interrupted"/>, it is the time that the data source most recently entered an
-        /// error state, after previously having been <see cref="DataSourceState.Valid"/>.</item>
-        /// <item>For <see cref="DataSourceState.Shutdown"/>, it is the time that the data source encountered an unrecoverable error
-        /// or that the SDK was explicitly shut down.</item>
+        /// <item><description> For <see cref="DataSourceState.Initializing"/>, it is the time that the SDK started
+        /// initializing. </description></item>
+        /// <item><description> For <see cref="DataSourceState.Valid"/>, it is the time that the data source most
+        /// recently entered a valid state, after previously having been <see cref="DataSourceState.Initializing"/>
+        /// or an invalid state such as <see cref="DataSourceState.Interrupted"/>. </description></item>
+        /// <item><description> For <see cref="DataSourceState.Interrupted"/>, it is the time that the data source
+        /// most recently entered an error state, after previously having been <see cref="DataSourceState.Valid"/>.
+        /// </description></item>
+        /// <item><description> For <see cref="DataSourceState.BackgroundDisabled"/>,
+        /// <see cref="DataSourceState.NetworkUnavailable"/>, or <see cref="DataSourceState.SetOffline"/>, it is
+        /// the time that the SDK switched off the data source after detecting one of those conditions.
+        /// </description></item>
+        /// <item><description> For <see cref="DataSourceState.Shutdown"/>, it is the time that the data source
+        /// encountered an unrecoverable error or that the SDK was explicitly shut down. </description></item>
         /// </list>
         /// </remarks>
         public DateTime StateSince { get; set; }
