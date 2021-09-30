@@ -35,7 +35,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// the time that the SDK switched off the data source after detecting one of those conditions.
         /// </description></item>
         /// <item><description> For <see cref="DataSourceState.Shutdown"/>, it is the time that the data source
-        /// encountered an unrecoverable error or that the SDK was explicitly shut down. <description></item>
+        /// encountered an unrecoverable error or that the SDK was explicitly shut down. </description></item>
         /// </list>
         /// </remarks>
         public DateTime StateSince { get; set; }
