@@ -13,6 +13,38 @@ using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
+    internal static class MockComponentExtensions
+    {
+        public static IDataSourceFactory AsSingletonFactory(this IDataSource instance) =>
+            new SingleDataSourceFactory { Instance = instance };
+
+        public static IEventProcessorFactory AsSingletonFactory(this IEventProcessor instance) =>
+            new SingleEventProcessorFactory { Instance = instance };
+
+        public static IPersistentDataStoreFactory AsSingletonFactory(this IPersistentDataStore instance) =>
+            new SinglePersistentDataStoreFactory { Instance = instance };
+
+        private class SingleDataSourceFactory : IDataSourceFactory
+        {
+            public IDataSource Instance { get; set; }
+            public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink,
+                User currentUser, bool inBackground) => Instance;
+        }
+
+        private class SingleEventProcessorFactory : IEventProcessorFactory
+        {
+            public IEventProcessor Instance { get; set; }
+            public IEventProcessor CreateEventProcessor(LdClientContext context) => Instance;
+        }
+
+        private class SinglePersistentDataStoreFactory : IPersistentDataStoreFactory
+        {
+            public IPersistentDataStore Instance { get; set; }
+            public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) => Instance;
+        }
+
+    }
+
     internal class MockBackgroundModeManager : IBackgroundModeManager
     {
         public event EventHandler<BackgroundModeChangedEventArgs> BackgroundModeChanged;
@@ -68,13 +100,22 @@ namespace LaunchDarkly.Sdk.Client
             public User User { get; set; }
         }
 
+        internal class ReceivedStatusUpdate
+        {
+            public DataSourceState State { get; set; }
+            public DataSourceStatus.ErrorInfo? Error { get; set; }
+        }
+
         public readonly EventSink<object> Actions = new EventSink<object>();
 
         public void Init(User user, FullDataSet data) =>
-            Actions.Add(null, new ReceivedInit { Data = data, User = user });
+            Actions.Enqueue(new ReceivedInit { Data = data, User = user });
 
         public void Upsert(User user, string key, ItemDescriptor data) =>
-            Actions.Add(null, new ReceivedUpsert { Key = key, Data = data, User = user });
+            Actions.Enqueue(new ReceivedUpsert { Key = key, Data = data, User = user });
+
+        public void UpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError) =>
+            Actions.Enqueue(new ReceivedStatusUpdate { State = newState, Error = newError });
 
         public FullDataSet ExpectInit(User user)
         {
@@ -138,18 +179,6 @@ namespace LaunchDarkly.Sdk.Client
             Events.Add(e);
     }
 
-    internal class SingleEventProcessorFactory : IEventProcessorFactory
-    {
-        private readonly IEventProcessor _instance;
-
-        public SingleEventProcessorFactory(IEventProcessor instance)
-        {
-            _instance = instance;
-        }
-
-        public IEventProcessor CreateEventProcessor(LdClientContext context) => _instance;
-    }
-
     internal class MockFeatureFlagRequestor : IFeatureFlagRequestor
     {
         private readonly string _jsonFlags;
@@ -186,17 +215,15 @@ namespace LaunchDarkly.Sdk.Client
         }
     }
 
-    internal class SinglePersistentDataStoreFactory : IPersistentDataStoreFactory
+    internal class CapturingDataSourceFactory : IDataSourceFactory
     {
-        private readonly IPersistentDataStore _instance;
+        internal IDataSourceUpdateSink UpdateSink;
 
-        public SinglePersistentDataStoreFactory(IPersistentDataStore instance)
+        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, User currentUser, bool inBackground)
         {
-            _instance = instance;
+            UpdateSink = updateSink;
+            return new MockDataSourceThatNeverInitializes();
         }
-
-        public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) =>
-            _instance;
     }
 
     internal class MockDataSourceFactoryFromLambda : IDataSourceFactory
@@ -210,11 +237,6 @@ namespace LaunchDarkly.Sdk.Client
 
         public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, User currentUser, bool inBackground) =>
             _fn(context, updateSink, currentUser, inBackground);
-    }
-
-    internal class SingleDataSourceFactory : MockDataSourceFactoryFromLambda
-    {
-        internal SingleDataSourceFactory(IDataSource instance) : base((c, up, u, bg) => instance) { }
     }
 
     internal class MockPollingProcessor : IDataSource
@@ -296,20 +318,25 @@ namespace LaunchDarkly.Sdk.Client
         public void Dispose() { }
     }
 
-    internal class MockUpdateProcessorThatNeverInitializes : IDataSource
+    internal class MockDataSource : IDataSource
     {
-        public static IDataSourceFactory Factory() =>
-            new SingleDataSourceFactory(new MockUpdateProcessorThatNeverInitializes());
+        public bool IsRunning => true;
 
+        public void Dispose() { }
+
+        public bool Initialized => true;
+
+        public Task<bool> Start() => Task.FromResult(true);
+    }
+
+    internal class MockDataSourceThatNeverInitializes : IDataSource
+    {
         public bool IsRunning => false;
 
         public void Dispose() { }
 
         public bool Initialized => false;
 
-        public Task<bool> Start()
-        {
-            return new TaskCompletionSource<bool>().Task; // will never be completed
-        }
+        public Task<bool> Start() => new TaskCompletionSource<bool>().Task; // will never be completed
     }
 }

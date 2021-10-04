@@ -9,22 +9,20 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientListenersTest : BaseTest
     {
+        // Tests for data source status listeners are in LdClientDataSourceStatusTests.
+
         public LdClientListenersTest(ITestOutputHelper testOutput) : base(testOutput) { }
 
         [Fact]
         public void ClientSendsFlagValueChangeEvents()
         {
-            var user = User.WithKey("user-key");
             var testData = TestData.DataSource();
-            var config = TestUtil.TestConfig("mobile-key")
-                .DataSource(testData)
-                .Logging(testLogging)
-                .Build();
+            var config = BasicConfig().DataSource(testData).Build();
 
             var flagKey = "flagkey";
             testData.Update(testData.Flag(flagKey).Variation(true));
 
-            using (var client = TestUtil.CreateClient(config, user))
+            using (var client = TestUtil.CreateClient(config, BasicUser))
             {
                 var eventSink1 = new EventSink<FlagValueChangeEvent>();
                 var eventSink2 = new EventSink<FlagValueChangeEvent>();
@@ -47,6 +45,30 @@ namespace LaunchDarkly.Sdk.Client
 
                 eventSink1.ExpectNoValue();
                 eventSink2.ExpectNoValue();
+            }
+        }
+
+        [Fact]
+        public void EventSenderIsClientInstance()
+        {
+            // We're only checking one kind of events here (FlagValueChanged), but since the SDK uses the
+            // same TaskExecutor instance for all event dispatches and the sender is configured in
+            // that object, the sender should be the same for all events.
+
+            var flagKey = "flagKey";
+            var testData = TestData.DataSource();
+            testData.Update(testData.Flag(flagKey).Variation(true));
+            var config = BasicConfig().DataSource(testData).Build();
+
+            using (var client = TestUtil.CreateClient(config, BasicUser))
+            {
+                var receivedSender = new EventSink<object>();
+                client.FlagTracker.FlagValueChanged += (s, e) => receivedSender.Enqueue(s);
+
+                testData.Update(testData.Flag(flagKey).Variation(false));
+
+                var sender = receivedSender.ExpectValue();
+                Assert.Same(client, sender);
             }
         }
     }

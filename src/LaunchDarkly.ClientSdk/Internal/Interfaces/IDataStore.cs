@@ -31,7 +31,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Interfaces
         /// Overwrites the store's contents for a specific user with a serialized data set.
         /// </summary>
         /// <param name="user">the current user</param>
-        /// <param name="allData"the data set></param>
+        /// <param name="allData">the data set</param>
         void Init(User user, FullDataSet allData);
 
         /// <summary>

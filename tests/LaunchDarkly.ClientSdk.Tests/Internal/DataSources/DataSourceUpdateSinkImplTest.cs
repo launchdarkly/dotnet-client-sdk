@@ -1,6 +1,5 @@
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
-using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,8 +19,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public DataSourceUpdateSinkImplTest(ITestOutputHelper testOutput) : base(testOutput)
         {
             _store = new InMemoryDataStore();
-            _flagTracker = new FlagTrackerImpl(new TaskExecutor(null, testLogger), testLogger);
-            _updateSink = new DataSourceUpdateSinkImpl(_store, _flagTracker);
+            _updateSink = new DataSourceUpdateSinkImpl(_store, false, BasicTaskExecutor, testLogger);
+            _flagTracker = new FlagTrackerImpl(_updateSink);
         }
 
         [Fact]

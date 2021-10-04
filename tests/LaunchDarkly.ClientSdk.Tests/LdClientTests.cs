@@ -397,7 +397,7 @@ namespace LaunchDarkly.Sdk.Client
             var flags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
             storage.Init(simpleUser, DataModelSerialization.SerializeAll(flags));
             var config = TestUtil.TestConfig()
-                .Persistence(new SinglePersistentDataStoreFactory(storage))
+                .Persistence(storage.AsSingletonFactory())
                 .Offline(true)
                 .Logging(testLogging)
                 .Build();
@@ -414,7 +414,7 @@ namespace LaunchDarkly.Sdk.Client
             var initialFlags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
             var config = TestUtil.TestConfig()
                 .DataSource(MockPollingProcessor.Factory(TestUtil.MakeJsonData(initialFlags)))
-                .Persistence(new SinglePersistentDataStoreFactory(storage))
+                .Persistence(storage.AsSingletonFactory())
                 .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
@@ -432,7 +432,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var eventProcessor = new MockEventProcessor();
             var config = TestUtil.TestConfig()
-                .Events(new SingleEventProcessorFactory(eventProcessor))
+                .Events(eventProcessor.AsSingletonFactory())
                 .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))
@@ -448,7 +448,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = TestUtil.TestConfig()
                 .ConnectivityStateManager(connectivityStateManager)
-                .Events(new SingleEventProcessorFactory(eventProcessor))
+                .Events(eventProcessor.AsSingletonFactory())
                 .Offline(true)
                 .Logging(testLogging)
                 .Build();
@@ -478,7 +478,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = TestUtil.TestConfig()
                 .ConnectivityStateManager(connectivityStateManager)
-                .Events(new SingleEventProcessorFactory(eventProcessor))
+                .Events(eventProcessor.AsSingletonFactory())
                 .Logging(testLogging)
                 .Build();
             using (var client = TestUtil.CreateClient(config, simpleUser))

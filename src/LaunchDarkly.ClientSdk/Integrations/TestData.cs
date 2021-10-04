@@ -167,6 +167,33 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             }
         }
 
+        /// <summary>
+        /// Simulates a change in the data source status.
+        /// </summary>
+        /// <remarks>
+        /// Use this if you want to test the behavior of application code that uses
+        /// <see cref="LdClient.DataSourceStatusProvider"/> to track whether the data source is having
+        /// problems (for example, a network failure interrupting the streaming connection). It does
+        /// not actually stop the <see cref="TestData"/> data source from working, so even if you have
+        /// simulated an outage, calling <see cref="Update(FlagBuilder)"/> will still send updates.
+        /// </remarks>
+        /// <param name="newState">one of the constants defined by <see cref="DataSourceState"/></param>
+        /// <param name="newError">an optional <see cref="DataSourceStatus.ErrorInfo"/> instance</param>
+        /// <returns>the same <see cref="TestData"/> instance</returns>
+        public TestData UpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError)
+        {
+            DataSourceImpl[] instances;
+            lock (_lock)
+            {
+                instances = _instances.ToArray();
+            }
+            foreach (var instance in instances)
+            {
+                instance.DoUpdateStatus(newState, newError);
+            }
+            return this;
+        }
+
         /// <inheritdoc/>
         public IDataSource CreateDataSource(
             LdClientContext context,
@@ -578,6 +605,13 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 _log.Debug("updating \"{0}\" to {1}", key, LogValues.Defer(() =>
                     item.Item is null ? "<null>" : DataModelSerialization.SerializeFlag(item.Item)));
                 _updateSink.Upsert(User, key, item);
+            }
+
+            internal void DoUpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError)
+            {
+                _log.Debug("updating status to {0}{1}", newState,
+                    newError.HasValue ? (" (" + newError.Value + ")") : "");
+                _updateSink.UpdateStatus(newState, newError);
             }
         }
 

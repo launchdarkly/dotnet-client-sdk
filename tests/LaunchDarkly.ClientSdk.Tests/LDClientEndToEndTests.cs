@@ -481,7 +481,7 @@ namespace LaunchDarkly.Sdk.Client
         private Configuration BaseConfig(Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
             var builderInternal = Configuration.Builder(_mobileKey)
-                .Events(new SingleEventProcessorFactory(new MockEventProcessor()));
+                .Events(new MockEventProcessor().AsSingletonFactory());
             builderInternal
                 .Logging(testLogging)
                 .Persistence(Components.NoPersistence);  // unless we're specifically testing flag caching, this helps to prevent test state contamination

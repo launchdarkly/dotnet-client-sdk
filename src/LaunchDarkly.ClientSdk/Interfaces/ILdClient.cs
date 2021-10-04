@@ -15,6 +15,17 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     public interface ILdClient : IDisposable
     {
         /// <summary>
+        /// A mechanism for tracking the status of the data source.
+        /// </summary>
+        /// <remarks>
+        /// The data source is the mechanism that the SDK uses to get feature flag configurations, such as a
+        /// streaming connection (the default) or poll requests. The <see cref="IDataSourceStatusProvider"/>
+        /// has methods for checking whether the data source is (as far as the SDK knows) currently operational,
+        /// and tracking changes in this status. This property will never be null.
+        /// </remarks>
+        IDataSourceStatusProvider DataSourceStatusProvider { get; }
+
+        /// <summary>
         /// A mechanism for tracking changes in feature flag configurations.
         /// </summary>
         /// <remarks>

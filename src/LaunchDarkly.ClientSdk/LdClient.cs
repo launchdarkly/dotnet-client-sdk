@@ -33,6 +33,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly Configuration _config;
         readonly LdClientContext _context;
         readonly IDataSourceFactory _dataSourceFactory;
+        readonly IDataSourceStatusProvider _dataSourceStatusProvider;
         readonly IDataSourceUpdateSink _dataSourceUpdateSink;
         readonly IDataStore _dataStore;
         readonly ConnectionManager _connectionManager;
@@ -86,6 +87,9 @@ namespace LaunchDarkly.Sdk.Client
         public bool Initialized => _connectionManager.Initialized;
 
         /// <inheritdoc/>
+        public IDataSourceStatusProvider DataSourceStatusProvider => _dataSourceStatusProvider;
+
+        /// <inheritdoc/>
         public IFlagTracker FlagTracker => _flagTracker;
 
         /// <summary>
@@ -135,9 +139,6 @@ namespace LaunchDarkly.Sdk.Client
 
             _user = DecorateUser(user);
 
-            var flagTracker = new FlagTrackerImpl(_taskExecutor, _log);
-            _flagTracker = flagTracker;
-
             var persistentStore = configuration.PersistentDataStoreFactory is null ?
                 new DefaultPersistentDataStore(_log.SubLogger(LogNames.DataStoreSubLog)) :
                 configuration.PersistentDataStoreFactory.CreatePersistentDataStore(_context);
@@ -146,12 +147,21 @@ namespace LaunchDarkly.Sdk.Client
                 persistentStore,
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
-            _dataSourceUpdateSink = new DataSourceUpdateSinkImpl(_dataStore, flagTracker);
+            var dataSourceUpdateSink = new DataSourceUpdateSinkImpl(
+                _dataStore,
+                configuration.Offline,
+                _taskExecutor,
+                _log.SubLogger(LogNames.DataSourceSubLog)
+                );
+            _dataSourceUpdateSink = dataSourceUpdateSink;
             _dataStore.Preload(_user);
+
+            _dataSourceStatusProvider = new DataSourceStatusProviderImpl(dataSourceUpdateSink);
+            _flagTracker = new FlagTrackerImpl(dataSourceUpdateSink);
 
             _dataSourceFactory = configuration.DataSourceFactory ?? Components.StreamingDataSource();
 
-            _connectionManager = new ConnectionManager(_log);
+            _connectionManager = new ConnectionManager(_dataSourceUpdateSink, _log);
             _connectionManager.SetForceOffline(configuration.Offline);
             if (configuration.Offline)
             {
@@ -651,6 +661,8 @@ namespace LaunchDarkly.Sdk.Client
             {
                 _log.Info("Shutting down the LaunchDarkly client");
 
+                _dataSourceUpdateSink.UpdateStatus(DataSourceState.Shutdown, null);
+
                 _backgroundModeManager.BackgroundModeChanged -= OnBackgroundModeChanged;
                 _connectionManager.Dispose();
                 _dataStore.Dispose();
@@ -691,6 +703,10 @@ namespace LaunchDarkly.Sdk.Client
                 {
                     _log.Debug("Background updating is disabled");
                     await _connectionManager.SetDataSourceConstructor(null, false);
+                    // Normally the data source status is updated by ConnectionManager and/or by the
+                    // data source itself, but in this particular case neither of those are involved,
+                    // so we need to explicitly set the state to BackgroundDisabled.
+                    _dataSourceUpdateSink.UpdateStatus(DataSourceState.BackgroundDisabled, null);
                     return;
                 }
                 _log.Debug("Background updating is enabled, starting polling processor");

@@ -142,6 +142,16 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 _log.Error("LaunchDarkly service request failed or received invalid data: {0}",
                     LogValues.ExceptionSummary(ex));
+
+                var errorInfo = new DataSourceStatus.ErrorInfo
+                {
+                    Kind = DataSourceStatus.ErrorKind.InvalidData,
+                    Message = ex.Message,
+                    Time = DateTime.Now
+                };
+                _updateSink.UpdateStatus(DataSourceState.Interrupted, errorInfo);
+
+                _eventSource.Restart(false);
             }
             catch (Exception ex)
             {
@@ -152,16 +162,40 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private void OnError(object sender, EventSource.ExceptionEventArgs e)
         {
             var ex = e.Exception;
-            LogHelpers.LogException(_log, "Encountered EventSource error", ex);
-            if (ex is EventSource.EventSourceServiceUnsuccessfulResponseException respEx)
+            var recoverable = true;
+            DataSourceStatus.ErrorInfo errorInfo;
+
+            if (ex is EventSourceServiceUnsuccessfulResponseException respEx)
             {
                 int status = respEx.StatusCode;
-                _log.Error(HttpErrors.ErrorMessage(status, "streaming connection", "will retry"));
+                errorInfo = DataSourceStatus.ErrorInfo.FromHttpError(status);
                 if (!HttpErrors.IsRecoverable(status))
                 {
-                    _initTask.TrySetException(ex); // sends this exception to the client if we haven't already started up
-                    Dispose(true);
+                    recoverable = false;
+                    _log.Error(HttpErrors.ErrorMessage(status, "streaming connection", ""));
                 }
+                else
+                {
+                    _log.Warn(HttpErrors.ErrorMessage(status, "streaming connection", "will retry"));
+                }
+            }
+            else
+            {
+                errorInfo = DataSourceStatus.ErrorInfo.FromException(ex);
+                _log.Warn("Encountered EventSource error: {0}", LogValues.ExceptionSummary(ex));
+                _log.Debug(LogValues.ExceptionTrace(ex));
+            }
+
+            _updateSink.UpdateStatus(recoverable ? DataSourceState.Interrupted : DataSourceState.Shutdown,
+                errorInfo);
+
+            if (!recoverable)
+            {
+                // Make _initTask complete to tell the client to stop waiting for initialization. We use
+                // TrySetResult rather than SetResult here because it might have already been completed
+                // (if for instance the stream started successfully, then restarted and got a 401).
+                _initTask.TrySetResult(false);
+                ((IDisposable)this).Dispose();
             }
         }
 

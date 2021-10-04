@@ -45,10 +45,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             Configuration configuration
             ) : this(configuration, null) { }
 
-        /// <summary>
-        /// Creates an instance.
-        /// </summary>
-        /// <param name="configuration">the SDK configuration</param>
         internal LdClientContext(
             Configuration configuration,
             object eventSender

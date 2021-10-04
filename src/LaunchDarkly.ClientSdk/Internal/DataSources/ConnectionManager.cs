@@ -25,6 +25,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     {
         private readonly Logger _log;
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private readonly IDataSourceUpdateSink _updateSink;
         private bool _disposed = false;
         private bool _started = false;
         private bool _initialized = false;
@@ -53,8 +54,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         /// </summary>
         public bool Initialized => LockUtils.WithReadLock(_lock, () => _initialized);
 
-        internal ConnectionManager(Logger log)
+        internal ConnectionManager(IDataSourceUpdateSink updateSink, Logger log)
         {
+            _updateSink = updateSink;
             _log = log;
         }
 
@@ -245,6 +247,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 if (_dataSource == null && _dataSourceConstructor != null)
                 {
+                    // Set the state to Initializing when there's a new data source that has not yet
+                    // started. The state will then be updated as appropriate by the data source either
+                    // calling UpdateStatus, or Init which implies UpdateStatus(Valid).
+                    _updateSink.UpdateStatus(DataSourceState.Initializing, null);
                     _dataSource = _dataSourceConstructor();
                     return _dataSource.Start()
                         .ContinueWith(SetInitializedIfUpdateProcessorStartedSuccessfully);
@@ -252,9 +258,17 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
             else
             {
+                // Either we've been explicitly set to be offline (in which case the state is always
+                // SetOffline regardless of any other conditions), or we're offline because the network
+                // is unavailable. If either of those things changes, we'll end up calling this method
+                // again and the state will be updated if appropriate.
                 _dataSource?.Dispose();
                 _dataSource = null;
                 _initialized = true;
+                _updateSink.UpdateStatus(
+                    _forceOffline ? DataSourceState.SetOffline : DataSourceState.NetworkUnavailable,
+                    null
+                    );
                 return Task.FromResult(true);
             }
             return Task.FromResult(false);

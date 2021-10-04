@@ -18,7 +18,7 @@ namespace LaunchDarkly.Sdk.Client
 
         public LdClientEventTests(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _factory = new SingleEventProcessorFactory(eventProcessor);
+            _factory = eventProcessor.AsSingletonFactory();
         }
 
         private LdClient MakeClient(User u) =>
@@ -276,7 +276,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = TestUtil.TestConfig()
-                .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
+                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
                 .Events(_factory)
                 .Logging(testLogging);
 
@@ -382,7 +382,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = TestUtil.TestConfig()
-                .DataSource(MockUpdateProcessorThatNeverInitializes.Factory())
+                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
                 .Events(_factory)
                 .Logging(testLogging);
 
