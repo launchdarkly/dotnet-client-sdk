@@ -36,7 +36,17 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <summary>
         /// The default value for <see cref="FlushInterval(TimeSpan)"/>.
         /// </summary>
-        public static readonly TimeSpan DefaultFlushInterval = TimeSpan.FromSeconds(5);
+        /// <remarks>
+        /// For Android and iOS, this is 30 seconds. For all other platforms, it is 5 seconds. The
+        /// difference is because the extra HTTP requests for sending events more frequently are
+        /// undesirable in a mobile application as opposed to a desktop application.
+        /// </remarks>
+        public static readonly TimeSpan DefaultFlushInterval =
+#if NETSTANDARD
+            TimeSpan.FromSeconds(5);
+#else
+            TimeSpan.FromSeconds(30);
+#endif
 
         internal static readonly Uri DefaultBaseUri = new Uri("https://mobile.launchdarkly.com");
 
