@@ -43,6 +43,10 @@ namespace LaunchDarkly.Sdk.Client
             TestUtil.ClearClient();
         }
 
+        // Returns a ConfigurationBuilder with no external data source, events disabled, and logging redirected
+        // to the test output. Using this as a base configuration for tests, and then overriding properties as
+        // needed, protects against accidental interaction with external services and also makes it easier to
+        // see which properties are important in a test.
         protected ConfigurationBuilder BasicConfig() =>
             Configuration.Builder(BasicMobileKey)
                 .DataSource(new MockDataSource().AsSingletonFactory())

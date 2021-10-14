@@ -99,6 +99,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// a subsystem of <c>LD</c> and a category of <c>DataSource</c>.
         /// </para>
         /// </remarks>
+        /// <returns>the same builder</returns>
         public LoggingConfigurationBuilder BaseLoggerName(string baseLoggerName)
         {
             _baseLoggerName = baseLoggerName;

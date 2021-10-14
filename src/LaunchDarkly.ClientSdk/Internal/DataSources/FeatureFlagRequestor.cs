@@ -69,13 +69,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private HttpRequestMessage GetRequestMessage()
         {
-            var path = Constants.FLAG_REQUEST_PATH_GET + Base64.UrlSafeEncode(DataModelSerialization.SerializeUser(_currentUser));
+            var path = StandardEndpoints.PollingRequestGetRequestPath(
+                Base64.UrlSafeEncode(DataModelSerialization.SerializeUser(_currentUser)));
             return new HttpRequestMessage(HttpMethod.Get, MakeRequestUriWithPath(path));
         }
 
         private HttpRequestMessage ReportRequestMessage()
         {
-            var request = new HttpRequestMessage(ReportMethod, MakeRequestUriWithPath(Constants.FLAG_REQUEST_PATH_REPORT));
+            var request = new HttpRequestMessage(ReportMethod, MakeRequestUriWithPath(StandardEndpoints.PollingRequestReportRequestPath));
             request.Content = new StringContent(DataModelSerialization.SerializeUser(_currentUser), Encoding.UTF8, Constants.APPLICATION_JSON);
             return request;
         }

@@ -18,13 +18,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             prop.AssertSetIsChangedTo(TimeSpan.FromMilliseconds(222), Configuration.MinimumBackgroundPollInterval);
         }
 
-        [Fact]
-        public void BaseUri()
-        {
-            var prop = _tester.Property(b => b._baseUri, (b, v) => b.BaseUri(v));
-            prop.AssertDefault(null);
-            prop.AssertCanSet(new Uri("http://x"));
-        }
 
         [Fact]
         public void PollInterval()

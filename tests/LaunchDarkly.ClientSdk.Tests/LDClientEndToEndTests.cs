@@ -81,7 +81,8 @@ namespace LaunchDarkly.Sdk.Client
                 using (var pollServer = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
                 {
                     var config = BaseConfig(b =>
-                        b.DataSource(Components.StreamingDataSource().BaseUri(streamServer.Uri).PollingBaseUri(pollServer.Uri)));
+                        b.DataSource(Components.StreamingDataSource())
+                            .ServiceEndpoints(Components.ServiceEndpoints().Streaming(streamServer.Uri).Polling(pollServer.Uri)));
                     using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromSeconds(5)))
                     {
                         VerifyRequest(streamServer.Recorder, UpdateMode.Streaming);
@@ -98,7 +99,9 @@ namespace LaunchDarkly.Sdk.Client
             var handler = Handlers.Delay(TimeSpan.FromSeconds(2)).Then(SetupResponse(_flagData1, UpdateMode.Polling));
             using (var server = HttpServer.Start(handler))
             {
-                var config = BaseConfig(builder => builder.DataSource(Components.PollingDataSource().BaseUri(server.Uri)));
+                var config = BaseConfig(builder =>
+                    builder.DataSource(Components.PollingDataSource())
+                        .ServiceEndpoints(Components.ServiceEndpoints().Polling(server.Uri)));
                 using (var client = TestUtil.CreateClient(config, _user, TimeSpan.FromMilliseconds(200)))
                 {
                     Assert.False(client.Initialized);
@@ -266,8 +269,8 @@ namespace LaunchDarkly.Sdk.Client
             {
                 var config = Configuration.Builder(_mobileKey)
                     .DataSource(MockPollingProcessor.Factory("{}"))
-                    .Events(Components.SendEvents().BaseUri(new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath)))
                     .Persistence(Components.NoPersistence)
+                    .ServiceEndpoints(Components.ServiceEndpoints().Events(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
                     .Build();
 
                 using (var client = TestUtil.CreateClient(config, _user))
@@ -357,7 +360,8 @@ namespace LaunchDarkly.Sdk.Client
 
                 var config = BaseConfig(builder => builder
                     .BackgroundModeManager(mockBackgroundModeManager)
-                    .DataSource(Components.StreamingDataSource().BaseUri(server.Uri).BackgroundPollingIntervalWithoutMinimum(backgroundInterval))
+                    .DataSource(Components.StreamingDataSource().BackgroundPollingIntervalWithoutMinimum(backgroundInterval))
+                    .ServiceEndpoints(Components.ServiceEndpoints().Streaming(server.Uri).Polling(server.Uri))
                     );
 
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -405,7 +409,8 @@ namespace LaunchDarkly.Sdk.Client
                 var config = BaseConfig(builder => builder
                     .BackgroundModeManager(mockBackgroundModeManager)
                     .EnableBackgroundUpdating(false)
-                    .DataSource(Components.StreamingDataSource().BaseUri(server.Uri).BackgroundPollInterval(backgroundInterval))
+                    .DataSource(Components.StreamingDataSource().BackgroundPollInterval(backgroundInterval))
+                    .ServiceEndpoints(Components.ServiceEndpoints().Streaming(server.Uri).Polling(server.Uri))
                     );
 
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
@@ -493,13 +498,14 @@ namespace LaunchDarkly.Sdk.Client
         {
             return BaseConfig(builder =>
             {
+                builder.ServiceEndpoints(Components.ServiceEndpoints().Streaming(serverUri).Polling(serverUri));
                 if (mode.IsStreaming)
                 {
-                    builder.DataSource(Components.StreamingDataSource().BaseUri(serverUri));
+                    builder.DataSource(Components.StreamingDataSource());
                 }
                 else
                 {
-                    builder.DataSource(Components.PollingDataSource().BaseUri(serverUri));
+                    builder.DataSource(Components.PollingDataSource());
                 }
                 return extraConfig == null ? builder : extraConfig(builder);
             });

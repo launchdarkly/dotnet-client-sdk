@@ -34,15 +34,12 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// </example>
     public sealed class PollingDataSourceBuilder : IDataSourceFactory
     {
-        internal static readonly Uri DefaultBaseUri = new Uri("https://clientsdk.launchdarkly.com");
-
         /// <summary>
         /// The default value for <see cref="PollInterval(TimeSpan)"/>: 5 minutes.
         /// </summary>
         public static readonly TimeSpan DefaultPollInterval = TimeSpan.FromMinutes(5);
 
         internal TimeSpan _backgroundPollInterval = Configuration.DefaultBackgroundPollInterval;
-        internal Uri _baseUri = null;
         internal TimeSpan _pollInterval = DefaultPollInterval;
 
         /// <summary>
@@ -59,33 +56,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         {
             _backgroundPollInterval = (backgroundPollInterval < Configuration.MinimumBackgroundPollInterval) ?
                 Configuration.MinimumBackgroundPollInterval : backgroundPollInterval;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets a custom base URI for the polling service.
-        /// </summary>
-        /// <remarks>
-        /// You will only need to change this value in the following cases:
-        /// <list type="bullet">
-        /// <item>
-        /// <description>
-        /// You are using the <a href="https://docs.launchdarkly.com/home/advanced/relay-proxy">Relay Proxy</a>.
-        /// Set <c>BaseUri</c> to the base URI of the Relay Proxy instance.
-        /// </description>
-        /// </item>
-        /// <item>
-        /// <description>
-        /// You are connecting to a test server or a nonstandard endpoint for the LaunchDarkly service.
-        /// </description>
-        /// </item>
-        /// </list>
-        /// </remarks>
-        /// <param name="baseUri">the base URI of the polling service; null to use the default</param>
-        /// <returns>the builder</returns>
-        public PollingDataSourceBuilder BaseUri(Uri baseUri)
-        {
-            _baseUri = baseUri ?? DefaultBaseUri;
             return this;
         }
 
@@ -125,10 +95,16 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             {
                 context.BaseLogger.Warn("You should only disable the streaming API if instructed to do so by LaunchDarkly support");
             }
+            var baseUri = ServiceEndpointsBuilder.SelectBaseUri(
+                context.ServiceEndpoints.PollingBaseUri,
+                StandardEndpoints.DefaultPollingBaseUri,
+                "Polling",
+                context.BaseLogger
+                );
 
             var logger = context.BaseLogger.SubLogger(LogNames.DataSourceSubLog);
             var requestor = new FeatureFlagRequestor(
-                _baseUri ?? DefaultBaseUri,
+                baseUri,
                 currentUser,
                 context.EvaluationReasons,
                 context.Http,

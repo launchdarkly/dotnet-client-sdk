@@ -80,7 +80,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 _eventSource = _eventSourceCreator(
                     _httpProperties,
                     ReportMethod,
-                    MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH),
+                    MakeRequestUriWithPath(StandardEndpoints.StreamingReportRequestPath),
                     DataModelSerialization.SerializeUser(_user)
                     );
             }
@@ -89,8 +89,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 _eventSource = _eventSourceCreator(
                     _httpProperties,
                     HttpMethod.Get,
-                    MakeRequestUriWithPath(Constants.STREAM_REQUEST_PATH +
-                        Base64.UrlSafeEncode(DataModelSerialization.SerializeUser(_user))),
+                    MakeRequestUriWithPath(StandardEndpoints.StreamingGetRequestPath(
+                        Base64.UrlSafeEncode(DataModelSerialization.SerializeUser(_user)))),
                     null
                     );
             }

@@ -26,6 +26,11 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         public Logger BaseLogger { get; }
 
         /// <summary>
+        /// Whether to enable feature flag updates when the application is running in the background.
+        /// </summary>
+        public bool EnableBackgroundUpdating { get; }
+
+        /// <summary>
         /// True if evaluation reasons are enabled.
         /// </summary>
         public bool EvaluationReasons { get; }
@@ -34,6 +39,11 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// The HTTP configuration properties.
         /// </summary>
         public HttpConfiguration Http { get; }
+
+        /// <summary>
+        /// Defines the base service URIs used by SDK components.
+        /// </summary>
+        public ServiceEndpoints ServiceEndpoints { get; }
 
         internal TaskExecutor TaskExecutor { get; }
 
@@ -57,9 +67,12 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             var logAdapter = logConfig.LogAdapter ?? Logs.None;
             this.BaseLogger = logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
 
+            this.EnableBackgroundUpdating = configuration.EnableBackgroundUpdating;
             this.EvaluationReasons = configuration.EvaluationReasons;
             this.Http = (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
                 .CreateHttpConfiguration(this.Basic);
+
+            this.ServiceEndpoints = configuration.ServiceEndpoints;
 
             this.TaskExecutor = new TaskExecutor(eventSender, this.BaseLogger);
         }

@@ -43,6 +43,7 @@ namespace LaunchDarkly.Sdk.Client
         internal string _mobileKey;
         internal bool _offline = false;
         internal IPersistentDataStoreFactory _persistentDataStoreFactory = null;
+        internal ServiceEndpointsBuilder _serviceEndpointsBuilder = null;
 
         // Internal properties only settable for testing
         internal IBackgroundModeManager _backgroundModeManager;
@@ -66,6 +67,7 @@ namespace LaunchDarkly.Sdk.Client
             _mobileKey = copyFrom.MobileKey;
             _offline = copyFrom.Offline;
             _persistentDataStoreFactory = copyFrom.PersistentDataStoreFactory;
+            _serviceEndpointsBuilder = new ServiceEndpointsBuilder(copyFrom.ServiceEndpoints);
         }
 
         /// <summary>
@@ -111,6 +113,11 @@ namespace LaunchDarkly.Sdk.Client
         /// The default is <see cref="Components.StreamingDataSource"/>. You may instead use
         /// <see cref="Components.PollingDataSource"/>. See those methods for details on how
         /// to configure them.
+        /// </para>
+        /// <para>
+        /// This overwrites any previous options set with <see cref="DataSource(IDataSourceFactory)"/>.
+        /// If you want to set multiple options, set them on the same <see cref="StreamingDataSourceBuilder"/>
+        /// or <see cref="PollingDataSourceBuilder"/>.
         /// </para>
         /// </remarks>
         /// <param name="dataSourceFactory">the factory object</param>
@@ -163,9 +170,15 @@ namespace LaunchDarkly.Sdk.Client
         /// Sets the implementation of the component that processes analytics events.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// The default is <see cref="Components.SendEvents"/>, but you may choose to set it to a customized
         /// <see cref="EventProcessorBuilder"/>, a custom implementation (for instance, a test fixture), or
         /// disable events with <see cref="Components.NoEvents"/>.
+        /// </para>
+        /// <para>
+        /// This overwrites any previous options set with <see cref="Events(IEventProcessorFactory)"/>.
+        /// If you want to set multiple options, set them on the same <see cref="EventProcessorBuilder"/>.
+        /// </para>
         /// </remarks>
         /// <param name="eventProcessorFactory">a builder/factory object for event configuration</param>
         /// <returns>the same builder</returns>
@@ -180,6 +193,10 @@ namespace LaunchDarkly.Sdk.Client
         /// <see cref="Components.HttpConfiguration()"/>. The builder has methods for setting
         /// individual HTTP-related properties.
         /// </summary>
+        /// <remarks>
+        /// This overwrites any previous options set with <see cref="Http(HttpConfigurationBuilder)"/>.
+        /// If you want to set multiple options, set them on the same <see cref="HttpConfigurationBuilder"/>.
+        /// </remarks>
         /// <param name="httpConfigurationBuilder">a builder for HTTP configuration</param>
         /// <returns>the same builder</returns>
         public ConfigurationBuilder Http(HttpConfigurationBuilder httpConfigurationBuilder)
@@ -212,7 +229,7 @@ namespace LaunchDarkly.Sdk.Client
             Logging(Components.Logging(logAdapter));
 
         /// <summary>
-        /// Sets the SDK's logging configuration, using a configuration builder obtained from.
+        /// Sets the SDK's logging configuration, using a configuration builder obtained from
         /// <see cref="Components.Logging()"/>.
         /// </summary>
         /// <remarks>
@@ -224,6 +241,10 @@ namespace LaunchDarkly.Sdk.Client
         /// <para>
         /// For more about how logging works in the SDK, see the LaunchDarkly
         /// <a href="https://docs.launchdarkly.com/sdk/features/logging#net-client-side">feature guide</a>.
+        /// </para>
+        /// <para>
+        /// This overwrites any previous options set with <see cref="Logging(LoggingConfigurationBuilder)"/>.
+        /// If you want to set multiple options, set them on the same <see cref="LoggingConfigurationBuilder"/>.
         /// </para>
         /// </remarks>
         /// <example>
@@ -289,6 +310,24 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder Persistence(IPersistentDataStoreFactory persistentDataStoreFactory)
         {
             _persistentDataStoreFactory = persistentDataStoreFactory;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the SDK's service URIs, using a configuration builder obtained from
+        /// <see cref="Components.ServiceEndpoints"/>.
+        /// </summary>
+        /// <remarks>
+        /// This overwrites any previous options set with <see cref="ServiceEndpoints(ServiceEndpointsBuilder)"/>.
+        /// If you want to set multiple options, set them on the same <see cref="ServiceEndpointsBuilder"/>.
+        /// </remarks>
+        /// <param name="serviceEndpointsBuilder">the subconfiguration builder object</param>
+        /// <returns>the main configuration builder</returns>
+        /// <seealso cref="Components.ServiceEndpoints"/>
+        /// <seealso cref="ServiceEndpointsBuilder"/>
+        public ConfigurationBuilder ServiceEndpoints(ServiceEndpointsBuilder serviceEndpointsBuilder)
+        {
+            _serviceEndpointsBuilder = serviceEndpointsBuilder;
             return this;
         }
 

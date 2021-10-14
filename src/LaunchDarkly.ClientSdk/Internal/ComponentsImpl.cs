@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Interfaces;
 
 namespace LaunchDarkly.Sdk.Client.Internal

@@ -72,7 +72,6 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         public bool EvaluationReasons { get; }
 
-
         /// <summary>
         /// A factory object that creates an implementation of <see cref="IEventProcessor"/>, responsible
         /// for sending analytics events.
@@ -107,6 +106,11 @@ namespace LaunchDarkly.Sdk.Client
         /// saving flag values in persistent storage.
         /// </summary>
         public IPersistentDataStoreFactory PersistentDataStoreFactory { get; }
+
+        /// <summary>
+        /// Defines the base service URIs used by SDK components.
+        /// </summary>
+        public ServiceEndpoints ServiceEndpoints { get; }
 
         /// <summary>
         /// Creates a configuration with all parameters set to the default.
@@ -168,6 +172,7 @@ namespace LaunchDarkly.Sdk.Client
             MobileKey = builder._mobileKey;
             Offline = builder._offline;
             PersistentDataStoreFactory = builder._persistentDataStoreFactory;
+            ServiceEndpoints = (builder._serviceEndpointsBuilder ?? Components.ServiceEndpoints()).Build();
 
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;

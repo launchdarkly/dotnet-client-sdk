@@ -32,14 +32,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         [Fact]
-        public void EventsUri()
-        {
-            var prop = _tester.Property(b => b._baseUri, (b, v) => b.BaseUri(v));
-            prop.AssertDefault(null);
-            prop.AssertCanSet(new Uri("http://x"));
-        }
-
-        [Fact]
         public void FlushInterval()
         {
             var prop = _tester.Property(b => b._flushInterval, (b, v) => b.FlushInterval(v));

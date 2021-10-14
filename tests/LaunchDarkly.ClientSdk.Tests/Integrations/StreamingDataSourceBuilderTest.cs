@@ -19,27 +19,11 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         [Fact]
-        public void BaseUri()
-        {
-            var prop = _tester.Property(b => b._baseUri, (b, v) => b.BaseUri(v));
-            prop.AssertDefault(null);
-            prop.AssertCanSet(new Uri("http://x"));
-        }
-
-        [Fact]
         public void InitialReconnectDelay()
         {
             var prop = _tester.Property(b => b._initialReconnectDelay, (b, v) => b.InitialReconnectDelay(v));
             prop.AssertDefault(StreamingDataSourceBuilder.DefaultInitialReconnectDelay);
             prop.AssertCanSet(TimeSpan.FromMilliseconds(222));
-        }
-
-        [Fact]
-        public void PollingBaseUri()
-        {
-            var prop = _tester.Property(b => b._pollingBaseUri, (b, v) => b.PollingBaseUri(v));
-            prop.AssertDefault(null);
-            prop.AssertCanSet(new Uri("http://x"));
         }
     }
 }

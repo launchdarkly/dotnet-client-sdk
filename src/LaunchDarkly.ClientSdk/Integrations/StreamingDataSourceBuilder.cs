@@ -30,17 +30,13 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// </example>
     public sealed class StreamingDataSourceBuilder : IDataSourceFactory
     {
-        internal static readonly Uri DefaultBaseUri = new Uri("https://clientstream.launchdarkly.com");
-
         /// <summary>
         /// The default value for <see cref="InitialReconnectDelay(TimeSpan)"/>: 1000 milliseconds.
         /// </summary>
         public static readonly TimeSpan DefaultInitialReconnectDelay = TimeSpan.FromSeconds(1);
 
         internal TimeSpan _backgroundPollInterval = Configuration.DefaultBackgroundPollInterval;
-        internal Uri _baseUri = null;
         internal TimeSpan _initialReconnectDelay = DefaultInitialReconnectDelay;
-        internal Uri _pollingBaseUri = null;
 
         internal StreamingDataSource.EventSourceCreator _eventSourceCreator = null; // used only in testing
 
@@ -68,33 +64,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         /// <summary>
-        /// Sets a custom base URI for the streaming service.
-        /// </summary>
-        /// <remarks>
-        /// You will only need to change this value in the following cases:
-        /// <list type="bullet">
-        /// <item>
-        /// <description>
-        /// You are using the <a href="https://docs.launchdarkly.com/home/advanced/relay-proxy">Relay Proxy</a>.
-        /// Set <c>BaseUri</c> to the base URI of the Relay Proxy instance.
-        /// </description>
-        /// </item>
-        /// <item>
-        /// <description>
-        /// You are connecting to a test server or a nonstandard endpoint for the LaunchDarkly service.
-        /// </description>
-        /// </item>
-        /// </list>
-        /// </remarks>
-        /// <param name="baseUri">the base URI of the streaming service; null to use the default</param>
-        /// <returns>the builder</returns>
-        public StreamingDataSourceBuilder BaseUri(Uri baseUri)
-        {
-            _baseUri = baseUri;
-            return this;
-        }
-
-        /// <summary>
         /// Sets the initial reconnect delay for the streaming connection.
         /// </summary>
         /// <remarks>
@@ -115,34 +84,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             return this;
         }
 
-        /// <summary>
-        /// Sets a custom base URI for the polling service.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The SDK may need the polling service even if you are using streaming mode, under certain
-        /// circumstances: if the application has been put in the background on a mobile device, or if
-        /// the streaming endpoint cannot deliver an update itself and instead tells the SDK to re-poll
-        /// to get the update.
-        /// </para>
-        /// <para>
-        /// You will only need to change this value if you are connecting to a test server or a
-        /// nonstandard endpoint for the LaunchDarkly service.
-        /// </para>
-        /// <para>
-        /// If you are using the <a href="https://docs.launchdarkly.com/home/advanced/relay-proxy">Relay Proxy</a>.
-        /// you only need to set <see cref="BaseUri(Uri)"/>; it will automatically default to using the
-        /// same value for <c>PollingBaseUri</c>.
-        /// </para>
-        /// </remarks>
-        /// <param name="pollingBaseUri">the base URI of the polling service; null to use the default</param>
-        /// <returns>the builder</returns>
-        public StreamingDataSourceBuilder PollingBaseUri(Uri pollingBaseUri)
-        {
-            _pollingBaseUri = pollingBaseUri;
-            return this;
-        }
-
         internal StreamingDataSourceBuilder EventSourceCreator(StreamingDataSource.EventSourceCreator fn)
         {
             _eventSourceCreator = fn;
@@ -157,26 +98,23 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             bool inBackground
             )
         {
-            var baseUri = _baseUri ?? DefaultBaseUri;
-            Uri pollingBaseUri;
-            if (_pollingBaseUri is null)
-            {
-                // If they specified a nonstandard BaseUri but did *not* specify PollingBaseUri,
-                // we assume it's a Relay Proxy instance and we set both to the same.
-                pollingBaseUri = (_baseUri is null || _baseUri == DefaultBaseUri) ?
-                    PollingDataSourceBuilder.DefaultBaseUri :
-                    _baseUri;
-            }
-            else
-            {
-                pollingBaseUri = _pollingBaseUri;
-            }
+            var baseUri = ServiceEndpointsBuilder.SelectBaseUri(
+                context.ServiceEndpoints.StreamingBaseUri,
+                StandardEndpoints.DefaultStreamingBaseUri,
+                "Streaming",
+                context.BaseLogger
+                );
+            var pollingBaseUri = ServiceEndpointsBuilder.SelectBaseUri(
+                context.ServiceEndpoints.PollingBaseUri,
+                StandardEndpoints.DefaultPollingBaseUri,
+                "Polling",
+                context.BaseLogger
+                );
 
             if (inBackground)
             {
                 // When in the background, always use polling instead of streaming
                 return new PollingDataSourceBuilder()
-                    .BaseUri(pollingBaseUri)
                     .BackgroundPollInterval(_backgroundPollInterval)
                     .CreateDataSource(context, updateSink, currentUser, true);
             }

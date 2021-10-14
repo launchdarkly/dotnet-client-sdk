@@ -48,10 +48,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             TimeSpan.FromSeconds(30);
 #endif
 
-        internal static readonly Uri DefaultBaseUri = new Uri("https://mobile.launchdarkly.com");
-
         internal bool _allAttributesPrivate = false;
-        internal Uri _baseUri = null;
         internal int _capacity = DefaultCapacity;
         internal TimeSpan _flushInterval = DefaultFlushInterval;
         internal bool _inlineUsersInEvents = false;
@@ -71,33 +68,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public EventProcessorBuilder AllAttributesPrivate(bool allAttributesPrivate)
         {
             _allAttributesPrivate = allAttributesPrivate;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets a custom base URI for the events service.
-        /// </summary>
-        /// <remarks>
-        /// You will only need to change this value in the following cases:
-        /// <list type="bullet">
-        /// <item>
-        /// <description>
-        /// You are using the <a href="https://docs.launchdarkly.com/docs/the-relay-proxy">Relay Proxy</a>.
-        /// Set <c>BaseUri</c> to the base URI of the Relay Proxy instance.
-        /// </description>
-        /// </item>
-        /// <item>
-        /// <description>
-        /// You are connecting to a test server or a nonstandard endpoint for the LaunchDarkly service.
-        /// </description>
-        /// </item>
-        /// </list>
-        /// </remarks>
-        /// <param name="baseUri">the base URI of the events service; null to use the default</param>
-        /// <returns>the builder</returns>
-        public EventProcessorBuilder BaseUri(Uri baseUri)
-        {
-            _baseUri = baseUri;
             return this;
         }
 
@@ -143,6 +113,12 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         {
             _flushInterval = (flushInterval.CompareTo(TimeSpan.Zero) <= 0) ?
                 DefaultFlushInterval : flushInterval;
+            return this;
+        }
+
+        internal EventProcessorBuilder FlushIntervalNoMinimum(TimeSpan flushInterval)
+        {
+            _flushInterval = flushInterval;
             return this;
         }
 
@@ -210,13 +186,18 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <inheritdoc/>
         public IEventProcessor CreateEventProcessor(LdClientContext context)
         {
-            var uri = _baseUri ?? DefaultBaseUri;
+            var baseUri = ServiceEndpointsBuilder.SelectBaseUri(
+                context.ServiceEndpoints.EventsBaseUri,
+                StandardEndpoints.DefaultEventsBaseUri,
+                "Events",
+                context.BaseLogger
+                );
             var eventsConfig = new EventsConfiguration
             {
                 AllAttributesPrivate = _allAttributesPrivate,
                 EventCapacity = _capacity,
                 EventFlushInterval = _flushInterval,
-                EventsUri = uri.AddPath(Constants.EVENTS_PATH),
+                EventsUri = baseUri.AddPath(StandardEndpoints.AnalyticsEventsPostRequestPath),
                 //DiagnosticUri = uri.AddPath("diagnostic"), // no diagnostic events yet
                 InlineUsersInEvents = _inlineUsersInEvents,
                 PrivateAttributeNames = _privateAttributes.ToImmutableHashSet(),

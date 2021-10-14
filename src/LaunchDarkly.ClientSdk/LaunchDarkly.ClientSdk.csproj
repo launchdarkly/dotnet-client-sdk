@@ -73,4 +73,15 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Interfaces\Endpoints.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Update="Integrations\ServiceEndpointsBuilder.cs">
+      <SubType></SubType>
+    </Compile>
+    <Compile Update="Internal\StandardEndpoints.cs">
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
 </Project>
