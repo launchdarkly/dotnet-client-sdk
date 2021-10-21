@@ -400,6 +400,18 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <inheritdoc/>
+        public double DoubleVariation(string key, double defaultValue = 0)
+        {
+            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true, _eventFactoryDefault).Value;
+        }
+
+        /// <inheritdoc/>
+        public EvaluationDetail<double> DoubleVariationDetail(string key, double defaultValue = 0)
+        {
+            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true, _eventFactoryWithReasons);
+        }
+
+        /// <inheritdoc/>
         public int IntVariation(string key, int defaultValue = 0)
         {
             return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryDefault).Value;
