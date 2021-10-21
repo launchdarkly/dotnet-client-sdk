@@ -136,6 +136,48 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
+        public void DoubleVariationReturnsValue()
+        {
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of(2.5d)));
+            using (var client = MakeClient())
+            {
+                Assert.Equal(2.5d, client.DoubleVariation(flagKey, 0));
+            }
+        }
+
+        [Fact]
+        public void DoubleVariationCoercesIntValue()
+        {
+            _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of(2)));
+            using (var client = MakeClient())
+            {
+                Assert.Equal(2.0d, client.DoubleVariation(flagKey, 0));
+            }
+        }
+
+        [Fact]
+        public void DoubleVariationReturnsDefaultForUnknownFlag()
+        {
+            using (var client = MakeClient())
+            {
+                Assert.Equal(0.5d, client.DoubleVariation(nonexistentFlagKey, 0.5d));
+            }
+        }
+
+        [Fact]
+        public void DoubleVariationDetailReturnsValue()
+        {
+            var reason = EvaluationReason.OffReason;
+            var flag = new FeatureFlagBuilder().Value(LdValue.Of(2.5d)).Variation(1).Reason(reason).Build();
+            _testData.Update(_testData.Flag(flagKey).PreconfiguredFlag(flag));
+            using (var client = MakeClient())
+            {
+                var expected = new EvaluationDetail<double>(2.5d, 1, reason);
+                Assert.Equal(expected, client.DoubleVariationDetail(flagKey, 0.5d));
+            }
+        }
+
+        [Fact]
         public void StringVariationReturnsValue()
         {
             _testData.Update(_testData.Flag(flagKey).Variation(LdValue.Of("string value")));

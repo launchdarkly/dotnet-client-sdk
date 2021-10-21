@@ -174,7 +174,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         EvaluationDetail<string> StringVariationDetail(string key, string defaultValue);
 
         /// <summary>
-        /// Returns the float value of a feature flag for a given flag key.
+        /// Returns the single-precision floating-point value of a feature flag for a given flag key.
         /// </summary>
         /// <param name="key">the unique feature key for the feature flag</param>
         /// <param name="defaultValue">the default value of the flag</param>
@@ -183,8 +183,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         float FloatVariation(string key, float defaultValue = 0);
 
         /// <summary>
-        /// Returns the float value of a feature flag for a given flag key, in an object that also
-        /// describes the way the value was determined.
+        /// Returns the single-precision floating-point value of a feature flag for a given flag key,
+        /// in an object that also describes the way the value was determined.
         /// </summary>
         /// <remarks>
         /// The <see cref="EvaluationDetail{T}.Reason"/> property in the result will also be included in analytics
@@ -194,6 +194,28 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <param name="defaultValue">the default value of the flag</param>
         /// <returns>an <c>EvaluationDetail</c> object</returns>
         EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0);
+
+        /// <summary>
+        /// Returns the double-precision floating-point value of a feature flag for a given flag key.
+        /// </summary>
+        /// <param name="key">the unique feature key for the feature flag</param>
+        /// <param name="defaultValue">the default value of the flag</param>
+        /// <returns>the variation for the selected user, or <c>defaultValue</c> if the flag is
+        /// disabled in the LaunchDarkly control panel</returns>
+        double DoubleVariation(string key, double defaultValue = 0);
+
+        /// <summary>
+        /// Returns the double-precision floating-point value of a feature flag for a given flag key,
+        /// in an object that also describes the way the value was determined.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="EvaluationDetail{T}.Reason"/> property in the result will also be included in analytics
+        /// events, if you are capturing detailed event data for this flag.
+        /// </remarks>
+        /// <param name="key">the unique feature key for the feature flag</param>
+        /// <param name="defaultValue">the default value of the flag</param>
+        /// <returns>an <c>EvaluationDetail</c> object</returns>
+        EvaluationDetail<double> DoubleVariationDetail(string key, double defaultValue = 0);
 
         /// <summary>
         /// Returns the integer value of a feature flag for a given flag key.

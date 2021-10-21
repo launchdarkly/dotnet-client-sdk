@@ -24,7 +24,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 
             private sealed class ChannelImpl : IChannel
             {
-                private readonly OSLog _log;
+                private readonly CoreFoundation.OSLog _log;
 
                 internal ChannelImpl(string name)
                 {
@@ -39,7 +39,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
                         subsystem = name;
                         category = "";
                     }
-                    _log = new OSLog(subsystem, category);
+                    _log = new CoreFoundation.OSLog(subsystem, category);
                 }
 
                 // As defined in IChannel, IsEnabled really means "is it *potentially*

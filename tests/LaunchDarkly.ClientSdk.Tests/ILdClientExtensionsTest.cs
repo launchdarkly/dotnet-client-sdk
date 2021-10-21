@@ -138,6 +138,12 @@ namespace LaunchDarkly.Sdk.Client
             public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0) =>
                 throw new System.NotImplementedException();
 
+            public double DoubleVariation(string key, double defaultValue = 0) =>
+                throw new System.NotImplementedException();
+
+            public EvaluationDetail<double> DoubleVariationDetail(string key, double defaultValue = 0) =>
+                throw new System.NotImplementedException();
+
             public void Flush() { }
 
             public bool Identify(User user, System.TimeSpan maxWaitTime) =>
