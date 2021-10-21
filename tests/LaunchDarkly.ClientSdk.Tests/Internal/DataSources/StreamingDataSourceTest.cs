@@ -5,8 +5,12 @@ using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Internal.Http;
+using LaunchDarkly.Sdk.Json;
 using Xunit;
 using Xunit.Abstractions;
+
+using static LaunchDarkly.Sdk.Client.TestUtil;
+using static LaunchDarkly.TestHelpers.JsonAssertions;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
@@ -78,36 +82,49 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 eventSourceFactory.ReceivedUri);
         }
 
-        // Report mode is currently disabled - ch47341
-        //[Fact]
-        //public void StreamUriInReportModeHasNoUser()
-        //{
-        //    var config = configBuilder.UseReport(true).Build();
-        //    MobileStreamingProcessorStarted();
-        //    var props = eventSourceFactory.ReceivedProperties;
-        //    Assert.Equal(new HttpMethod("REPORT"), props.Method);
-        //    Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH), props.StreamUri);
-        //}
+        // REPORT mode is known to fail in Android (ch47341)
+#if !__ANDROID__
+        [Theory]
+        [InlineData("", false, "/meval", "")]
+        [InlineData("", true, "/meval", "?withReasons=true")]
+        [InlineData("/basepath", false, "/basepath/meval", "")]
+        [InlineData("/basepath", true, "/basepath/meval", "?withReasons=true")]
+        [InlineData("/basepath/", false, "/basepath/meval", "")]
+        [InlineData("/basepath/", true, "/basepath/meval", "?withReasons=true")]
+        public void RequestHasCorrectUriAndMethodAndBodyInReportMode(
+            string baseUriExtraPath,
+            bool withReasons,
+            string expectedPath,
+            string expectedQuery
+            )
+        {
+            var fakeRootUri = "http://fake-stream-host";
+            var fakeBaseUri = fakeRootUri + baseUriExtraPath;
+            this.baseUri = new Uri(fakeBaseUri);
+            var httpConfig = Components.HttpConfiguration().UseReport(true).CreateHttpConfiguration(SimpleContext.Basic);
+            using (var dataSource = new StreamingDataSource(
+                _updateSink,
+                user,
+                baseUri,
+                withReasons,
+                initialReconnectDelay,
+                mockRequestor,
+                httpConfig,
+                testLogger,
+                eventSourceFactory.Create()
+                ))
+            {
+                dataSource.Start();
 
-        //[Fact]
-        //public void StreamUriInReportModeHasReasonsParameterIfConfigured()
-        //{
-        //    var config = configBuilder.UseReport(true).EvaluationReasons(true).Build();
-        //    MobileStreamingProcessorStarted();
-        //    var props = eventSourceFactory.ReceivedProperties;
-        //    Assert.Equal(new Uri(config.StreamUri, Constants.STREAM_REQUEST_PATH + "?withReasons=true"), props.StreamUri);
-        //}
-
-        //[Fact]
-        //public async Task StreamRequestBodyInReportModeHasUser()
-        //{
-        //    configBuilder.UseReport(true);
-        //    MobileStreamingProcessorStarted();
-        //    var props = eventSourceFactory.ReceivedProperties;
-        //    var body = Assert.IsType<StringContent>(props.RequestBody);
-        //    var s = await body.ReadAsStringAsync();
-        //    Assert.Equal(user.AsJson(), s);
-        //}
+                Assert.Equal(new HttpMethod("REPORT"), eventSourceFactory.ReceivedMethod);
+                Assert.Equal(new Uri(fakeRootUri + expectedPath + expectedQuery),
+                    eventSourceFactory.ReceivedUri);
+                Assert.NotNull(eventSourceFactory.ReceivedBody);
+                AssertJsonEqual(LdJsonSerialization.SerializeObject(user),
+                        NormalizeJsonUser(LdValue.Parse(eventSourceFactory.ReceivedBody)));
+            }
+        }
+#endif
 
         [Fact]
         public void PutStoresFeatureFlags()
