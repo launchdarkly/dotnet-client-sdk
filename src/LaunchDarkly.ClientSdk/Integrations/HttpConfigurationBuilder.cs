@@ -212,8 +212,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             return this;
         }
 
-        // NOTE: UseReport is currently internal rather than public because the REPORT verb does not
-        // work on every platform (ch47341)
         /// <summary>
         /// Sets whether to use the HTTP <c>REPORT</c> method for feature flag requests.
         /// </summary>
@@ -232,7 +230,11 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </remarks>
         /// <param name="useReport">true to enable the REPORT method</param>
         /// <returns>the builder</returns>
+#if !MONOANDROID
+        public HttpConfigurationBuilder UseReport(bool useReport)
+#else
         internal HttpConfigurationBuilder UseReport(bool useReport)
+#endif
         {
             _useReport = useReport;
             return this;
