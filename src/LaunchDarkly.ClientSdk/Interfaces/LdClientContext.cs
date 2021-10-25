@@ -74,7 +74,11 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
 
             this.ServiceEndpoints = configuration.ServiceEndpoints;
 
-            this.TaskExecutor = new TaskExecutor(eventSender, this.BaseLogger);
+            this.TaskExecutor = new TaskExecutor(
+                eventSender,
+                PlatformSpecific.AsyncScheduler.ScheduleAction,
+                this.BaseLogger
+                );
         }
     }
 }

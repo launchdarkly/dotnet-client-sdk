@@ -40,10 +40,10 @@
   <ItemGroup>
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="LaunchDarkly.CommonSdk" Version="5.0.2" />
+    <PackageReference Include="LaunchDarkly.CommonSdk" Version="5.4.0" />
     <PackageReference Include="LaunchDarkly.EventSource" Version="4.1.2" />
-    <PackageReference Include="LaunchDarkly.InternalSdk" Version="2.1.0" />
-    <PackageReference Include="LaunchDarkly.JsonStream" Version="1.0.2" />
+    <PackageReference Include="LaunchDarkly.InternalSdk" Version="2.2.0" />
+    <PackageReference Include="LaunchDarkly.JsonStream" Version="1.0.3" />
     <PackageReference Include="LaunchDarkly.Logging" Version="1.0.1" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
