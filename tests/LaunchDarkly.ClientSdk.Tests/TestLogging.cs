@@ -1,4 +1,5 @@
-﻿using LaunchDarkly.Logging;
+﻿using System;
+using LaunchDarkly.Logging;
 using Xunit.Abstractions;
 
 namespace LaunchDarkly.Sdk.Client
@@ -27,6 +28,13 @@ namespace LaunchDarkly.Sdk.Client
         /// class constructor</param>
         /// <returns>a log adapter</returns>
         public static ILogAdapter TestOutputAdapter(ITestOutputHelper testOutputHelper) =>
-            Logs.ToMethod(line => testOutputHelper.WriteLine("LOG OUTPUT >> " + line));
+            Logs.ToMethod(line =>
+                {
+                    try
+                    {
+                        testOutputHelper.WriteLine("LOG OUTPUT >> " + line);
+                    }
+                    catch (Exception) { } // WriteLine may fail if a background task tries to log something after the test has ended
+                });
     }
 }
