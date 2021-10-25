@@ -45,7 +45,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// to change.
         /// </para>
         /// <para>
-        /// Notifications will be dispatched on a background task. It is the listener's responsibility to return
+        /// Notifications will be dispatched either on the main thread (on mobile platforms) or in a
+        /// background task (on all other platforms). It is the listener's responsibility to return
         /// as soon as possible so as not to block subsequent notifications.
         /// </para>
         /// </remarks>

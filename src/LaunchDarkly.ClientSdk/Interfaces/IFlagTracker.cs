@@ -23,9 +23,9 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// SDK has just received its very first set of flag values.
         /// </para>
         /// <para>
-        /// Notifications will be dispatched on a background task. It is the listener's
-        /// responsibility to return as soon as possible so as not to block subsequent
-        /// notifications.
+        /// Notifications will be dispatched either on the main thread (on mobile platforms) or in a
+        /// background task (on all other platforms). It is the listener's responsibility to return
+        /// as soon as possible so as not to block subsequent notifications.
         /// </para>
         /// </remarks>
         /// <example>
