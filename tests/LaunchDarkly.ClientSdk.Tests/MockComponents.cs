@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Interfaces;
@@ -6,6 +7,7 @@ using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataSources;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
+using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.TestHelpers;
 using Xunit;
 
@@ -13,6 +15,10 @@ using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
+    // Even more so than in the server-side SDK tests, we rely on our own concrete mock
+    // implementations of our component interfaces rather than using Moq to create mocks
+    // dynamically, because runtime differences cause Moq to fail on some mobile platforms.
+
     internal static class MockComponentExtensions
     {
         public static IDataSourceFactory AsSingletonFactory(this IDataSource instance) =>
@@ -152,6 +158,35 @@ namespace LaunchDarkly.Sdk.Client
         }
     }
 
+    internal class MockDiagnosticStore : IDiagnosticStore
+    {
+        internal struct StreamInit
+        {
+            internal DateTime Timestamp;
+            internal TimeSpan Duration;
+            internal bool Failed;
+        }
+
+        internal readonly EventSink<StreamInit> StreamInits = new EventSink<StreamInit>();
+
+        public DateTime DataSince => DateTime.Now;
+
+        public DiagnosticEvent? InitEvent => null;
+
+        public DiagnosticEvent? PersistedUnsentEvent => null;
+
+        public void AddStreamInit(DateTime timestamp, TimeSpan duration, bool failed) =>
+            StreamInits.Enqueue(new StreamInit { Timestamp = timestamp, Duration = duration, Failed = failed });
+
+        public DiagnosticEvent CreateEventAndReset() => new DiagnosticEvent();
+
+        public void IncrementDeduplicatedUsers() { }
+
+        public void IncrementDroppedEvents() { }
+
+        public void RecordEventsInBatch(long eventsInBatch) { }
+    }
+
     internal class MockEventProcessor : IEventProcessor
     {
         public List<object> Events = new List<object>();
@@ -177,6 +212,49 @@ namespace LaunchDarkly.Sdk.Client
 
         public void RecordAliasEvent(EventProcessorTypes.AliasEvent e) =>
             Events.Add(e);
+    }
+
+    public class MockEventSender : IEventSender
+    {
+        public BlockingCollection<Params> Calls = new BlockingCollection<Params>();
+        public EventDataKind? FilterKind = null;
+
+        public void Dispose() { }
+
+        public struct Params
+        {
+            public EventDataKind Kind;
+            public string Data;
+            public int EventCount;
+        }
+
+        public Task<EventSenderResult> SendEventDataAsync(EventDataKind kind, string data, int eventCount)
+        {
+            if (!FilterKind.HasValue || kind == FilterKind.Value)
+            {
+                Calls.Add(new Params { Kind = kind, Data = data, EventCount = eventCount });
+            }
+            return Task.FromResult(new EventSenderResult(DeliveryStatus.Succeeded, null));
+        }
+
+        public Params RequirePayload()
+        {
+            Params result;
+            if (!Calls.TryTake(out result, TimeSpan.FromSeconds(5)))
+            {
+                throw new System.Exception("did not receive an event payload");
+            }
+            return result;
+        }
+
+        public void RequireNoPayloadSent(TimeSpan timeout)
+        {
+            Params result;
+            if (Calls.TryTake(out result, timeout))
+            {
+                throw new System.Exception("received an unexpected event payload");
+            }
+        }
     }
 
     internal class MockFeatureFlagRequestor : IFeatureFlagRequestor

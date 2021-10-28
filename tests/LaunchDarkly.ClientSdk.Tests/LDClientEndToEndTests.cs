@@ -257,12 +257,13 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Theory]
-        [InlineData("", "/mobile/events/bulk")]
-        [InlineData("/basepath", "/basepath/mobile/events/bulk")]
-        [InlineData("/basepath/", "/basepath/mobile/events/bulk")]
+        [InlineData("", "/mobile/events/bulk", "/mobile/events/diagnostic")]
+        [InlineData("/basepath", "/basepath/mobile/events/bulk", "/basepath/mobile/events/diagnostic")]
+        [InlineData("/basepath/", "/basepath/mobile/events/bulk", "/basepath/mobile/events/diagnostic")]
         public void EventsAreSentToCorrectEndpointAsync(
             string baseUriExtraPath,
-            string expectedPath
+            string expectedAnalyticsPath,
+            string expectedDiagnosticsPath
             )
         {
             using (var server = HttpServer.Start(Handlers.Status(202)))
@@ -276,11 +277,23 @@ namespace LaunchDarkly.Sdk.Client
                 using (var client = TestUtil.CreateClient(config, _user))
                 {
                     client.Flush();
-                    var req = server.Recorder.RequireRequest(TimeSpan.FromSeconds(5));
+                    var req1 = server.Recorder.RequireRequest(TimeSpan.FromSeconds(5));
+                    var req2 = server.Recorder.RequireRequest(TimeSpan.FromSeconds(5));
 
-                    Assert.Equal("POST", req.Method);
-                    Assert.Equal(expectedPath, req.Path);
-                    Assert.Equal(LdValueType.Array, LdValue.Parse(req.Body).Type);
+                    if (req1.Path.EndsWith("diagnostic"))
+                    {
+                        var temp = req1;
+                        req1 = req2;
+                        req2 = temp;
+                    }
+
+                    Assert.Equal("POST", req1.Method);
+                    Assert.Equal(expectedAnalyticsPath, req1.Path);
+                    Assert.Equal(LdValueType.Array, LdValue.Parse(req1.Body).Type);
+
+                    Assert.Equal("POST", req2.Method);
+                    Assert.Equal(expectedDiagnosticsPath, req2.Path);
+                    Assert.Equal(LdValueType.Object, LdValue.Parse(req2.Body).Type);
                 }
             }
         }

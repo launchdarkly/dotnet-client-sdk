@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
+
+using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
 
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
@@ -26,12 +29,17 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     ///         .Build();
     /// </code>
     /// </example>
-    public sealed class EventProcessorBuilder : IEventProcessorFactory
+    public sealed class EventProcessorBuilder : IEventProcessorFactory, IDiagnosticDescription
     {
         /// <summary>
         /// The default value for <see cref="Capacity(int)"/>.
         /// </summary>
         public const int DefaultCapacity = 100;
+
+        /// <summary>
+        /// The default value for <see cref="DiagnosticRecordingInterval(TimeSpan)"/>.
+        /// </summary>
+        public static readonly TimeSpan DefaultDiagnosticRecordingInterval = TimeSpan.FromMinutes(15);
 
         /// <summary>
         /// The default value for <see cref="FlushInterval(TimeSpan)"/>.
@@ -48,8 +56,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             TimeSpan.FromSeconds(30);
 #endif
 
+        /// <summary>
+        /// The minimum value for <see cref="DiagnosticRecordingInterval(TimeSpan)"/>: 5 minutes.
+        /// </summary>
+        public static readonly TimeSpan MinimumDiagnosticRecordingInterval = TimeSpan.FromMinutes(5);
+
         internal bool _allAttributesPrivate = false;
         internal int _capacity = DefaultCapacity;
+        internal TimeSpan _diagnosticRecordingInterval = DefaultDiagnosticRecordingInterval;
         internal TimeSpan _flushInterval = DefaultFlushInterval;
         internal bool _inlineUsersInEvents = false;
         internal HashSet<UserAttribute> _privateAttributes = new HashSet<UserAttribute>();
@@ -89,6 +103,31 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public EventProcessorBuilder Capacity(int capacity)
         {
             _capacity = (capacity <= 0) ? DefaultCapacity : capacity;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the interval at which periodic diagnostic data is sent.
+        /// </summary>
+        /// <remarks>
+        /// The default value is <see cref="DefaultDiagnosticRecordingInterval"/>; the minimum value is
+        /// <see cref="MinimumDiagnosticRecordingInterval"/>. This property is ignored if
+        /// <see cref="ConfigurationBuilder.DiagnosticOptOut(bool)"/> is set to <see langword="true"/>.
+        /// </remarks>
+        /// <param name="diagnosticRecordingInterval">the diagnostics interval</param>
+        /// <returns>the builder</returns>
+        public EventProcessorBuilder DiagnosticRecordingInterval(TimeSpan diagnosticRecordingInterval)
+        {
+            _diagnosticRecordingInterval =
+                diagnosticRecordingInterval < MinimumDiagnosticRecordingInterval ?
+                MinimumDiagnosticRecordingInterval : diagnosticRecordingInterval;
+            return this;
+        }
+
+        // Used only in testing
+        internal EventProcessorBuilder DiagnosticRecordingIntervalNoMinimum(TimeSpan diagnosticRecordingInterval)
+        {
+            _diagnosticRecordingInterval = diagnosticRecordingInterval;
             return this;
         }
 
@@ -186,23 +225,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <inheritdoc/>
         public IEventProcessor CreateEventProcessor(LdClientContext context)
         {
-            var baseUri = ServiceEndpointsBuilder.SelectBaseUri(
-                context.ServiceEndpoints.EventsBaseUri,
-                StandardEndpoints.DefaultEventsBaseUri,
-                "Events",
-                context.BaseLogger
-                );
-            var eventsConfig = new EventsConfiguration
-            {
-                AllAttributesPrivate = _allAttributesPrivate,
-                EventCapacity = _capacity,
-                EventFlushInterval = _flushInterval,
-                EventsUri = baseUri.AddPath(StandardEndpoints.AnalyticsEventsPostRequestPath),
-                //DiagnosticUri = uri.AddPath("diagnostic"), // no diagnostic events yet
-                InlineUsersInEvents = _inlineUsersInEvents,
-                PrivateAttributeNames = _privateAttributes.ToImmutableHashSet(),
-                RetryInterval = TimeSpan.FromSeconds(1)
-            };
+            var eventsConfig = MakeEventsConfiguration(context, true);
             var logger = context.BaseLogger.SubLogger(LogNames.EventsSubLog);
             var eventSender = _eventSender ??
                 new DefaultEventSender(
@@ -215,11 +238,41 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                     eventsConfig,
                     eventSender,
                     null, // no user deduplicator, because the client-side SDK doesn't send index events
-                    null, // diagnostic store would go here, but we haven't implemented diagnostic events
-                    null,
+                    context.DiagnosticStore,
+                    context.DiagnosticDisabler,
                     logger,
                     null
                     ));
+        }
+
+        /// <inheritdoc/>
+        public LdValue DescribeConfiguration(LdClientContext context) =>
+            LdValue.BuildObject().WithEventProperties(
+                MakeEventsConfiguration(context, false),
+                StandardEndpoints.IsCustomUri(context.ServiceEndpoints, e => e.EventsBaseUri)
+                )
+                .Build();
+
+        private EventsConfiguration MakeEventsConfiguration(LdClientContext context, bool logConfigErrors)
+        {
+            var baseUri = StandardEndpoints.SelectBaseUri(
+                context.ServiceEndpoints,
+                e => e.EventsBaseUri,
+                "Events",
+                logConfigErrors ? context.BaseLogger : Logs.None.Logger("")
+                );
+            return new EventsConfiguration
+            {
+                AllAttributesPrivate = _allAttributesPrivate,
+                EventCapacity = _capacity,
+                EventFlushInterval = _flushInterval,
+                EventsUri = baseUri.AddPath(StandardEndpoints.AnalyticsEventsPostRequestPath),
+                DiagnosticRecordingInterval = _diagnosticRecordingInterval,
+                DiagnosticUri = baseUri.AddPath(StandardEndpoints.DiagnosticEventsPostRequestPath),
+                InlineUsersInEvents = _inlineUsersInEvents,
+                PrivateAttributeNames = _privateAttributes.ToImmutableHashSet(),
+                RetryInterval = TimeSpan.FromSeconds(1)
+            };
         }
     }
 }

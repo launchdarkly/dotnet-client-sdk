@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using LaunchDarkly.Sdk.Client.Integrations;
+using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Internal.Http;
 using LaunchDarkly.Sdk.Json;
 using Xunit;
@@ -41,7 +42,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             baseUri = new Uri("http://example");
         }
 
-        private StreamingDataSource MakeStartedStreamingDataSource()
+        private StreamingDataSource MakeStartedStreamingDataSource(IDiagnosticStore diagnosticStore = null)
         {
             var dataSource = new StreamingDataSource(
                 _updateSink,
@@ -52,6 +53,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 mockRequestor,
                 TestUtil.SimpleContext.Http,
                 testLogger,
+                diagnosticStore,
                 eventSourceFactory.Create()
                 );
             dataSource.Start();
@@ -111,6 +113,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 mockRequestor,
                 httpConfig,
                 testLogger,
+                null,
                 eventSourceFactory.Create()
                 ))
             {
@@ -187,6 +190,32 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             Assert.Equal(15, intFlagValue);
         }
 
+        [Fact]
+        public void StreamInitDiagnosticRecordedOnOpen()
+        {
+            var mockDiagnosticStore = new MockDiagnosticStore();
+            using (var sp = MakeStartedStreamingDataSource(mockDiagnosticStore))
+            {
+                mockEventSource.RaiseOpened(new StateChangedEventArgs(ReadyState.Open));
+
+                var streamInit = mockDiagnosticStore.StreamInits.ExpectValue();
+                Assert.False(streamInit.Failed);
+            }
+        }
+
+        [Fact]
+        public void StreamInitDiagnosticRecordedOnError()
+        {
+            var mockDiagnosticStore = new MockDiagnosticStore();
+            using (var sp = MakeStartedStreamingDataSource(mockDiagnosticStore))
+            {
+                mockEventSource.RaiseError(new ExceptionEventArgs(new EventSourceServiceUnsuccessfulResponseException(400)));
+
+                var streamInit = mockDiagnosticStore.StreamInits.ExpectValue();
+                Assert.True(streamInit.Failed);
+            }
+        }
+
         string UpdatedFlag()
         {
             var updatedFlagAsJson = "{\"key\":\"int-flag\",\"version\":999,\"flagVersion\":192,\"value\":99,\"variation\":0,\"trackEvents\":false}";
@@ -256,9 +285,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         public void Restart(bool withDelay) { }
 
-        public void RaiseMessageRcvd(MessageReceivedEventArgs eventArgs)
-        {
-            MessageReceived(null, eventArgs);
-        }
+        public void RaiseError(ExceptionEventArgs e) => Error(null, e);
+
+        public void RaiseMessageRcvd(MessageReceivedEventArgs e) => MessageReceived(null, e);
+
+        public void RaiseOpened(StateChangedEventArgs e) => Opened(null, e);
     }
 }

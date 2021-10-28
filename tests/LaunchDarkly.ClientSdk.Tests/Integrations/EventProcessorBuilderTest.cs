@@ -22,6 +22,16 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         [Fact]
+        public void DiagnosticRecordingInterval()
+        {
+            var prop = _tester.Property(b => b._diagnosticRecordingInterval, (b, v) => b.DiagnosticRecordingInterval(v));
+            prop.AssertDefault(EventProcessorBuilder.DefaultDiagnosticRecordingInterval);
+            prop.AssertCanSet(TimeSpan.FromMinutes(7));
+            prop.AssertSetIsChangedTo(TimeSpan.FromMinutes(4), EventProcessorBuilder.MinimumDiagnosticRecordingInterval);
+            prop.AssertSetIsChangedTo(TimeSpan.FromMilliseconds(-1), EventProcessorBuilder.MinimumDiagnosticRecordingInterval);
+        }
+
+        [Fact]
         public void EventCapacity()
         {
             var prop = _tester.Property(b => b._capacity, (b, v) => b.Capacity(v));

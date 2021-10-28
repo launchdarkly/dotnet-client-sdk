@@ -3,6 +3,8 @@ using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataSources;
 
+using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
+
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
     /// <summary>
@@ -32,7 +34,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     ///         .Build();
     /// </code>
     /// </example>
-    public sealed class PollingDataSourceBuilder : IDataSourceFactory
+    public sealed class PollingDataSourceBuilder : IDataSourceFactory, IDiagnosticDescription
     {
         /// <summary>
         /// The default value for <see cref="PollInterval(TimeSpan)"/>: 5 minutes.
@@ -95,9 +97,9 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             {
                 context.BaseLogger.Warn("You should only disable the streaming API if instructed to do so by LaunchDarkly support");
             }
-            var baseUri = ServiceEndpointsBuilder.SelectBaseUri(
-                context.ServiceEndpoints.PollingBaseUri,
-                StandardEndpoints.DefaultPollingBaseUri,
+            var baseUri = StandardEndpoints.SelectBaseUri(
+                context.ServiceEndpoints,
+                e => e.PollingBaseUri,
                 "Polling",
                 context.BaseLogger
                 );
@@ -121,5 +123,15 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 logger
                 );
         }
+
+        /// <inheritdoc/>
+        public LdValue DescribeConfiguration(LdClientContext context) =>
+            LdValue.BuildObject()
+                .WithPollingProperties(
+                    StandardEndpoints.IsCustomUri(context.ServiceEndpoints, e => e.PollingBaseUri),
+                    _pollInterval
+                )
+                .Add("backgroundPollingIntervalMillis", _backgroundPollInterval.TotalMilliseconds)
+                .Build();
     }
 }

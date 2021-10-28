@@ -36,6 +36,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly IDataSourceStatusProvider _dataSourceStatusProvider;
         readonly IDataSourceUpdateSink _dataSourceUpdateSink;
         readonly IDataStore _dataStore;
+        readonly DiagnosticDisablerImpl _diagnosticDisabler;
         readonly ConnectionManager _connectionManager;
         readonly IBackgroundModeManager _backgroundModeManager;
         readonly IDeviceInfo deviceInfo;
@@ -120,7 +121,7 @@ namespace LaunchDarkly.Sdk.Client
         // without using WithConfigAnduser(config, user)
         LdClient() { }
 
-        LdClient(Configuration configuration, User user)
+        LdClient(Configuration configuration, User user, TimeSpan startWaitTime)
         {
             if (user == null)
             {
@@ -128,10 +129,15 @@ namespace LaunchDarkly.Sdk.Client
             }
 
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            var diagnosticStore = _config.DiagnosticOptOut ? null :
+                new ClientDiagnosticStore(_config, startWaitTime);
+            _diagnosticDisabler = _config.DiagnosticOptOut ? null :
+                new DiagnosticDisablerImpl();
 
-            _context = new LdClientContext(configuration, this);
+            _context = new LdClientContext(configuration, this, diagnosticStore, _diagnosticDisabler);
             _log = _context.BaseLogger;
             _taskExecutor = _context.TaskExecutor;
+            diagnosticStore?.SetContext(_context);
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
@@ -309,7 +315,7 @@ namespace LaunchDarkly.Sdk.Client
                 throw new ArgumentOutOfRangeException(nameof(maxWaitTime));
             }
 
-            var c = CreateInstance(config, user);
+            var c = CreateInstance(config, user, maxWaitTime);
             c.Start(maxWaitTime);
             return c;
         }
@@ -330,12 +336,12 @@ namespace LaunchDarkly.Sdk.Client
         /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         public static async Task<LdClient> InitAsync(Configuration config, User user)
         {
-            var c = CreateInstance(config, user);
+            var c = CreateInstance(config, user, TimeSpan.Zero);
             await c.StartAsync();
             return c;
         }
 
-        static LdClient CreateInstance(Configuration configuration, User user)
+        static LdClient CreateInstance(Configuration configuration, User user, TimeSpan maxWaitTime)
         {
             lock (_createInstanceLock)
             {
@@ -344,7 +350,7 @@ namespace LaunchDarkly.Sdk.Client
                     throw new Exception("LdClient instance already exists.");
                 }
 
-                var c = new LdClient(configuration, user);
+                var c = new LdClient(configuration, user, maxWaitTime);
                 _instance = c;
                 return c;
             }
@@ -709,6 +715,7 @@ namespace LaunchDarkly.Sdk.Client
                 return;
             }
             _log.Debug("Background mode is changing to {0}", goingIntoBackground);
+            _diagnosticDisabler?.SetDisabled(goingIntoBackground);
             if (goingIntoBackground)
             {
                 if (!Config.EnableBackgroundUpdating)

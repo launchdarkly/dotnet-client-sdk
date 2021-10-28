@@ -53,6 +53,11 @@ namespace LaunchDarkly.Sdk.Client
         public IDataSourceFactory DataSourceFactory { get; }
 
         /// <summary>
+        /// True if diagnostic events have been disabled.
+        /// </summary>
+        public bool DiagnosticOptOut { get; }
+
+        /// <summary>
         /// Whether to enable feature flag updates when the application is running in the background.
         /// </summary>
         /// <remarks>
@@ -164,6 +169,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             AutoAliasingOptOut = builder._autoAliasingOptOut;
             DataSourceFactory = builder._dataSourceFactory;
+            DiagnosticOptOut = builder._diagnosticOptOut;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
             EvaluationReasons = builder._evaluationReasons;
             EventProcessorFactory = builder._eventProcessorFactory;

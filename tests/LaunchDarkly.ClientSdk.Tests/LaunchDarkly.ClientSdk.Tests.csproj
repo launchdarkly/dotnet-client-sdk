@@ -16,8 +16,12 @@
     <None Remove="circle.yml" />
     <None Remove="junit.xml" />
     <None Remove="FeatureFlagsFromServiceUpdatedValues.json" />
+    <None Remove="Internal\Events\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LaunchDarkly.ClientSdk\LaunchDarkly.ClientSdk.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Internal\Events\" />
   </ItemGroup>
 </Project>

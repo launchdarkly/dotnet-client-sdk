@@ -3,6 +3,8 @@ using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataSources;
 
+using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
+
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
     /// <summary>
@@ -28,7 +30,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     ///         .Build();
     /// </code>
     /// </example>
-    public sealed class StreamingDataSourceBuilder : IDataSourceFactory
+    public sealed class StreamingDataSourceBuilder : IDataSourceFactory, IDiagnosticDescription
     {
         /// <summary>
         /// The default value for <see cref="InitialReconnectDelay(TimeSpan)"/>: 1000 milliseconds.
@@ -98,15 +100,15 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             bool inBackground
             )
         {
-            var baseUri = ServiceEndpointsBuilder.SelectBaseUri(
-                context.ServiceEndpoints.StreamingBaseUri,
-                StandardEndpoints.DefaultStreamingBaseUri,
+            var baseUri = StandardEndpoints.SelectBaseUri(
+                context.ServiceEndpoints,
+                e => e.StreamingBaseUri,
                 "Streaming",
                 context.BaseLogger
                 );
-            var pollingBaseUri = ServiceEndpointsBuilder.SelectBaseUri(
-                context.ServiceEndpoints.PollingBaseUri,
-                StandardEndpoints.DefaultPollingBaseUri,
+            var pollingBaseUri = StandardEndpoints.SelectBaseUri(
+                context.ServiceEndpoints,
+                e => e.PollingBaseUri,
                 "Polling",
                 context.BaseLogger
                 );
@@ -137,8 +139,20 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 requestor,
                 context.Http,
                 logger,
+                context.DiagnosticStore,
                 _eventSourceCreator
                 );
         }
+
+        /// <inheritdoc/>
+        public LdValue DescribeConfiguration(LdClientContext context) =>
+            LdValue.BuildObject()
+                .WithStreamingProperties(
+                    StandardEndpoints.IsCustomUri(context.ServiceEndpoints, e => e.PollingBaseUri),
+                    StandardEndpoints.IsCustomUri(context.ServiceEndpoints, e => e.StreamingBaseUri),
+                    _initialReconnectDelay
+                )
+                .Add("backgroundPollingIntervalMillis", _backgroundPollInterval.TotalMilliseconds)
+                .Build();
     }
 }

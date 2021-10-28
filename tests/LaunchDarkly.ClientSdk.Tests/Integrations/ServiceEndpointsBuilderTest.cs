@@ -10,9 +10,9 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public void UsesAllDefaultUrisIfNoneAreOverridden()
         {
             var se = Components.ServiceEndpoints().Build();
-            Assert.Equal(StandardEndpoints.DefaultEventsBaseUri, se.EventsBaseUri);
-            Assert.Equal(StandardEndpoints.DefaultPollingBaseUri, se.PollingBaseUri);
-            Assert.Equal(StandardEndpoints.DefaultStreamingBaseUri, se.StreamingBaseUri);
+            Assert.Equal(StandardEndpoints.BaseUris.EventsBaseUri, se.EventsBaseUri);
+            Assert.Equal(StandardEndpoints.BaseUris.PollingBaseUri, se.PollingBaseUri);
+            Assert.Equal(StandardEndpoints.BaseUris.StreamingBaseUri, se.StreamingBaseUri);
         }
 
         [Fact]

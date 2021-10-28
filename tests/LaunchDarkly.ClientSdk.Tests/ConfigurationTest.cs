@@ -48,6 +48,14 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
+        public void DiagnosticOptOut()
+        {
+            var prop = _tester.Property(c => c.DiagnosticOptOut, (b, v) => b.DiagnosticOptOut(v));
+            prop.AssertDefault(false);
+            prop.AssertCanSet(true);
+        }
+
+        [Fact]
         public void EnableBackgroundUpdating()
         {
             var prop = _tester.Property(c => c.EnableBackgroundUpdating, (b, v) => b.EnableBackgroundUpdating(v));

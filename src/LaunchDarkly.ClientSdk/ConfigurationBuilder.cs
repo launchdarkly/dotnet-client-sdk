@@ -35,6 +35,7 @@ namespace LaunchDarkly.Sdk.Client
 
         internal bool _autoAliasingOptOut = false;
         internal IDataSourceFactory _dataSourceFactory = null;
+        internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
         internal IEventProcessorFactory _eventProcessorFactory = null;
@@ -59,6 +60,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             _autoAliasingOptOut = copyFrom.AutoAliasingOptOut;
             _dataSourceFactory = copyFrom.DataSourceFactory;
+            _diagnosticOptOut = copyFrom.DiagnosticOptOut;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
             _evaluationReasons = copyFrom.EvaluationReasons;
             _eventProcessorFactory = copyFrom.EventProcessorFactory;
@@ -125,6 +127,25 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder DataSource(IDataSourceFactory dataSourceFactory)
         {
             _dataSourceFactory = dataSourceFactory;
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies whether true to opt out of sending diagnostic events.
+        /// </summary>
+        /// <remarks>
+        /// Unless this is set to <see langword="true"/>, the client will send some
+        /// diagnostics data to the LaunchDarkly servers in order to assist in the development
+        /// of future SDK improvements. These diagnostics consist of an initial payload
+        /// containing some details of SDK in use, the SDK's configuration, and the platform the
+        /// SDK is being run on, as well as payloads sent periodically with information on
+        /// irregular occurrences such as dropped events.
+        /// </remarks>
+        /// <param name="diagnosticOptOut"><see langword="true"/> to disable diagnostic events</param>
+        /// <returns>the same builder</returns>
+        public ConfigurationBuilder DiagnosticOptOut(bool diagnosticOptOut)
+        {
+            _diagnosticOptOut = diagnosticOptOut;
             return this;
         }
 

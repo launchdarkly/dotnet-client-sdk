@@ -6,6 +6,8 @@ using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 using LaunchDarkly.Sdk.Client.Interfaces;
 
+using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
+
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
     /// <summary>
@@ -28,7 +30,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// </code>
     /// </example>
     /// </remarks>
-    public sealed class HttpConfigurationBuilder
+    public sealed class HttpConfigurationBuilder : IDiagnosticDescription
     {
         /// <summary>
         /// The default value for <see cref="ConnectTimeout(TimeSpan)"/>: 10 seconds.
@@ -263,7 +265,22 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </summary>
         /// <param name="basicConfiguration">provides the basic SDK configuration properties</param>
         /// <returns>an <see cref="HttpConfiguration"/></returns>
-        public HttpConfiguration CreateHttpConfiguration(BasicConfiguration basicConfiguration)
+        public HttpConfiguration CreateHttpConfiguration(BasicConfiguration basicConfiguration) =>
+            new HttpConfiguration(
+                MakeHttpProperties(basicConfiguration),
+                _messageHandler,
+                _responseStartTimeout,
+                _useReport
+                );
+
+        /// <inheritdoc/>
+        public LdValue DescribeConfiguration(LdClientContext context) =>
+            LdValue.BuildObject()
+                .WithHttpProperties(MakeHttpProperties(context.Basic))
+                .Add("useReport", _useReport)
+                .Build();
+
+        private HttpProperties MakeHttpProperties(BasicConfiguration basic)
         {
             Func<HttpProperties, HttpMessageHandler> handlerFn;
             if (_messageHandler is null)
@@ -274,9 +291,9 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             {
                 handlerFn = p => _messageHandler;
             }
-            
+
             var httpProperties = HttpProperties.Default
-                .WithAuthorizationKey(basicConfiguration.MobileKey)
+                .WithAuthorizationKey(basic.MobileKey)
                 .WithConnectTimeout(_connectTimeout)
                 .WithHttpMessageHandlerFactory(handlerFn)
                 .WithProxy(_proxy)
@@ -288,13 +305,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             {
                 httpProperties = httpProperties.WithHeader(kv.Key, kv.Value);
             }
-
-            return new HttpConfiguration(
-                httpProperties,
-                _messageHandler,
-                _responseStartTimeout,
-                _useReport
-                );
+            return httpProperties;
         }
     }
 }

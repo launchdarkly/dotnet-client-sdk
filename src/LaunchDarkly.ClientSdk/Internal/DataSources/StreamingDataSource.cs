@@ -6,7 +6,9 @@ using LaunchDarkly.EventSource;
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Internal.Http;
 
@@ -32,12 +34,15 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly TimeSpan _initialReconnectDelay;
         private readonly IFeatureFlagRequestor _requestor;
         private readonly HttpProperties _httpProperties;
+        private readonly IDiagnosticStore _diagnosticStore;
         private readonly EventSourceCreator _eventSourceCreator;
         private readonly TaskCompletionSource<bool> _initTask;
         private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
         private readonly Logger _log;
 
         private volatile IEventSource _eventSource;
+
+        internal DateTime _esStarted; // exposed for testing
 
         internal delegate IEventSource EventSourceCreator(
             HttpProperties httpProperties,
@@ -55,6 +60,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             IFeatureFlagRequestor requestor,
             HttpConfiguration httpConfig,
             Logger log,
+            IDiagnosticStore diagnosticStore,
             EventSourceCreator eventSourceCreator // used only in tests
             )
         {
@@ -66,6 +72,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             this._initialReconnectDelay = initialReconnectDelay;
             this._requestor = requestor;
             this._httpProperties = httpConfig.HttpProperties;
+            this._diagnosticStore = diagnosticStore;
             this._initTask = new TaskCompletionSource<bool>();
             this._log = log;
             this._eventSourceCreator = eventSourceCreator ?? CreateEventSource;
@@ -99,6 +106,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _eventSource.Error += OnError;
             _eventSource.Opened += OnOpen;
 
+            _esStarted = DateTime.Now;
+
             _ = Task.Run(() => _eventSource.StartAsync());
             return _initTask.Task;
         }
@@ -127,9 +136,20 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             return _withReasons ? uri.AddQuery("withReasons=true") : uri;
         }
 
+        private void RecordStreamInit(bool failed)
+        {
+            if (_diagnosticStore != null)
+            {
+                DateTime now = DateTime.Now;
+                _diagnosticStore.AddStreamInit(_esStarted, now - _esStarted, failed);
+                _esStarted = now;
+            }
+        }
+
         private void OnOpen(object sender, EventSource.StateChangedEventArgs e)
         {
             _log.Debug("EventSource Opened");
+            RecordStreamInit(false);
         }
 
         private void OnMessage(object sender, EventSource.MessageReceivedEventArgs e)
@@ -164,6 +184,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var ex = e.Exception;
             var recoverable = true;
             DataSourceStatus.ErrorInfo errorInfo;
+
+            RecordStreamInit(true);
 
             if (ex is EventSourceServiceUnsuccessfulResponseException respEx)
             {

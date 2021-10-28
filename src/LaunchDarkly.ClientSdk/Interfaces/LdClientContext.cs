@@ -1,6 +1,7 @@
 ﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Events;
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
@@ -8,10 +9,16 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     /// Encapsulates SDK client context when creating components.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Factory interfaces like <see cref="IDataSourceFactory"/> receive this class as a parameter.
     /// Its public properties provide information about the SDK configuration and environment. The SDK
     /// may also include non-public properties that are relevant only when creating one of the built-in
     /// component types and are not accessible to custom components.
+    /// </para>
+    /// <para>
+    /// Some properties are in <see cref="BasicConfiguration"/> instead because they are required in
+    /// situations where the <see cref="LdClientContext"/> has not been fully constructed yet.
+    /// </para>
     /// </remarks>
     public sealed class LdClientContext
     {
@@ -41,9 +48,13 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         public HttpConfiguration Http { get; }
 
         /// <summary>
-        /// Defines the base service URIs used by SDK components.
+        /// The configured service base URIs.
         /// </summary>
         public ServiceEndpoints ServiceEndpoints { get; }
+
+        internal IDiagnosticDisabler DiagnosticDisabler { get; }
+
+        internal IDiagnosticStore DiagnosticStore { get; }
 
         internal TaskExecutor TaskExecutor { get; }
 
@@ -53,11 +64,13 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <param name="configuration">the SDK configuration</param>
         public LdClientContext(
             Configuration configuration
-            ) : this(configuration, null) { }
+            ) : this(configuration, null, null, null) { }
 
         internal LdClientContext(
             Configuration configuration,
-            object eventSender
+            object eventSender,
+            IDiagnosticStore diagnosticStore,
+            IDiagnosticDisabler diagnosticDisabler
             )
         {
             this.Basic = new BasicConfiguration(configuration.MobileKey);
@@ -71,9 +84,10 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             this.EvaluationReasons = configuration.EvaluationReasons;
             this.Http = (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
                 .CreateHttpConfiguration(this.Basic);
-
             this.ServiceEndpoints = configuration.ServiceEndpoints;
 
+            this.DiagnosticStore = diagnosticStore;
+            this.DiagnosticDisabler = diagnosticDisabler;
             this.TaskExecutor = new TaskExecutor(
                 eventSender,
                 PlatformSpecific.AsyncScheduler.ScheduleAction,

@@ -35,7 +35,7 @@ namespace LaunchDarkly.Sdk.Client
                 BasicUser))
             {
                 var req = _stubHandler.Requests.ExpectValue();
-                Assert.Equal(StandardEndpoints.DefaultStreamingBaseUri, BaseUriOf(req.RequestUri));
+                Assert.Equal(StandardEndpoints.BaseUris.StreamingBaseUri, BaseUriOf(req.RequestUri));
             }
         }
 
@@ -50,7 +50,7 @@ namespace LaunchDarkly.Sdk.Client
                 BasicUser))
             {
                 var req = _stubHandler.Requests.ExpectValue();
-                Assert.Equal(StandardEndpoints.DefaultPollingBaseUri, BaseUriOf(req.RequestUri));
+                Assert.Equal(StandardEndpoints.BaseUris.PollingBaseUri, BaseUriOf(req.RequestUri));
             }
         }
 
@@ -65,7 +65,7 @@ namespace LaunchDarkly.Sdk.Client
                 BasicUser))
             {
                 var req = _stubHandler.Requests.ExpectValue();
-                Assert.Equal(StandardEndpoints.DefaultEventsBaseUri, BaseUriOf(req.RequestUri));
+                Assert.Equal(StandardEndpoints.BaseUris.EventsBaseUri, BaseUriOf(req.RequestUri));
             }
         }
 
