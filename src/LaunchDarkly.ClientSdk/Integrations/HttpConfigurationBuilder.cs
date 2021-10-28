@@ -285,7 +285,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             Func<HttpProperties, HttpMessageHandler> handlerFn;
             if (_messageHandler is null)
             {
-                handlerFn = p => PlatformSpecific.Http.CreateHttpMessageHandler(p.ConnectTimeout, p.ReadTimeout);
+                handlerFn = PlatformSpecific.Http.GetHttpMessageHandlerFactory(_connectTimeout, _readTimeout, _proxy);
             }
             else
             {

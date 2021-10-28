@@ -5,7 +5,7 @@
     <RootNamespace>LaunchDarkly.Sdk.Client</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.1.0" />
+    <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
   </ItemGroup>

@@ -121,7 +121,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             var configBuilder = EventSource.Configuration.Builder(uri)
                 .Method(method)
-                .HttpMessageHandler(httpProperties.HttpMessageHandlerFactory(httpProperties))
+                .HttpMessageHandler(httpProperties.NewHttpMessageHandler())
                 .ResponseStartTimeout(httpProperties.ConnectTimeout)
                 .InitialRetryDelay(_initialReconnectDelay)
                 .ReadTimeout(LaunchDarklyStreamReadTimeout)

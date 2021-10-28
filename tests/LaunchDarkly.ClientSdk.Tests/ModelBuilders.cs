@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using LaunchDarkly.Sdk.Client.Internal;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
 using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
@@ -93,6 +94,8 @@ namespace LaunchDarkly.Sdk.Client
     {
         private List<KeyValuePair<string, ItemDescriptor>> _items = new List<KeyValuePair<string, ItemDescriptor>>();
 
+        public static FullDataSet Empty => new DataSetBuilder().Build();
+
         public DataSetBuilder Add(string key, FeatureFlag flag)
         {
             _items.Add(new KeyValuePair<string, ItemDescriptor>(key, flag.ToItemDescriptor()));
@@ -109,5 +112,11 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         public FullDataSet Build() => new FullDataSet(_items);
+    }
+
+    public static class DataSetExtensions
+    {
+        public static string ToJsonString(this FullDataSet data) =>
+            DataModelSerialization.SerializeAll(data);
     }
 }

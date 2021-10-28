@@ -10,6 +10,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.MockResponses;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -474,26 +475,69 @@ namespace LaunchDarkly.Sdk.Client
             }
         }
 
-        [Theory]
-        [MemberData(nameof(PollingAndStreaming))]
-        public void DateLikeStringValueIsStillParsedAsString(UpdateMode mode)
+        [Fact]
+        public void HttpConfigurationIsAppliedToStreaming()
         {
-            // Newtonsoft.Json's default behavior is to transform ISO date/time strings into DateTime objects. We
-            // definitely don't want that. Verify that we're disabling that behavior when we parse flags.
-            const string dateLikeString1 = "1970-01-01T00:00:01.001Z";
-            const string dateLikeString2 = "1970-01-01T00:00:01Z";
-            var flagData = new DataSetBuilder()
-                .Add("flag1", 1, LdValue.Of(dateLikeString1), 0)
-                .Add("flag2", 1, LdValue.Of(dateLikeString2), 0)
-                .Build();
-            using (var server = HttpServer.Start(SetupResponse(flagData, mode)))
-            {
-                var config = BaseConfig(server.Uri, mode);
-                using (var client = TestUtil.CreateClient(config, _user))
+            TestHttpUtils.TestWithSpecialHttpConfigurations(
+                StreamWithInitialData(_flagData1),
+                (targetUri, httpConfig, server) =>
                 {
-                    VerifyFlagValues(client, flagData);
-                }
-            }
+                    var config = BasicConfig()
+                        .DataSource(Components.StreamingDataSource())
+                        .Http(httpConfig)
+                        .ServiceEndpoints(Components.ServiceEndpoints().Streaming(targetUri))
+                        .Build();
+                    using (var client = TestUtil.CreateClient(config, BasicUser))
+                    {
+                        VerifyFlagValues(client, _flagData1);
+                    }
+                },
+                testLogger
+                );
+        }
+
+        [Fact]
+        public void HttpConfigurationIsAppliedToPolling()
+        {
+            TestHttpUtils.TestWithSpecialHttpConfigurations(
+                PollingResponse(_flagData1),
+                (targetUri, httpConfig, server) =>
+                {
+                    var config = BasicConfig()
+                        .DataSource(Components.PollingDataSource())
+                        .Http(httpConfig)
+                        .ServiceEndpoints(Components.ServiceEndpoints().Polling(targetUri))
+                        .Build();
+                    using (var client = TestUtil.CreateClient(config, BasicUser))
+                    {
+                        VerifyFlagValues(client, _flagData1);
+                    }
+                },
+                testLogger
+                );
+        }
+
+        [Fact]
+        public void HttpConfigurationIsAppliedToEvents()
+        {
+            TestHttpUtils.TestWithSpecialHttpConfigurations(
+                EventsAcceptedResponse,
+                (targetUri, httpConfig, server) =>
+                {
+                    var config = BasicConfig()
+                        .DiagnosticOptOut(true)
+                        .Events(Components.SendEvents())
+                        .Http(httpConfig)
+                        .ServiceEndpoints(Components.ServiceEndpoints().Events(targetUri))
+                        .Build();
+                    using (var client = TestUtil.CreateClient(config, BasicUser))
+                    {
+                        client.Flush();
+                        server.Recorder.RequireRequest();
+                    }
+                },
+                testLogger
+                );
         }
 
         private Configuration BaseConfig(Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
@@ -526,10 +570,8 @@ namespace LaunchDarkly.Sdk.Client
 
         private Handler SetupResponse(FullDataSet data, UpdateMode mode) =>
             mode.IsStreaming
-                ? Handlers.SSE.Start()
-                    .Then(Handlers.SSE.Event("put", PollingData(data)))
-                    .Then(Handlers.SSE.LeaveOpen())
-                : Handlers.BodyJson(PollingData(data));
+                ? StreamWithInitialData(data)
+                : PollingResponse(data);
 
         private RequestInfo VerifyRequest(RequestRecorder recorder, UpdateMode mode)
         {
@@ -566,9 +608,6 @@ namespace LaunchDarkly.Sdk.Client
                 Assert.Equal(LdValue.Null, client.JsonVariation(e.Key, LdValue.Null));
             }
         }
-
-        private static string PollingData(FullDataSet flags) =>
-            TestUtil.MakeJsonData(flags);
     }
 
     public class UpdateMode

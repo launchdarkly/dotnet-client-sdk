@@ -1,16 +1,23 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
+using LaunchDarkly.Sdk.Internal.Http;
 using Xamarin.Android.Net;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class Http
     {
-        private static HttpMessageHandler PlatformCreateHttpMessageHandler(TimeSpan connectTimeout, TimeSpan readTimeout) =>
-            new AndroidClientHandler()
+        private static Func<HttpProperties, HttpMessageHandler> PlatformGetHttpMessageHandlerFactory(
+            TimeSpan connectTimeout,
+            TimeSpan readTimeout,
+            IWebProxy proxy
+            ) =>
+            p => new AndroidClientHandler()
             {
                 ConnectTimeout = connectTimeout,
-                ReadTimeout = readTimeout
+                ReadTimeout = readTimeout,
+                Proxy = proxy
             };
 
         private static Exception PlatformTranslateHttpException(Exception e)

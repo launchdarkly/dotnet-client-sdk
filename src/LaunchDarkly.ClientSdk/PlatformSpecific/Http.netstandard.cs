@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
+using LaunchDarkly.Sdk.Internal.Http;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class Http
     {
-        private static HttpMessageHandler PlatformCreateHttpMessageHandler(TimeSpan connectTimeout, TimeSpan readTimeout) =>
+        private static Func<HttpProperties, HttpMessageHandler> PlatformGetHttpMessageHandlerFactory(
+            TimeSpan connectTimeout, TimeSpan readTimeout, IWebProxy proxy) =>
             null;
-            // Setting the HttpClient's message handler to null means it will use the default .NET implementation,
-            // which already correctly implements timeouts based on the client configuration.
+            // Returning null means HttpProperties will use the default .NET implementation,
+            // which will take care of configuring the HTTP client with timeouts/proxies.
 
         private static Exception PlatformTranslateHttpException(Exception e) => e;
     }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
+using LaunchDarkly.Sdk.Internal.Http;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
@@ -7,15 +9,23 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     {
         /// <summary>
         /// If our default configuration should use a specific <see cref="HttpMessageHandler"/>
-        /// implementation, returns that implementation.
+        /// implementation, returns a factory for that implementation.
         /// </summary>
         /// <remarks>
-        /// The timeouts are passed in because the Xamarin Android implementation does not actually
-        /// look at the configured timeouts from HttpClient.
+        /// The return value is a factory, rather than having this method itself be the factory,
+        /// because of how our shared <c>HttpProperties</c> class is implemented: if you pass a
+        /// non-null MessageHandler factory function, then it assumes you will definitely be
+        /// returning a fully configured handler, so we would not be able to conditionally fall
+        /// back to the default .NET implementation without duplicating the proxy/timeout setup
+        /// logic here.
         /// </remarks>
-        /// <returns>an HTTP handler implementation or null</returns>
-        public static HttpMessageHandler CreateHttpMessageHandler(TimeSpan connectTimeout, TimeSpan readTimeout) =>
-            PlatformCreateHttpMessageHandler(connectTimeout, readTimeout);
+        /// <returns>an HTTP message handler factory or null</returns>
+        public static Func<HttpProperties, HttpMessageHandler> GetHttpMessageHandlerFactory(
+            TimeSpan connectTimeout,
+            TimeSpan readTimeout,
+            IWebProxy proxy
+            ) =>
+            PlatformGetHttpMessageHandlerFactory(connectTimeout, readTimeout, proxy);
 
         /// <summary>
         /// Converts any platform-specific exceptions that might be thrown by the platform-specific
