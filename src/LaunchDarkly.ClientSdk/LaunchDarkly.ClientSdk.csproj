@@ -2,11 +2,13 @@
 
   <PropertyGroup>
     <Version>2.0.0-alpha.1</Version>
-    <TargetFrameworks></TargetFrameworks>
-    <BaseTargetFrameworks>netstandard2.0;xamarin.ios10;monoandroid71;monoandroid80;monoandroid81</BaseTargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">$(BaseTargetFrameworks);net452</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' == '' ">$(BaseTargetFrameworks)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' and '$(LD_TARGET_FRAMEWORKS)' != '' ">$(LD_TARGET_FRAMEWORKS)</TargetFrameworks>
+    <!-- The BUILDFRAMEWORKS variable allows us to override the target frameworks in
+         a situation where we need to build only the .NET Standard target and do not
+         want to even mention the Android/iOS targets, because we're in an environment
+         that doesn't have the Xamarin tools installed. That is currently the case in
+         the release phase where we build HTML documentation. -->
+    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">netstandard2.0;xamarin.ios10;monoandroid71;monoandroid80;monoandroid81</BuildFrameworks>
+    <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.ClientSdk</AssemblyName>
     <PackageId>LaunchDarkly.ClientSdk</PackageId>

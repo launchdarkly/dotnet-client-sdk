@@ -2,10 +2,10 @@
 
 set -eu
 
-# Since we are currently publishing in Debug configuration, we can push the .nupkg that build.sh already built.
+NUGET_KEY=$(cat "${LD_RELEASE_SECRETS_DIR}/dotnet_nuget_api_key")
 
-export AWS_DEFAULT_REGION=us-east-1
-NUGET_KEY=$(aws ssm get-parameter --name /production/common/services/nuget/api_key --with-decryption --query "Parameter.Value" --output text)
-
-nuget push "./src/LaunchDarkly.ClientSdk/bin/Debug/LaunchDarkly.ClientSdk.${LD_RELEASE_VERSION}.nupkg" \
-  -ApiKey "${NUGET_KEY}" -Source https://www.nuget.org
+for pkg in $(find ./src/LaunchDarkly.ClientSdk/bin/Release -name '*.nupkg' -o -name '*.snupkg'); do
+  echo "publishing $pkg"
+  nuget push "$pkg" -ApiKey "${NUGET_KEY}" -Source https://www.nuget.org
+  echo "published $pkg"
+done
