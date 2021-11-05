@@ -2,6 +2,7 @@
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -151,6 +152,9 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// A configuration object that disables persistent storage.
         /// </summary>
+        /// <remarks>
+        /// This is equivalent to `Persistence().MaxCachedUsers(0)`.
+        /// </remarks>
         /// <example>
         /// <code>
         ///     var config = Configuration.Builder(mobileKey)
@@ -158,9 +162,33 @@ namespace LaunchDarkly.Sdk.Client
         ///         .Build();
         /// </code>
         /// </example>
-        /// <seealso cref="ConfigurationBuilder.Persistence(IPersistentDataStoreFactory)"/>
-        public static IPersistentDataStoreFactory NoPersistence =>
-            ComponentsImpl.NullPersistentDataStoreFactory.Instance;
+        /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
+        /// <seealso cref="Persistence"/>
+        public static PersistenceConfigurationBuilder NoPersistence =>
+            Persistence().Storage(NullPersistentDataStoreFactory.Instance).MaxCachedUsers(0);
+
+        /// <summary>
+        /// Returns a configuration builder for the SDK's persistent storage configuration.
+        /// </summary>
+        /// <remarks>
+        /// Passing this to <see cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>,
+        /// after setting any desired properties on the builder, applies this configuration to the SDK.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(sdkKey)
+        ///         .Persistence(
+        ///             Components.Persistence().MaxCachedUsers(10)
+        ///         )
+        ///         .Build();
+        /// </code>
+        /// </example>
+        /// <returns>a builder</returns>
+        /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
+        /// <seealso cref="PersistenceConfigurationBuilder"/>
+        /// <seealso cref="NoPersistence"/>
+        public static PersistenceConfigurationBuilder Persistence() =>
+            new PersistenceConfigurationBuilder();
 
         /// <summary>
         /// Returns a configurable factory for using only polling mode to get feature flag data.

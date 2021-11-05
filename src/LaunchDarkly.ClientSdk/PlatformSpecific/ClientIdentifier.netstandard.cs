@@ -5,9 +5,6 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     internal static partial class ClientIdentifier
     {
         // Unlike mobile platforms, .NET standard doesn't have an OS-based notion of a device identifier.
-        // Instead, we'll do what we do in the non-mobile client-side SDKs: see if we've already cached a
-        // user key for this (OS) user account, and if not, generate a randomized ID and cache it.
-        private static string PlatformGetOrCreateClientId(Logger log) =>
-            GetOrCreateRandomizedClientId(log);
+        public static string Value => null;
     }
 }

@@ -1,14 +1,10 @@
-﻿using LaunchDarkly.Logging;
-using UIKit;
+﻿using UIKit;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class ClientIdentifier
     {
-        // For mobile platforms that really have a device ID, we delegate to Plugin.DeviceInfo to get the ID.
-        private static string PlatformGetOrCreateClientId(Logger log)
-        {
-            return UIDevice.CurrentDevice.IdentifierForVendor.AsString();
-        }
+        public static string Value =>
+            UIDevice.CurrentDevice.IdentifierForVendor.AsString();
     }
 }

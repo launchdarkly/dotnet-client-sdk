@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 
@@ -15,12 +15,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     internal sealed class DataSourceUpdateSinkImpl : IDataSourceUpdateSink
     {
-        private readonly IDataStore _dataStore;
+        private readonly FlagDataManager _dataStore;
         private readonly object _lastValuesLock = new object();
         private readonly TaskExecutor _taskExecutor;
 
         private volatile ImmutableDictionary<string, ImmutableDictionary<string, FeatureFlag>> _lastValues =
-            ImmutableDictionary.Create<string, ImmutableDictionary<string, FeatureFlag>>();
+            ImmutableDictionary<string, ImmutableDictionary<string, FeatureFlag>>.Empty;
 
         private readonly StateMonitor<DataSourceStatus, StateAndError> _status;
         internal DataSourceStatus CurrentStatus => _status.Current;
@@ -29,7 +29,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         internal event EventHandler<DataSourceStatus> StatusChanged;
 
         internal DataSourceUpdateSinkImpl(
-            IDataStore dataStore,
+            FlagDataManager dataStore,
             bool isConfiguredOffline,
             TaskExecutor taskExecutor,
             Logger log
@@ -48,7 +48,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         public void Init(User user, FullDataSet data)
         {
-            _dataStore.Init(user, data);
+            _dataStore.Init(user, data, true);
 
             ImmutableDictionary<string, FeatureFlag> oldValues, newValues;
             lock (_lastValuesLock)
@@ -107,7 +107,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         public void Upsert(User user, string key, ItemDescriptor data)
         {
-            var updated = _dataStore.Upsert(user, key, data);
+            var updated = _dataStore.Upsert(key, data);
             if (!updated)
             {
                 return;
@@ -120,7 +120,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 if (oldValues is null)
                 {
                     // didn't have any flags for this user
-                    var initValues = ImmutableDictionary.Create<string, FeatureFlag>();
+                    var initValues = ImmutableDictionary<string, FeatureFlag>.Empty;
                     if (data.Item != null)
                     {
                         initValues = initValues.SetItem(key, data.Item);

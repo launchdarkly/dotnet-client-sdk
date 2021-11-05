@@ -72,7 +72,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             /// <param name="items">the feature flags, indexed by key</param>
             public FullDataSet(IEnumerable<KeyValuePair<string, ItemDescriptor>> items)
             {
-                Items = items is null ? ImmutableList.Create<KeyValuePair<string, ItemDescriptor>>() :
+                Items = items is null ? ImmutableList<KeyValuePair<string, ItemDescriptor>>.Empty :
                     ImmutableList.CreateRange(items);
             }
 

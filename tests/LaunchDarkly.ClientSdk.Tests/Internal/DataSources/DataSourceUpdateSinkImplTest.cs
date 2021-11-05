@@ -10,7 +10,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     public class DataSourceUpdateSinkImplTest : BaseTest
     {
-        private readonly InMemoryDataStore _store;
+        private readonly FlagDataManager _store;
         private readonly FlagTrackerImpl _flagTracker;
         private readonly DataSourceUpdateSinkImpl _updateSink;
         private readonly User _basicUser = User.WithKey("user-key");
@@ -18,7 +18,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         public DataSourceUpdateSinkImplTest(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _store = new InMemoryDataStore();
+            _store = new FlagDataManager(BasicMobileKey, null, testLogger);
             _updateSink = new DataSourceUpdateSinkImpl(_store, false, BasicTaskExecutor, testLogger);
             _flagTracker = new FlagTrackerImpl(_updateSink);
         }
@@ -29,7 +29,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var initData = new DataSetBuilder().Add("key1", new FeatureFlagBuilder().Build()).Build();
             _updateSink.Init(_basicUser, initData);
 
-            Assert.Equal(initData.Items, _store.GetAll(_basicUser).Value.Items);
+            Assert.Equal(initData.Items, _store.GetAll().Value.Items);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
             _updateSink.Upsert(_basicUser, "key1", flag1b.ToItemDescriptor());
 
-            Assert.Equal(flag1b.ToItemDescriptor(), _store.Get(_basicUser, "key1"));
+            Assert.Equal(flag1b.ToItemDescriptor(), _store.Get("key1"));
         }
 
         [Fact]

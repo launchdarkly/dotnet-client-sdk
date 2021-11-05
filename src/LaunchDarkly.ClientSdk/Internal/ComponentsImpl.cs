@@ -1,6 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
@@ -28,7 +28,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         internal sealed class NullEventProcessorFactory : IEventProcessorFactory
         {
-            internal static NullEventProcessorFactory Instance = new NullEventProcessorFactory();
+            internal static readonly NullEventProcessorFactory Instance = new NullEventProcessorFactory();
 
             public IEventProcessor CreateEventProcessor(LdClientContext context) =>
                 NullEventProcessor.Instance;
@@ -36,7 +36,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         internal sealed class NullEventProcessor : IEventProcessor
         {
-            internal static NullEventProcessor Instance = new NullEventProcessor();
+            internal static readonly NullEventProcessor Instance = new NullEventProcessor();
 
             public void Dispose() { }
 
@@ -53,23 +53,5 @@ namespace LaunchDarkly.Sdk.Client.Internal
             public void SetOffline(bool offline) { }
         }
 
-        internal sealed class NullPersistentDataStoreFactory : IPersistentDataStoreFactory
-        {
-            internal static NullPersistentDataStoreFactory Instance = new NullPersistentDataStoreFactory();
-
-            public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) =>
-                NullPersistentDataStore.Instance;
-        }
-
-        internal sealed class NullPersistentDataStore : IPersistentDataStore
-        {
-            internal static NullPersistentDataStore Instance = new NullPersistentDataStore();
-
-            public string GetAll(User user) => null;
-
-            public void Init(User user, string allData) { }
-
-            public void Dispose() { }
-        }
     }
 }

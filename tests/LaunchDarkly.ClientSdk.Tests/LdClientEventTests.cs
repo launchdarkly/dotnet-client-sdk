@@ -22,7 +22,7 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         private LdClient MakeClient(User u) =>
-            LdClient.Init(TestUtil.TestConfig().DataSource(_testData).Events(_factory).Build(),
+            LdClient.Init(BasicConfig().DataSource(_testData).Events(_factory).Build(),
                 u, TimeSpan.FromSeconds(1));
 
         [Fact]
@@ -142,9 +142,8 @@ namespace LaunchDarkly.Sdk.Client
             User oldUser = User.Builder("anon-key").Anonymous(true).Build();
             User newUser = User.WithKey("real-key");
 
-            var config = TestUtil.TestConfig()
+            var config = BasicConfig()
                 .Events(_factory)
-                .Logging(testLogging)
                 .AutoAliasingOptOut(true)
                 .Build();
             
@@ -275,10 +274,9 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
         {
-            var config = TestUtil.TestConfig()
+            var config = BasicConfig()
                 .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
-                .Events(_factory)
-                .Logging(testLogging);
+                .Events(_factory);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
             {
@@ -381,10 +379,9 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
         {
-            var config = TestUtil.TestConfig()
+            var config = BasicConfig()
                 .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
-                .Events(_factory)
-                .Logging(testLogging);
+                .Events(_factory);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
             {

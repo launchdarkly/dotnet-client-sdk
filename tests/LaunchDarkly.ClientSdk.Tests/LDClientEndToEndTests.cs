@@ -21,8 +21,6 @@ namespace LaunchDarkly.Sdk.Client
     // expected ways.
     public class LdClientEndToEndTests : BaseTest
     {
-        private const string _mobileKey = "FAKE_KEY";
-
         private static readonly User _user = User.WithKey("foo");
         private static readonly User _otherUser = User.WithKey("bar");
 
@@ -145,35 +143,6 @@ namespace LaunchDarkly.Sdk.Client
             }
         }
 
-        [Fact]
-        public async Task InitWithKeylessAnonUserAddsKeyAndReusesIt()
-        {
-            // Note, we don't care about polling mode vs. streaming mode for this functionality.
-            using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
-            {
-                var config = BaseConfig(server.Uri, UpdateMode.Polling);
-                var name = "Sue";
-                var anonUser = User.Builder((string)null).Name(name).Anonymous(true).Build();
-
-                // Note, on mobile platforms, the generated user key is the device ID and is stable; on other platforms,
-                // it's a GUID that is cached in local storage. Calling ClearCachedClientId() resets the latter.
-                ClientIdentifier.ClearCachedClientId(testLogger);
-
-                string generatedKey = null;
-                using (var client = await TestUtil.CreateClientAsync(config, anonUser))
-                {
-                    Assert.NotNull(client.User.Key);
-                    generatedKey = client.User.Key;
-                    Assert.Equal(name, client.User.Name);
-                }
-
-                using (var client = await TestUtil.CreateClientAsync(config, anonUser))
-                {
-                    Assert.Equal(generatedKey, client.User.Key);
-                }
-            }
-        }
-
         [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void IdentifySwitchesUserAndGetsFlagsSync(UpdateMode mode)
@@ -269,9 +238,9 @@ namespace LaunchDarkly.Sdk.Client
         {
             using (var server = HttpServer.Start(Handlers.Status(202)))
             {
-                var config = Configuration.Builder(_mobileKey)
-                    .DataSource(MockPollingProcessor.Factory("{}"))
-                    .Persistence(Components.NoPersistence)
+                var config = BasicConfig()
+                    .DataSource(MockPollingProcessor.Factory(DataSetBuilder.Empty))
+                    .Events(Components.SendEvents())
                     .ServiceEndpoints(Components.ServiceEndpoints().Events(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath))
                     .Build();
 
@@ -302,30 +271,24 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void OfflineClientUsesCachedFlagsSync()
         {
+            var sharedPersistenceConfig = Components.Persistence()
+                .Storage(new MockPersistentDataStore().AsSingletonFactory());
+
             // streaming vs. polling should make no difference for this
             using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
             {
-                ClearCachedFlags(_user);
-                try
+                var config = BaseConfig(server.Uri, UpdateMode.Polling, c => c.Persistence(sharedPersistenceConfig));
+                using (var client = TestUtil.CreateClient(config, _user))
                 {
-                    // resetting Persistence to the default enables persistent storage
-                    var config = BaseConfig(server.Uri, UpdateMode.Polling, builder => builder.Persistence(null));
-                    using (var client = TestUtil.CreateClient(config, _user))
-                    {
-                        VerifyFlagValues(client, _flagData1);
-                    }
-
-                    // At this point the SDK should have written the flags to persistent storage for this user key.
-                    // We'll now start over in offline mode, and we should still see the earlier flag values.
-                    var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
-                    using (var client = TestUtil.CreateClient(offlineConfig, _user))
-                    {
-                        VerifyFlagValues(client, _flagData1);
-                    }
+                    VerifyFlagValues(client, _flagData1);
                 }
-                finally
+
+                // At this point the SDK should have written the flags to persistent storage for this user key.
+                // We'll now start over in offline mode, and we should still see the earlier flag values.
+                var offlineConfig = BasicConfig().Offline(true).Persistence(sharedPersistenceConfig).Build();
+                using (var client = TestUtil.CreateClient(offlineConfig, _user))
                 {
-                    ClearCachedFlags(_user);
+                    VerifyFlagValues(client, _flagData1);
                 }
             }
         }
@@ -333,29 +296,23 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public async Task OfflineClientUsesCachedFlagsAsync()
         {
+            var sharedPersistenceConfig = Components.Persistence()
+                .Storage(new MockPersistentDataStore().AsSingletonFactory());
+
             // streaming vs. polling should make no difference for this
             using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
             {
-                ClearCachedFlags(_user);
-                try
+                var config = BaseConfig(server.Uri, UpdateMode.Polling, c => c.Persistence(sharedPersistenceConfig));
+                using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
-                    // resetting Persistence to the default enables persistent storage
-                    var config = BaseConfig(server.Uri, UpdateMode.Polling, builder => builder.Persistence(null));
-                    using (var client = await TestUtil.CreateClientAsync(config, _user))
-                    {
-                        VerifyFlagValues(client, _flagData1);
-                    }
-
-                    // At this point the SDK should have written the flags to persistent storage for this user key.
-                    var offlineConfig = Configuration.Builder(_mobileKey).Offline(true).Build();
-                    using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
-                    {
-                        VerifyFlagValues(client, _flagData1);
-                    }
+                    VerifyFlagValues(client, _flagData1);
                 }
-                finally
+
+                // At this point the SDK should have written the flags to persistent storage for this user key.
+                var offlineConfig = BasicConfig().Offline(true).Persistence(sharedPersistenceConfig).Build();
+                using (var client = await TestUtil.CreateClientAsync(offlineConfig, _user))
                 {
-                    ClearCachedFlags(_user);
+                    VerifyFlagValues(client, _flagData1);
                 }
             }
         }
@@ -365,8 +322,6 @@ namespace LaunchDarkly.Sdk.Client
         {
             var mockBackgroundModeManager = new MockBackgroundModeManager();
             var backgroundInterval = TimeSpan.FromMilliseconds(50);
-
-            ClearCachedFlags(_user);
 
             using (var server = HttpServer.Start(Handlers.Switchable(out var switchable)))
             {
@@ -414,8 +369,6 @@ namespace LaunchDarkly.Sdk.Client
             var backgroundInterval = TimeSpan.FromMilliseconds(50);
             var hackyUpdateDelay = TimeSpan.FromMilliseconds(200);
 
-            ClearCachedFlags(_user);
-
             using (var server = HttpServer.Start(Handlers.Switchable(out var switchable)))
             {
                 switchable.Target = SetupResponse(_flagData1, UpdateMode.Streaming);
@@ -461,7 +414,6 @@ namespace LaunchDarkly.Sdk.Client
         {
             using (var server = HttpServer.Start(SetupResponse(_flagData1, mode)))
             {
-                ClearCachedFlags(_user);
                 var config = BaseConfig(server.Uri, mode, builder => builder.Offline(true));
                 using (var client = await TestUtil.CreateClientAsync(config, _user))
                 {
@@ -542,12 +494,9 @@ namespace LaunchDarkly.Sdk.Client
 
         private Configuration BaseConfig(Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
-            var builderInternal = Configuration.Builder(_mobileKey)
+            var builder = BasicConfig()
                 .Events(new MockEventProcessor().AsSingletonFactory());
-            builderInternal
-                .Logging(testLogging)
-                .Persistence(Components.NoPersistence);  // unless we're specifically testing flag caching, this helps to prevent test state contamination
-            var builder = extraConfig == null ? builderInternal : extraConfig(builderInternal);
+            builder = extraConfig is null ? builder : extraConfig(builder);
             return builder.Build();
         }
 
@@ -585,7 +534,7 @@ namespace LaunchDarkly.Sdk.Client
             Assert.Matches(mode.FlagsPathRegex, req.Path);
 
             Assert.Equal("", req.Query);
-            Assert.Equal(_mobileKey, req.Headers["Authorization"]);
+            Assert.Equal(BasicMobileKey, req.Headers["Authorization"]);
             Assert.Equal("", req.Body);
 
             return req;

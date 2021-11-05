@@ -1,116 +1,132 @@
 ﻿using System;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Internal.Concurrent;
 
 using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
-    // Internal implementation of combining an in-memory store with a persistent store.
-    //
-    // For details on the format of the serialized data we store, see DataModelSerialization.
-
-    internal sealed class PersistentDataStoreWrapper : IDataStore
+    /// <summary>
+    /// A facade over some implementation of <see cref="IPersistentDataStore"/>, which adds
+    /// behavior that should be the same for all implementations, such as the specific data
+    /// keys we use, the logging of errors, and how data is serialized and deserialized. This
+    /// allows FlagDataManager (and other parts of the SDK that may need to access persistent
+    /// storage) to be written in a clearer way without embedding many implementation details.
+    /// </summary>
+    internal sealed class PersistentDataStoreWrapper : IDisposable
     {
-        private readonly InMemoryDataStore _inMemoryStore;
+        private const string NamespacePrefix = "LaunchDarkly";
+        private const string GlobalAnonUserKey = "anonUser";
+        private const string EnvironmentMetadataKey = "index";
+        private const string EnvironmentUserDataKeyPrefix = "flags:";
+
         private readonly IPersistentDataStore _persistentStore;
-        private readonly object _writerLock = new object();
+        private readonly string _globalNamespace;
+        private readonly string _environmentNamespace;
+
         private readonly Logger _log;
+        private readonly object _storeLock = new object();
+        private readonly AtomicBoolean _loggedStorageError = new AtomicBoolean(false);
 
         public PersistentDataStoreWrapper(
-            InMemoryDataStore inMemoryStore,
             IPersistentDataStore persistentStore,
+            string mobileKey,
             Logger log
             )
         {
-            _inMemoryStore = inMemoryStore;
             _persistentStore = persistentStore;
             _log = log;
+
+            _globalNamespace = NamespacePrefix;
+            _environmentNamespace = NamespacePrefix + ":" + Base64.Sha256Hash(mobileKey);
         }
 
-        public void Preload(User user)
+        public FullDataSet? GetUserData(string userId)
         {
-            lock (_writerLock)
+            var serializedData = HandleErrorsAndLock(() => _persistentStore.GetValue(_environmentNamespace, KeyForUserId(userId)));
+            if (serializedData is null)
             {
-                if (_inMemoryStore.GetAll(user) is null)
-                {
-                    string serializedData = null;
-                    try
-                    {
-                        serializedData = _persistentStore.GetAll(user);
-                    }
-                    catch (Exception e)
-                    {
-                        LogHelpers.LogException(_log, "Failed to read from persistent store", e);
-                    }
-                    if (serializedData is null)
-                    {
-                        return;
-                    }
-                    try
-                    {
-                        _inMemoryStore.Init(user, DataModelSerialization.DeserializeAll(serializedData));
-                    }
-                    catch (Exception e)
-                    {
-                        LogHelpers.LogException(_log, "Failed to deserialize data from persistent store", e);
-                    }
-                }
+                return null;
+            }
+            try
+            {
+                return DataModelSerialization.DeserializeAll(serializedData);
+            }
+            catch (Exception e)
+            {
+                LogHelpers.LogException(_log, "Failed to deserialize data from persistent store", e);
+                return null;
             }
         }
 
-        public void Init(User user, FullDataSet allData)
+        public void SetUserData(string userId, FullDataSet data) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, KeyForUserId(userId),
+                DataModelSerialization.SerializeAll(data)));
+
+        public void RemoveUserData(string userId) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, KeyForUserId(userId), null));
+
+        public UserIndex GetIndex()
         {
-            lock (_writerLock)
+            string data = HandleErrorsAndLock(() => _persistentStore.GetValue(_environmentNamespace, EnvironmentMetadataKey));
+            if (data is null)
             {
-                _inMemoryStore.Init(user, allData);
-                try
-                {
-                    _persistentStore.Init(user, DataModelSerialization.SerializeAll(allData));
-                }
-                catch (Exception e)
-                {
-                    LogHelpers.LogException(_log, "Failed to write to persistent store", e);
-                }
+                return new UserIndex();
+            }
+            try
+            {
+                return UserIndex.Deserialize(data);
+            }
+            catch (Exception)
+            {
+                _log.Warn("Discarding invalid data from persistent store index");
+                return new UserIndex();
             }
         }
 
-        public ItemDescriptor? Get(User user, string key) =>
-            _inMemoryStore.Get(user, key);
+        public void SetIndex(UserIndex index) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, EnvironmentMetadataKey, index.Serialize()));
 
-        public FullDataSet? GetAll(User user) =>
-            _inMemoryStore.GetAll(user);
+        public string GetAnonymousUserKey() =>
+            HandleErrorsAndLock(() => _persistentStore.GetValue(_globalNamespace, GlobalAnonUserKey));
 
-        public bool Upsert(User user, string key, ItemDescriptor data)
-        {
-            lock (_writerLock)
-            {
-                if (_inMemoryStore.Upsert(user, key, data))
-                {
-                    var allData = _inMemoryStore.GetAll(user);
-                    if (allData != null)
-                    {
-                        try
-                        {
-                            _persistentStore.Init(user, DataModelSerialization.SerializeAll(allData.Value));
-                        }
-                        catch (Exception e)
-                        {
-                            LogHelpers.LogException(_log, "Failed to write to persistent store", e);
-                        }
-                    }
-                    return true;
-                }
-                return false;
-            }
-        }
+        public void SetAnonymousUserKey(string value) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_globalNamespace, GlobalAnonUserKey, value));
 
-        public void Dispose()
-        {
-            _inMemoryStore.Dispose();
+        public void Dispose() =>
             _persistentStore.Dispose();
+
+        private static string KeyForUserId(string userId) => EnvironmentUserDataKeyPrefix + userId;
+
+        private void MaybeLogStoreError(Exception e)
+        {
+            if (!_loggedStorageError.GetAndSet(true))
+            {
+                LogHelpers.LogException(_log, "Failure in persistent data store", e);
+            }
+        }
+
+        private T HandleErrorsAndLock<T>(Func<T> action)
+        {
+            try
+            {
+                lock (_storeLock)
+                {
+                    return action();
+                }
+            }
+            catch (Exception e)
+            {
+                MaybeLogStoreError(e);
+                return default(T);
+            }
+        }
+
+        private void HandleErrorsAndLock(Action action)
+        {
+            _ = HandleErrorsAndLock<bool>(() => { action(); return true; });
         }
     }
 }

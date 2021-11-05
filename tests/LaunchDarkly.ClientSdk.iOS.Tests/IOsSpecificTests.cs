@@ -18,7 +18,7 @@ namespace LaunchDarkly.Sdk.Client.iOS.Tests
         public void UserHasOSAndDeviceAttributesForPlatform()
         {
             var baseUser = User.WithKey("key");
-            var config = TestUtil.TestConfig("mobileKey").Build();
+            var config = BasicConfig().Build();
             using (var client = TestUtil.CreateClient(config, baseUser))
             {
                 var user = client.User;
@@ -33,7 +33,7 @@ namespace LaunchDarkly.Sdk.Client.iOS.Tests
         public void CanGetUniqueUserKey()
         {
             var anonUser = User.Builder((string)null).Anonymous(true).Build();
-            var config = TestUtil.TestConfig("mobileKey")
+            var config = BasicConfig()
                 .DeviceInfo(null).Build();
             using (var client = TestUtil.CreateClient(config, anonUser))
             {

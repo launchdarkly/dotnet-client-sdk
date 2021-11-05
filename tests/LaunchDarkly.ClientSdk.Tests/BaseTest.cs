@@ -33,11 +33,6 @@ namespace LaunchDarkly.Sdk.Client
             BasicTaskExecutor = new TaskExecutor("test-sender", testLogger);
         }
 
-        protected void ClearCachedFlags(User user)
-        {
-            PlatformSpecific.Preferences.Clear(Constants.FLAGS_KEY_PREFIX + user.Key, testLogger);
-        }
-
         public void Dispose()
         {
             TestUtil.ClearClient();
@@ -49,9 +44,13 @@ namespace LaunchDarkly.Sdk.Client
         // see which properties are important in a test.
         protected ConfigurationBuilder BasicConfig() =>
             Configuration.Builder(BasicMobileKey)
+                .BackgroundModeManager(new MockBackgroundModeManager())
+                .ConnectivityStateManager(new MockConnectivityStateManager(true))
                 .DataSource(new MockDataSource().AsSingletonFactory())
                 .Events(Components.NoEvents)
                 .Logging(testLogging)
-                .Persistence(Components.NoPersistence);  // unless we're specifically testing flag caching, this helps to prevent test state contamination
+                .Persistence(
+                    Components.Persistence().Storage(new MockPersistentDataStore().AsSingletonFactory())
+                );
     }
 }

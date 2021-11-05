@@ -122,9 +122,9 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void Persistence()
         {
-            var prop = _tester.Property(c => c.PersistentDataStoreFactory, (b, v) => b.Persistence(v));
+            var prop = _tester.Property(c => c.PersistenceConfigurationBuilder, (b, v) => b.Persistence(v));
             prop.AssertDefault(null);
-            prop.AssertCanSet(Components.NoPersistence);
+            prop.AssertCanSet(Components.Persistence().MaxCachedUsers(2));
         }
 
         [Fact]

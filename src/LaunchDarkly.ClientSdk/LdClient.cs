@@ -35,15 +35,16 @@ namespace LaunchDarkly.Sdk.Client
         readonly IDataSourceFactory _dataSourceFactory;
         readonly IDataSourceStatusProvider _dataSourceStatusProvider;
         readonly IDataSourceUpdateSink _dataSourceUpdateSink;
-        readonly IDataStore _dataStore;
+        readonly FlagDataManager _dataStore;
         readonly DiagnosticDisablerImpl _diagnosticDisabler;
         readonly ConnectionManager _connectionManager;
         readonly IBackgroundModeManager _backgroundModeManager;
-        readonly IDeviceInfo deviceInfo;
         readonly IConnectivityStateManager _connectivityStateManager;
         readonly IEventProcessor _eventProcessor;
         readonly IFlagTracker _flagTracker;
         readonly TaskExecutor _taskExecutor;
+        readonly UserDecorator _userDecorator;
+
         private readonly Logger _log;
 
         // Mutable client state (some state is also in the ConnectionManager)
@@ -141,18 +142,28 @@ namespace LaunchDarkly.Sdk.Client
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
-            deviceInfo = Factory.CreateDeviceInfo(configuration, _log);
-
-            _user = DecorateUser(user);
-
-            var persistentStore = configuration.PersistentDataStoreFactory is null ?
-                new DefaultPersistentDataStore(_log.SubLogger(LogNames.DataStoreSubLog)) :
-                configuration.PersistentDataStoreFactory.CreatePersistentDataStore(_context);
-            _dataStore = new PersistentDataStoreWrapper(
-                new InMemoryDataStore(),
-                persistentStore,
+            var persistenceConfiguration = (configuration.PersistenceConfigurationBuilder ?? Components.Persistence())
+                .CreatePersistenceConfiguration(_context);
+            _dataStore = new FlagDataManager(
+                configuration.MobileKey,
+                persistenceConfiguration,
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
+
+            _userDecorator = new UserDecorator(configuration.DeviceInfo ?? new DefaultDeviceInfo(),
+                _dataStore.PersistentStore);
+            _user = _userDecorator.DecorateUser(user);
+
+            // If we had cached data for the new user, set the current in-memory flag data state to use
+            // that data, so that any Variation calls made before Identify has completed will use the
+            // last known values.
+            var cachedData = _dataStore.GetCachedData(_user);
+            if (cachedData != null)
+            {
+                _log.Debug("Cached flag data is available for this user");
+                _dataStore.Init(_user, cachedData.Value, false); // false means "don't rewrite the flags to persistent storage"
+            }
+
             var dataSourceUpdateSink = new DataSourceUpdateSinkImpl(
                 _dataStore,
                 configuration.Offline,
@@ -160,7 +171,6 @@ namespace LaunchDarkly.Sdk.Client
                 _log.SubLogger(LogNames.DataSourceSubLog)
                 );
             _dataSourceUpdateSink = dataSourceUpdateSink;
-            _dataStore.Preload(_user);
 
             _dataSourceStatusProvider = new DataSourceStatusProviderImpl(dataSourceUpdateSink);
             _flagTracker = new FlagTrackerImpl(dataSourceUpdateSink);
@@ -448,7 +458,7 @@ namespace LaunchDarkly.Sdk.Client
             EvaluationDetail<T> errorResult(EvaluationErrorKind kind) =>
                 new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(kind));
 
-            var flag = _dataStore.Get(User, featureKey)?.Item;
+            var flag = _dataStore.Get(featureKey)?.Item;
             if (flag == null)
             {
                 if (!Initialized)
@@ -508,10 +518,10 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public IDictionary<string, LdValue> AllFlags()
         {
-            var data = _dataStore.GetAll(User);
+            var data = _dataStore.GetAll();
             if (data is null)
             {
-                return ImmutableDictionary.Create<string, LdValue>();
+                return ImmutableDictionary<string, LdValue>.Empty;
             }
             return data.Value.Items.Where(entry => entry.Value.Item != null)
                 .ToDictionary(p => p.Key, p => p.Value.Item.Value);
@@ -573,7 +583,7 @@ namespace LaunchDarkly.Sdk.Client
                 throw new ArgumentNullException(nameof(user));
             }
 
-            User newUser = DecorateUser(user);
+            User newUser = _userDecorator.DecorateUser(user);
             User oldUser = newUser; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>
@@ -582,7 +592,23 @@ namespace LaunchDarkly.Sdk.Client
                 _user = newUser;
             });
 
-            _dataStore.Preload(newUser);
+            // If we had cached data for the new user, set the current in-memory flag data state to use
+            // that data, so that any Variation calls made before Identify has completed will use the
+            // last known values. If we did not have cached data, then we update the current in-memory
+            // state to reflect that there is no flag data, so that Variation calls done before completion
+            // will receive default values rather than the previous user's values. This does not modify
+            // any flags in persistent storage, and (currently) it does *not* trigger any FlagValueChanged
+            // events from FlagTracker.
+            var cachedData = _dataStore.GetCachedData(newUser);
+            if (cachedData != null)
+            {
+                _log.Debug("Identify found cached flag data for the new user");
+            }
+            _dataStore.Init(
+                newUser,
+                cachedData ?? new DataStoreTypes.FullDataSet(null),
+                false // false means "don't rewrite the flags to persistent storage"
+                );
 
             EventProcessorIfEnabled().RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
             {
@@ -621,37 +647,6 @@ namespace LaunchDarkly.Sdk.Client
                 User = user,
                 PreviousUser = previousUser
             });
-        }
-
-        User DecorateUser(User user)
-        {
-            IUserBuilder buildUser = null;
-            if (UserMetadata.DeviceName != null)
-            {
-                if (buildUser is null)
-                {
-                    buildUser = User.Builder(user);
-                }
-                buildUser.Custom("device", UserMetadata.DeviceName);
-            }
-            if (UserMetadata.OSName != null)
-            {
-                if (buildUser is null)
-                {
-                    buildUser = User.Builder(user);
-                }
-                buildUser.Custom("os", UserMetadata.OSName);
-            }
-            // If you pass in a user with a null or blank key, one will be assigned to them.
-            if (String.IsNullOrEmpty(user.Key))
-            {
-                if (buildUser is null)
-                {
-                    buildUser = User.Builder(user);
-                }
-                buildUser.Key(deviceInfo.UniqueDeviceId()).Anonymous(true);
-            }
-            return buildUser is null ? user : buildUser.Build();
         }
 
         /// <summary>

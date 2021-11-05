@@ -10,10 +10,5 @@ namespace LaunchDarkly.Sdk.Client.Internal
         {
             return configuration.ConnectivityStateManager ?? new DefaultConnectivityStateManager();
         }
-
-        internal static IDeviceInfo CreateDeviceInfo(Configuration configuration, Logger log)
-        {
-            return configuration.DeviceInfo ?? new DefaultDeviceInfo(log);
-        }
     }
 }

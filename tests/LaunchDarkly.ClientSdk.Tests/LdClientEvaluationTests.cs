@@ -7,7 +7,6 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientEvaluationTests : BaseTest
     {
-        const string appKey = "some app key";
         const string flagKey = "flag-key";
         const string nonexistentFlagKey = "some flag key";
         static readonly User user = User.WithKey("userkey");
@@ -17,7 +16,7 @@ namespace LaunchDarkly.Sdk.Client
         public LdClientEvaluationTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
         private LdClient MakeClient() =>
-            LdClient.Init(TestUtil.TestConfig("mobile-key").DataSource(_testData).Build(), user, TimeSpan.FromSeconds(1));
+            TestUtil.CreateClient(BasicConfig().DataSource(_testData).Build(), user, TimeSpan.FromSeconds(1));
 
         [Fact]
         public void BoolVariationReturnsValue()

@@ -1,10 +1,12 @@
-﻿
+﻿using LaunchDarkly.Sdk.Client.Integrations;
+
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
     /// <summary>
     /// Interface for a factory that creates some implementation of <see cref="IPersistentDataStore"/>.
     /// </summary>
-    /// <seealso cref="ConfigurationBuilder.Persistence(IPersistentDataStoreFactory)"/>
+    /// <seealso cref="PersistenceConfigurationBuilder.Storage(IPersistentDataStoreFactory)"/>
+    /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
     public interface IPersistentDataStoreFactory
     {
         /// <summary>

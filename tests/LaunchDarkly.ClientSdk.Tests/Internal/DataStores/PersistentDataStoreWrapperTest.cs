@@ -1,135 +1,114 @@
 ﻿using Xunit;
 using Xunit.Abstractions;
 
+using static LaunchDarkly.TestHelpers.JsonAssertions;
+
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     public class PersistentDataStoreWrapperTest : BaseTest
     {
-        private static readonly User _basicUser = User.WithKey("user-key");
-        private static readonly User _otherUser = User.WithKey("user-key");
+        // This verifies non-platform-dependent behavior, such as what keys we store particular
+        // things under, using a mock persistent storage implementation.
 
-        private readonly InMemoryDataStore _inMemoryStore;
+        private static readonly string MobileKeyHash = Base64.Sha256Hash(BasicMobileKey);
+        private static readonly string ExpectedGlobalNamespace = "LaunchDarkly";
+        private static readonly string ExpectedEnvironmentNamespace = "LaunchDarkly:" + MobileKeyHash;
+        private const string UserKey = "user-key";
+        private static readonly string UserHash = Base64.Sha256Hash(UserKey);
+        private static readonly string ExpectedUserFlagsKey = "flags:" + UserHash;
+        private static readonly string ExpectedIndexKey = "index";
+        private static readonly string ExpectedAnonUserKey = "anonUser";
+
         private readonly MockPersistentDataStore _persistentStore;
         private readonly PersistentDataStoreWrapper _wrapper;
 
         public PersistentDataStoreWrapperTest(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _inMemoryStore = new InMemoryDataStore();
             _persistentStore = new MockPersistentDataStore();
-            _wrapper = new PersistentDataStoreWrapper(_inMemoryStore, _persistentStore, testLogger);
+            _wrapper = new PersistentDataStoreWrapper(
+                _persistentStore,
+                BasicMobileKey,
+                testLogger
+                );
         }
 
         [Fact]
-        public void PreloadDoesNotInitializeStoreForUserWhoIsNotInPersistentStore()
+        public void GetUserDataForUnknownUser()
         {
-            _wrapper.Preload(_basicUser);
-
-            Assert.Null(_inMemoryStore.GetAll(_basicUser));
+            var data = _wrapper.GetUserData(UserKey);
+            Assert.Null(data);
+            Assert.Empty(logCapture.GetMessages());
         }
 
         [Fact]
-        public void PreloadDoesNotOverwriteStoreIfDataIsAlreadyCached()
+        public void GetUserDataForKnownUserWithValidData()
         {
-            var inMemoryData = new DataSetBuilder()
-                .Add("flag1", 2, LdValue.Of(true), 0)
-                .Build();
-            _inMemoryStore.Init(_basicUser, inMemoryData);
+            var expectedData = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
+            var serializedData = expectedData.ToJsonString();
+            _persistentStore.SetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey, serializedData);
 
-            var persistedData = new DataSetBuilder()
-                .Add("flag1", 1, LdValue.Of(false), 1)
-                .Build();
-            _persistentStore.Init(_basicUser, DataModelSerialization.SerializeAll(persistedData));
-
-            _wrapper.Preload(_basicUser);
-
-            Assert.Equal(inMemoryData, _inMemoryStore.GetAll(_basicUser));
+            var data = _wrapper.GetUserData(UserHash);
+            Assert.NotNull(data);
+            AssertHelpers.DataSetsEqual(expectedData, data.Value);
+            Assert.Empty(logCapture.GetMessages());
         }
 
         [Fact]
-        public void PreloadGetsDataFromPersistentStoreIfNotAlreadyCached()
+        public void SetUserData()
         {
-            var persistedData = new DataSetBuilder()
-                .Add("flag1", 1, LdValue.Of(false), 1)
-                .Build();
-            _persistentStore.Init(_basicUser, DataModelSerialization.SerializeAll(persistedData));
+            var data = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
 
-            _wrapper.Preload(_basicUser);
+            _wrapper.SetUserData(UserHash, data);
 
-            Assert.Equal(persistedData, _inMemoryStore.GetAll(_basicUser));
+            var serializedData = _persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey);
+            AssertJsonEqual(data.ToJsonString(), serializedData);
         }
 
         [Fact]
-        public void InitWritesToBothMemoryAndPersistentStore()
+        public void RemoveUserData()
         {
-            var data = new DataSetBuilder()
-                .Add("flag1", 1, LdValue.Of(true), 0)
-                .Build();
+            var data = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
 
-            _wrapper.Init(_basicUser, data);
+            _wrapper.SetUserData(UserHash, data);
+            Assert.NotNull(_persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey));
 
-            Assert.Equal(data, _inMemoryStore.GetAll(_basicUser));
-
-            Assert.Equal(data, DataModelSerialization.DeserializeAll(_persistentStore.GetAll(_basicUser)));
+            _wrapper.RemoveUserData(UserHash);
+            Assert.Null(_persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey));
         }
 
         [Fact]
-        public void GetReadsOnlyInMemoryStore()
+        public void GetIndex()
         {
-            var flag1a = new FeatureFlagBuilder().Version(2).Value(true).Variation(0).Build();
-            var inMemoryData = new DataSetBuilder()
-                .Add("flag1", flag1a)
-                .Build();
-            _inMemoryStore.Init(_basicUser, inMemoryData);
+            var expectedIndex = new UserIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
+            _persistentStore.SetValue(ExpectedEnvironmentNamespace, ExpectedIndexKey, expectedIndex.Serialize());
 
-            var flag1b = new FeatureFlagBuilder().Version(1).Value(false).Variation(1).Build();
-            var persistedData = new DataSetBuilder()
-                .Add("flag1", flag1b)
-                .Build();
-            _persistentStore.Init(_basicUser, DataModelSerialization.SerializeAll(persistedData));
-
-            Assert.Equal(flag1a.ToItemDescriptor(), _wrapper.Get(_basicUser, "flag1"));
+            var index = _wrapper.GetIndex();
+            AssertJsonEqual(expectedIndex.Serialize(), index.Serialize());
         }
 
         [Fact]
-        public void GetAllReadsOnlyInMemoryStore()
+        public void SetIndex()
         {
-            var inMemoryData = new DataSetBuilder()
-                .Add("flag1", 2, LdValue.Of(true), 0)
-                .Build();
-            _inMemoryStore.Init(_basicUser, inMemoryData);
+            var index = new UserIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
 
-            var persistedData = new DataSetBuilder()
-                .Add("flag1", 1, LdValue.Of(false), 1)
-                .Build();
-            _persistentStore.Init(_basicUser, DataModelSerialization.SerializeAll(persistedData));
+            _wrapper.SetIndex(index);
 
-            Assert.Equal(inMemoryData, _wrapper.GetAll(_basicUser));
+            var serializedData = _persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedIndexKey);
+            AssertJsonEqual(index.Serialize(), serializedData);
         }
 
         [Fact]
-        public void UpsertPersistsAllDataAfterUpdatingMemory()
+        public void GetAnonymousUserKey()
         {
-            var flag1a = new FeatureFlagBuilder().Version(100).Value(true).Variation(0).Build();
-            var flag1b = new FeatureFlagBuilder().Version(101).Value(false).Variation(1).Build();
-            var flag2 = new FeatureFlagBuilder().Version(200).Value(true).Variation(0).Build();
-            var initialData = new DataSetBuilder()
-                .Add("flag1", flag1a)
-                .Add("flag2", flag2)
-                .Build();
+            _persistentStore.SetValue(ExpectedGlobalNamespace, ExpectedAnonUserKey, "user1");
+            Assert.Equal("user1", _wrapper.GetAnonymousUserKey());
+        }
 
-            _wrapper.Init(_basicUser, initialData);
-
-            _wrapper.Upsert(_basicUser, "flag1", flag1b.ToItemDescriptor());
-
-            Assert.Equal(flag1b.ToItemDescriptor(), _inMemoryStore.Get(_basicUser, "flag1"));
-            Assert.Equal(flag2.ToItemDescriptor(), _inMemoryStore.Get(_basicUser, "flag2"));
-
-            var updatedData = new DataSetBuilder()
-                .Add("flag1", flag1b)
-                .Add("flag2", flag2)
-                .Build();
-
-            Assert.Equal(updatedData, DataModelSerialization.DeserializeAll(_persistentStore.GetAll(_basicUser)));
+        [Fact]
+        public void SetAnonymousUserKey()
+        {
+            _wrapper.SetAnonymousUserKey("user1");
+            Assert.Equal("user1", _persistentStore.GetValue(ExpectedGlobalNamespace, ExpectedAnonUserKey));
         }
     }
 }

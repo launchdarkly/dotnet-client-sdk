@@ -1,20 +1,29 @@
 ﻿using System;
+using System.Collections.Immutable;
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
     /// <summary>
-    /// Interface for a data store that holds feature flag data in a serialized form.
+    /// Interface for a data store that holds feature flag data and other SDK properties in a
+    /// serialized form.
     /// </summary>
     /// <remarks>
     /// <para>
     /// This interface should be used for platform-specific integrations that store data somewhere
-    /// other than in memory. The SDK will take care of converting between its own internal data model
-    /// and a serialized string form; the data store interacts only with the serialized form. The data
-    /// store should not make any assumptions about the format of the serialized data.
+    /// other than in memory. The SDK has a default implementation which uses the native preferences
+    /// API on mobile platforms, and the .NET <c>IsolatedStorage</c> API in desktop applications. You
+    /// only need to use this interface if you want to provide different storage behavior.
     /// </para>
     /// <para>
-    /// Unlike server-side SDKs, the persistent data store in this SDK reads or writes the data for
-    /// all flags at once for a given user, instead of one flag at a time. This is for two reasons:
+    /// Each data item is defined by a "namespace" and a "key". Both of these are non-null and non-empty
+    /// strings defined by the SDK. Keys are unique within a namespace. The value of the data item is
+    /// simply a string. The store should not make any assumptions about the allowed content of these
+    /// strings.
+    /// </para>
+    /// <para>
+    /// Unlike server-side SDKs, the persistent data store in this SDK treats the entire set of flags
+    /// for a given user as a single value which is written to the store all at once, rather than one
+    /// value per flag. This is for two reasons:
     /// </para>
     /// <list type="bullet">
     /// <item> The SDK assumes that the persistent store cannot be written to by any other process,
@@ -30,35 +39,32 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     /// SDK tells it to do.
     /// </para>
     /// <para>
-    /// Implementations must be thread-safe.
+    /// Implementations do not need to worry about thread-safety; the SDK will ensure that it only
+    /// calls one store method at a time.
     /// </para>
     /// <para>
-    /// Error handling is defined as follows: if any data store operation encounters an I/O
-    /// error, or is otherwise unable to complete its task, it should throw an exception to make
-    /// the SDK aware of this.
+    /// Error handling is defined as follows: if any data store operation encounters an I/O error, or
+    /// is otherwise unable to complete its task, it should throw an exception to make the SDK aware
+    /// of this. The SDK will decide whether to log the exception.
     /// </para>
     /// </remarks>
     /// <seealso cref="IPersistentDataStoreFactory"/>
     public interface IPersistentDataStore : IDisposable
     {
         /// <summary>
-        /// Overwrites the store's contents for a specific user with a serialized data set.
+        /// Attempts to retrieve a string value from the store.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// All previous data for the user should be discarded. This should not affect stored data for
-        /// any other user. For efficiency, the store can assume that only the user key is significant.
-        /// </para>
-        /// </remarks>
-        /// <param name="user">the current user</param>
-        /// <param name="allData">a serialized data set represented as an opaque string</param>
-        void Init(User user, string allData);
+        /// <param name="storageNamespace">the namespace identifier</param>
+        /// <param name="key">the unique key within that namespace</param>
+        /// <returns>the value, or null if not found</returns>
+        string GetValue(string storageNamespace, string key);
 
         /// <summary>
-        /// Retrieves the serialized data for a specific user, if available.
+        /// Attempts to update or remove a string value in the store.
         /// </summary>
-        /// <param name="user">the current user</param>
-        /// <returns>the serialized data for that user, or null if there is none</returns>
-        string GetAll(User user);
+        /// <param name="storageNamespace">the namespace identifier</param>
+        /// <param name="key">the unique key within that namespace</param>
+        /// <param name="value">the new value, or null to remove the key</param>
+        void SetValue(string storageNamespace, string key, string value);
     }
 }

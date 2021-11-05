@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
+using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Internal.DataSources;
+using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.Sdk.Internal.Events;
@@ -48,7 +52,6 @@ namespace LaunchDarkly.Sdk.Client
             public IPersistentDataStore Instance { get; set; }
             public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) => Instance;
         }
-
     }
 
     internal class MockBackgroundModeManager : IBackgroundModeManager
@@ -280,17 +283,39 @@ namespace LaunchDarkly.Sdk.Client
 
     internal class MockPersistentDataStore : IPersistentDataStore
     {
-        private IDictionary<string, string> map = new Dictionary<string, string>();
+        private Dictionary<(string, string), string> _map = new Dictionary<(string, string), string>();
 
         public void Dispose() { }
 
-        public string GetAll(User user) =>
-            map.TryGetValue(user.Key, out var value) ? value : null;
+        public string GetValue(string storageNamespace, string key) =>
+            _map.TryGetValue((storageNamespace, key), out var value) ? value : null;
 
-        public void Init(User user, string allData)
+        public void SetValue(string storageNamespace, string key, string value)
         {
-            map[user.Key] = allData;
+            if (value is null)
+            {
+                _map.Remove((storageNamespace, key));
+            }
+            else
+            {
+                _map[(storageNamespace, key)] = value;
+            }
         }
+
+        public ImmutableList<string> GetKeys(string storageNamespace) =>
+            _map.Where(kv => kv.Key.Item1 == storageNamespace).Select(kv => kv.Value).ToImmutableList();
+
+        private PersistentDataStoreWrapper WithWrapper(string mobileKey) =>
+            new PersistentDataStoreWrapper(this, mobileKey, Logs.None.Logger(""));
+
+        internal void SetupUserData(string mobileKey, string userKey, FullDataSet data) =>
+            WithWrapper(mobileKey).SetUserData(Base64.Sha256Hash(userKey), data);
+
+        internal FullDataSet? InspectUserData(string mobileKey, string userKey) =>
+            WithWrapper(mobileKey).GetUserData(Base64.Sha256Hash(userKey));
+
+        internal UserIndex InspectUserIndex(string mobileKey) =>
+            WithWrapper(mobileKey).GetIndex();
     }
 
     internal class CapturingDataSourceFactory : IDataSourceFactory
@@ -321,22 +346,22 @@ namespace LaunchDarkly.Sdk.Client
     {
         private IDataSourceUpdateSink _updateSink;
         private User _user;
-        private string _flagsJson;
+        private FullDataSet? _data;
 
         public User ReceivedUser => _user;
 
-        public MockPollingProcessor(string flagsJson) : this(null, null, flagsJson) { }
+        public MockPollingProcessor(FullDataSet? data) : this(null, null, data) { }
 
-        private MockPollingProcessor(IDataSourceUpdateSink updateSink, User user, string flagsJson)
+        private MockPollingProcessor(IDataSourceUpdateSink updateSink, User user, FullDataSet? data)
         {
             _updateSink = updateSink;
             _user = user;
-            _flagsJson = flagsJson;
+            _data = data;
         }
 
-        public static IDataSourceFactory Factory(string flagsJson) =>
+        public static IDataSourceFactory Factory(FullDataSet? data) =>
             new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
-                new MockPollingProcessor(updates, user, flagsJson));
+                new MockPollingProcessor(updates, user, data));
 
         public IDataSourceFactory AsFactory() =>
             new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
@@ -362,9 +387,9 @@ namespace LaunchDarkly.Sdk.Client
         public Task<bool> Start()
         {
             IsRunning = true;
-            if (_updateSink != null && _flagsJson != null)
+            if (_updateSink != null && _data != null)
             {
-                _updateSink.Init(_user, DataModelSerialization.DeserializeV1Schema(_flagsJson));
+                _updateSink.Init(_user, _data.Value);
             }
             return Task.FromResult(true);
         }

@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.JsonStream;
-using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
@@ -133,16 +132,6 @@ namespace LaunchDarkly.Sdk.Client
             return w.GetString();
         }
 
-        internal static ConfigurationBuilder TestConfig() => TestConfig("mobile-key");
-
-        internal static ConfigurationBuilder TestConfig(string appKey) =>
-            Configuration.Builder(appKey)
-                .ConnectivityStateManager(new MockConnectivityStateManager(true))
-                .Events(Components.NoEvents)
-                .DataSource(TestData.DataSource())
-                .Persistence(Components.NoPersistence)
-                .DeviceInfo(new MockDeviceInfo());
-        
         public static string NormalizeJsonUser(LdValue json)
         {
             // It's undefined whether a user with no custom attributes will have "custom":{} or not

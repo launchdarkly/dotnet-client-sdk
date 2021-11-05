@@ -15,10 +15,13 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             "\"string-flag\":{\"value\":\"markw@magenic.com\"}" +
             "}";
 
-        private InMemoryDataStore _store = new InMemoryDataStore();
+        private FlagDataManager _store;
         User user;
 
-        public PollingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
+        public PollingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput)
+        {
+            _store = new FlagDataManager(BasicMobileKey, null, testLogger);
+        }
 
         IDataSource MakeDataSource()
         {
@@ -47,7 +50,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var dataSource = MakeDataSource();
             var initTask = dataSource.Start();
             var unused = initTask.Wait(TimeSpan.FromSeconds(1));
-            var flags = _store.GetAll(user);
+            var flags = _store.GetAll();
             Assert.Equal(3, flags.Value.Items.Count);
         }
     }

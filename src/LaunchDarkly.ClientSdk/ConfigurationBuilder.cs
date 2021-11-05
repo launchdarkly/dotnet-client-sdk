@@ -43,7 +43,7 @@ namespace LaunchDarkly.Sdk.Client
         internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
         internal string _mobileKey;
         internal bool _offline = false;
-        internal IPersistentDataStoreFactory _persistentDataStoreFactory = null;
+        internal PersistenceConfigurationBuilder _persistenceConfigurationBuilder = null;
         internal ServiceEndpointsBuilder _serviceEndpointsBuilder = null;
 
         // Internal properties only settable for testing
@@ -68,7 +68,7 @@ namespace LaunchDarkly.Sdk.Client
             _loggingConfigurationBuilder = copyFrom.LoggingConfigurationBuilder;
             _mobileKey = copyFrom.MobileKey;
             _offline = copyFrom.Offline;
-            _persistentDataStoreFactory = copyFrom.PersistentDataStoreFactory;
+            _persistenceConfigurationBuilder = copyFrom.PersistenceConfigurationBuilder;
             _serviceEndpointsBuilder = new ServiceEndpointsBuilder(copyFrom.ServiceEndpoints);
         }
 
@@ -219,7 +219,7 @@ namespace LaunchDarkly.Sdk.Client
         /// If you want to set multiple options, set them on the same <see cref="HttpConfigurationBuilder"/>.
         /// </remarks>
         /// <param name="httpConfigurationBuilder">a builder for HTTP configuration</param>
-        /// <returns>the same builder</returns>
+        /// <returns>the top-level builder</returns>
         public ConfigurationBuilder Http(HttpConfigurationBuilder httpConfigurationBuilder)
         {
             _httpConfigurationBuilder = httpConfigurationBuilder;
@@ -273,8 +273,8 @@ namespace LaunchDarkly.Sdk.Client
         ///         .Logging(Components.Logging().Level(LogLevel.Warn)))
         ///         .Build();
         /// </example>
-        /// <param name="loggingConfigurationBuilder">the builder object</param>
-        /// <returns>the same builder</returns>
+        /// <param name="loggingConfigurationBuilder">a builder for logging configuration</param>
+        /// <returns>the top-level builder</returns>
         /// <seealso cref="Components.Logging()" />
         /// <seealso cref="Components.Logging(ILogAdapter) "/>
         /// <seealso cref="Components.NoLogging" />
@@ -311,7 +311,8 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Sets the implementation of the component that saves flag values for each user in persistent storage.
+        /// Sets the SDK's persistent storage configuration, using a configuration builder obtained from
+        /// <see cref="Components.Persistence()"/>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -321,16 +322,27 @@ namespace LaunchDarkly.Sdk.Client
         /// <para>
         /// By default, the SDK uses a persistence mechanism that is specific to each platform: on Android and
         /// iOS it is the native preferences store, and in the .NET Standard implementation for desktop apps
-        /// it is the <c>System.IO.IsolatedStorage</c> API. You may substitute a custom implementation, or
-        /// pass <see cref="Components.NoPersistence"/> to disable persistent storage and use only in-memory
-        /// storage.
+        /// it is the <c>System.IO.IsolatedStorage</c> API. You may use the builder methods to substitute a
+        /// custom implementation or change related parameters.
+        /// </para>
+        /// <para>
+        /// This overwrites any previous options set with this method. If you want to set multiple options,
+        /// set them on the same <see cref="PersistenceConfigurationBuilder"/>.
         /// </para>
         /// </remarks>
-        /// <param name="persistentDataStoreFactory">the factory object; null to use the default implementation</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder Persistence(IPersistentDataStoreFactory persistentDataStoreFactory)
+        /// <example>
+        ///     var config = Configuration.Builder("my-sdk-key")
+        ///         .Persistence(Components.Persistence().MaxCachedUsers(10))
+        ///         .Build();
+        /// </example>
+        /// <param name="persistenceConfigurationBuilder">a builder for persistence configuration</param>
+        /// <returns>the top-level builder</returns>
+        /// <seealso cref="Components.Persistence()" />
+        /// <seealso cref="Components.NoPersistence" />
+        /// <seealso cref="PersistenceConfigurationBuilder"/>
+        public ConfigurationBuilder Persistence(PersistenceConfigurationBuilder persistenceConfigurationBuilder)
         {
-            _persistentDataStoreFactory = persistentDataStoreFactory;
+            _persistenceConfigurationBuilder = persistenceConfigurationBuilder;
             return this;
         }
 

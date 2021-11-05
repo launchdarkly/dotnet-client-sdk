@@ -5,7 +5,6 @@ namespace LaunchDarkly.Sdk.Client.Internal
     {
         public const string KEY = "key";
         public const string VERSION = "version";
-        public const string FLAGS_KEY_PREFIX = "flags:";
         public const string CONTENT_TYPE = "Content-Type";
         public const string APPLICATION_JSON = "application/json";
         public const string PUT = "put";

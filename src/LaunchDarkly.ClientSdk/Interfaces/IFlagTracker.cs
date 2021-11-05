@@ -23,6 +23,14 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// SDK has just received its very first set of flag values.
         /// </para>
         /// <para>
+        /// Currently this event will not fire in a scenario where 1. the client is offline, 2.
+        /// <see cref="LdClient.Identify(User, TimeSpan)"/> or <see cref="LdClient.IdentifyAsync(User)"/>
+        /// has been called to change the current user, and 3. the SDK had previously stored flag data
+        /// for that user (see <see cref="Integrations.PersistenceConfigurationBuilder"/>) and has
+        /// now loaded those flags. The event will only fire if the SDK has received new flag data
+        /// from LaunchDarkly or from <see cref="Integrations.TestData"/>.
+        /// </para>
+        /// <para>
         /// Notifications will be dispatched either on the main thread (on mobile platforms) or in a
         /// background task (on all other platforms). It is the listener's responsibility to return
         /// as soon as possible so as not to block subsequent notifications.

@@ -107,10 +107,9 @@ namespace LaunchDarkly.Sdk.Client
         public bool Offline { get; }
 
         /// <summary>
-        /// A factory object that creates an implementation of <see cref="IPersistentDataStore"/>, for
-        /// saving flag values in persistent storage.
+        /// Persistent storage configuration properties for the SDK.
         /// </summary>
-        public IPersistentDataStoreFactory PersistentDataStoreFactory { get; }
+        public PersistenceConfigurationBuilder PersistenceConfigurationBuilder { get; }
 
         /// <summary>
         /// Defines the base service URIs used by SDK components.
@@ -177,7 +176,7 @@ namespace LaunchDarkly.Sdk.Client
             LoggingConfigurationBuilder = builder._loggingConfigurationBuilder;
             MobileKey = builder._mobileKey;
             Offline = builder._offline;
-            PersistentDataStoreFactory = builder._persistentDataStoreFactory;
+            PersistenceConfigurationBuilder = builder._persistenceConfigurationBuilder;
             ServiceEndpoints = (builder._serviceEndpointsBuilder ?? Components.ServiceEndpoints()).Build();
 
             BackgroundModeManager = builder._backgroundModeManager;
