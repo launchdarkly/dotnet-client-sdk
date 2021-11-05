@@ -1,63 +1,62 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using LaunchDarkly.EventSource;
-using LaunchDarkly.Sdk.Client.Integrations;
+using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Internal.Events;
-using LaunchDarkly.Sdk.Internal.Http;
 using LaunchDarkly.Sdk.Json;
+using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.TestUtil;
+using static LaunchDarkly.Sdk.Client.MockResponses;
+using static LaunchDarkly.Sdk.Client.TestHttpUtils;
 using static LaunchDarkly.TestHelpers.JsonAssertions;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
     public class StreamingDataSourceTest : BaseTest
     {
-        private const string initialFlagsJson = "{" +
-            "\"int-flag\":{\"value\":15,\"version\":100}," +
-            "\"float-flag\":{\"value\":13.5,\"version\":100}," +
-            "\"string-flag\":{\"value\":\"markw@magenic.com\",\"version\":100}" +
-            "}";
+        private static readonly TimeSpan BriefReconnectDelay = TimeSpan.FromMilliseconds(10);
 
-        private readonly User user = User.WithKey("me");
-        private const string encodedUser = "eyJrZXkiOiJtZSJ9";
+        private readonly User simpleUser = User.WithKey("me");
+        private const string encodedSimpleUser = "eyJrZXkiOiJtZSJ9";
 
-        private EventSourceMock mockEventSource;
-        private TestEventSourceFactory eventSourceFactory;
         private MockDataSourceUpdateSink _updateSink = new MockDataSourceUpdateSink();
-        private IFeatureFlagRequestor mockRequestor;
-        private Uri baseUri;
-        private TimeSpan initialReconnectDelay = StreamingDataSourceBuilder.DefaultInitialReconnectDelay;
-        private bool withReasons = false;
+        
+        public StreamingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
 
-        public StreamingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput)
+        private IDataSource MakeDataSource(Uri baseUri, User user, Action<ConfigurationBuilder> modConfig = null)
         {
-            mockEventSource = new EventSourceMock();
-            eventSourceFactory = new TestEventSourceFactory(mockEventSource);
-            mockRequestor = new MockFeatureFlagRequestor(initialFlagsJson);
-            baseUri = new Uri("http://example");
+            var builder = BasicConfig()
+                .DataSource(Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay))
+                .ServiceEndpoints(Components.ServiceEndpoints().Streaming(baseUri).Polling(baseUri));
+            modConfig?.Invoke(builder);
+            var config = builder.Build();
+            return config.DataSourceFactory.CreateDataSource(new LdClientContext(config), _updateSink,
+                user, false);
         }
 
-        private StreamingDataSource MakeStartedStreamingDataSource(IDiagnosticStore diagnosticStore = null)
+        private IDataSource MakeDataSourceWithDiagnostics(Uri baseUri, User user, IDiagnosticStore diagnosticStore)
         {
-            var dataSource = new StreamingDataSource(
-                _updateSink,
-                user,
-                baseUri,
-                withReasons,
-                initialReconnectDelay,
-                mockRequestor,
-                TestUtil.SimpleContext.Http,
-                testLogger,
-                diagnosticStore,
-                eventSourceFactory.Create()
-                );
-            dataSource.Start();
-            return dataSource;
+            var config = BasicConfig()
+                .ServiceEndpoints(Components.ServiceEndpoints().Streaming(baseUri).Polling(baseUri))
+                .Build();
+            var context = new LdClientContext(config, null, diagnosticStore, null);
+            return Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay)
+                .CreateDataSource(context, _updateSink, user, false);
+        }
+
+        private void WithDataSourceAndServer(Handler responseHandler, Action<IDataSource, HttpServer, Task> action)
+        {
+            using (var server = HttpServer.Start(AllowOnlyStreamRequests(responseHandler)))
+            {
+                using (var dataSource = MakeDataSource(server.Uri, BasicUser))
+                {
+                    var initTask = dataSource.Start();
+                    action(dataSource, server, initTask);
+                }
+            }
         }
 
         [Theory]
@@ -74,14 +73,19 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             string expectedQuery
             )
         {
-            var fakeRootUri = "http://fake-stream-host";
-            var fakeBaseUri = fakeRootUri + baseUriExtraPath;
-            this.baseUri = new Uri(fakeBaseUri);
-            this.withReasons = withReasons;
-            MakeStartedStreamingDataSource();
-            Assert.Equal(HttpMethod.Get, eventSourceFactory.ReceivedMethod);
-            Assert.Equal(new Uri(fakeRootUri + expectedPathWithoutUser + encodedUser + expectedQuery),
-                eventSourceFactory.ReceivedUri);
+            using (var server = HttpServer.Start(StreamWithEmptyData))
+            {
+                var baseUri = new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath);
+                using (var dataSource = MakeDataSource(baseUri, simpleUser,
+                    c => c.EvaluationReasons(withReasons)))
+                {
+                    dataSource.Start();
+                    var req = server.Recorder.RequireRequest();
+                    Assert.Equal(expectedPathWithoutUser + encodedSimpleUser, req.Path);
+                    Assert.Equal(expectedQuery, req.Query);
+                    Assert.Equal("GET", req.Method);
+                }
+            }
         }
 
         // REPORT mode is known to fail in Android (ch47341)
@@ -100,195 +104,249 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             string expectedQuery
             )
         {
-            var fakeRootUri = "http://fake-stream-host";
-            var fakeBaseUri = fakeRootUri + baseUriExtraPath;
-            this.baseUri = new Uri(fakeBaseUri);
-            var httpConfig = Components.HttpConfiguration().UseReport(true).CreateHttpConfiguration(SimpleContext.Basic);
-            using (var dataSource = new StreamingDataSource(
-                _updateSink,
-                user,
-                baseUri,
-                withReasons,
-                initialReconnectDelay,
-                mockRequestor,
-                httpConfig,
-                testLogger,
-                null,
-                eventSourceFactory.Create()
-                ))
+            using (var server = HttpServer.Start(StreamWithEmptyData))
             {
-                dataSource.Start();
-
-                Assert.Equal(new HttpMethod("REPORT"), eventSourceFactory.ReceivedMethod);
-                Assert.Equal(new Uri(fakeRootUri + expectedPath + expectedQuery),
-                    eventSourceFactory.ReceivedUri);
-                Assert.NotNull(eventSourceFactory.ReceivedBody);
-                AssertJsonEqual(LdJsonSerialization.SerializeObject(user),
-                        NormalizeJsonUser(LdValue.Parse(eventSourceFactory.ReceivedBody)));
+                var baseUri = new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath);
+                using (var dataSource = MakeDataSource(baseUri, simpleUser,
+                    c => c.EvaluationReasons(withReasons)
+                        .Http(Components.HttpConfiguration().UseReport(true))))
+                {
+                    dataSource.Start();
+                    var req = server.Recorder.RequireRequest();
+                    Assert.Equal(expectedPath, req.Path);
+                    Assert.Equal(expectedQuery, req.Query);
+                    Assert.Equal("REPORT", req.Method);
+                    AssertJsonEqual(LdJsonSerialization.SerializeObject(simpleUser), req.Body);
+                }
             }
         }
 #endif
 
         [Fact]
-        public void PutStoresFeatureFlags()
+        public void PutCausesDataToBeStoredAndDataSourceInitialized()
         {
-            MakeStartedStreamingDataSource();
-            // should be empty before PUT message arrives
-            _updateSink.Actions.ExpectNoValue();
+            var data = new DataSetBuilder()
+                .Add("flag1", 1, LdValue.Of(true), 0)
+                .Build();
 
-            PUTMessageSentToProcessor();
+            WithDataSourceAndServer(StreamWithInitialData(data), (dataSource, _, initTask) =>
+            {
+                var receivedData = _updateSink.ExpectInit(BasicUser);
+                AssertHelpers.DataSetsEqual(data, receivedData);
 
-            var gotData = _updateSink.ExpectInit(user);
-            var gotItem = gotData.Items.First(item => item.Key == "int-flag");
-            int intFlagValue = gotItem.Value.Item.Value.AsInt;
-            Assert.Equal(15, intFlagValue);
+                Assert.True(AsyncUtils.WaitSafely(() => initTask, TimeSpan.FromSeconds(1)));
+                Assert.False(initTask.IsFaulted);
+                Assert.True(dataSource.Initialized);
+            });
         }
 
         [Fact]
-        public void PatchUpdatesFeatureFlag()
+        public void DataSourceIsNotInitializedByDefault()
         {
-            // before PATCH, fill in flags
-            MakeStartedStreamingDataSource();
-            PUTMessageSentToProcessor();
-            _updateSink.ExpectInit(user);
-
-            //PATCH to update 1 flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("patch", UpdatedFlag(), null));
-            mockEventSource.RaiseMessageRcvd(eventArgs);
-
-            //verify flag has changed
-            var gotItem = _updateSink.ExpectUpsert(user, "int-flag");
-            Assert.Equal(99, gotItem.Item.Value.AsInt);
+            WithDataSourceAndServer(StreamThatStaysOpenWithNoEvents, (dataSource, _, initTask) =>
+            {
+                Assert.False(dataSource.Initialized);
+                Assert.False(initTask.IsCompleted);
+            });
         }
 
         [Fact]
-        public void DeleteRemovesFeatureFlag()
+        public void PatchUpdatesFlag()
         {
-            // before DELETE, fill in flags, test it's there
-            MakeStartedStreamingDataSource();
-            PUTMessageSentToProcessor();
-            _updateSink.ExpectInit(user);
+            var flag = new FeatureFlagBuilder().Version(1).Build();
+            var patchEvent = PatchEvent(flag.ToJsonString("flag1"));
 
-            // DELETE int-flag
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("delete", DeleteFlag(), null));
-            mockEventSource.RaiseMessageRcvd(eventArgs);
+            WithDataSourceAndServer(StreamWithEmptyInitialDataAndThen(patchEvent), (dataSource, s, t) =>
+            {
+                _updateSink.ExpectInit(BasicUser);
 
-            // verify flag was deleted
-            var gotItem = _updateSink.ExpectUpsert(user, "int-flag");
-            Assert.Null(gotItem.Item);
+                var receivedItem = _updateSink.ExpectUpsert(BasicUser, "flag1");
+                AssertHelpers.DataItemsEqual(flag.ToItemDescriptor(), receivedItem);
+            });
+        }
+
+        [Fact]
+        public void DeleteDeletesFlag()
+        {
+            var deleteEvent = DeleteEvent("flag1", 2);
+
+            WithDataSourceAndServer(StreamWithEmptyInitialDataAndThen(deleteEvent), (dataSource, s, t) =>
+            {
+                _updateSink.ExpectInit(BasicUser);
+
+                var receivedItem = _updateSink.ExpectUpsert(BasicUser, "flag1");
+                Assert.Null(receivedItem.Item);
+                Assert.Equal(2, receivedItem.Version);
+            });
         }
 
         [Fact]
         public void PingCausesPoll()
         {
-            MakeStartedStreamingDataSource();
-            mockEventSource.RaiseMessageRcvd(new MessageReceivedEventArgs(new MessageEvent("ping", null, null)));
+            var data = new DataSetBuilder()
+                .Add("flag1", 1, LdValue.Of(true), 0)
+                .Build();
+            var streamWithPing = Handlers.SSE.Start()
+                .Then(PingEvent)
+                .Then(Handlers.SSE.LeaveOpen());
 
-            var gotData = _updateSink.ExpectInit(user);
-            var gotItem = gotData.Items.First(item => item.Key == "int-flag");
-            int intFlagValue = gotItem.Value.Item.Value.AsInt;
-            Assert.Equal(15, intFlagValue);
+            using (var pollingServer = HttpServer.Start(PollingResponse(data)))
+            {
+                using (var streamingServer = HttpServer.Start(streamWithPing))
+                {
+                    using (var dataSource = MakeDataSource(streamingServer.Uri, BasicUser,
+                        c => c.ServiceEndpoints(Components.ServiceEndpoints()
+                            .Streaming(streamingServer.Uri).Polling(pollingServer.Uri))))
+                    {
+                        var initTask = dataSource.Start();
+
+                        pollingServer.Recorder.RequireRequest();
+
+                        var receivedData = _updateSink.ExpectInit(BasicUser);
+                        AssertHelpers.DataSetsEqual(data, receivedData);
+
+                        Assert.True(AsyncUtils.WaitSafely(() => initTask, TimeSpan.FromSeconds(1)));
+                        Assert.False(initTask.IsFaulted);
+                        Assert.True(dataSource.Initialized);
+                    }
+                }
+            }
         }
 
+        [Theory]
+        [InlineData(408)]
+        [InlineData(429)]
+        [InlineData(500)]
+        [InlineData(503)]
+        [InlineData(ServerErrorCondition.FakeIOException)]
+        public void VerifyRecoverableHttpError(int errorStatus)
+        {
+            var errorCondition = ServerErrorCondition.FromStatus(errorStatus);
+
+            WithServerErrorCondition(errorCondition, StreamWithEmptyData, (uri, httpConfig, recorder) =>
+            {
+                using (var dataSource = MakeDataSource(uri, BasicUser,
+                    c => c.DataSource(Components.StreamingDataSource().InitialReconnectDelay(TimeSpan.Zero))
+                        .Http(httpConfig)))
+                {
+                    var initTask = dataSource.Start();
+
+                    var status = _updateSink.ExpectStatusUpdate();
+                    errorCondition.VerifyDataSourceStatusError(status);
+
+                    // We don't check here for a second status update to the Valid state, because that was
+                    // done by DataSourceUpdatesImpl when Init was called - our test fixture doesn't do it.
+
+                    _updateSink.ExpectInit(BasicUser);
+
+                    recorder.RequireRequest();
+                    recorder.RequireRequest();
+
+                    Assert.True(AsyncUtils.WaitSafely(() => initTask, TimeSpan.FromSeconds(1)));
+
+                    errorCondition.VerifyLogMessage(logCapture);
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(401)]
+        [InlineData(403)]
+        public void VerifyUnrecoverableHttpError(int errorStatus)
+        {
+            var errorCondition = ServerErrorCondition.FromStatus(errorStatus);
+
+            WithServerErrorCondition(errorCondition, StreamWithEmptyData, (uri, httpConfig, recorder) =>
+            {
+                using (var dataSource = MakeDataSource(uri, BasicUser,
+                    c => c.DataSource(Components.StreamingDataSource().InitialReconnectDelay(TimeSpan.Zero))
+                        .Http(httpConfig)))
+                {
+                    var initTask = dataSource.Start();
+                    var status = _updateSink.ExpectStatusUpdate();
+                    errorCondition.VerifyDataSourceStatusError(status);
+
+                    _updateSink.ExpectNoMoreActions();
+
+                    recorder.RequireRequest();
+                    recorder.RequireNoRequests(TimeSpan.FromMilliseconds(100));
+
+                    Assert.True(AsyncUtils.WaitSafely(() => initTask, TimeSpan.FromSeconds(1)));
+
+                    errorCondition.VerifyLogMessage(logCapture);
+                }
+            });
+        }
+        
         [Fact]
-        public void StreamInitDiagnosticRecordedOnOpen()
+        public async void StreamInitDiagnosticRecordedOnOpen()
         {
             var mockDiagnosticStore = new MockDiagnosticStore();
-            using (var sp = MakeStartedStreamingDataSource(mockDiagnosticStore))
-            {
-                mockEventSource.RaiseOpened(new StateChangedEventArgs(ReadyState.Open));
 
-                var streamInit = mockDiagnosticStore.StreamInits.ExpectValue();
-                Assert.False(streamInit.Failed);
+            using (var server = HttpServer.Start(StreamWithEmptyData))
+            {
+                using (var dataSource = MakeDataSourceWithDiagnostics(server.Uri, BasicUser, mockDiagnosticStore))
+                {
+                    await dataSource.Start();
+
+                    var streamInit = mockDiagnosticStore.StreamInits.ExpectValue();
+                    Assert.False(streamInit.Failed);
+                }
             }
         }
 
         [Fact]
-        public void StreamInitDiagnosticRecordedOnError()
+        public async void StreamInitDiagnosticRecordedOnError()
         {
             var mockDiagnosticStore = new MockDiagnosticStore();
-            using (var sp = MakeStartedStreamingDataSource(mockDiagnosticStore))
-            {
-                mockEventSource.RaiseError(new ExceptionEventArgs(new EventSourceServiceUnsuccessfulResponseException(400)));
 
-                var streamInit = mockDiagnosticStore.StreamInits.ExpectValue();
-                Assert.True(streamInit.Failed);
+            using (var server = HttpServer.Start(Error401Response))
+            {
+                using (var dataSource = MakeDataSourceWithDiagnostics(server.Uri, BasicUser, mockDiagnosticStore))
+                {
+                    await dataSource.Start();
+
+                    var streamInit = mockDiagnosticStore.StreamInits.ExpectValue();
+                    Assert.True(streamInit.Failed);
+                }
             }
         }
 
-        string UpdatedFlag()
+        [Fact]
+        public void UnknownEventTypeDoesNotCauseError()
         {
-            var updatedFlagAsJson = "{\"key\":\"int-flag\",\"version\":999,\"flagVersion\":192,\"value\":99,\"variation\":0,\"trackEvents\":false}";
-            return updatedFlagAsJson;
+            VerifyEventDoesNotCauseStreamRestart("weird", "data");
         }
 
-        string DeleteFlag()
+        private void VerifyEventDoesNotCauseStreamRestart(string eventName, string eventData)
         {
-            var flagToDelete = "{\"key\":\"int-flag\",\"version\":1214}";
-            return flagToDelete;
-        }
+            // We'll end another event after that event, so we can see when we've got past the first one
+            var events = Handlers.SSE.Event(eventName, eventData)
+                .Then(PatchEvent(new FeatureFlagBuilder().Build().ToJsonString("ignore")));
 
-        void PUTMessageSentToProcessor()
-        {
-            MessageReceivedEventArgs eventArgs = new MessageReceivedEventArgs(new MessageEvent("put", initialFlagsJson, null));
-            mockEventSource.RaiseMessageRcvd(eventArgs);
-        }
-    }
-
-    class TestEventSourceFactory
-    {
-        public HttpProperties ReceivedHttpProperties { get; private set; }
-        public HttpMethod ReceivedMethod { get; private set; }
-        public Uri ReceivedUri { get; private set; }
-        public string ReceivedBody { get; private set; }
-        IEventSource _eventSource;
-
-        public TestEventSourceFactory(IEventSource eventSource)
-        {
-            _eventSource = eventSource;
-        }
-
-        public StreamingDataSource.EventSourceCreator Create()
-        {
-            return (httpProperties, method, uri, jsonBody) =>
+            DoTestAfterEmptyPut(events, server =>
             {
-                ReceivedHttpProperties = httpProperties;
-                ReceivedMethod = method;
-                ReceivedUri = uri;
-                ReceivedBody = jsonBody;
-                return _eventSource;
-            };
+                _updateSink.ExpectUpsert(BasicUser, "ignore");
+                
+                server.Recorder.RequireNoRequests(TimeSpan.FromMilliseconds(100));
+
+                Assert.Empty(logCapture.GetMessages().Where(m => m.Level == Logging.LogLevel.Error));
+            });
         }
-    }
 
-    class EventSourceMock : IEventSource
-    {
-        public ReadyState ReadyState => throw new NotImplementedException();
-
-#pragma warning disable 0067 // unused properties
-        public event EventHandler<StateChangedEventArgs> Opened;
-        public event EventHandler<StateChangedEventArgs> Closed;
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
-        public event EventHandler<CommentReceivedEventArgs> CommentReceived;
-        public event EventHandler<ExceptionEventArgs> Error;
-#pragma warning restore 0067
-
-        public void Close()
+        private void DoTestAfterEmptyPut(Handler contentHandler, Action<HttpServer> action)
         {
-            
+            var useContentForFirstRequestOnly = Handlers.Sequential(
+                StreamWithEmptyInitialDataAndThen(contentHandler),
+                StreamThatStaysOpenWithNoEvents
+                );
+            WithDataSourceAndServer(useContentForFirstRequestOnly, (dataSource, server, initTask) =>
+            {
+                _updateSink.ExpectInit(BasicUser);
+                server.Recorder.RequireRequest();
+
+                action(server);
+            });
         }
-
-        public Task StartAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public void Restart(bool withDelay) { }
-
-        public void RaiseError(ExceptionEventArgs e) => Error(null, e);
-
-        public void RaiseMessageRcvd(MessageReceivedEventArgs e) => MessageReceived(null, e);
-
-        public void RaiseOpened(StateChangedEventArgs e) => Opened(null, e);
     }
 }

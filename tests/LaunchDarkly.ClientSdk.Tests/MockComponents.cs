@@ -129,7 +129,7 @@ namespace LaunchDarkly.Sdk.Client
         public FullDataSet ExpectInit(User user)
         {
             var action = Assert.IsType<ReceivedInit>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
-            Assert.Equal(user, action.User);
+            AssertHelpers.UsersEqual(user, action.User);
             return action.Data;
         }
 
@@ -140,6 +140,14 @@ namespace LaunchDarkly.Sdk.Client
             Assert.Equal(key, action.Key);
             return action.Data;
         }
+
+        public DataSourceStatus ExpectStatusUpdate()
+        {
+            var action = Assert.IsType<ReceivedStatusUpdate>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
+            return new DataSourceStatus { State = action.State, LastError = action.Error };
+        }
+
+        public void ExpectNoMoreActions() => Actions.ExpectNoValue();
     }
 
     internal class MockDeviceInfo : IDeviceInfo

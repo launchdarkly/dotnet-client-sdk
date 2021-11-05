@@ -118,5 +118,11 @@ namespace LaunchDarkly.Sdk.Client
     {
         public static string ToJsonString(this FullDataSet data) =>
             DataModelSerialization.SerializeAll(data);
+
+        public static string ToJsonString(this FeatureFlag flag) =>
+            DataModelSerialization.SerializeFlag(flag);
+
+        public static string ToJsonString(this FeatureFlag flag, string key) =>
+            LdValue.BuildObject().Copy(LdValue.Parse(flag.ToJsonString())).Set("key", key).Build().ToJsonString();
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Foundation;
+using LaunchDarkly.Sdk.Client.Tests;
 using UIKit;
-
 using Xunit.Runner;
 using Xunit.Sdk;
 
@@ -15,6 +15,11 @@ namespace LaunchDarkly.Sdk.Client.iOS.Tests
     [Register("AppDelegate")]
     public partial class AppDelegate : RunnerAppDelegate
     {
+        public AppDelegate()
+        {
+            ResultChannel = new XunitConsoleLoggingResultChannel();
+        }
+
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             AddExecutionAssembly(typeof(ExtensibilityPointFactory).Assembly);

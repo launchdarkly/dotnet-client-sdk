@@ -67,7 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.2.0" />
+    <PackageReference Include="LaunchDarkly.TestHelpers" Version="1.3.0" />
     <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
@@ -94,6 +94,7 @@
          they're in the project directory. -->
     <Compile Include="AndroidSpecificTests.cs" />
     <Compile Include="MainActivity.cs" />
+    <Compile Include="XunitConsoleLoggingResultChannel.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Folder Include="Assets\" />

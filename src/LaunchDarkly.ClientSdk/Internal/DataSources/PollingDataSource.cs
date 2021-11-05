@@ -112,7 +112,11 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
             catch (Exception ex)
             {
-                LogHelpers.LogException(_log, "Error updating features", PlatformSpecific.Http.TranslateHttpException(ex));
+                Exception realEx = (ex is AggregateException ae) ? ae.Flatten() : ex;
+                _log.Warn("Polling for feature flag updates failed: {0}", LogValues.ExceptionSummary(realEx));
+                _log.Debug(LogValues.ExceptionTrace(realEx));
+                _updateSink.UpdateStatus(DataSourceState.Interrupted,
+                    DataSourceStatus.ErrorInfo.FromException(realEx));
             }
         }
 

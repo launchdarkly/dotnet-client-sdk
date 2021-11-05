@@ -40,8 +40,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         internal TimeSpan _backgroundPollInterval = Configuration.DefaultBackgroundPollInterval;
         internal TimeSpan _initialReconnectDelay = DefaultInitialReconnectDelay;
 
-        internal StreamingDataSource.EventSourceCreator _eventSourceCreator = null; // used only in testing
-
         /// <summary>
         /// Sets the interval between feature flag updates when the application is running in the background.
         /// </summary>
@@ -83,12 +81,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public StreamingDataSourceBuilder InitialReconnectDelay(TimeSpan initialReconnectDelay)
         {
             _initialReconnectDelay = initialReconnectDelay;
-            return this;
-        }
-
-        internal StreamingDataSourceBuilder EventSourceCreator(StreamingDataSource.EventSourceCreator fn)
-        {
-            _eventSourceCreator = fn;
             return this;
         }
 
@@ -139,8 +131,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 requestor,
                 context.Http,
                 logger,
-                context.DiagnosticStore,
-                _eventSourceCreator
+                context.DiagnosticStore
                 );
         }
 

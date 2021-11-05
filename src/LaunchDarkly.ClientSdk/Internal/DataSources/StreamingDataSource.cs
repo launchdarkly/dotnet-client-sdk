@@ -6,7 +6,6 @@ using LaunchDarkly.EventSource;
 using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Internal.Concurrent;
@@ -35,7 +34,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly IFeatureFlagRequestor _requestor;
         private readonly HttpProperties _httpProperties;
         private readonly IDiagnosticStore _diagnosticStore;
-        private readonly EventSourceCreator _eventSourceCreator;
         private readonly TaskCompletionSource<bool> _initTask;
         private readonly AtomicBoolean _initialized = new AtomicBoolean(false);
         private readonly Logger _log;
@@ -43,13 +41,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private volatile IEventSource _eventSource;
 
         internal DateTime _esStarted; // exposed for testing
-
-        internal delegate IEventSource EventSourceCreator(
-            HttpProperties httpProperties,
-            HttpMethod method,
-            Uri uri,
-            string jsonBody
-            );
 
         internal StreamingDataSource(
             IDataSourceUpdateSink updateSink,
@@ -60,8 +51,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             IFeatureFlagRequestor requestor,
             HttpConfiguration httpConfig,
             Logger log,
-            IDiagnosticStore diagnosticStore,
-            EventSourceCreator eventSourceCreator // used only in tests
+            IDiagnosticStore diagnosticStore
             )
         {
             this._updateSink = updateSink;
@@ -75,7 +65,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             this._diagnosticStore = diagnosticStore;
             this._initTask = new TaskCompletionSource<bool>();
             this._log = log;
-            this._eventSourceCreator = eventSourceCreator ?? CreateEventSource;
         }
 
         public bool Initialized => _initialized.Get();
@@ -84,7 +73,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             if (_useReport)
             {
-                _eventSource = _eventSourceCreator(
+                _eventSource = CreateEventSource(
                     _httpProperties,
                     ReportMethod,
                     MakeRequestUriWithPath(StandardEndpoints.StreamingReportRequestPath),
@@ -93,7 +82,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
             else
             {
-                _eventSource = _eventSourceCreator(
+                _eventSource = CreateEventSource(
                     _httpProperties,
                     HttpMethod.Get,
                     MakeRequestUriWithPath(StandardEndpoints.StreamingGetRequestPath(
@@ -127,6 +116,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .ReadTimeout(LaunchDarklyStreamReadTimeout)
                 .RequestHeaders(httpProperties.BaseHeaders.ToDictionary(kv => kv.Key, kv => kv.Value))
                 .Logger(_log);
+            if (jsonBody != null)
+            {
+                configBuilder.RequestBody(jsonBody, "application/json");
+            }
             return new EventSource.EventSource(configBuilder.Build());
         }
 

@@ -10,7 +10,10 @@ using static LaunchDarkly.TestHelpers.JsonAssertions;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
-    // End-to-end tests of this component against an embedded HTTP server.
+    // End-to-end tests of this component against an embedded HTTP server. This is covered
+    // in more detail by PollingDataSourceTest, but FeatureFlagRequestor can also be used from
+    // StreamingDataSource.
+
     public class FeatureFlagRequestorTests : BaseTest
     {
         public FeatureFlagRequestorTests(ITestOutputHelper testOutput) : base(testOutput) { }

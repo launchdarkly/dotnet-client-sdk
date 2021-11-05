@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-
 using Android.App;
 using Android.OS;
+using LaunchDarkly.Sdk.Client.Tests;
 using Xunit.Runners.UI;
 using Xunit.Sdk;
 
@@ -11,6 +11,11 @@ namespace LaunchDarkly.Sdk.Client.Android.Tests
     [Activity(Label = "LaunchDarkly.Sdk.Client.Android.Tests", MainLauncher = true)]
     public class MainActivity : RunnerActivity
     {
+        public MainActivity()
+        {
+            ResultChannel = new XunitConsoleLoggingResultChannel();
+        }
+
         protected override void OnCreate(Bundle bundle)
         {
             AddExecutionAssembly(typeof(ExtensibilityPointFactory).Assembly);
