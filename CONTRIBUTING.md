@@ -14,7 +14,7 @@ We encourage pull requests and other contributions from the community. Before su
 
 ### Prerequisites
 
-The .NET Standard target requires only the .NET Core 2.1 SDK, while the iOS and Android targets require the corresponding Xamarin SDKs.
+The .NET Standard target requires only the .NET Core 2.1 SDK or higher, while the iOS and Android targets require the corresponding Xamarin SDKs.
 
 ### Building
 
@@ -51,11 +51,9 @@ Note that the mobile unit tests currently do not cover background-mode behavior 
 
 ### Packaging/releasing
 
-Run `./scripts/update-version.sh <VERSION>` to set the project version.
+Releases are done through LaunchDarkly's standard project releaser tool. The scripts in `.ldrelease` implement most of this process, because unlike our other .NET projects which can be built with the .NET 5 SDK in a Linux container, this one currently must be built on a MacOS host in CircleCI. Do not modify these scripts unless you are very sure what you're doing.
 
-Run `./scripts/release.sh` to build the project for all target frameworks and upload the package to NuGet. You must have already configured the necessary NuGet key locally.
-
-To verify that the package can be built without uploading it, run `./scripts/package.sh`.
+If you need to do a manual package build for any reason, you can do it (on MacOS) using the same command shown above under "Building", but adding the option `/t:pack`. However, this will not include Authenticode signing; therefore, please do not publish a GA release of the package from a manual build. If it's absolutely necessary to do so, consult with the SDK team to find out how to access the code-signing certificate.
 
 ### Building a temporary package
 

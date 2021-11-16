@@ -14,9 +14,7 @@
     <PackageId>LaunchDarkly.ClientSdk</PackageId>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
-    <PackOnBuild>true</PackOnBuild>
     <LangVersion>7.3</LangVersion>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <DesignTimeBuild>False</DesignTimeBuild>
     <DisableExtraReferences>True</DisableExtraReferences>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

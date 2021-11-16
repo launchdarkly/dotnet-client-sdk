@@ -16,11 +16,13 @@ mkdir -p "${TEST_PACKAGE_DIR}"
 
 cp "${PROJECT_FILE}" "${SAVE_PROJECT_FILE}"
 
-"$(dirname "$0")/update-version.sh" "${TEST_VERSION}"
-
 trap 'mv "${SAVE_PROJECT_FILE}" "${PROJECT_FILE}"' EXIT
 
-msbuild /restore
+temp_file="${PROJECT_FILE}.tmp"
+sed "s#^\( *\)<Version>[^<]*</Version>#\1<Version>${TEST_VERSION}</Version>#g" "${project_file}" > "${temp_file}"
+mv "${temp_file}" "${PROJECT_FILE}"
+
+msbuild /restore -t:pack "${PROJECT_FILE}"
 
 NUPKG_FILE="src/LaunchDarkly.ClientSdk/bin/Debug/LaunchDarkly.ClientSdk.${TEST_VERSION}.nupkg"
 if [ -f "${NUPKG_FILE}" ]; then
