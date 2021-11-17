@@ -1,5 +1,9 @@
 # LaunchDarkly Client-Side SDK for .NET
 
+## This is a prerelease branch
+
+The `master` branch currently contains prerelease code for development of version 2.0.0 of the SDK. For the source code of the latest version 1.x release, see the [`1.x` branch](https://github.com/launchdarkly/dotnet-client-sdk/tree/1.x).
+
 [![NuGet](https://img.shields.io/nuget/v/LaunchDarkly.ClientSdk.svg?style=flat-square)](https://www.nuget.org/packages/LaunchDarkly.ClientSdk/)
 [![CircleCI](https://circleci.com/gh/launchdarkly/dotnet-client-sdk.svg?style=shield)](https://circleci.com/gh/launchdarkly/dotnet-client-sdk)
 [![Documentation](https://img.shields.io/static/v1?label=GitHub+Pages&message=API+reference&color=00add8)](https://launchdarkly.github.io/dotnet-client-sdk)
