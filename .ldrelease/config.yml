@@ -4,6 +4,11 @@ repo:
   public: dotnet-client-sdk
   private: dotnet-client-sdk-private
 
+branches:
+  - name: master
+    description: 2.x
+  - name: 1.x
+
 jobs:
   # The main build happens on a Mac host
   - circleCI:
