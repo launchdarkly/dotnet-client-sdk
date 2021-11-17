@@ -33,3 +33,6 @@ pushd "${SIGNCODE_DIR}/osslsigncode-2.1.0"
 make
 cp osslsigncode ..
 popd
+
+# Copy the strong-naming key that was downloaded due to our secrets.properties declaration
+cp "${LD_RELEASE_SECRETS_DIR}/LaunchDarkly.ClientSdk.snk" .
