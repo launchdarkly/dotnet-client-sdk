@@ -14,6 +14,11 @@ circleci:
       - step: build-docs
       - step: publish-docs
 
+releasableBranches:
+  - name: master
+    description: 2.x
+  - name: 1.x
+
 template:
   name: dotnet-windows  # only for building documentation
 

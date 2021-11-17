@@ -1,10 +1,10 @@
-# Contributing to the LaunchDarkly Client-Side SDK for Xamarin
+# Contributing to the LaunchDarkly Client-Side SDK for .NET
 
-LaunchDarkly has published an [SDK contributor's guide](https://docs.launchdarkly.com/docs/sdk-contributors-guide) that provides a detailed explanation of how our SDKs work. See below for additional information on how to contribute to this SDK.
+LaunchDarkly has published an [SDK contributor's guide](https://docs.launchdarkly.com/sdk/concepts/contributors-guide) that provides a detailed explanation of how our SDKs work. See below for additional information on how to contribute to this SDK.
 
 ## Submitting bug reports and feature requests
 
-The LaunchDarkly SDK team monitors the [issue tracker](https://github.com/launchdarkly/xamarin-client-sdk/issues) in the SDK repository. Bug reports and feature requests specific to this SDK should be filed in this issue tracker. The SDK team will respond to all newly filed issues within two business days.
+The LaunchDarkly SDK team monitors the [issue tracker](https://github.com/launchdarkly/dotnet-client-sdk/issues) in the SDK repository. Bug reports and feature requests specific to this SDK should be filed in this issue tracker. The SDK team will respond to all newly filed issues within two business days.
 
 ## Submitting pull requests
 
@@ -48,15 +48,3 @@ The equivalent test suites in Android or iOS must be run in an Android or iOS em
 You can run the mobile test projects from Visual Studio (the iOS tests require MacOS); there is also a somewhat complicated process for running them from the command line, which is what the CI build does (see `.circleci/config.yml`).
 
 Note that the mobile unit tests currently do not cover background-mode behavior or connectivity detection.
-
-### Packaging/releasing
-
-Run `./scripts/update-version.sh <VERSION>` to set the project version.
-
-Run `./scripts/release.sh` to build the project for all target frameworks and upload the package to NuGet. You must have already configured the necessary NuGet key locally.
-
-To verify that the package can be built without uploading it, run `./scripts/package.sh`.
-
-### Building a temporary package
-
-If you need to build a `.nupkg` for testing another application (in cases where linking directly to this project is not an option), run `./scripts/build-test-package.sh`. This will create a package with a unique version string in `./test-packages`. You can then set your other project to use `test-packages` as a NuGet package source.
