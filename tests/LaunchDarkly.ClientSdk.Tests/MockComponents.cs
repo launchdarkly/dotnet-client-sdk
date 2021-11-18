@@ -317,10 +317,10 @@ namespace LaunchDarkly.Sdk.Client
             new PersistentDataStoreWrapper(this, mobileKey, Logs.None.Logger(""));
 
         internal void SetupUserData(string mobileKey, string userKey, FullDataSet data) =>
-            WithWrapper(mobileKey).SetUserData(Base64.Sha256Hash(userKey), data);
+            WithWrapper(mobileKey).SetUserData(Base64.UrlSafeSha256Hash(userKey), data);
 
         internal FullDataSet? InspectUserData(string mobileKey, string userKey) =>
-            WithWrapper(mobileKey).GetUserData(Base64.Sha256Hash(userKey));
+            WithWrapper(mobileKey).GetUserData(Base64.UrlSafeSha256Hash(userKey));
 
         internal UserIndex InspectUserIndex(string mobileKey) =>
             WithWrapper(mobileKey).GetIndex();

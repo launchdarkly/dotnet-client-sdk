@@ -10,12 +10,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         // This verifies non-platform-dependent behavior, such as what keys we store particular
         // things under, using a mock persistent storage implementation.
 
-        private static readonly string MobileKeyHash = Base64.Sha256Hash(BasicMobileKey);
+        private static readonly string MobileKeyHash = Base64.UrlSafeSha256Hash(BasicMobileKey);
         private static readonly string ExpectedGlobalNamespace = "LaunchDarkly";
-        private static readonly string ExpectedEnvironmentNamespace = "LaunchDarkly:" + MobileKeyHash;
+        private static readonly string ExpectedEnvironmentNamespace = "LaunchDarkly_" + MobileKeyHash;
         private const string UserKey = "user-key";
-        private static readonly string UserHash = Base64.Sha256Hash(UserKey);
-        private static readonly string ExpectedUserFlagsKey = "flags:" + UserHash;
+        private static readonly string UserHash = Base64.UrlSafeSha256Hash(UserKey);
+        private static readonly string ExpectedUserFlagsKey = "flags_" + UserHash;
         private static readonly string ExpectedIndexKey = "index";
         private static readonly string ExpectedAnonUserKey = "anonUser";
 
