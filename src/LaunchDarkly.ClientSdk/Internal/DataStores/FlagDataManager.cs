@@ -181,6 +181,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 
         public void Dispose() => _persistentStore?.Dispose();
 
-        internal static string UserIdFor(User user) => Base64.Sha256Hash(user.Key);
+        internal static string UserIdFor(User user) => Base64.UrlSafeSha256Hash(user.Key);
     }
 }

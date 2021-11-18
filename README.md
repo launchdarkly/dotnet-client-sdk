@@ -1,5 +1,9 @@
 # LaunchDarkly Client-Side SDK for .NET
 
+## This is a prerelease branch
+
+The `master` branch currently contains prerelease code for development of version 2.0.0 of the SDK. For the source code of the latest version 1.x release, see the [`1.x` branch](https://github.com/launchdarkly/dotnet-client-sdk/tree/1.x).
+
 [![NuGet](https://img.shields.io/nuget/v/LaunchDarkly.ClientSdk.svg?style=flat-square)](https://www.nuget.org/packages/LaunchDarkly.ClientSdk/)
 [![CircleCI](https://circleci.com/gh/launchdarkly/dotnet-client-sdk.svg?style=shield)](https://circleci.com/gh/launchdarkly/dotnet-client-sdk)
 [![Documentation](https://img.shields.io/static/v1?label=GitHub+Pages&message=API+reference&color=00add8)](https://launchdarkly.github.io/dotnet-client-sdk)
@@ -38,13 +42,13 @@ The published version of this assembly is digitally signed with Authenticode and
 
 ```
 Public Key:
-0024000004800000940000000602000000240000525341310004000001000100f121bbf427e4d7
-edc64131a9efeefd20978dc58c285aa6f548a4282fc6d871fbebeacc13160e88566f427497b625
-56bf7ff01017b0f7c9de36869cc681b236bc0df0c85927ac8a439ecb7a6a07ae4111034e03042c
-4b1569ebc6d3ed945878cca97e1592f864ba7cc81a56b8668a6d7bbe6e44c1279db088b0fdcc35
-52f746b4
+0024000004800000940000000602000000240000525341310004000001000100
+058a1dbccbc342759dc98b1eaba4467bfdea062629f212cf7c669ff26b4e2ff3
+c408292487bc349b8a687d73033ff14dbf861e1eea23303a5b5d13b1db034799
+13bd120ba372cf961d27db9f652631565f4e8aff4a79e11cfe713833157ecb5d
+cbc02d772967d919f8f06fbee227a664dc591932d5b05f4da1c8439702ecfdb1
 
-Public Key Token: f86add69004e6885
+Public Key Token: 90b24964a3dfb906
 ```
 
 ## Learn more

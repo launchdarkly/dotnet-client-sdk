@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.IO.IsolatedStorage;
-using System.Text;
 using LaunchDarkly.Sdk.Client.Interfaces;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
@@ -16,8 +15,6 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 
     internal sealed partial class LocalStorage : IPersistentDataStore
     {
-        private const string ConfigDirectoryName = "LaunchDarkly";
-
         public string GetValue(string storageNamespace, string key)
         {
             return WithStore(store =>
@@ -56,8 +53,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
                 }
                 else
                 {
-                    var dirPath = MakeDirectoryPath(storageNamespace);
-                    store.CreateDirectory(dirPath); // has no effect if directory already exists
+                    store.CreateDirectory(storageNamespace); // has no effect if directory already exists
                     using (var stream = store.OpenFile(filePath, FileMode.Create, FileAccess.Write))
                     {
                         using (var sw = new StreamWriter(stream))
@@ -87,36 +83,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
             });
         }
 
-        private static string MakeDirectoryPath(string storageNamespace) =>
-            string.IsNullOrEmpty(storageNamespace)
-                ? ConfigDirectoryName
-                : (ConfigDirectoryName + "." + EscapeFilenameComponent(storageNamespace));
-
         private static string MakeFilePath(string storageNamespace, string key) =>
-            MakeDirectoryPath(storageNamespace) + "/" + EscapeFilenameComponent(key);
-
-        private static string EscapeFilenameComponent(string name)
-        {
-            StringBuilder buf = null;
-            for (var i = 0; i < name.Length; i++)
-            {
-                var ch = name[i];
-                if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '-'
-                    || (ch == '.' && i > 0))
-                {
-                    buf?.Append(ch);
-                }
-                else
-                {
-                    if (buf == null) // create StringBuilder lazily since most names will be valid
-                    {
-                        buf = new StringBuilder(name.Length + 30);
-                        buf.Append(name.Substring(0, i));
-                    }
-                    buf.Append('%').Append(((int)ch).ToString("X")); // hex value
-                }
-            }
-            return buf == null ? name : buf.ToString();
-        }
+            storageNamespace + "/" + key;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 
 namespace LaunchDarkly.Sdk.Client.Interfaces
 {
@@ -15,11 +14,18 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     /// only need to use this interface if you want to provide different storage behavior.
     /// </para>
     /// <para>
-    /// Each data item is defined by a "namespace" and a "key". Both of these are non-null and non-empty
-    /// strings defined by the SDK. Keys are unique within a namespace. The value of the data item is
-    /// simply a string. The store should not make any assumptions about the allowed content of these
-    /// strings.
+    /// Each data item is uniquely identified by the combination of a "namespace" and a "key", and has
+    /// a string value. These are defined as follows:
     /// </para>
+    /// <list type="bullet">
+    /// <item><description> Both the namespace and the key are non-null and non-empty strings.
+    /// </description></item>
+    /// <item><description> Both the namespace and the key contain only alphanumeric characters,
+    /// hyphens, and underscores. </description></item>
+    /// <item><description> The namespace always starts with "LaunchDarkly". </description></item>
+    /// <item><description> The value can be any non-null string, including an empty string.
+    /// </description></item>
+    /// </list>
     /// <para>
     /// Unlike server-side SDKs, the persistent data store in this SDK treats the entire set of flags
     /// for a given user as a single value which is written to the store all at once, rather than one

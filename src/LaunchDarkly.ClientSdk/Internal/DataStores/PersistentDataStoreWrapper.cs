@@ -15,12 +15,19 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
     /// allows FlagDataManager (and other parts of the SDK that may need to access persistent
     /// storage) to be written in a clearer way without embedding many implementation details.
     /// </summary>
+    /// <remarks>
+    /// See <see cref="IPersistentDataStore"/> for the rules about what namespaces and keys
+    /// we can use. It is <see cref="PersistentDataStoreWrapper"/>'s responsibility to follow
+    /// those rules. We are OK as long as we use base64url-encoding for all variables such as
+    /// user key and mobile key, and use only characters from the base64url set (A-Z, a-z,
+    /// 0-9, -, and _) for other namespace/key components.
+    /// </remarks>
     internal sealed class PersistentDataStoreWrapper : IDisposable
     {
         private const string NamespacePrefix = "LaunchDarkly";
         private const string GlobalAnonUserKey = "anonUser";
         private const string EnvironmentMetadataKey = "index";
-        private const string EnvironmentUserDataKeyPrefix = "flags:";
+        private const string EnvironmentUserDataKeyPrefix = "flags_";
 
         private readonly IPersistentDataStore _persistentStore;
         private readonly string _globalNamespace;
@@ -40,7 +47,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             _log = log;
 
             _globalNamespace = NamespacePrefix;
-            _environmentNamespace = NamespacePrefix + ":" + Base64.Sha256Hash(mobileKey);
+            _environmentNamespace = NamespacePrefix + "_" + Base64.UrlSafeSha256Hash(mobileKey);
         }
 
         public FullDataSet? GetUserData(string userId)
