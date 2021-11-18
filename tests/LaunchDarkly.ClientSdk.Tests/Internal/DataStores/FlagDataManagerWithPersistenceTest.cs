@@ -113,7 +113,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 
             var index = _persistentStore.InspectUserIndex(BasicMobileKey);
             Assert.Equal(
-                ImmutableList.Create(Base64.Sha256Hash(BasicUser.Key), Base64.Sha256Hash(OtherUser.Key)),
+                ImmutableList.Create(Base64.UrlSafeSha256Hash(BasicUser.Key), Base64.UrlSafeSha256Hash(OtherUser.Key)),
                 index.Data.Select(e => e.UserId).ToImmutableList()
                 );
         }
@@ -133,7 +133,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 
             var index = _persistentStore.InspectUserIndex(BasicMobileKey);
             Assert.Equal(
-                ImmutableList.Create(Base64.Sha256Hash(OtherUser.Key), Base64.Sha256Hash(user3.Key)),
+                ImmutableList.Create(Base64.UrlSafeSha256Hash(OtherUser.Key), Base64.UrlSafeSha256Hash(user3.Key)),
                 index.Data.Select(e => e.UserId).ToImmutableList()
                 );
         }

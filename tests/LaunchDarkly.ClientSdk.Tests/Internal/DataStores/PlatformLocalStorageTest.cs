@@ -74,26 +74,26 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         [Fact]
         public void KeysWithSpecialCharacters()
         {
-            var storageNamespace = TestNamespacePrefix + nameof(KeysWithSpecialCharacters);
             var keys = new string[]
             {
-                "$",
-                "/",
-                ".",
-                "?",
-                "key/with//slashes",
-                "key.with.dots",
-                "këy.wíth.âccents"
+                "-",
+                "_",
+                "key-with-dashes",
+                "key_with_underscores"
             };
             var keysAndValues = keys.ToDictionary(key => key, key => "value-" + key);
-            foreach (var kv in keysAndValues)
+            foreach (var k in keysAndValues.Keys)
             {
-                testLogger.Info("*** setting {0} to {1}", kv.Key, kv.Value);
-                _storage.SetValue(storageNamespace, kv.Key, kv.Value);
-            }
-            foreach (var kv in keysAndValues)
-            {
-                Assert.Equal(kv.Value, _storage.GetValue(storageNamespace, kv.Key));
+                var ns = TestNamespacePrefix + nameof(KeysWithSpecialCharacters) + k;
+                foreach (var kv in keysAndValues)
+                {
+                    testLogger.Info("*** setting {0} to {1}", kv.Key, kv.Value);
+                    _storage.SetValue(ns, kv.Key, kv.Value);
+                }
+                foreach (var kv in keysAndValues)
+                {
+                    Assert.Equal(kv.Value, _storage.GetValue(ns, kv.Key));
+                }
             }
         }
     }
