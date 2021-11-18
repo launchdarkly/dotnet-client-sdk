@@ -22,10 +22,9 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
         /// <returns>an HTTP message handler factory or null</returns>
         public static Func<HttpProperties, HttpMessageHandler> GetHttpMessageHandlerFactory(
             TimeSpan connectTimeout,
-            TimeSpan readTimeout,
             IWebProxy proxy
             ) =>
-            PlatformGetHttpMessageHandlerFactory(connectTimeout, readTimeout, proxy);
+            PlatformGetHttpMessageHandlerFactory(connectTimeout, proxy);
 
         /// <summary>
         /// Converts any platform-specific exceptions that might be thrown by the platform-specific

@@ -10,13 +10,11 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     {
         private static Func<HttpProperties, HttpMessageHandler> PlatformGetHttpMessageHandlerFactory(
             TimeSpan connectTimeout,
-            TimeSpan readTimeout,
             IWebProxy proxy
             ) =>
             p => new AndroidClientHandler()
             {
                 ConnectTimeout = connectTimeout,
-                ReadTimeout = readTimeout,
                 Proxy = proxy
             };
 

@@ -63,18 +63,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         public IWebProxy Proxy { get; }
 
         /// <summary>
-        /// The network read timeout (socket timeout).
-        /// </summary>
-        /// <remarks>
-        /// This is the amount of time without receiving data on a connection that the
-        /// SDK will tolerate before signaling an error. This does <i>not</i> apply to
-        /// the streaming connection used by <see cref="Components.StreamingDataSource"/>,
-        /// which has its own non-configurable read timeout based on the expected behavior
-        /// of the LaunchDarkly streaming service.
-        /// </remarks>
-        public TimeSpan ReadTimeout { get; }
-
-        /// <summary>
         /// The maximum amount of time to wait for the beginning of an HTTP response.
         /// </summary>
         /// <remarks>
@@ -123,7 +111,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <param name="defaultHeaders">value for <see cref="DefaultHeaders"/></param>
         /// <param name="messageHandler">value for <see cref="MessageHandler"/></param>
         /// <param name="proxy">value for <see cref="Proxy"/></param>
-        /// <param name="readTimeout">value for <see cref="ReadTimeout"/></param>
         /// <param name="responseStartTimeout">value for <see cref="ResponseStartTimeout"/></param>
         /// <param name="useReport">value for <see cref="UseReport"/></param>
         public HttpConfiguration(
@@ -131,12 +118,11 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             IEnumerable<KeyValuePair<string, string>> defaultHeaders,
             HttpMessageHandler messageHandler,
             IWebProxy proxy,
-            TimeSpan readTimeout,
             TimeSpan responseStartTimeout,
             bool useReport
             ) :
             this(
-                MakeHttpProperties(connectTimeout, defaultHeaders, messageHandler, readTimeout),
+                MakeHttpProperties(connectTimeout, defaultHeaders, messageHandler, proxy),
                 messageHandler,
                 responseStartTimeout,
                 useReport
@@ -155,7 +141,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             DefaultHeaders = httpProperties.BaseHeaders;
             MessageHandler = messageHandler;
             Proxy = httpProperties.Proxy;
-            ReadTimeout = httpProperties.ReadTimeout;
             ResponseStartTimeout = responseStartTimeout;
             UseReport = useReport;
         }
@@ -181,15 +166,15 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             TimeSpan connectTimeout,
             IEnumerable<KeyValuePair<string, string>> defaultHeaders,
             HttpMessageHandler messageHandler,
-            TimeSpan readTimeout
+            IWebProxy proxy
             )
         {
             var ret = HttpProperties.Default
                 .WithConnectTimeout(connectTimeout)
-                .WithReadTimeout(readTimeout)
                 .WithHttpMessageHandlerFactory(messageHandler is null ?
                     (Func<HttpProperties, HttpMessageHandler>)null :
-                    _ => messageHandler);
+                    _ => messageHandler)
+                .WithProxy(proxy);
             foreach (var kv in defaultHeaders)
             {
                 ret = ret.WithHeader(kv.Key, kv.Value);
