@@ -20,7 +20,6 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 
         private static Func<HttpProperties, HttpMessageHandler> PlatformGetHttpMessageHandlerFactory(
             TimeSpan connectTimeout,
-            TimeSpan readTimeout,
             IWebProxy proxy
             ) =>
             (proxy is null)

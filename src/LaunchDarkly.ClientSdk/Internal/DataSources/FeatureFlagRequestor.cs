@@ -40,7 +40,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly bool _useReport;
         private readonly bool _withReasons;
         private readonly HttpClient _httpClient;
-        private readonly HttpProperties _httpProperties;
+        private readonly HttpConfiguration _httpConfig;
         private readonly Logger _log;
         private volatile EntityTagHeaderValue _etag;
 
@@ -53,8 +53,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             )
         {
             this._baseUri = baseUri;
-            this._httpProperties = httpConfig.HttpProperties;
-            this._httpClient = _httpProperties.NewHttpClient();
+            this._httpConfig = httpConfig;
+            this._httpClient = httpConfig.HttpProperties.NewHttpClient();
             this._currentUser = user;
             this._useReport = httpConfig.UseReport;
             this._withReasons = withReasons;
@@ -89,8 +89,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private async Task<WebResponse> MakeRequest(HttpRequestMessage request)
         {
-            _httpProperties.AddHeaders(request);
-            using (var cts = new CancellationTokenSource(_httpProperties.ConnectTimeout))
+            _httpConfig.HttpProperties.AddHeaders(request);
+            using (var cts = new CancellationTokenSource(_httpConfig.ResponseStartTimeout))
             {
                 if (_etag != null)
                 {
@@ -127,7 +127,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     }
                     //Otherwise this was a request timeout.
                     throw new TimeoutException("Get item with URL: " + request.RequestUri +
-                                                " timed out after : " + _httpProperties.ConnectTimeout);
+                                                " timed out after : " + _httpConfig.ResponseStartTimeout);
                 }
             }
         }

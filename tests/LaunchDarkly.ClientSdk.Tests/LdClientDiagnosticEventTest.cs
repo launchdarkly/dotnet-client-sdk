@@ -219,7 +219,7 @@ namespace LaunchDarkly.Sdk.Client
                 c => c.Http(
                         Components.HttpConfiguration()
                             .ConnectTimeout(TimeSpan.FromMilliseconds(8888))
-                            .ReadTimeout(TimeSpan.FromMilliseconds(9999))
+                            .ResponseStartTimeout(TimeSpan.FromMilliseconds(9999))
                             .MessageHandler(StreamWithInitialData().AsMessageHandler())
                             .UseReport(true)
                     ),
@@ -349,7 +349,7 @@ namespace LaunchDarkly.Sdk.Client
                 .Add("eventsFlushIntervalMillis", EventProcessorBuilder.DefaultFlushInterval.TotalMilliseconds)
                 .Add("inlineUsersInEvents", false)
                 .Add("reconnectTimeMillis", StreamingDataSourceBuilder.DefaultInitialReconnectDelay.TotalMilliseconds)
-                .Add("socketTimeoutMillis", HttpConfigurationBuilder.DefaultReadTimeout.TotalMilliseconds)
+                .Add("socketTimeoutMillis", HttpConfigurationBuilder.DefaultResponseStartTimeout.TotalMilliseconds)
                 .Add("startWaitMillis", LdClientDiagnosticEventTest.testStartWaitTime.TotalMilliseconds)
                 .Add("streamingDisabled", false)
                 .Add("useReport", false)

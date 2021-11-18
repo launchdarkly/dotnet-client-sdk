@@ -39,11 +39,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             // deliberately longer than the server-side SDK's default connection timeout
 
         /// <summary>
-        /// The default value for <see cref="ReadTimeout(TimeSpan)"/>: 10 seconds.
-        /// </summary>
-        public static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(10);
-
-        /// <summary>
         /// The default value for <see cref="ResponseStartTimeout(TimeSpan)"/>: 10 seconds.
         /// </summary>
         public static readonly TimeSpan DefaultResponseStartTimeout = TimeSpan.FromSeconds(10);
@@ -52,7 +47,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         internal List<KeyValuePair<string, string>> _customHeaders = new List<KeyValuePair<string, string>>();
         internal HttpMessageHandler _messageHandler = null;
         internal IWebProxy _proxy = null;
-        internal TimeSpan _readTimeout = DefaultReadTimeout;
         internal TimeSpan _responseStartTimeout = DefaultResponseStartTimeout;
         internal string _wrapperName = null;
         internal string _wrapperVersion = null;
@@ -166,30 +160,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         /// <summary>
-        /// Sets the socket read timeout.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Sets the socket timeout. This is the amount of time without receiving data on a connection that the
-        /// SDK will tolerate before signaling an error. This does <i>not</i> apply to the streaming connection
-        /// used by <see cref="Components.StreamingDataSource"/>, which has its own non-configurable read timeout
-        /// based on the expected behavior of the LaunchDarkly streaming service.
-        /// </para>
-        /// <para>
-        /// Not all .NET platforms support setting a sockettimeout. It is supported in
-        /// .NET Core 2.1+, .NET 5+, and Xamarin Android, but not in Xamarin iOS. On platforms
-        /// where it is not supported, this parameter is ignored.
-        /// </para>
-        /// </remarks>
-        /// <param name="readTimeout">the socket read timeout</param>
-        /// <returns>the builder</returns>
-        public HttpConfigurationBuilder ReadTimeout(TimeSpan readTimeout)
-        {
-            _readTimeout = readTimeout;
-            return this;
-        }
-
-        /// <summary>
         /// Sets the maximum amount of time to wait for the beginning of an HTTP response.
         /// </summary>
         /// <remarks>
@@ -278,6 +248,9 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             LdValue.BuildObject()
                 .WithHttpProperties(MakeHttpProperties(context.Basic))
                 .Add("useReport", _useReport)
+                .Set("socketTimeoutMillis", _responseStartTimeout.TotalMilliseconds)
+                    // WithHttpProperties normally sets socketTimeoutMillis to the ReadTimeout value,
+                    // which is more correct, but we can't really set ReadTimeout in this SDK
                 .Build();
 
         private HttpProperties MakeHttpProperties(BasicConfiguration basic)
@@ -285,7 +258,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             Func<HttpProperties, HttpMessageHandler> handlerFn;
             if (_messageHandler is null)
             {
-                handlerFn = PlatformSpecific.Http.GetHttpMessageHandlerFactory(_connectTimeout, _readTimeout, _proxy);
+                handlerFn = PlatformSpecific.Http.GetHttpMessageHandlerFactory(_connectTimeout, _proxy);
             }
             else
             {
@@ -297,7 +270,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 .WithConnectTimeout(_connectTimeout)
                 .WithHttpMessageHandlerFactory(handlerFn)
                 .WithProxy(_proxy)
-                .WithReadTimeout(_readTimeout)
                 .WithUserAgent("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)))
                 .WithWrapper(_wrapperName, _wrapperVersion);
 

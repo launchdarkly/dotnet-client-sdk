@@ -53,14 +53,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         [Fact]
-        public void ReadTimeout()
-        {
-            var prop = _tester.Property(c => c.ReadTimeout, (b, v) => b.ReadTimeout(v));
-            prop.AssertDefault(HttpConfigurationBuilder.DefaultReadTimeout);
-            prop.AssertCanSet(TimeSpan.FromSeconds(7));
-        }
-
-        [Fact]
         public void ResponseStartTimeout()
         {
             var value = TimeSpan.FromMilliseconds(789);
