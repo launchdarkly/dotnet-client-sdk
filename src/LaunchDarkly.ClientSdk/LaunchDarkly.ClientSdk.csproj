@@ -73,4 +73,9 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <AssemblyOriginatorKeyFile>../../LaunchDarkly.ClientSdk.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
 </Project>
