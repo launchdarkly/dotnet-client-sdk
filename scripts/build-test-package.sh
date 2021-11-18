@@ -19,7 +19,7 @@ cp "${PROJECT_FILE}" "${SAVE_PROJECT_FILE}"
 trap 'mv "${SAVE_PROJECT_FILE}" "${PROJECT_FILE}"' EXIT
 
 temp_file="${PROJECT_FILE}.tmp"
-sed "s#^\( *\)<Version>[^<]*</Version>#\1<Version>${TEST_VERSION}</Version>#g" "${project_file}" > "${temp_file}"
+sed "s#^\( *\)<Version>[^<]*</Version>#\1<Version>${TEST_VERSION}</Version>#g" "${PROJECT_FILE}" > "${temp_file}"
 mv "${temp_file}" "${PROJECT_FILE}"
 
 msbuild /restore -t:pack "${PROJECT_FILE}"
