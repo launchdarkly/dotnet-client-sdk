@@ -177,10 +177,11 @@ namespace LaunchDarkly.Sdk.Client
             _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
             var isConnected = _connectivityStateManager.IsConnected;
 
+            diagnosticDisabler?.SetDisabled(!isConnected || configuration.Offline);
+
             _eventProcessor = (configuration.EventProcessorFactory ?? Components.SendEvents())
                 .CreateEventProcessor(_context);
             _eventProcessor.SetOffline(configuration.Offline || !isConnected);
-            diagnosticDisabler?.SetDisabled(!isConnected && !configuration.Offline);
 
             _connectionManager = new ConnectionManager(
                 _context,
@@ -215,7 +216,7 @@ namespace LaunchDarkly.Sdk.Client
                     User = user
                 });
             }
-            
+
             _backgroundModeManager = _config.BackgroundModeManager ?? new DefaultBackgroundModeManager();
             _backgroundModeManager.BackgroundModeChanged += OnBackgroundModeChanged;
         }
