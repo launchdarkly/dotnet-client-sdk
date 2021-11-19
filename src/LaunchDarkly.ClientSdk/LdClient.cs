@@ -32,11 +32,9 @@ namespace LaunchDarkly.Sdk.Client
         // Immutable client state
         readonly Configuration _config;
         readonly LdClientContext _context;
-        readonly IDataSourceFactory _dataSourceFactory;
         readonly IDataSourceStatusProvider _dataSourceStatusProvider;
         readonly IDataSourceUpdateSink _dataSourceUpdateSink;
         readonly FlagDataManager _dataStore;
-        readonly DiagnosticDisablerImpl _diagnosticDisabler;
         readonly ConnectionManager _connectionManager;
         readonly IBackgroundModeManager _backgroundModeManager;
         readonly IConnectivityStateManager _connectivityStateManager;
@@ -50,7 +48,6 @@ namespace LaunchDarkly.Sdk.Client
         // Mutable client state (some state is also in the ConnectionManager)
         readonly ReaderWriterLockSlim _stateLock = new ReaderWriterLockSlim();
         volatile User _user;
-        volatile bool _inBackground;
 
         /// <summary>
         /// The singleton instance used by your application throughout its lifetime. Once this exists, you cannot
@@ -132,10 +129,10 @@ namespace LaunchDarkly.Sdk.Client
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
             var diagnosticStore = _config.DiagnosticOptOut ? null :
                 new ClientDiagnosticStore(_config, startWaitTime);
-            _diagnosticDisabler = _config.DiagnosticOptOut ? null :
+            var diagnosticDisabler = _config.DiagnosticOptOut ? null :
                 new DiagnosticDisablerImpl();
 
-            _context = new LdClientContext(configuration, this, diagnosticStore, _diagnosticDisabler);
+            _context = new LdClientContext(configuration, this, diagnosticStore, diagnosticDisabler);
             _log = _context.BaseLogger;
             _taskExecutor = _context.TaskExecutor;
             diagnosticStore?.SetContext(_context);
@@ -175,33 +172,39 @@ namespace LaunchDarkly.Sdk.Client
             _dataSourceStatusProvider = new DataSourceStatusProviderImpl(dataSourceUpdateSink);
             _flagTracker = new FlagTrackerImpl(dataSourceUpdateSink);
 
-            _dataSourceFactory = configuration.DataSourceFactory ?? Components.StreamingDataSource();
-
-            _connectionManager = new ConnectionManager(_dataSourceUpdateSink, _log);
-            _connectionManager.SetForceOffline(configuration.Offline);
-            if (configuration.Offline)
-            {
-                _log.Info("Starting LaunchDarkly client in offline mode");
-            }
-            _connectionManager.SetDataSourceConstructor(
-                MakeDataSourceConstructor(_user, _inBackground),
-                true
-            );
+            var dataSourceFactory = configuration.DataSourceFactory ?? Components.StreamingDataSource();
 
             _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
-            _connectivityStateManager.ConnectionChanged += networkAvailable =>
-            {
-                _log.Debug("Setting online to {0} due to a connectivity change event", networkAvailable);
-                _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
-                _eventProcessor.SetOffline(!networkAvailable || _connectionManager.ForceOffline);
-            };
             var isConnected = _connectivityStateManager.IsConnected;
-            _connectionManager.SetNetworkEnabled(isConnected);
 
             _eventProcessor = (configuration.EventProcessorFactory ?? Components.SendEvents())
                 .CreateEventProcessor(_context);
             _eventProcessor.SetOffline(configuration.Offline || !isConnected);
+            diagnosticDisabler?.SetDisabled(!isConnected && !configuration.Offline);
 
+            _connectionManager = new ConnectionManager(
+                _context,
+                dataSourceFactory,
+                _dataSourceUpdateSink,
+                _eventProcessor,
+                diagnosticDisabler,
+                configuration.EnableBackgroundUpdating,
+                _user,
+                _log
+                );
+            _connectionManager.SetForceOffline(configuration.Offline);
+            _connectionManager.SetNetworkEnabled(isConnected);
+            if (configuration.Offline)
+            {
+                _log.Info("Starting LaunchDarkly client in offline mode");
+            }
+
+            _connectivityStateManager.ConnectionChanged += networkAvailable =>
+            {
+                _log.Debug("Setting online to {0} due to a connectivity change event", networkAvailable);
+                _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
+            };
+            
             // Send an initial identify event, but only if we weren't explicitly set to be offline
 
             if (!configuration.Offline)
@@ -625,10 +628,7 @@ namespace LaunchDarkly.Sdk.Client
                 });
             }
 
-            return await _connectionManager.SetDataSourceConstructor(
-                MakeDataSourceConstructor(newUser, _inBackground),
-                true
-            );
+            return await _connectionManager.SetUser(newUser);
         }
 
         /// <inheritdoc/>
@@ -691,60 +691,13 @@ namespace LaunchDarkly.Sdk.Client
             Interlocked.CompareExchange(ref _instance, null, this);
         }
 
-        internal void OnBackgroundModeChanged(object sender, BackgroundModeChangedEventArgs args)
-        {
-            _ = OnBackgroundModeChangedAsync(sender, args); // do not wait for the result
-        }
-
-        internal async Task OnBackgroundModeChangedAsync(object sender, BackgroundModeChangedEventArgs args)
-        {
-            var goingIntoBackground = args.IsInBackground;
-            var wasInBackground = LockUtils.WithWriteLock(_stateLock, () =>
-            {
-                var oldValue = _inBackground;
-                _inBackground = goingIntoBackground;
-                return oldValue;
-            });
-            if (goingIntoBackground == wasInBackground)
-            {
-                return;
-            }
-            _log.Debug("Background mode is changing to {0}", goingIntoBackground);
-            _diagnosticDisabler?.SetDisabled(goingIntoBackground);
-            if (goingIntoBackground)
-            {
-                if (!Config.EnableBackgroundUpdating)
-                {
-                    _log.Debug("Background updating is disabled");
-                    await _connectionManager.SetDataSourceConstructor(null, false);
-                    // Normally the data source status is updated by ConnectionManager and/or by the
-                    // data source itself, but in this particular case neither of those are involved,
-                    // so we need to explicitly set the state to BackgroundDisabled.
-                    _dataSourceUpdateSink.UpdateStatus(DataSourceState.BackgroundDisabled, null);
-                    return;
-                }
-                _log.Debug("Background updating is enabled, starting polling processor");
-            }
-            await _connectionManager.SetDataSourceConstructor(
-                MakeDataSourceConstructor(User, goingIntoBackground),
-                false  // don't reset initialized state because the user is still the same
-            );
-        }
+        internal void OnBackgroundModeChanged(object sender, BackgroundModeChangedEventArgs args) =>
+            _connectionManager.SetInBackground(args.IsInBackground);
 
         // Returns our configured event processor (which might be the null implementation, if configured
         // with NoEvents)-- or, a stub if we have been explicitly put offline. This way, during times
         // when the application does not want any network activity, we won't bother buffering events.
         internal IEventProcessor EventProcessorIfEnabled() =>
             Offline ? ComponentsImpl.NullEventProcessor.Instance : _eventProcessor;
-
-        internal Func<IDataSource> MakeDataSourceConstructor(User user, bool background)
-        {
-            return () => _dataSourceFactory.CreateDataSource(
-                    _context,
-                    _dataSourceUpdateSink,
-                    user,
-                    background
-                    );
-        }
     }
 }
