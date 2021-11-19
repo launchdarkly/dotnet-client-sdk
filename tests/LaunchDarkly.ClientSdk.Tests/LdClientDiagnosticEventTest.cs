@@ -117,6 +117,45 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
+        public void DiagnosticEventsAreNotSentWhenConfiguredOffline()
+        {
+            var config = BasicConfig()
+                .Offline(true)
+                .Events(Components.SendEvents()
+                    .EventSender(_testEventSender)
+                    .DiagnosticRecordingIntervalNoMinimum(TimeSpan.FromMilliseconds(50)))
+                .Build();
+            using (var client = TestUtil.CreateClient(config, BasicUser))
+            {
+                _testEventSender.RequireNoPayloadSent(TimeSpan.FromMilliseconds(100));
+
+                client.SetOffline(false, TimeSpan.FromMilliseconds(100));
+
+                _testEventSender.RequirePayload();
+            }
+        }
+
+        [Fact]
+        public void DiagnosticEventsAreNotSentWhenNetworkIsUnavailable()
+        {
+            var connectivityStateManager = new MockConnectivityStateManager(false);
+            var config = BasicConfig()
+                .ConnectivityStateManager(connectivityStateManager)
+                .Events(Components.SendEvents()
+                    .EventSender(_testEventSender)
+                    .DiagnosticRecordingIntervalNoMinimum(TimeSpan.FromMilliseconds(50)))
+                .Build();
+            using (var client = TestUtil.CreateClient(config, BasicUser))
+            {
+                _testEventSender.RequireNoPayloadSent(TimeSpan.FromMilliseconds(100));
+
+                connectivityStateManager.Connect(true);
+
+                _testEventSender.RequirePayload();
+            }
+        }
+
+        [Fact]
         public void DiagnosticPeriodicEventsAreNotSentWhenInBackground()
         {
             var mockBackgroundModeManager = new MockBackgroundModeManager();

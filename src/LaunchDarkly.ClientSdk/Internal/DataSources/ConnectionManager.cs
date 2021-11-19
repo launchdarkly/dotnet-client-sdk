@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Internal;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
@@ -13,10 +14,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     /// </summary>
     /// <remarks>
     /// Whenever the state of this object is modified by <see cref="SetForceOffline(bool)"/>,
-    /// <see cref="SetNetworkEnabled(bool)"/>, <see cref="SetDataSourceConstructor(Func{IDataSource}, bool)"/>,
-    /// or <see cref="Start"/>, it will decide whether to make a new connection, drop an existing
-    /// connection, both, or neither. If the caller wants to know when a new connection (if any) is
-    /// ready, it should <c>await</c> the returned task.
+    /// <see cref="SetNetworkEnabled(bool)"/>, <see cref="SetInBackground(bool)"/>,
+    /// <see cref="SetUser(User)"/>, or <see cref="Start"/>, it will decide whether to make a new
+    /// connection, drop an existing connection, both, or neither. If the caller wants to know when a
+    /// new connection (if any) is ready, it should <c>await</c> the returned task.
+    ///
+    /// ConnectionManager also keeps track of whether event sending should be enabled.
     ///
     /// The object begins in a non-started state, so regardless of what properties are set, it will not
     /// make a connection until after <see cref="Start"/> has been called.
@@ -25,14 +28,20 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     {
         private readonly Logger _log;
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private readonly LdClientContext _clientContext;
+        private readonly IDataSourceFactory _dataSourceFactory;
         private readonly IDataSourceUpdateSink _updateSink;
+        private readonly IEventProcessor _eventProcessor;
+        private readonly DiagnosticDisablerImpl _diagnosticDisabler;
+        private readonly bool _enableBackgroundUpdating;
         private bool _disposed = false;
         private bool _started = false;
         private bool _initialized = false;
         private bool _forceOffline = false;
         private bool _networkEnabled = false;
+        private bool _inBackground = false;
+        private User _user = null;
         private IDataSource _dataSource = null;
-        private Func<IDataSource> _dataSourceConstructor = null;
 
         // Note that these properties do not have simple setter methods, because the setters all
         // need to return Tasks.
@@ -54,9 +63,24 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         /// </summary>
         public bool Initialized => LockUtils.WithReadLock(_lock, () => _initialized);
 
-        internal ConnectionManager(IDataSourceUpdateSink updateSink, Logger log)
+        internal ConnectionManager(
+            LdClientContext clientContext,
+            IDataSourceFactory dataSourceFactory,
+            IDataSourceUpdateSink updateSink,
+            IEventProcessor eventProcessor,
+            DiagnosticDisablerImpl diagnosticDisabler,
+            bool enableBackgroundUpdating,
+            User initialUser,
+            Logger log
+            )
         {
+            _clientContext = clientContext;
+            _dataSourceFactory = dataSourceFactory;
             _updateSink = updateSink;
+            _eventProcessor = eventProcessor;
+            _diagnosticDisabler = diagnosticDisabler;
+            _enableBackgroundUpdating = enableBackgroundUpdating;
+            _user = initialUser;
             _log = log;
         }
 
@@ -98,7 +122,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 }
                 _forceOffline = forceOffline;
                 _log.Info("Offline mode is now {0}", forceOffline);
-                return OpenOrCloseConnectionIfNecessary(); // not awaiting
+                return OpenOrCloseConnectionIfNecessary(false); // not awaiting
             });
         }
 
@@ -140,61 +164,49 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 }
                 _networkEnabled = networkEnabled;
                 _log.Info("Network availability is now {0}", networkEnabled);
-                return OpenOrCloseConnectionIfNecessary(); // not awaiting
+                return OpenOrCloseConnectionIfNecessary(false); // not awaiting
             });
         }
 
         /// <summary>
-        /// Sets the factory function for creating an update processor, and attempts to connect if
-        /// appropriate.
+        /// Sets whether the application is currently in the background.
         /// </summary>
         /// <remarks>
-        /// The factory function encapsulates all the information that <see cref="LdClient"/> takes into
-        /// account when making a connection, i.e. whether we are in streaming or polling mode, the
-        /// polling interval, and the curent user. <c>ConnectionManager</c> itself has no knowledge of
-        /// those things.
-        /// 
-        /// Besides updating the private factory function field, we do the following:
-        /// 
-        /// If the function is null, we drop our current connection (if any), and we will not make
-        /// any connections no matter what other properties are changed as long as it is still null.
-        ///
-        /// If it is non-null and we already have the same factory function, nothing happens.
-        ///
-        /// If it is non-null and we do not already have the same factory function, but other conditions
-        /// disallow making a connection, nothing happens.
-        ///
-        /// If it is non-null and we do not already have the same factory function, and no other
-        /// conditions disallow making a connection, we create an update processor and tell it to start.
-        /// In this case, we also reset <see cref="Initialized"/> to false if <c>resetInitialized</c> is
-        /// true.
-        ///
-        /// The returned task is immediately completed unless we are making a new connection, in which
-        /// case it is completed when the update processor signals success or failure. The task yields
-        /// a true result if we successfully made a connection <i>or</i> if we decided not to connect
-        /// because we are in offline mode. In other words, the result is true if
-        /// <see cref="Initialized"/> is true.
+        /// When in the background, we use a different data source (polling, at a longer interval)
+        /// and we do not send diagnostic events.
         /// </remarks>
-        /// <param name="dataSourceConstructor">a factory function or null</param>
-        /// <param name="resetInitialized">true if we should reset the initialized state (e.g. if we
-        /// are switching users</param>
-        /// <returns>a task as described above</returns>
-        public Task<bool> SetDataSourceConstructor(Func<IDataSource> dataSourceConstructor, bool resetInitialized)
+        /// <param name="inBackground">true if the application is now in the background</param>
+        public void SetInBackground(bool inBackground)
+        {
+            LockUtils.WithWriteLock(_lock, () =>
+            {
+                if (_disposed || _inBackground == inBackground)
+                {
+                    return;
+                }
+                _inBackground = inBackground;
+                _log.Debug("Background mode is changing to {0}", inBackground);
+                _ = OpenOrCloseConnectionIfNecessary(true); // not awaiting
+            });
+        }
+
+        /// <summary>
+        /// Updates the current user.
+        /// </summary>
+        /// <param name="user">the new user</param>
+        /// <returns>a task that is completed when we have received data for the new user, if the
+        /// data source is online, or completed immediately otherwise</returns>
+        public Task<bool> SetUser(User user)
         {
             return LockUtils.WithWriteLock(_lock, () =>
             {
-                if (_disposed || _dataSourceConstructor == dataSourceConstructor)
+                if (_disposed)
                 {
                     return Task.FromResult(false);
                 }
-                _dataSourceConstructor = dataSourceConstructor;
-                _dataSource?.Dispose();
-                _dataSource = null;
-                if (resetInitialized)
-                {
-                    _initialized = false;
-                }
-                return OpenOrCloseConnectionIfNecessary(); // not awaiting
+                _user = user;
+                _initialized = false;
+                return OpenOrCloseConnectionIfNecessary(true);
             });
         }
 
@@ -212,7 +224,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     return Task.FromResult(_initialized);
                 }
                 _started = true;
-                return OpenOrCloseConnectionIfNecessary(); // not awaiting
+                return OpenOrCloseConnectionIfNecessary(false); // not awaiting
             });
         }
 
@@ -227,7 +239,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 }
                 dataSource = _dataSource;
                 _dataSource = null;
-                _dataSourceConstructor = null;
                 _disposed = true;
             });
             dataSource?.Dispose();
@@ -237,21 +248,42 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         // *not* wait for it to succeed; we return a Task that will be completed once it succeeds. In all
         // other cases we return an immediately-completed Task.
 
-        private Task<bool> OpenOrCloseConnectionIfNecessary()
+        private Task<bool> OpenOrCloseConnectionIfNecessary(bool mustReinitializeDataSource)
         {
             if (!_started)
             {
                 return Task.FromResult(false);
             }
+
+            // Analytics event sending is enabled as long as we're allowed to do any network things.
+            // (If the SDK is configured not to send events, then this is a no-op because _eventProcessor
+            // will be a no-op implementation).
+            _eventProcessor.SetOffline(_forceOffline || !_networkEnabled);
+
+            // Diagnostic events are disabled if we're in the background.
+            _diagnosticDisabler?.SetDisabled(_forceOffline || !_networkEnabled || _inBackground);
+
+            if (mustReinitializeDataSource && _dataSource != null)
+            {
+                _dataSource?.Dispose();
+                _dataSource = null;
+            }
+
             if (_networkEnabled && !_forceOffline)
             {
-                if (_dataSource == null && _dataSourceConstructor != null)
+                if (_inBackground && !_enableBackgroundUpdating)
+                {
+                    _log.Debug("Background updating is disabled");
+                    _updateSink.UpdateStatus(DataSourceState.BackgroundDisabled, null);
+                    return Task.FromResult(true);
+                }
+                if (_dataSource is null)
                 {
                     // Set the state to Initializing when there's a new data source that has not yet
                     // started. The state will then be updated as appropriate by the data source either
                     // calling UpdateStatus, or Init which implies UpdateStatus(Valid).
                     _updateSink.UpdateStatus(DataSourceState.Initializing, null);
-                    _dataSource = _dataSourceConstructor();
+                    _dataSource = _dataSourceFactory.CreateDataSource(_clientContext, _updateSink, _user, _inBackground);
                     return _dataSource.Start()
                         .ContinueWith(SetInitializedIfUpdateProcessorStartedSuccessfully);
                 }
