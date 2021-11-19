@@ -1,6 +1,6 @@
 # Change log
 
-All notable changes to the LaunchDarkly Client-Side SDK for Xamarin will be documented in this file.
+All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
 ## [1.2.2] - 2021-04-06

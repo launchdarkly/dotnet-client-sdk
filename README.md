@@ -1,20 +1,16 @@
-# This project is being renamed
-
-Xamarin is just one of several .NET-based platforms that this SDK supports. The **LaunchDarkly Client-Side SDK for Xamarin** is being renamed to the **LaunchDarkly Client-Side SDK for .NET**.
-
-Future releases of the package on NuGet, starting with 2.0.0, will be named **LaunchDarkly.ClientSdk**. The old package name, **LaunchDarkly.XamarinSdk**, will have only maintenance/patch releases.
-
-The GitHub repository has been renamed from `launchdarkly/xamarin-client-sdk` to `launchdarkly/dotnet-client-sdk`. Links to the old repository are automatically redirected by GitHub.
-
 # LaunchDarkly Client-Side SDK for .NET
 
-[![NuGet (old)](https://img.shields.io/nuget/v/LaunchDarkly.XamarinSdk.svg?style=flat-square)](https://www.nuget.org/packages/LaunchDarkly.XamarinSdk/)
+## This is a prerelease branch
+
+The `master` branch currently contains prerelease code for development of version 2.0.0 of the SDK. For the source code of the latest version 1.x release, see the [`1.x` branch](https://github.com/launchdarkly/dotnet-client-sdk/tree/1.x).
+
+[![NuGet](https://img.shields.io/nuget/v/LaunchDarkly.ClientSdk.svg?style=flat-square)](https://www.nuget.org/packages/LaunchDarkly.ClientSdk/)
 [![CircleCI](https://circleci.com/gh/launchdarkly/dotnet-client-sdk.svg?style=shield)](https://circleci.com/gh/launchdarkly/dotnet-client-sdk)
-[![Documentation](https://img.shields.io/static/v1?label=GitHub+Pages&message=API+reference&color=00add8)](https://launchdarkly.github.io/xamarin-client-sdk)
+[![Documentation](https://img.shields.io/static/v1?label=GitHub+Pages&message=API+reference&color=00add8)](https://launchdarkly.github.io/dotnet-client-sdk)
 
-The LaunchDarkly Client-Side SDK for .NET (formerly "LaunchDarkly SDK for Xamarin") is designed primarily for use by code that is deployed to an end user, such as in a desktop application or a smart device. It follows the client-side LaunchDarkly model for single-user contexts (much like our mobile or JavaScript SDKs). It is not intended for use in multi-user systems such as web servers and applications.
+The LaunchDarkly Client-Side SDK for .NET is designed primarily for use by code that is deployed to an end user, such as in a desktop application or a smart device. It follows the client-side LaunchDarkly model for single-user contexts (much like our mobile or JavaScript SDKs). It is not intended for use in multi-user systems such as web servers and applications.
 
-On supported mobile platforms (Android and iOS), the SDK uses the Xamarin framework which allows .NET code to run on those devices. For that reason, the SDK was previously named after Xamarin. However, Xamarin is not the only way to run .NET code in a client-side context (see "Supported platforms" below), so the SDK now has a more general name.
+On supported mobile platforms (Android and iOS), the SDK uses the Xamarin framework which allows .NET code to run on those devices. For that reason, its name was previously "LaunchDarkly Xamarin SDK". However, Xamarin is not the only way to run .NET code in a client-side context (see "Supported platforms" below), so the SDK now has a more general name.
 
 For using LaunchDarkly in *server-side* .NET applications, refer to our [Server-Side .NET SDK](https://github.com/launchdarkly/dotnet-server-sdk).
 
@@ -28,23 +24,38 @@ For using LaunchDarkly in *server-side* .NET applications, refer to our [Server-
 
 This version of the SDK is built for the following targets:
 
-* Xamarin Android 7.1, 8.0, and 8.1, which should also work with later versions of Android.
+* Xamarin Android 8.1, for use with Android 8.1 (Android API 27) and higher.
 * Xamarin iOS 10, for use with iOS 10 and higher.
-* .NET Standard 1.6 and 2.0, for use with any runtime platform that supports .NET Standard, or in portable .NET Standard library code.
+* .NET Standard 2.0, for use with any runtime platform that supports .NET Standard 2.0, or in portable .NET Standard library code.
 
-The .NET Standard targets do not use any Xamarin packages and have no OS-specific code. This allows the SDK to be used in a desktop .NET Framework or .NET 5.0 application, or in a Xamarin MacOS application. However, due to the lack of OS-specific integration, SDK functionality will be limited in those environments: for instance, the SDK will not be able to detect whether networking is turned on or off.
+The .NET Standard 2.0 target does not use any Xamarin packages and has no OS-specific code. This allows the SDK to be used in a desktop .NET Framework or .NET 5.0 application, or in a Xamarin MacOS application. However, due to the lack of OS-specific integration, SDK functionality will be limited in those environments: for instance, the SDK will not be able to detect whether networking is turned on or off.
 
 The .NET build tools should automatically load the most appropriate build of the SDK for whatever platform your application or library is targeted to.
 
 ## Getting started
 
-Refer to the [SDK documentation](https://docs.launchdarkly.com/sdk/client-side/xamarin) for instructions on getting started with using the SDK.
+Refer to the [SDK documentation](https://docs.launchdarkly.com/sdk/client-side/dotnet) for instructions on getting started with using the SDK.
+
+## Signing
+
+The published version of this assembly is digitally signed with Authenticode and [strong-named](https://docs.microsoft.com/en-us/dotnet/framework/app-domains/strong-named-assemblies). Building the code locally in the default Debug configuration does not use strong-naming and does not require a key file. The public key file is in this repository at `LaunchDarkly.pk` as well as here:
+
+```
+Public Key:
+0024000004800000940000000602000000240000525341310004000001000100
+058a1dbccbc342759dc98b1eaba4467bfdea062629f212cf7c669ff26b4e2ff3
+c408292487bc349b8a687d73033ff14dbf861e1eea23303a5b5d13b1db034799
+13bd120ba372cf961d27db9f652631565f4e8aff4a79e11cfe713833157ecb5d
+cbc02d772967d919f8f06fbee227a664dc591932d5b05f4da1c8439702ecfdb1
+
+Public Key Token: 90b24964a3dfb906
+```
 
 ## Learn more
 
-Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/sdk/client-side/xamarin).
+Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/sdk/client-side/dotnet).
 
-The authoritative description of all types, properties, and methods is in the [generated API documentation](https://launchdarkly.github.io/xamarin-client-sdk/).
+The authoritative description of all types, properties, and methods is in the [generated API documentation](https://launchdarkly.github.io/dotnet-client-sdk/).
 
 ## Testing
  

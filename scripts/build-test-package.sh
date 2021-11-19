@@ -8,7 +8,7 @@ set -e
 # the test-packages directory as a package source to use this package in our testing tools.
 
 TEST_VERSION="0.0.1-$(date +%Y%m%d.%H%M%S)"
-PROJECT_FILE=src/LaunchDarkly.XamarinSdk/LaunchDarkly.XamarinSdk.csproj
+PROJECT_FILE=src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 SAVE_PROJECT_FILE="${PROJECT_FILE}.orig"
 TEST_PACKAGE_DIR=./test-packages
 
@@ -16,13 +16,15 @@ mkdir -p "${TEST_PACKAGE_DIR}"
 
 cp "${PROJECT_FILE}" "${SAVE_PROJECT_FILE}"
 
-"$(dirname "$0")/update-version.sh" "${TEST_VERSION}"
-
 trap 'mv "${SAVE_PROJECT_FILE}" "${PROJECT_FILE}"' EXIT
 
-msbuild /restore
+temp_file="${PROJECT_FILE}.tmp"
+sed "s#^\( *\)<Version>[^<]*</Version>#\1<Version>${TEST_VERSION}</Version>#g" "${PROJECT_FILE}" > "${temp_file}"
+mv "${temp_file}" "${PROJECT_FILE}"
 
-NUPKG_FILE="src/LaunchDarkly.XamarinSdk/bin/Debug/LaunchDarkly.XamarinSdk.${TEST_VERSION}.nupkg"
+msbuild /restore -t:pack "${PROJECT_FILE}"
+
+NUPKG_FILE="src/LaunchDarkly.ClientSdk/bin/Debug/LaunchDarkly.ClientSdk.${TEST_VERSION}.nupkg"
 if [ -f "${NUPKG_FILE}" ]; then
 	mv "${NUPKG_FILE}" "${TEST_PACKAGE_DIR}"
 	echo; echo; echo "Success! Created test package version ${TEST_VERSION} in ${TEST_PACKAGE_DIR}"
