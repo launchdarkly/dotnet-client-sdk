@@ -3,6 +3,47 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.0.0-rc.1] - 2021-11-19
+This is the first release candidate version of the LaunchDarkly client-side .NET SDK 2.0-- a major rewrite that introduces a cleaner API design, adds new features, and makes the SDK code easier to maintain and extend. See the [Xamarin 1.x to client-side .NET 2.0 migration guide](https://docs.launchdarkly.com/sdk/client-side/dotnet/migration-1-to-2) for an in-depth look at the changes in 2.0; the following is a summary.
+
+The LaunchDarkly client-side .NET SDK was formerly known as the LaunchDarkly Xamarin SDK. Xamarin for Android and iOS are _among_ its supported platforms, but it can also be used on any platform that supports .NET Core 2+, .NET Standard 2, or .NET 5+. On those platforms, it does not use any Xamarin-specific runtime libraries. To learn more about the distinction between the client-side .NET SDK and the server-side .NET SDK, read: [Client-side and server-side SDKs](https://docs.launchdarkly.com/sdk/concepts/client-side-server-side)
+
+### Added:
+- `LdClient.FlagTracker` provides the ability to get notifications when flag values have changed.
+- `LdClient.DataSourceStatusProvider` provides information on the status of the SDK's data source (which normally means the streaming connection to the LaunchDarkly service).
+- `LdClient.DoubleVariation` and `DoubleVariationDetail` return a numeric flag variation using double-precision floating-point.
+- `HttpConfigurationBuilder.UseReport` tells the SDK to make HTTP `REPORT` requests rather than `GET` requests to the LaunchDarkly service endpoints, which may be desirable in rare circumstances but is not available on all platforms.
+- `ConfigurationBuilder.Persistence` and `PersistenceConfigurationBuilder.MaxCachedUsers` allow setting a limit on how many users' flag data can be saved in persistent local storage, or turning off persistence.
+- The `LaunchDarkly.Sdk.Json` namespace provides methods for converting types like `User` and `FeatureFlagsState` to and from JSON.
+- The `LaunchDarkly.Sdk.UserAttribute` type provides a less error-prone way to refer to user attribute names in configuration, and can also be used to get an arbitrary attribute from a user.
+- The `LaunchDarkly.Sdk.UnixMillisecondTime` type provides convenience methods for converting to and from the Unix epoch millisecond time format that LaunchDarkly uses for all timestamp values.
+- The SDK now periodically sends diagnostic data to LaunchDarkly, describing the version and configuration of the SDK, the architecture and version of the runtime platform, and performance statistics. No credentials, hostnames, or other identifiable values are included. This behavior can be disabled with `ConfigurationBuilder.DiagnosticOptOut` or configured with `ConfigurationBuilder.DiagnosticRecordingInterval`.
+
+### Changed (requirements/dependencies/build):
+- .NET Standard 1.6 is no longer supported.
+- The SDK no longer has a dependency on `Common.Logging`. Instead, it uses a similar but simpler logging facade, the [`LaunchDarkly.Logging`](https://github.com/launchdarkly/dotnet-logging) package, which has adapters for various logging destinations.
+- The SDK no longer has a dependency on the Json.NET library (a.k.a. `Newtonsoft.Json`), but instead uses a lightweight custom JSON serializer and deserializer. This removes the potential for dependency version conflicts in applications that use Json.NET for their own purposes, and reduces the number of dependencies in applications that do not use Json.NET. If you do use Json.NET and you want to use it with SDK data types like `User` and `LdValue`, see [`LaunchDarkly.CommonSdk.JsonNet`](https://github.com/launchdarkly/dotnet-sdk-common/tree/master/src/LaunchDarkly.CommonSdk.JsonNet). Those types also serialize/deserialize correctly with the `System.Text.Json` API on platforms where that API is available.
+ 
+### Changed (API changes):
+- The base namespace has changed: types that were previously in `LaunchDarkly.Client` are now in `LaunchDarkly.Sdk`, and types that were previously in `LaunchDarkly.Xamarin` are now in `LaunchDarkly.Sdk.Client`. The `LaunchDarkly.Sdk` namespace contains types that are not specific to the _client-side_ .NET SDK (that is, they are also used by the server-side .NET SDK): `EvaluationDetail`, `LdValue`, `User`, and `UserBuilder`. Types that are specific to the client-side .NET SDK, such as `Configuration` and `LdClient`, are in `LaunchDarkly.Sdk.Client`.
+- `User` and `Configuration` objects are now immutable. To specify properties for these classes, you must now use `User.Builder` and `Configuration.Builder`.
+- `Configuration.Builder` now returns a concrete type rather than an interface.
+- `EvaluationDetail` is now a struct type rather than a class.
+- `EvaluationReason` is now a single struct type rather than a base class with subclasses.
+- `EvaluationReasonKind` and `EvaluationErrorKind` constants now use .Net-style naming (`RuleMatch`) rather than Java-style naming (`RULE_MATCH`). Their JSON representations are unchanged.
+- The `ILdClient` interface is now in `LaunchDarkly.Sdk.Client.Interfaces` instead of the main namespace.
+- The `ILdClientExtensions` methods `EnumVariation<T>` and `EnumVariationDetail<T>` now have type constraints to enforce that `T` really is an `enum` type.
+
+### Changed (behavioral changes):
+- The default event flush interval is now 30 seconds on mobile platforms, instead of 5 seconds. This is consistent with the other mobile SDKs and is intended to reduce network traffic.
+- Logging now uses a simpler, more stable set of logger names instead of using the names of specific implementation classes that are subject to change. General messages are logged under `LaunchDarkly.Sdk.Xamarin.LdClient`, while messages about specific areas of functionality are logged under that name plus `.DataSource` (streaming, polling, file data, etc.), `.DataStore` (database integrations), `.Evaluation` (unexpected errors during flag evaluations), or `.Events` (analytics event processing).
+ 
+### Fixed:
+- The SDK was deciding whether to send analytics events based on the `Offline` property of the _original_ SDK configuration, rather than whether the SDK is _currently_ in offline mode or not.
+ 
+### Removed:
+- All types and methods that were shown as deprecated/`Obsolete` in the last 1.x release have been removed.
+
 ## [1.2.2] - 2021-04-06
 ### Fixed:
 - The SDK was failing to get flags in streaming mode when connecting to a LaunchDarkly Relay Proxy instance.
