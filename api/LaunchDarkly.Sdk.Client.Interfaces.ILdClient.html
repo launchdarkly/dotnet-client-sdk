@@ -1,0 +1,1343 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Interface ILdClient
+   </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Interface ILdClient
+   ">
+    <meta name="generator" content="docfx 2.57.2.0">
+    
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../styles/docfx.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta property="docfx:navrel" content="../toc.html">
+    <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="../index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient">
+  
+  
+  <h1 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient" class="text-break">Interface ILdClient
+  </h1>
+  <div class="markdown level0 summary"><p>Interface for the standard SDK client methods and properties. The only implementation of this is <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a>.</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.html">LaunchDarkly.Sdk.Client.Interfaces</a></h6>
+  <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface ILdClient : IDisposable</code></pre>
+  </div>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_remarks"><strong>Remarks</strong></h5>
+  <div class="markdown level0 remarks"><p>See also <a class="xref" href="LaunchDarkly.Sdk.Client.ILdClientExtensions.html">ILdClientExtensions</a>, which provides convenience methods that build upon
+this interface.</p>
+</div>
+  <h3 id="properties">Properties
+  </h3>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DataSourceStatusProvider_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.DataSourceStatusProvider*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DataSourceStatusProvider" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.DataSourceStatusProvider">DataSourceStatusProvider</h4>
+  <div class="markdown level1 summary"><p>A mechanism for tracking the status of the data source.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">IDataSourceStatusProvider DataSourceStatusProvider { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceStatusProvider.html">IDataSourceStatusProvider</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DataSourceStatusProvider_remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The data source is the mechanism that the SDK uses to get feature flag configurations, such as a
+streaming connection (the default) or poll requests. The <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceStatusProvider.html">IDataSourceStatusProvider</a>
+has methods for checking whether the data source is (as far as the SDK knows) currently operational,
+and tracking changes in this status. This property will never be null.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FlagTracker_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.FlagTracker*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FlagTracker" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.FlagTracker">FlagTracker</h4>
+  <div class="markdown level1 summary"><p>A mechanism for tracking changes in feature flag configurations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">IFlagTracker FlagTracker { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IFlagTracker.html">IFlagTracker</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FlagTracker_remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IFlagTracker.html">IFlagTracker</a> contains methods for requesting notifications about feature flag
+changes using an event listener model.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Initialized_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Initialized*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Initialized" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Initialized">Initialized</h4>
+  <div class="markdown level1 summary"><p>Returns a boolean value indicating LaunchDarkly connection and flag state within the client.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool Initialized { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Initialized_remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+When you first start the client, once <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(Configuration, User, TimeSpan)</a> or
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_">InitAsync(Configuration, User)</a> has returned, <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Initialized">Initialized</a> should be
+<span class="xref">true</span> if and only if either 1. it connected to LaunchDarkly and successfully retrieved
+flags, or 2. it started in offline mode so there&apos;s no need to connect to LaunchDarkly. If the client
+timed out trying to connect to LD, then <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Initialized">Initialized</a> is <span class="xref">false</span> (even if we
+do have cached flags).  If the client connected and got a 401 error, <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Initialized">Initialized</a> is
+<span class="xref">false</span>. This serves the purpose of letting the app know that there was a problem of some kind.
+</p>
+<p>
+If you call <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan_">Identify(User, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IdentifyAsync_LaunchDarkly_Sdk_User_">IdentifyAsync(User)</a>, <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Initialized">Initialized</a>
+will become <span class="xref">false</span> until the SDK receives the new user&apos;s flags.
+</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Offline_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Offline*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Offline" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Offline">Offline</h4>
+  <div class="markdown level1 summary"><p>Indicates whether the SDK is configured to be always offline.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool Offline { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Offline_remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+This is initially <span class="xref">true</span> if you set it to <span class="xref">true</span> in the configuration with
+<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Offline_System_Boolean_">Offline(Boolean)</a>. However, you can change it at any time to allow the client
+to go online, or force it to go offline, using <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOffline_System_Boolean_System_TimeSpan_">SetOffline(Boolean, TimeSpan)</a> or
+<a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOfflineAsync_System_Boolean_">SetOfflineAsync(Boolean)</a>.
+</p>
+<p>
+When <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Offline">Offline</a> is <span class="xref">false</span>, the SDK connects to LaunchDarkly if possible, but
+this does not guarantee that the connection is successful. There is currently no mechanism to detect whether
+the SDK is currently connected to LaunchDarkly.
+</p>
+</div>
+  <h3 id="methods">Methods
+  </h3>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Alias_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Alias*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Alias_LaunchDarkly_Sdk_User_LaunchDarkly_Sdk_User_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Alias(LaunchDarkly.Sdk.User,LaunchDarkly.Sdk.User)">Alias(User, User)</h4>
+  <div class="markdown level1 summary"><p>Associates two users for analytics purposes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Alias(User user, User previousUser)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
+        <td><span class="parametername">user</span></td>
+        <td><p>the newly identified user</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
+        <td><span class="parametername">previousUser</span></td>
+        <td><p>the previously identified user</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Alias_LaunchDarkly_Sdk_User_LaunchDarkly_Sdk_User__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>This can be helpful in the situation where a person is represented by multiple
+LaunchDarkly users. This may happen, for example, when a person initially logs into
+an application-- the person might be represented by an anonymous user prior to logging
+in and a different user after logging in, as denoted by a different user key.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_AllFlags_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.AllFlags*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_AllFlags" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.AllFlags">AllFlags()</h4>
+  <div class="markdown level1 summary"><p>Returns a map from feature flag keys to <a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a> feature flag values for the current user.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">IDictionary&lt;string, LdValue&gt; AllFlags()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Collections.Generic.IDictionary</span>&lt;<span class="xref">System.String</span>, <a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a>&gt;</td>
+        <td><p>a map from feature flag keys to values for the current user</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_AllFlags_remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+If the result of a flag&apos;s value would have returned the default variation, the value in the map will contain
+<a class="xref" href="LaunchDarkly.Sdk.LdValue.html#LaunchDarkly_Sdk_LdValue_Null">Null</a>. If the client is offline or has not been initialized, an empty
+map will be returned.
+</p>
+<p>
+This method will not send analytics events back to LaunchDarkly.
+</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_BoolVariation_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.BoolVariation*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_BoolVariation_System_String_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.BoolVariation(System.String,System.Boolean)">BoolVariation(String, Boolean)</h4>
+  <div class="markdown level1 summary"><p>Returns the boolean value of a feature flag for a given flag key.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool BoolVariation(string key, bool defaultValue = false)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><p>the variation for the selected user, or <code>defaultValue</code> if the flag is
+disabled in the LaunchDarkly control panel</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_BoolVariationDetail_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.BoolVariationDetail*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_BoolVariationDetail_System_String_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.BoolVariationDetail(System.String,System.Boolean)">BoolVariationDetail(String, Boolean)</h4>
+  <div class="markdown level1 summary"><p>Returns the boolean value of a feature flag for a given flag key, in an object that also
+describes the way the value was determined.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">EvaluationDetail&lt;bool&gt; BoolVariationDetail(string key, bool defaultValue = false)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html">EvaluationDetail</a>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><p>an <code>EvaluationDetail</code> object</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_BoolVariationDetail_System_String_System_Boolean__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The <a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html#LaunchDarkly_Sdk_EvaluationDetail_1_Reason">Reason</a> property in the result will also be included in analytics
+events, if you are capturing detailed event data for this flag.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DoubleVariation_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.DoubleVariation*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DoubleVariation_System_String_System_Double_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.DoubleVariation(System.String,System.Double)">DoubleVariation(String, Double)</h4>
+  <div class="markdown level1 summary"><p>Returns the double-precision floating-point value of a feature flag for a given flag key.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">double DoubleVariation(string key, double defaultValue = 0)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Double</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Double</span></td>
+        <td><p>the variation for the selected user, or <code>defaultValue</code> if the flag is
+disabled in the LaunchDarkly control panel</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DoubleVariationDetail_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.DoubleVariationDetail*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DoubleVariationDetail_System_String_System_Double_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.DoubleVariationDetail(System.String,System.Double)">DoubleVariationDetail(String, Double)</h4>
+  <div class="markdown level1 summary"><p>Returns the double-precision floating-point value of a feature flag for a given flag key,
+in an object that also describes the way the value was determined.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">EvaluationDetail&lt;double&gt; DoubleVariationDetail(string key, double defaultValue = 0)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Double</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html">EvaluationDetail</a>&lt;<span class="xref">System.Double</span>&gt;</td>
+        <td><p>an <code>EvaluationDetail</code> object</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_DoubleVariationDetail_System_String_System_Double__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The <a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html#LaunchDarkly_Sdk_EvaluationDetail_1_Reason">Reason</a> property in the result will also be included in analytics
+events, if you are capturing detailed event data for this flag.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FloatVariation_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.FloatVariation*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FloatVariation_System_String_System_Single_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.FloatVariation(System.String,System.Single)">FloatVariation(String, Single)</h4>
+  <div class="markdown level1 summary"><p>Returns the single-precision floating-point value of a feature flag for a given flag key.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">float FloatVariation(string key, float defaultValue = 0F)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Single</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Single</span></td>
+        <td><p>the variation for the selected user, or <code>defaultValue</code> if the flag is
+disabled in the LaunchDarkly control panel</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FloatVariationDetail_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.FloatVariationDetail*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FloatVariationDetail_System_String_System_Single_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.FloatVariationDetail(System.String,System.Single)">FloatVariationDetail(String, Single)</h4>
+  <div class="markdown level1 summary"><p>Returns the single-precision floating-point value of a feature flag for a given flag key,
+in an object that also describes the way the value was determined.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">EvaluationDetail&lt;float&gt; FloatVariationDetail(string key, float defaultValue = 0F)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Single</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html">EvaluationDetail</a>&lt;<span class="xref">System.Single</span>&gt;</td>
+        <td><p>an <code>EvaluationDetail</code> object</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FloatVariationDetail_System_String_System_Single__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The <a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html#LaunchDarkly_Sdk_EvaluationDetail_1_Reason">Reason</a> property in the result will also be included in analytics
+events, if you are capturing detailed event data for this flag.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Flush_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Flush*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Flush" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Flush">Flush()</h4>
+  <div class="markdown level1 summary"><p>Tells the client that all pending analytics events should be delivered as soon as possible.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Flush()</code></pre>
+  </div>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Flush_remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+When the LaunchDarkly client generates analytics events (from flag evaluations, or from
+<a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan_">Identify(User, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Track_System_String_">Track(String)</a>), they are queued on a worker thread.
+The event thread normally sends all queued events to LaunchDarkly at regular intervals, controlled by the
+<a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_FlushInterval_System_TimeSpan_">FlushInterval(TimeSpan)</a> option. Calling <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Flush">Flush()</a> triggers a send
+without waiting for the next interval.
+</p>
+<p>
+Flushing is asynchronous, so this method will return before it is complete. However, if you
+shut down the client with <span class="xref">System.IDisposable.Dispose</span>, events are guaranteed to be
+sent before that method returns.
+</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Identify*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Identify(LaunchDarkly.Sdk.User,System.TimeSpan)">Identify(User, TimeSpan)</h4>
+  <div class="markdown level1 summary"><p>Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
+an analytics event to tell LaunchDarkly about the user.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool Identify(User user, TimeSpan maxWaitTime)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
+        <td><span class="parametername">user</span></td>
+        <td><p>the new user</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.TimeSpan</span></td>
+        <td><span class="parametername">maxWaitTime</span></td>
+        <td><p>the maximum time to wait for the new flag values</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><p>true if new flag values were obtained</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IdentifyAsync_LaunchDarkly_Sdk_User_">IdentifyAsync(User)</a>, but as a synchronous method.
+</p>
+<p>
+If the SDK is online, <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan_">Identify(User, TimeSpan)</a> waits to receive feature flag values for the new user from
+LaunchDarkly. If it receives the new flag values before <code>maxWaitTime</code> has elapsed, it returns
+<span class="xref">true</span>. If the timeout elapses, it returns <span class="xref">false</span> (although the SDK might
+still receive the flag values later). If we do not need to request flags from LaunchDarkly because we are
+in offline mode, it returns <span class="xref">true</span>.
+</p>
+<p>
+If you do not want to wait, you can either set <code>maxWaitTime</code> to zero or call <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IdentifyAsync_LaunchDarkly_Sdk_User_">IdentifyAsync(User)</a>.
+</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IdentifyAsync_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.IdentifyAsync*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IdentifyAsync_LaunchDarkly_Sdk_User_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.IdentifyAsync(LaunchDarkly.Sdk.User)">IdentifyAsync(User)</h4>
+  <div class="markdown level1 summary"><p>Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
+an analytics event to tell LaunchDarkly about the user.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; IdentifyAsync(User user)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
+        <td><span class="parametername">user</span></td>
+        <td><p>the new user</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><p>a task that yields true if new flag values were obtained</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IdentifyAsync_LaunchDarkly_Sdk_User__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan_">Identify(User, TimeSpan)</a>, but as an asynchronous method.
+</p>
+<p>
+If the SDK is online, the returned task is completed once the SDK has received feature flag values for the
+new user from LaunchDarkly, or received an unrecoverable error; it yields <span class="xref">true</span> for success
+or <span class="xref">false</span> for an error. If the SDK is offline, the returned task is completed immediately
+and yields <span class="xref">true</span>.
+</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IntVariation_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.IntVariation*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IntVariation_System_String_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.IntVariation(System.String,System.Int32)">IntVariation(String, Int32)</h4>
+  <div class="markdown level1 summary"><p>Returns the integer value of a feature flag for a given flag key.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">int IntVariation(string key, int defaultValue = 0)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Int32</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Int32</span></td>
+        <td><p>the variation for the selected user, or <code>defaultValue</code> if the flag is
+disabled in the LaunchDarkly control panel</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IntVariationDetail_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.IntVariationDetail*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IntVariationDetail_System_String_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.IntVariationDetail(System.String,System.Int32)">IntVariationDetail(String, Int32)</h4>
+  <div class="markdown level1 summary"><p>Returns the integer value of a feature flag for a given flag key, in an object that also
+describes the way the value was determined.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">EvaluationDetail&lt;int&gt; IntVariationDetail(string key, int defaultValue = 0)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Int32</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html">EvaluationDetail</a>&lt;<span class="xref">System.Int32</span>&gt;</td>
+        <td><p>an <code>EvaluationDetail</code> object</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IntVariationDetail_System_String_System_Int32__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The <a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html#LaunchDarkly_Sdk_EvaluationDetail_1_Reason">Reason</a> property in the result will also be included in analytics
+events, if you are capturing detailed event data for this flag.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_JsonVariation_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.JsonVariation*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_JsonVariation_System_String_LaunchDarkly_Sdk_LdValue_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.JsonVariation(System.String,LaunchDarkly.Sdk.LdValue)">JsonVariation(String, LdValue)</h4>
+  <div class="markdown level1 summary"><p>Returns the JSON value of a feature flag for a given flag key.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">LdValue JsonVariation(string key, LdValue defaultValue)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a></td>
+        <td><p>the variation for the selected user, or <code>defaultValue</code> if the flag is
+disabled in the LaunchDarkly control panel</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_JsonVariationDetail_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.JsonVariationDetail*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_JsonVariationDetail_System_String_LaunchDarkly_Sdk_LdValue_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.JsonVariationDetail(System.String,LaunchDarkly.Sdk.LdValue)">JsonVariationDetail(String, LdValue)</h4>
+  <div class="markdown level1 summary"><p>Returns the JSON value of a feature flag for a given flag key, in an object that also
+describes the way the value was determined.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">EvaluationDetail&lt;LdValue&gt; JsonVariationDetail(string key, LdValue defaultValue)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html">EvaluationDetail</a>&lt;<a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a>&gt;</td>
+        <td><p>an <code>EvaluationDetail</code> object</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_JsonVariationDetail_System_String_LaunchDarkly_Sdk_LdValue__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The <a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html#LaunchDarkly_Sdk_EvaluationDetail_1_Reason">Reason</a> property in the result will also be included in analytics
+events, if you are capturing detailed event data for this flag.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOffline_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.SetOffline*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOffline_System_Boolean_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.SetOffline(System.Boolean,System.TimeSpan)">SetOffline(Boolean, TimeSpan)</h4>
+  <div class="markdown level1 summary"><p>Sets whether the SDK should be always offline.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool SetOffline(bool value, TimeSpan maxWaitTime)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="parametername">value</span></td>
+        <td><p>true if the client should be always offline</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.TimeSpan</span></td>
+        <td><span class="parametername">maxWaitTime</span></td>
+        <td><p>the maximum length of time to wait for a connection</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><p>true if a new connection was successfully made</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOffline_System_Boolean_System_TimeSpan__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOfflineAsync_System_Boolean_">SetOfflineAsync(Boolean)</a>, but as a synchronous method.
+</p>
+<p>
+If you set the property to <span class="xref">true</span>, any existing connection will be dropped, and the
+method immediately returns <span class="xref">false</span>.
+</p>
+<p>
+If you set it to <span class="xref">false</span> when it was previously <span class="xref">true</span>, but no connection can
+be made because the network is not available, the method immediately returns <span class="xref">false</span>, but the
+SDK will attempt to connect later if the network becomes available.
+</p>
+<p>
+If you set it to <span class="xref">false</span> when it was previously <span class="xref">true</span>, and the network is
+available, the SDK will attempt to connect to LaunchDarkly. If the connection succeeds within the interval
+<code>maxWaitTime</code>, the method returns <span class="xref">true</span>. If the connection permanently fails (e.g. if
+the mobile key is invalid), the method returns <span class="xref">false</span>. If the connection attempt is still in
+progress after <code>maxWaitTime</code> elapses, the method returns <span class="xref">false</span>, but the connection
+might succeed later.
+</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOfflineAsync_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.SetOfflineAsync*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOfflineAsync_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.SetOfflineAsync(System.Boolean)">SetOfflineAsync(Boolean)</h4>
+  <div class="markdown level1 summary"><p>Sets whether the SDK should be always offline.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task SetOfflineAsync(bool value)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="parametername">value</span></td>
+        <td><p>true if the client should be always offline</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task</span></td>
+        <td><p>a task that yields true if a new connection was successfully made</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOfflineAsync_System_Boolean__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>
+This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_SetOffline_System_Boolean_System_TimeSpan_">SetOffline(Boolean, TimeSpan)</a>, but as an asynchronous method.
+</p>
+<p>
+If you set the property to <span class="xref">true</span>, any existing connection will be dropped, and the
+task immediately yields <span class="xref">false</span>.
+</p>
+<p>
+If you set it to <span class="xref">false</span> when it was previously <span class="xref">true</span>, but no connection can
+be made because the network is not available, the task immediately yields <span class="xref">false</span>, but the
+SDK will attempt to connect later if the network becomes available.
+</p>
+<p>
+If you set it to <span class="xref">false</span> when it was previously <span class="xref">true</span>, and the network is
+available, the SDK will attempt to connect to LaunchDarkly. If and when the connection succeeds, the task
+yields <span class="xref">true</span>. If and when the connection permanently fails (e.g. if the mobile key is
+invalid), the task yields <span class="xref">false</span>.
+</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_StringVariation_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.StringVariation*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_StringVariation_System_String_System_String_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.StringVariation(System.String,System.String)">StringVariation(String, String)</h4>
+  <div class="markdown level1 summary"><p>Returns the string value of a feature flag for a given flag key.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string StringVariation(string key, string defaultValue)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><p>the variation for the selected user, or <code>defaultValue</code> if the flag is
+disabled in the LaunchDarkly control panel</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_StringVariationDetail_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.StringVariationDetail*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_StringVariationDetail_System_String_System_String_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.StringVariationDetail(System.String,System.String)">StringVariationDetail(String, String)</h4>
+  <div class="markdown level1 summary"><p>Returns the string value of a feature flag for a given flag key, in an object that also
+describes the way the value was determined.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">EvaluationDetail&lt;string&gt; StringVariationDetail(string key, string defaultValue)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">key</span></td>
+        <td><p>the unique feature key for the feature flag</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">defaultValue</span></td>
+        <td><p>the default value of the flag</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html">EvaluationDetail</a>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><p>an <code>EvaluationDetail</code> object</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_StringVariationDetail_System_String_System_String__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The <a class="xref" href="LaunchDarkly.Sdk.EvaluationDetail-1.html#LaunchDarkly_Sdk_EvaluationDetail_1_Reason">Reason</a> property in the result will also be included in analytics
+events, if you are capturing detailed event data for this flag.</p>
+</div>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Track_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Track*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Track_System_String_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Track(System.String)">Track(String)</h4>
+  <div class="markdown level1 summary"><p>Tracks that current user performed an event for the given event name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Track(string eventName)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">eventName</span></td>
+        <td><p>the name of the event</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Track_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Track*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Track_System_String_LaunchDarkly_Sdk_LdValue_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Track(System.String,LaunchDarkly.Sdk.LdValue)">Track(String, LdValue)</h4>
+  <div class="markdown level1 summary"><p>Tracks that the current user performed an event for the given event name, with additional JSON data.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Track(string eventName, LdValue data)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">eventName</span></td>
+        <td><p>the name of the event</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a></td>
+        <td><span class="parametername">data</span></td>
+        <td><p>a JSON value containing additional data associated with the event</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Track_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Track*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Track_System_String_LaunchDarkly_Sdk_LdValue_System_Double_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.Track(System.String,LaunchDarkly.Sdk.LdValue,System.Double)">Track(String, LdValue, Double)</h4>
+  <div class="markdown level1 summary"><p>Tracks that the current user performed an event for the given event name, and associates it with a
+numeric metric value.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Track(string eventName, LdValue data, double metricValue)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">eventName</span></td>
+        <td><p>the name of the event</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a></td>
+        <td><span class="parametername">data</span></td>
+        <td><p>a JSON value containing additional data associated with the event; pass
+<a class="xref" href="LaunchDarkly.Sdk.LdValue.html#LaunchDarkly_Sdk_LdValue_Null">Null</a> if you do not need this value</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Double</span></td>
+        <td><span class="parametername">metricValue</span></td>
+        <td><p>this value is used by the LaunchDarkly experimentation feature in
+numeric custom metrics, and will also be returned as part of the custom event for Data Export</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="extensionmethods">Extension Methods</h3>
+  <div>
+      <a class="xref" href="LaunchDarkly.Sdk.Client.ILdClientExtensions.html#LaunchDarkly_Sdk_Client_ILdClientExtensions_EnumVariation__1_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_System_String___0_">ILdClientExtensions.EnumVariation&lt;T&gt;(ILdClient, String, T)</a>
+  </div>
+  <div>
+      <a class="xref" href="LaunchDarkly.Sdk.Client.ILdClientExtensions.html#LaunchDarkly_Sdk_Client_ILdClientExtensions_EnumVariationDetail__1_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_System_String___0_">ILdClientExtensions.EnumVariationDetail&lt;T&gt;(ILdClient, String, T)</a>
+  </div>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In This Article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>
