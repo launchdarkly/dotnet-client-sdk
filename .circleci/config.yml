@@ -24,6 +24,7 @@ jobs:
   test-android:
     macos:
       xcode: "12.4.0"
+    resource_class: macos.x86.medium.gen2
 
     environment:
       TERM: dumb
@@ -98,6 +99,7 @@ jobs:
   test-ios:
     macos:
       xcode: "12.4.0"
+    resource_class: macos.x86.medium.gen2
 
     steps:
       - checkout
