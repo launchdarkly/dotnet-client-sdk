@@ -52,6 +52,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Equal(user.Key, ce.User.Key);
                         Assert.Equal(LdValue.Null, ce.Data);
                         Assert.Null(ce.MetricValue);
+                        Assert.NotEqual(0, ce.Timestamp.Value);
                     });
             }
         }
@@ -71,6 +72,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Equal(user.Key, ce.User.Key);
                         Assert.Equal(data, ce.Data);
                         Assert.Null(ce.MetricValue);
+                        Assert.NotEqual(0, ce.Timestamp.Value);
                     });
             }
         }
@@ -91,6 +93,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Equal(user.Key, ce.User.Key);
                         Assert.Equal(data, ce.Data);
                         Assert.Equal(metricValue, ce.MetricValue);
+                        Assert.NotEqual(0, ce.Timestamp.Value);
                     });
             }
         }
@@ -110,6 +113,7 @@ namespace LaunchDarkly.Sdk.Client
                         AliasEvent ae = Assert.IsType<AliasEvent>(e);
                         Assert.Equal(user, ae.User);
                         Assert.Equal(oldUser, ae.PreviousUser);
+                        Assert.NotEqual(0, ae.Timestamp.Value);
                     });
             }
         }
@@ -132,6 +136,7 @@ namespace LaunchDarkly.Sdk.Client
                         AliasEvent ae = Assert.IsType<AliasEvent>(e);
                         Assert.Equal(newUser, ae.User);
                         Assert.Equal(actualOldUser, ae.PreviousUser);
+                        Assert.NotEqual(0, ae.Timestamp.Value);
                     });
             }
         }
@@ -200,6 +205,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.True(fe.TrackEvents);
                         Assert.Equal(UnixMillisecondTime.OfMillis(2000), fe.DebugEventsUntilDate);
                         Assert.Null(fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -223,6 +229,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Equal(1, fe.Variation);
                         Assert.Equal(1500, fe.FlagVersion);
                         Assert.Equal("b", fe.Default.AsString);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -246,6 +253,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Equal(1000, fe.FlagVersion);
                         Assert.Equal("b", fe.Default.AsString);
                         Assert.Null(fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -267,6 +275,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Null(fe.FlagVersion);
                         Assert.Equal("b", fe.Default.AsString);
                         Assert.Null(fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -293,6 +302,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.Null(fe.FlagVersion);
                         Assert.Equal("b", fe.Default.AsString);
                         Assert.Null(fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -319,6 +329,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.True(fe.TrackEvents);
                         Assert.Null(fe.DebugEventsUntilDate);
                         Assert.Equal(EvaluationReason.OffReason, fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -347,6 +358,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.True(fe.TrackEvents);
                         Assert.Equal(UnixMillisecondTime.OfMillis(2000), fe.DebugEventsUntilDate);
                         Assert.Equal(EvaluationReason.OffReason, fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -372,6 +384,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.False(fe.TrackEvents);
                         Assert.Null(fe.DebugEventsUntilDate);
                         Assert.Equal(expectedReason, fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -401,6 +414,7 @@ namespace LaunchDarkly.Sdk.Client
                         Assert.False(fe.TrackEvents);
                         Assert.Null(fe.DebugEventsUntilDate);
                         Assert.Equal(expectedReason, fe.Reason);
+                        Assert.NotEqual(0, fe.Timestamp.Value);
                     });
             }
         }
@@ -409,6 +423,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             IdentifyEvent ie = Assert.IsType<IdentifyEvent>(e);
             Assert.Equal(u.Key, ie.User.Key);
+            Assert.NotEqual(0, ie.Timestamp.Value);
         }
     }
 }
