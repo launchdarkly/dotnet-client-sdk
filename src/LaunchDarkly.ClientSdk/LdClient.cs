@@ -645,6 +645,7 @@ namespace LaunchDarkly.Sdk.Client
             }
             EventProcessorIfEnabled().RecordAliasEvent(new EventProcessorTypes.AliasEvent
             {
+                Timestamp = UnixMillisecondTime.Now,
                 User = user,
                 PreviousUser = previousUser
             });
