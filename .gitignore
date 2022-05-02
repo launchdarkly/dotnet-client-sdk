@@ -45,3 +45,4 @@ Thumbs.db
 *.snk
 
 docs/build/
+launchSettings.json

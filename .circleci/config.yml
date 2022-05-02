@@ -11,15 +11,36 @@ workflows:
 jobs:  
   test-netstandard2.0:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:5.0-focal
+      - image: ldcircleci/dotnet5-release:1
+      # This image is based on mcr.microsoft.com/dotnet/sdk:5.0-focal but is in a
+      # slightly better state for us to install the make tool (apt-get update has
+      # already been done). See: https://github.com/launchdarkly/sdks-ci-docker
     environment:
       ASPNETCORE_SUPPRESSSTATUSMESSAGES: "true" # suppresses annoying debug output from embedded HTTP servers in tests
+      TEST_HARNESS_PARAMS: -junit /tmp/circle-reports/contract-tests-junit.xml
+      TESTFRAMEWORK: net5.0
     steps:
       - checkout
+      - run: apt install -y make
+      - run: mkdir -p /tmp/circle-reports
       - run: dotnet restore src/LaunchDarkly.ClientSdk
       - run: dotnet build src/LaunchDarkly.ClientSdk -f netstandard2.0
       - run: dotnet restore tests/LaunchDarkly.ClientSdk.Tests
-      - run: dotnet test -v=normal tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj
+      - run:
+          name: run unit tests
+          command: |
+            dotnet test -v=normal \
+              --logger:"junit;LogFilePath=/tmp/circle-reports/unit-tests.xml" \
+              tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj
+
+      - run: make build-contract-tests
+      - run:
+          command: make start-contract-test-service
+          background: true
+      - run: make run-contract-tests
+
+      - store_test_results:
+          path: /tmp/circle-reports
 
   test-android:
     macos:

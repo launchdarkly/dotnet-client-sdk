@@ -49,6 +49,12 @@ You can run the mobile test projects from Visual Studio (the iOS tests require M
 
 Note that the mobile unit tests currently do not cover background-mode behavior or connectivity detection.
 
+To run the SDK contract test suite, in Linux or MacOS (see [`contract-tests/README.md`](./contract-tests/README.md)):
+
+```bash
+make contract-tests
+```
+
 ### Packaging/releasing
 
 Releases are done through LaunchDarkly's standard project releaser tool. The scripts in `.ldrelease` implement most of this process, because unlike our other .NET projects which can be built with the .NET 5 SDK in a Linux container, this one currently must be built on a MacOS host in CircleCI. Do not modify these scripts unless you are very sure what you're doing.
