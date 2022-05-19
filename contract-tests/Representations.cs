@@ -49,7 +49,6 @@ namespace TestService
         public bool EnableDiagnostics { get; set; }
         public string[] GlobalPrivateAttributes { get; set; }
         public long? FlushIntervalMs { get; set; }
-        public bool InlineUsers { get; set; }
     }
 
     public class SdkConfigServiceEndpointsParams
@@ -61,7 +60,6 @@ namespace TestService
 
     public class SdkClientSideParams
     {
-        public bool? AutoAliasingOptOut { get; set; }
         public bool? EvaluationReasons { get; set; }
         public User InitialUser { get; set; }
         public bool? UseReport { get; set; }
@@ -74,7 +72,6 @@ namespace TestService
         public EvaluateAllFlagsParams EvaluateAll { get; set; }
         public IdentifyEventParams IdentifyEvent { get; set; }
         public CustomEventParams CustomEvent { get; set; }
-        public AliasEventParams AliasEvent { get; set; }
     }
 
     public class EvaluateFlagParams
@@ -113,11 +110,5 @@ namespace TestService
         public LdValue Data { get; set; }
         public bool OmitNullData { get; set; }
         public double? MetricValue { get; set; }
-    }
-
-    public class AliasEventParams
-    {
-        public User User { get; set; }
-        public User PreviousUser { get; set; }
     }
 }
