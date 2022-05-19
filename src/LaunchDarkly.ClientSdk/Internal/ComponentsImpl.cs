@@ -42,8 +42,6 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
             public void Flush() { }
 
-            public void RecordAliasEvent(EventProcessorTypes.AliasEvent e) { }
-
             public void RecordCustomEvent(EventProcessorTypes.CustomEvent e) { }
 
             public void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e) { }

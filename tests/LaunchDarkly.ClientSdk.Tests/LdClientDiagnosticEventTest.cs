@@ -240,14 +240,12 @@ namespace LaunchDarkly.Sdk.Client
                 e => e.AllAttributesPrivate(true)
                     .Capacity(333)
                     .DiagnosticRecordingInterval(TimeSpan.FromMinutes(32))
-                    .FlushInterval(TimeSpan.FromMilliseconds(555))
-                    .InlineUsersInEvents(true),
+                    .FlushInterval(TimeSpan.FromMilliseconds(555)),
                 ExpectedConfigProps.Base()
                     .Set("allAttributesPrivate", true)
                     .Set("diagnosticRecordingIntervalMillis", TimeSpan.FromMinutes(32).TotalMilliseconds)
                     .Set("eventsCapacity", 333)
                     .Set("eventsFlushIntervalMillis", 555)
-                    .Set("inlineUsersInEvents", true)
                 );
         }
 
@@ -375,7 +373,6 @@ namespace LaunchDarkly.Sdk.Client
         public static LdValue.ObjectBuilder Base() =>
             LdValue.BuildObject()
                 .Add("allAttributesPrivate", false)
-                .Add("autoAliasingOptOut", false)
                 .Add("backgroundPollingDisabled", false)
                 .Add("backgroundPollingIntervalMillis", Configuration.DefaultBackgroundPollInterval.TotalMilliseconds)
                 .Add("customBaseURI", false)

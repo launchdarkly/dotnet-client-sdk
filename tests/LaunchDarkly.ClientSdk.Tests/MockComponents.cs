@@ -220,9 +220,6 @@ namespace LaunchDarkly.Sdk.Client
 
         public void RecordCustomEvent(EventProcessorTypes.CustomEvent e) =>
             Events.Add(e);
-
-        public void RecordAliasEvent(EventProcessorTypes.AliasEvent e) =>
-            Events.Add(e);
     }
 
     public class MockEventSender : IEventSender
