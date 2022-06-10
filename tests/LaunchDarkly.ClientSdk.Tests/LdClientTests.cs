@@ -81,7 +81,7 @@ namespace LaunchDarkly.Sdk.Client
                 generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
                 AssertHelpers.ContextsEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
             }
 
@@ -275,7 +275,7 @@ namespace LaunchDarkly.Sdk.Client
                 generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
                 AssertHelpers.ContextsEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
             }
 
