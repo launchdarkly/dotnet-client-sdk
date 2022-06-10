@@ -35,7 +35,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 
         private volatile ImmutableDictionary<string, ItemDescriptor> _flags =
             ImmutableDictionary<string, ItemDescriptor>.Empty;
-        private volatile UserIndex _storeIndex = null;
+        private volatile ContextIndex _storeIndex = null;
         private string _currentContextId = null;
 
         public PersistentDataStoreWrapper PersistentStore => _persistentStore;

@@ -41,7 +41,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly IEventProcessor _eventProcessor;
         readonly IFlagTracker _flagTracker;
         readonly TaskExecutor _taskExecutor;
-        readonly UserDecorator _userDecorator;
+        readonly ContextDecorator _contextDecorator;
 
         private readonly Logger _log;
 
@@ -142,9 +142,9 @@ namespace LaunchDarkly.Sdk.Client
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
 
-            _userDecorator = new UserDecorator(configuration.DeviceInfo ?? new DefaultDeviceInfo(),
+            _contextDecorator = new ContextDecorator(configuration.DeviceInfo ?? new DefaultDeviceInfo(),
                 _dataStore.PersistentStore);
-            _context = _userDecorator.DecorateContext(initialContext);
+            _context = _contextDecorator.DecorateContext(initialContext);
 
             // If we had cached data for the new context, set the current in-memory flag data state to use
             // that data, so that any Variation calls made before Identify has completed will use the
@@ -572,7 +572,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public async Task<bool> IdentifyAsync(Context context)
         {
-            Context newContext = _userDecorator.DecorateContext(context);
+            Context newContext = _contextDecorator.DecorateContext(context);
             Context oldContext = newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>

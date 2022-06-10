@@ -75,25 +75,25 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         public void RemoveContextData(string contextId) =>
             HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, KeyForContextId(contextId), null));
 
-        public UserIndex GetIndex()
+        public ContextIndex GetIndex()
         {
             string data = HandleErrorsAndLock(() => _persistentStore.GetValue(_environmentNamespace, EnvironmentMetadataKey));
             if (data is null)
             {
-                return new UserIndex();
+                return new ContextIndex();
             }
             try
             {
-                return UserIndex.Deserialize(data);
+                return ContextIndex.Deserialize(data);
             }
             catch (Exception)
             {
                 _log.Warn("Discarding invalid data from persistent store index");
-                return new UserIndex();
+                return new ContextIndex();
             }
         }
 
-        public void SetIndex(UserIndex index) =>
+        public void SetIndex(ContextIndex index) =>
             HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, EnvironmentMetadataKey, index.Serialize()));
 
         public string GetAnonymousUserKey() =>
