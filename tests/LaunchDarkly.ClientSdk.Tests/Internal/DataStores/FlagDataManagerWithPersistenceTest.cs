@@ -219,5 +219,35 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             Assert.NotNull(data);
             AssertHelpers.DataSetsEqual(data1a, data.Value);
         }
+
+        [Fact]
+        public void FlagsAreStoredByFullyQualifiedKeyForSingleAndMultiKindContexts()
+        {
+            // This tests that we are correctly disambiguating contexts based on their FullyQualifiedKey,
+            // which includes both key and kind information (and, for multi-kind contexts, is based on
+            // concatenating the individual kinds). If we were using only the Key property, these users
+            // would collide.
+            var contexts = new Context[]
+            {
+                Context.New("key1"),
+                Context.New("key2"),
+                Context.NewWithKind("kind2", "key1"),
+                Context.NewMulti(Context.NewWithKind("kind1", "key1"), Context.NewWithKind("kind2", "key2")),
+                Context.NewMulti(Context.NewWithKind("kind1", "key1"), Context.NewWithKind("kind2", "key3"))
+            };
+            var store = MakeStore(contexts.Length);
+            for (var i = 0; i < contexts.Length; i++)
+            {
+                var initData = new DataSetBuilder().Add("flag", 1, LdValue.Of(i), 0).Build();
+                store.Init(contexts[i], initData, true);
+            }
+            for (var i = 0; i < contexts.Length; i++)
+            {
+                var data = store.GetCachedData(contexts[i]);
+                Assert.NotNull(data);
+                var flagValue = data.Value.Items[0].Value.Item.Value;
+                Assert.Equal(LdValue.Of(i), flagValue);
+            }
+        }
     }
 }
