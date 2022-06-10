@@ -146,10 +146,10 @@ namespace LaunchDarkly.Sdk.Client
 
             public void Flush() { }
 
-            public bool Identify(User user, System.TimeSpan maxWaitTime) =>
+            public bool Identify(Context context, System.TimeSpan maxWaitTime) =>
                 throw new System.NotImplementedException();
 
-            public Task<bool> IdentifyAsync(User user) =>
+            public Task<bool> IdentifyAsync(Context context) =>
                 throw new System.NotImplementedException();
 
             public int IntVariation(string key, int defaultValue = 0) =>

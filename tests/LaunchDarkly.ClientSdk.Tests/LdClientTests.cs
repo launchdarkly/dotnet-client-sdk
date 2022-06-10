@@ -8,11 +8,9 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientTests : BaseTest
     {
-        private static readonly User KeylessAnonUser =
-            User.Builder((string)null)
-                .Anonymous(true)
-                .Email("example").AsPrivateAttribute() // give it some more attributes so we can verify they are preserved
-                .Custom("other", 3)
+        private static readonly Context KeylessAnonUser = TestUtil.BuildAutoContext()
+                .Set("email", "example")
+                .Set("other", 3)
                 .Build();
 
         public LdClientTests(ITestOutputHelper testOutput) : base(testOutput) { }
@@ -21,13 +19,6 @@ namespace LaunchDarkly.Sdk.Client
         public void CannotCreateClientWithNullConfig()
         {
             Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, BasicUser, TimeSpan.Zero));
-        }
-
-        [Fact]
-        public void CannotCreateClientWithNullUser()
-        {
-            var config = BasicConfig().Build();
-            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null, TimeSpan.Zero));
         }
 
         [Fact]
@@ -56,9 +47,9 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
-                var actualUser = client.User; // may have been transformed e.g. to add device/OS properties
+                var actualUser = client.Context; // may have been transformed e.g. to add device/OS properties
                 Assert.Equal(BasicUser.Key, actualUser.Key);
-                Assert.Equal(actualUser, stub.ReceivedUser);
+                Assert.Equal(actualUser, stub.ReceivedContext);
             }
         }
 
@@ -71,10 +62,10 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
             {
-                Assert.Equal("fake-device-id", client.User.Key);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                Assert.Equal("fake-device-id", client.Context.Key);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    client.Context);
             }
         }
 
@@ -87,16 +78,16 @@ namespace LaunchDarkly.Sdk.Client
             string generatedKey = null;
             using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
             {
-                generatedKey = client.User.Key;
+                generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    User.Builder(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    client.Context);
             }
 
             using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
             {
-                Assert.Equal(generatedKey, client.User.Key);
+                Assert.Equal(generatedKey, client.Context.Key);
             }
         }
 #endif
@@ -112,24 +103,24 @@ namespace LaunchDarkly.Sdk.Client
             string generatedKey = null;
             using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
             {
-                generatedKey = client.User.Key;
+                generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    client.Context);
             }
 
             using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
             {
-                Assert.Equal(generatedKey, client.User.Key);
+                Assert.Equal(generatedKey, client.Context.Key);
             }
 
             // Now use a configuration where persistence is disabled - a different key is generated
             var configWithoutPersistence = BasicConfig().Persistence(Components.NoPersistence).Build();
             using (var client = await TestUtil.CreateClientAsync(configWithoutPersistence, KeylessAnonUser))
             {
-                Assert.NotNull(client.User.Key);
-                Assert.NotEqual(generatedKey, client.User.Key);
+                Assert.NotNull(client.Context.Key);
+                Assert.NotEqual(generatedKey, client.Context.Key);
             }
         }
 #endif
@@ -145,9 +136,9 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await LdClient.InitAsync(config, KeylessAnonUser))
             {
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(stub.ReceivedUser.Key).Build(),
-                    stub.ReceivedUser);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    Context.BuilderFromContext(KeylessAnonUser).Key(stub.ReceivedContext.Key).Build(),
+                    stub.ReceivedContext);
             }
         }
 
@@ -156,25 +147,25 @@ namespace LaunchDarkly.Sdk.Client
         {
             using (var client = TestUtil.CreateClient(BasicConfig().Build(), BasicUser))
             {
-                var updatedUser = User.WithKey("some new key");
+                var updatedUser = Context.New("some new key");
                 var success = client.Identify(updatedUser, TimeSpan.FromSeconds(1));
                 Assert.True(success);
-                Assert.Equal(client.User.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
+                Assert.Equal(client.Context.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
             }
         }
 
         [Fact]
         public Task IdentifyAsyncCompletesOnlyWhenNewFlagsAreAvailable()
-            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => client.IdentifyAsync(user));
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, context) => client.IdentifyAsync(context));
 
         [Fact]
         public Task IdentifySyncCompletesOnlyWhenNewFlagsAreAvailable()
-            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user, TimeSpan.FromSeconds(4))));
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, context) => Task.Run(() => client.Identify(context, TimeSpan.FromSeconds(4))));
 
-        private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, User, Task> identifyTask)
+        private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, Context, Task> identifyTask)
         {
-            var userA = User.WithKey("a");
-            var userB = User.WithKey("b");
+            var userA = Context.New("a");
+            var userB = Context.New("b");
 
             var flagKey = "flag";
             var userAFlags = new DataSetBuilder()
@@ -186,19 +177,19 @@ namespace LaunchDarkly.Sdk.Client
             var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
             var finishedIdentifyUserB = new SemaphoreSlim(0, 1);
 
-            var dataSourceFactory = new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
-                new MockDataSourceFromLambda(user, async () =>
+            var dataSourceFactory = new MockDataSourceFactoryFromLambda((ctx, updates, context, bg) =>
+                new MockDataSourceFromLambda(context, async () =>
                 {
-                    switch (user.Key)
+                    switch (context.Key)
                     {
                         case "a":
-                            updates.Init(user, userAFlags);
+                            updates.Init(context, userAFlags);
                             break;
 
                         case "b":
                             startedIdentifyUserB.Release();
                             await canFinishIdentifyUserB.WaitAsync();
-                            updates.Init(user, userBFlags);
+                            updates.Init(context, userBFlags);
                             break;
                     }
                 }));
@@ -232,29 +223,10 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void IdentifyWithNullUserThrowsException()
-        {
-            using (var client = TestUtil.CreateClient(BasicConfig().Build(), BasicUser))
-            {
-                Assert.Throws<ArgumentNullException>(() => client.Identify(null, TimeSpan.Zero));
-            }
-        }
-
-        [Fact]
-        public void IdentifyAsyncWithNullUserThrowsException()
-        {
-            using (var client = TestUtil.CreateClient(BasicConfig().Build(), BasicUser))
-            {
-                Assert.ThrowsAsync<AggregateException>(async () => await client.IdentifyAsync(null));
-                // note that exceptions thrown out of an async task are always wrapped in AggregateException
-            }
-        }
-
-        [Fact]
         public async void IdentifyPassesUserToDataSource()
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
-            User newUser = User.WithKey("new-user");
+            Context newUser = Context.New("new-user");
 
             var config = BasicConfig()
                 .DataSource(stub.AsFactory())
@@ -262,13 +234,13 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
-                AssertHelpers.UsersEqualExcludingAutoProperties(BasicUser, client.User);
-                Assert.Equal(client.User, stub.ReceivedUser);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(BasicUser, client.Context);
+                Assert.Equal(client.Context, stub.ReceivedContext);
 
                 await client.IdentifyAsync(newUser);
 
-                AssertHelpers.UsersEqualExcludingAutoProperties(newUser, client.User);
-                Assert.Equal(client.User, stub.ReceivedUser);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(newUser, client.Context);
+                Assert.Equal(client.Context, stub.ReceivedContext);
             }
         }
 
@@ -282,10 +254,10 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(KeylessAnonUser);
 
-                Assert.Equal("fake-device-id", client.User.Key);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                Assert.Equal("fake-device-id", client.Context.Key);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    client.Context);
             }
         }
 
@@ -300,18 +272,18 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(KeylessAnonUser);
 
-                generatedKey = client.User.Key;
+                generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    User.Builder(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    client.Context);
             }
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
                 client.Identify(KeylessAnonUser, TimeSpan.FromSeconds(1));
 
-                Assert.Equal(generatedKey, client.User.Key);
+                Assert.Equal(generatedKey, client.Context.Key);
             }
         }
 #endif
@@ -329,18 +301,18 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(KeylessAnonUser);
 
-                generatedKey = client.User.Key;
+                generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    client.Context);
              }
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
                 await client.IdentifyAsync(KeylessAnonUser);
 
-                Assert.Equal(generatedKey, client.User.Key);
+                Assert.Equal(generatedKey, client.Context.Key);
             }
 
             // Now use a configuration where persistence is disabled - a different key is generated
@@ -349,8 +321,8 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(KeylessAnonUser);
 
-                Assert.NotNull(client.User.Key);
-                Assert.NotEqual(generatedKey, client.User.Key);
+                Assert.NotNull(client.Context.Key);
+                Assert.NotEqual(generatedKey, client.Context.Key);
             }
         }
 #endif
@@ -369,10 +341,10 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(KeylessAnonUser);
 
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
-                Assert.Equal(client.User, stub.ReceivedUser);
+                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    client.Context);
+                Assert.Equal(client.Context, stub.ReceivedContext);
             }
         }
 

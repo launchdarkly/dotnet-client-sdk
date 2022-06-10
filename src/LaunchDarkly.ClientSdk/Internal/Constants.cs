@@ -12,5 +12,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
         public const string DELETE = "delete";
         public const string PING = "ping";
         public const string UNIQUE_ID_KEY = "unique_id_key";
+
+        // Temporary because the current implementation of Context does not allow a null key
+        public const string AutoKeyMagicValue = "$$$auto";
     }
 }

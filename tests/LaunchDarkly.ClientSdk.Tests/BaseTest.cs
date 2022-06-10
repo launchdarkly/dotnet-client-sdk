@@ -1,7 +1,6 @@
 ﻿using System;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Integrations;
-using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -12,7 +11,7 @@ namespace LaunchDarkly.Sdk.Client
     public class BaseTest : IDisposable
     {
         protected const string BasicMobileKey = "mobile-key";
-        protected static readonly User BasicUser = User.WithKey("user-key");
+        protected static readonly Context BasicUser = Context.New("user-key");
 
         protected readonly LoggingConfigurationBuilder testLogging;
         protected readonly Logger testLogger;

@@ -84,7 +84,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </para>
         /// <para>
         /// Otherwise, it starts with a new default configuration in which the flag has <c>true</c>
-        /// and <c>false</c> variations, and is <c>true</c> by default for all users. You can change
+        /// and <c>false</c> variations, and is <c>true</c> by default for all contexts. You can change
         /// any of those properties, and provide more complex behavior, using the
         /// <see cref="FlagBuilder"/> methods.
         /// </para>
@@ -163,7 +163,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             foreach (var instance in instances)
             {
-                instance.DoUpdate(key, builder.CreateFlag(newVersion, instance.User));
+                instance.DoUpdate(key, builder.CreateFlag(newVersion, instance.Context));
             }
         }
 
@@ -198,14 +198,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public IDataSource CreateDataSource(
             LdClientContext context,
             IDataSourceUpdateSink updateSink,
-            User currentUser,
+            Context currentContext,
             bool inBackground
             )
         {
             var instance = new DataSourceImpl(
                 this,
                 updateSink,
-                currentUser,
+                currentContext,
                 context.BaseLogger.SubLogger("DataSource.TestData")
                 );
             lock (_lock)
@@ -215,7 +215,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             return instance;
         }
 
-        internal FullDataSet MakeInitData(User user)
+        internal FullDataSet MakeInitData(Context context)
         {
             lock (_lock)
             {
@@ -228,7 +228,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                         _currentFlagVersions[fb.Key] = version;
                     }
                     b.Add(new KeyValuePair<string, ItemDescriptor>(fb.Key,
-                        fb.Value.CreateFlag(version, user)));
+                        fb.Value.CreateFlag(version, context)));
                 }
                 return new FullDataSet(b.ToImmutable());
             }
@@ -262,7 +262,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             private List<LdValue> _variations;
             private int _defaultVariation;
             private Dictionary<string, int> _variationByUserKey;
-            private Func<User, int?> _variationFunc;
+            private Func<Context, int?> _variationFunc;
             private FeatureFlag _preconfiguredFlag;
 
             #endregion
@@ -424,10 +424,10 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             /// </remarks>
             /// <param name="variationFunc">a function to determine the variation</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationFunc(Func<User, bool?> variationFunc) =>
-                BooleanFlag().VariationFunc(user =>
+            public FlagBuilder VariationFunc(Func<Context, bool?> variationFunc) =>
+                BooleanFlag().VariationFunc(context =>
                     {
-                        var b = variationFunc(user);
+                        var b = variationFunc(context);
                         return b.HasValue ? VariationForBoolean(b.Value) : (int?)null;
                     });
 
@@ -448,7 +448,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             /// </remarks>
             /// <param name="variationFunc">a function to determine the variation</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationFunc(Func<User, int?> variationFunc)
+            public FlagBuilder VariationFunc(Func<Context, int?> variationFunc)
             {
                 _variationFunc = variationFunc;
                 return this;
@@ -475,10 +475,10 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             /// </remarks>
             /// <param name="variationFunc">a function to determine the variation</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationFunc(Func<User, LdValue?> variationFunc) =>
-                VariationFunc(user =>
+            public FlagBuilder VariationFunc(Func<Context, LdValue?> variationFunc) =>
+                VariationFunc(context =>
                     {
-                        var v = variationFunc(user);
+                        var v = variationFunc(context);
                         if (!v.HasValue || !_variations.Contains(v.Value))
                         {
                             return null;
@@ -514,7 +514,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             #region Internal methods
 
-            internal ItemDescriptor CreateFlag(int version, User user)
+            internal ItemDescriptor CreateFlag(int version, Context context)
             {
                 if (_preconfiguredFlag != null)
                 {
@@ -529,9 +529,9 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                         _preconfiguredFlag.DebugEventsUntilDate));
                 }
                 int variation;
-                if (!_variationByUserKey.TryGetValue(user.Key, out variation))
+                if (!_variationByUserKey.TryGetValue(context.Key, out variation))
                 {
-                    variation = _variationFunc?.Invoke(user) ?? _defaultVariation;
+                    variation = _variationFunc?.Invoke(context) ?? _defaultVariation;
                 }
                 var value = (variation < 0 || variation >= _variations.Count) ? LdValue.Null :
                     _variations[variation];
@@ -579,19 +579,19 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             private readonly IDataSourceUpdateSink _updateSink;
             private readonly Logger _log;
 
-            internal readonly User User;
+            internal readonly Context Context;
 
-            internal DataSourceImpl(TestData parent, IDataSourceUpdateSink updateSink, User user, Logger log)
+            internal DataSourceImpl(TestData parent, IDataSourceUpdateSink updateSink, Context context, Logger log)
             {
                 _parent = parent;
                 _updateSink = updateSink;
-                User = user;
+                Context = context;
                 _log = log;
             }
 
             public Task<bool> Start()
             {
-                _updateSink.Init(User, _parent.MakeInitData(User));
+                _updateSink.Init(Context, _parent.MakeInitData(Context));
                 return Task.FromResult(true);
             }
 
@@ -604,7 +604,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             {
                 _log.Debug("updating \"{0}\" to {1}", key, LogValues.Defer(() =>
                     item.Item is null ? "<null>" : DataModelSerialization.SerializeFlag(item.Item)));
-                _updateSink.Upsert(User, key, item);
+                _updateSink.Upsert(Context, key, item);
             }
 
             internal void DoUpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError)

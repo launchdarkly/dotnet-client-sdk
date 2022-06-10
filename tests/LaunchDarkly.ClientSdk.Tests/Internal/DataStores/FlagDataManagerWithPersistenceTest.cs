@@ -9,7 +9,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     public class FlagDataManagerWithPersistenceTest : BaseTest
     {
-        private static readonly User OtherUser = User.WithKey("other-user");
+        private static readonly Context OtherUser = Context.New("other-user");
         private static readonly FullDataSet DataSet1 = new DataSetBuilder()
             .Add("flag1", 1, LdValue.Of(true), 0)
             .Add("flag2", 2, LdValue.Of(false), 1)
@@ -124,7 +124,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             var dataSet3 = new DataSetBuilder()
                 .Add("flag4", 4, LdValue.Of(false), 1)
                 .Build();
-            var user3 = User.WithKey("third-user");
+            var user3 = Context.New("third-user");
 
             var store = MakeStore(2);
             store.Init(BasicUser, DataSet1, true);

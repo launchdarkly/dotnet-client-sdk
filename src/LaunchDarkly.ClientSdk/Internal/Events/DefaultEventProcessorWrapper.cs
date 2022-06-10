@@ -12,12 +12,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             _eventProcessor = eventProcessor;
         }
 
-        public void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e)
+        public void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e)
         {
             _eventProcessor.RecordEvaluationEvent(new EventTypes.EvaluationEvent
             {
                 Timestamp = e.Timestamp,
-                User = e.User,
+                Context = e.Context,
                 FlagKey = e.FlagKey,
                 FlagVersion = e.FlagVersion,
                 Variation = e.Variation,
@@ -29,21 +29,21 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             });
         }
 
-        public void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e)
+        public void RecordIdentifyEvent(in EventProcessorTypes.IdentifyEvent e)
         {
             _eventProcessor.RecordIdentifyEvent(new EventTypes.IdentifyEvent
             {
                 Timestamp = e.Timestamp,
-                User = e.User
+                Context = e.Context
             });
         }
 
-        public void RecordCustomEvent(EventProcessorTypes.CustomEvent e)
+        public void RecordCustomEvent(in EventProcessorTypes.CustomEvent e)
         {
             _eventProcessor.RecordCustomEvent(new EventTypes.CustomEvent
             {
                 Timestamp = e.Timestamp,
-                User = e.User,
+                Context = e.Context,
                 EventKey = e.EventKey,
                 Data = e.Data,
                 MetricValue = e.MetricValue

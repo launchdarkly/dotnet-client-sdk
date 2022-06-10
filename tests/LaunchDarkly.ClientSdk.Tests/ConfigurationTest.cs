@@ -116,7 +116,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var prop = _tester.Property(c => c.PersistenceConfigurationBuilder, (b, v) => b.Persistence(v));
             prop.AssertDefault(null);
-            prop.AssertCanSet(Components.Persistence().MaxCachedUsers(2));
+            prop.AssertCanSet(Components.Persistence().MaxCachedContexts(2));
         }
 
         [Fact]

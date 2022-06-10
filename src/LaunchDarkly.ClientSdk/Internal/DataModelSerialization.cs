@@ -12,7 +12,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
 {
     // Methods for converting data to or from a serialized form.
     //
-    // The JSON representation of a User is defined along with User in LaunchDarkly.CommonSdk.
+    // The JSON representation of a Context is defined along with Context in LaunchDarkly.CommonSdk.
     //
     // The serialized representation of a single FeatureFlag is simply a JSON object containing
     // its properties, as defined in FeatureFlag.
@@ -29,8 +29,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
     {
         private const string ParseErrorMessage = "Data was not in a recognized format";
 
-        internal static string SerializeUser(User user) =>
-            LdJsonSerialization.SerializeObject(user);
+        internal static string SerializeContext(Context context) =>
+            LdJsonSerialization.SerializeObject(context);
 
         internal static string SerializeFlag(FeatureFlag flag) =>
             LdJsonSerialization.SerializeObject(flag);

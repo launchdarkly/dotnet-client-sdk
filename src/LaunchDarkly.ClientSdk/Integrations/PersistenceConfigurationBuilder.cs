@@ -31,18 +31,18 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     public sealed class PersistenceConfigurationBuilder
     {
         /// <summary>
-        /// Default value for <see cref="MaxCachedUsers(int)"/>: 5.
+        /// Default value for <see cref="MaxCachedContexts(int)"/>: 5.
         /// </summary>
-        public const int DefaultMaxCachedUsers = 5;
+        public const int DefaultMaxCachedContexts = 5;
 
         /// <summary>
-        /// Passing this value (or any negative number) to <see cref="MaxCachedUsers(int)"/>
+        /// Passing this value (or any negative number) to <see cref="MaxCachedContexts(int)"/>
         /// means there is no limit on cached user data.
         /// </summary>
-        public const int UnlimitedCachedUsers = -1;
+        public const int UnlimitedCachedContexts = -1;
 
         private  IPersistentDataStoreFactory _storeFactory = null;
-        private int _maxCachedUsers = DefaultMaxCachedUsers;
+        private int _maxCachedContexts = DefaultMaxCachedContexts;
 
         internal PersistenceConfigurationBuilder() { }
 
@@ -78,16 +78,16 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// flag data it has received since the current <c>LdClient</c> instance was started.
         /// </para>
         /// <para>
-        /// A value of <see cref="UnlimitedCachedUsers"/> or any other negative number means there is no
+        /// A value of <see cref="UnlimitedCachedContexts"/> or any other negative number means there is no
         /// limit. Use this mode with caution, as it could cause the size of mobile device preferences to
         /// grow indefinitely if your application uses many different user keys on the same device.
         /// </para>
         /// </remarks>
-        /// <param name="maxCachedUsers"></param>
+        /// <param name="maxCachedContexts"></param>
         /// <returns></returns>
-        public PersistenceConfigurationBuilder MaxCachedUsers(int maxCachedUsers)
+        public PersistenceConfigurationBuilder MaxCachedContexts(int maxCachedContexts)
         {
-            _maxCachedUsers = maxCachedUsers;
+            _maxCachedContexts = maxCachedContexts;
             return this;
         }
 
@@ -95,7 +95,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             new PersistenceConfiguration(
                 _storeFactory is null ? PlatformSpecific.LocalStorage.Instance :
                     _storeFactory.CreatePersistentDataStore(context),
-                _maxCachedUsers
+                _maxCachedContexts
                 );
     }
 }

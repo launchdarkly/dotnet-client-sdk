@@ -4,14 +4,13 @@ using LaunchDarkly.Sdk.Client.Interfaces;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 using static LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientEventTests : BaseTest
     {
-        private static readonly User user = User.WithKey("userkey");
+        private static readonly Context user = Context.New("userkey");
         private readonly TestData _testData = TestData.DataSource();
         private MockEventProcessor eventProcessor = new MockEventProcessor();
         private IEventProcessorFactory _factory;
@@ -21,16 +20,16 @@ namespace LaunchDarkly.Sdk.Client
             _factory = eventProcessor.AsSingletonFactory();
         }
 
-        private LdClient MakeClient(User u) =>
+        private LdClient MakeClient(Context c) =>
             LdClient.Init(BasicConfig().DataSource(_testData).Events(_factory).Build(),
-                u, TimeSpan.FromSeconds(1));
+                c, TimeSpan.FromSeconds(1));
 
         [Fact]
         public void IdentifySendsIdentifyEvent()
         {
             using (LdClient client = MakeClient(user))
             {
-                User user1 = User.WithKey("userkey1");
+                Context user1 = Context.New("userkey1");
                 client.Identify(user1, TimeSpan.FromSeconds(1));
                 Assert.Collection(eventProcessor.Events,
                     e => CheckIdentifyEvent(e, user), // there's always an initial identify event
@@ -49,7 +48,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(user.Key, ce.Context.Key);
                         Assert.Equal(LdValue.Null, ce.Data);
                         Assert.Null(ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -69,7 +68,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(user.Key, ce.Context.Key);
                         Assert.Equal(data, ce.Data);
                         Assert.Null(ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -90,7 +89,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(user.Key, ce.Context.Key);
                         Assert.Equal(data, ce.Data);
                         Assert.Equal(metricValue, ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -334,10 +333,10 @@ namespace LaunchDarkly.Sdk.Client
             }
         }
 
-        private void CheckIdentifyEvent(object e, User u)
+        private void CheckIdentifyEvent(object e, Context c)
         {
             IdentifyEvent ie = Assert.IsType<IdentifyEvent>(e);
-            Assert.Equal(u.Key, ie.User.Key);
+            Assert.Equal(c.Key, ie.Context.Key);
             Assert.NotEqual(0, ie.Timestamp.Value);
         }
     }

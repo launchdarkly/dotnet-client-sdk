@@ -39,8 +39,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </summary>
         /// <remarks>
         /// <para>
-        /// When you first start the client, once <see cref="LdClient.Init(Configuration, User, TimeSpan)"/> or
-        /// <see cref="LdClient.InitAsync(Configuration, User)"/> has returned, <see cref="Initialized"/> should be
+        /// When you first start the client, once <see cref="LdClient.Init(Configuration, Context, TimeSpan)"/> or
+        /// <see cref="LdClient.InitAsync(Configuration, Context)"/> has returned, <see cref="Initialized"/> should be
         /// <see langword="true"/> if and only if either 1. it connected to LaunchDarkly and successfully retrieved
         /// flags, or 2. it started in offline mode so there's no need to connect to LaunchDarkly. If the client
         /// timed out trying to connect to LD, then <see cref="Initialized"/> is <see langword="false"/> (even if we
@@ -48,8 +48,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <see langword="false"/>. This serves the purpose of letting the app know that there was a problem of some kind.
         /// </para>
         /// <para>
-        /// If you call <see cref="Identify(User, TimeSpan)"/> or <see cref="IdentifyAsync(User)"/>, <see cref="Initialized"/>
-        /// will become <see langword="false"/> until the SDK receives the new user's flags.
+        /// If you call <see cref="Identify(Context, TimeSpan)"/> or <see cref="IdentifyAsync(Context)"/>,
+        /// <see cref="Initialized"/> will become <see langword="false"/> until the SDK receives the new context's flags.
         /// </para>
         /// </remarks>
         bool Initialized { get; }
@@ -304,28 +304,28 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         IDictionary<string, LdValue> AllFlags();
 
         /// <summary>
-        /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
-        /// an analytics event to tell LaunchDarkly about the user.
+        /// Changes the current evaluation context, requests flags for that context from LaunchDarkly if we are online,
+        /// and generates an analytics event to tell LaunchDarkly about the context.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This is equivalent to <see cref="IdentifyAsync(User)"/>, but as a synchronous method.
+        /// This is equivalent to <see cref="IdentifyAsync(Context)"/>, but as a synchronous method.
         /// </para>
         /// <para>
-        /// If the SDK is online, <see cref="Identify"/> waits to receive feature flag values for the new user from
+        /// If the SDK is online, <see cref="Identify"/> waits to receive feature flag values for the new context from
         /// LaunchDarkly. If it receives the new flag values before <c>maxWaitTime</c> has elapsed, it returns
         /// <see langword="true"/>. If the timeout elapses, it returns <see langword="false"/> (although the SDK might
         /// still receive the flag values later). If we do not need to request flags from LaunchDarkly because we are
         /// in offline mode, it returns <see langword="true"/>.
         /// </para>
         /// <para>
-        /// If you do not want to wait, you can either set <c>maxWaitTime</c> to zero or call <see cref="IdentifyAsync(User)"/>.
+        /// If you do not want to wait, you can either set <c>maxWaitTime</c> to zero or call <see cref="IdentifyAsync(Context)"/>.
         /// </para>
         /// </remarks>
-        /// <param name="user">the new user</param>
+        /// <param name="context">the new context</param>
         /// <param name="maxWaitTime">the maximum time to wait for the new flag values</param>
         /// <returns>true if new flag values were obtained</returns>
-        bool Identify(User user, TimeSpan maxWaitTime);
+        bool Identify(Context context, TimeSpan maxWaitTime);
 
         /// <summary>
         /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
@@ -333,7 +333,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This is equivalent to <see cref="Identify(User, TimeSpan)"/>, but as an asynchronous method.
+        /// This is equivalent to <see cref="Identify(Context, TimeSpan)"/>, but as an asynchronous method.
         /// </para>
         /// <para>
         /// If the SDK is online, the returned task is completed once the SDK has received feature flag values for the
@@ -342,9 +342,9 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// and yields <see langword="true"/>.
         /// </para>
         /// </remarks>
-        /// <param name="user">the new user</param>
+        /// <param name="context">the new context</param>
         /// <returns>a task that yields true if new flag values were obtained</returns>
-        Task<bool> IdentifyAsync(User user);
+        Task<bool> IdentifyAsync(Context context);
 
         /// <summary>
         /// Tells the client that all pending analytics events should be delivered as soon as possible.
@@ -352,7 +352,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <remarks>
         /// <para>
         /// When the LaunchDarkly client generates analytics events (from flag evaluations, or from
-        /// <see cref="Identify(User, TimeSpan)"/> or <see cref="Track(string)"/>), they are queued on a worker thread.
+        /// <see cref="Identify(Context, TimeSpan)"/> or <see cref="Track(string)"/>), they are queued on a worker thread.
         /// The event thread normally sends all queued events to LaunchDarkly at regular intervals, controlled by the
         /// <see cref="EventProcessorBuilder.FlushInterval"/> option. Calling <see cref="Flush"/> triggers a send
         /// without waiting for the next interval.

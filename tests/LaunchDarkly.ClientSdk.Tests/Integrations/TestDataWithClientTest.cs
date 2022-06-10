@@ -8,7 +8,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     {
         private readonly TestData _td = TestData.DataSource();
         private readonly Configuration _config;
-        private readonly User _user = User.WithKey("userkey");
+        private readonly Context _user = Context.New("userkey");
 
         public TestDataWithClientTest(ITestOutputHelper testOutput) : base(testOutput)
         {
@@ -60,11 +60,11 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 .VariationForUser("user1", LdValue.Of("green"))
                 .VariationForUser("user2", LdValue.Of("blue"))
                 .VariationFunc(user =>
-                    user.GetAttribute(UserAttribute.ForName("favoriteColor"))
+                    user.GetValue("favoriteColor")
                 ));
-            var user1 = User.WithKey("user1");
-            var user2 = User.WithKey("user2");
-            var user3 = User.Builder("user3").Custom("favoriteColor", "green").Build();
+            var user1 = Context.New("user1");
+            var user2 = Context.New("user2");
+            var user3 = Context.Builder("user3").Set("favoriteColor", "green").Build();
 
             using (var client = LdClient.Init(_config, user1, TimeSpan.FromSeconds(1)))
             {
