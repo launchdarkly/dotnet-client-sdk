@@ -347,19 +347,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         Task<bool> IdentifyAsync(User user);
 
         /// <summary>
-        /// Associates two users for analytics purposes.
-        /// </summary>
-        /// <remarks>
-        /// This can be helpful in the situation where a person is represented by multiple
-        /// LaunchDarkly users. This may happen, for example, when a person initially logs into
-        /// an application-- the person might be represented by an anonymous user prior to logging
-        /// in and a different user after logging in, as denoted by a different user key.
-        /// </remarks>
-        /// <param name="user">the newly identified user</param>
-        /// <param name="previousUser">the previously identified user</param>
-        void Alias(User user, User previousUser);
-
-        /// <summary>
         /// Tells the client that all pending analytics events should be delivered as soon as possible.
         /// </summary>
         /// <remarks>

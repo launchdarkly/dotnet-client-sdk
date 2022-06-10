@@ -178,9 +178,6 @@ namespace LaunchDarkly.Sdk.Client
 
             public void Track(string eventName, LdValue data, double metricValue) =>
                 throw new System.NotImplementedException();
-
-            public void Alias(User user, User previousUser) =>
-                throw new System.NotImplementedException();
         }
     }
 }

@@ -619,36 +619,8 @@ namespace LaunchDarkly.Sdk.Client
                 Timestamp = UnixMillisecondTime.Now,
                 User = user
             });
-            if (oldUser.Anonymous && !newUser.Anonymous && !_config.AutoAliasingOptOut)
-            {
-                EventProcessorIfEnabled().RecordAliasEvent(new EventProcessorTypes.AliasEvent
-                {
-                    Timestamp = UnixMillisecondTime.Now,
-                    User = user,
-                    PreviousUser = oldUser
-                });
-            }
 
             return await _connectionManager.SetUser(newUser);
-        }
-
-        /// <inheritdoc/>
-        public void Alias(User user, User previousUser)
-        {
-            if (user is null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-            if (previousUser is null)
-            {
-                throw new ArgumentNullException(nameof(previousUser));
-            }
-            EventProcessorIfEnabled().RecordAliasEvent(new EventProcessorTypes.AliasEvent
-            {
-                Timestamp = UnixMillisecondTime.Now,
-                User = user,
-                PreviousUser = previousUser
-            });
         }
 
         /// <summary>

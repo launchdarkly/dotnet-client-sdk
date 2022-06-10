@@ -32,14 +32,6 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void AutoAliasingOptOut()
-        {
-            var prop = _tester.Property(c => c.AutoAliasingOptOut, (b, v) => b.AutoAliasingOptOut(v));
-            prop.AssertDefault(false);
-            prop.AssertCanSet(true);
-        }
-
-        [Fact]
         public void DataSource()
         {
             var prop = _tester.Property(c => c.DataSourceFactory, (b, v) => b.DataSource(v));

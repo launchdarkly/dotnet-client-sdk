@@ -65,7 +65,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         internal int _capacity = DefaultCapacity;
         internal TimeSpan _diagnosticRecordingInterval = DefaultDiagnosticRecordingInterval;
         internal TimeSpan _flushInterval = DefaultFlushInterval;
-        internal bool _inlineUsersInEvents = false;
         internal HashSet<UserAttribute> _privateAttributes = new HashSet<UserAttribute>();
         internal IEventSender _eventSender = null; // used in testing
 
@@ -162,21 +161,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         /// <summary>
-        /// Sets whether to include full user details in every analytics event.
-        /// </summary>
-        /// <remarks>
-        /// The default value is <see langword="false"/>: events will only include the user key, except for one
-        /// "identify" event that provides the full details for the user.
-        /// </remarks>
-        /// <param name="inlineUsersInEvents">true if you want full user details in each event</param>
-        /// <returns>the builder</returns>
-        public EventProcessorBuilder InlineUsersInEvents(bool inlineUsersInEvents)
-        {
-            _inlineUsersInEvents = inlineUsersInEvents;
-            return this;
-        }
-
-        /// <summary>
         /// Marks a set of attribute names as private.
         /// </summary>
         /// <remarks>
@@ -269,7 +253,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 EventsUri = baseUri.AddPath(StandardEndpoints.AnalyticsEventsPostRequestPath),
                 DiagnosticRecordingInterval = _diagnosticRecordingInterval,
                 DiagnosticUri = baseUri.AddPath(StandardEndpoints.DiagnosticEventsPostRequestPath),
-                InlineUsersInEvents = _inlineUsersInEvents,
                 PrivateAttributeNames = _privateAttributes.ToImmutableHashSet(),
                 RetryInterval = TimeSpan.FromSeconds(1)
             };

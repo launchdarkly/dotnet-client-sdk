@@ -41,11 +41,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         void RecordCustomEvent(EventProcessorTypes.CustomEvent e);
 
         /// <summary>
-        /// Records an alias event.
-        /// </summary>
-        void RecordAliasEvent(EventProcessorTypes.AliasEvent e);
-
-        /// <summary>
         /// Puts the component into offline mode if appropriate.
         /// </summary>
         /// <param name="offline">true if the SDK has been put offline</param>

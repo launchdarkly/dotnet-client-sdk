@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
 namespace LaunchDarkly.Sdk.Client
@@ -33,7 +31,6 @@ namespace LaunchDarkly.Sdk.Client
         // will replace it with a platform-specific implementation.
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
-        internal bool _autoAliasingOptOut = false;
         internal IDataSourceFactory _dataSourceFactory = null;
         internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
@@ -58,7 +55,6 @@ namespace LaunchDarkly.Sdk.Client
 
         internal ConfigurationBuilder(Configuration copyFrom)
         {
-            _autoAliasingOptOut = copyFrom.AutoAliasingOptOut;
             _dataSourceFactory = copyFrom.DataSourceFactory;
             _diagnosticOptOut = copyFrom.DiagnosticOptOut;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
@@ -80,26 +76,6 @@ namespace LaunchDarkly.Sdk.Client
         public Configuration Build()
         {
             return new Configuration(this);
-        }
-
-        /// <summary>
-        /// Whether to disable the automatic sending of an alias event when the current user is changed
-        /// to a non-anonymous user and the previous user was anonymous.
-        /// </summary>
-        /// <remarks>
-        /// By default, if you call <see cref="LdClient.Identify(User, TimeSpan)"/> or
-        /// <see cref="LdClient.IdentifyAsync(User)"/> with a non-anonymous user, and the current user
-        /// (previously specified either with one of those methods or when creating the <see cref="LdClient"/>)
-        /// was anonymous, the SDK assumes the two users should be correlated and sends an analytics
-        /// event equivalent to calling <see cref="LdClient.Alias(User, User)"/>. Setting
-        /// AutoAliasingOptOut to <see langword="true"/> disables this behavior.
-        /// </remarks>
-        /// <param name="autoAliasingOptOut">true to disable automatic user aliasing</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder AutoAliasingOptOut(bool autoAliasingOptOut)
-        {
-            _autoAliasingOptOut = autoAliasingOptOut;
-            return this;
         }
 
         /// <summary>

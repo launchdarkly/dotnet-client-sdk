@@ -50,20 +50,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             });
         }
 
-        public void RecordAliasEvent(EventProcessorTypes.AliasEvent e)
-        {
-            _eventProcessor.RecordAliasEvent(new EventTypes.AliasEvent
-            {
-                Timestamp = e.Timestamp,
-                Key = e.User.Key,
-                ContextKind = e.User.Anonymous ? EventTypes.ContextKind.AnonymousUser :
-                    EventTypes.ContextKind.User,
-                PreviousKey = e.PreviousUser.Key,
-                PreviousContextKind = e.PreviousUser.Anonymous ? EventTypes.ContextKind.AnonymousUser :
-                    EventTypes.ContextKind.User
-            });
-        }
-
         public void SetOffline(bool offline) =>
             _eventProcessor.SetOffline(offline);
 

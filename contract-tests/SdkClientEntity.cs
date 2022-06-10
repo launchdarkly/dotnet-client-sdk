@@ -82,10 +82,6 @@ namespace TestService
                     }
                     return (true, null);
 
-                case "aliasEvent":
-                    _client.Alias(command.AliasEvent.User, command.AliasEvent.PreviousUser);
-                    return (true, null);
-
                 case "flushEvents":
                     _client.Flush();
                     return (true, null);
@@ -251,8 +247,7 @@ namespace TestService
             {
                 endpoints.Events(eventParams.BaseUri);
                 var events = Components.SendEvents()
-                    .AllAttributesPrivate(eventParams.AllAttributesPrivate)
-                    .InlineUsersInEvents(eventParams.InlineUsers);
+                    .AllAttributesPrivate(eventParams.AllAttributesPrivate);
                 if (eventParams.Capacity.HasValue && eventParams.Capacity.Value > 0)
                 {
                     events.Capacity(eventParams.Capacity.Value);
@@ -275,11 +270,6 @@ namespace TestService
                 http.UseReport(sdkParams.ClientSide.UseReport.Value);
             }
             builder.Http(http);
-
-            if (sdkParams.ClientSide.AutoAliasingOptOut.HasValue)
-            {
-                builder.AutoAliasingOptOut(sdkParams.ClientSide.AutoAliasingOptOut.Value);
-            }
 
             if (sdkParams.ClientSide.EvaluationReasons.HasValue)
             {

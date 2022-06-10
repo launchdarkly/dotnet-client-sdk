@@ -47,7 +47,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         private IEnumerable<LdValue> GetConfigProperties()
         {
             yield return LdValue.BuildObject()
-                .WithAutoAliasingOptOut(_config.AutoAliasingOptOut)
                 .WithStartWaitTime(_startWaitTime)
                 .Add("backgroundPollingDisabled", !_config.EnableBackgroundUpdating)
                 .Add("evaluationReasonsRequested", _config.EvaluationReasons)
