@@ -63,7 +63,7 @@ namespace LaunchDarkly.Sdk.Client
             using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
             {
                 Assert.Equal("fake-device-id", client.Context.Key);
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
             }
@@ -80,7 +80,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
             }
@@ -105,7 +105,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
             }
@@ -136,7 +136,7 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await LdClient.InitAsync(config, KeylessAnonUser))
             {
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(stub.ReceivedContext.Key).Build(),
                     stub.ReceivedContext);
             }
@@ -234,12 +234,12 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
-                AssertHelpers.ContextsEqualExcludingAutoProperties(BasicUser, client.Context);
+                AssertHelpers.ContextsEqual(BasicUser, client.Context);
                 Assert.Equal(client.Context, stub.ReceivedContext);
 
                 await client.IdentifyAsync(newUser);
 
-                AssertHelpers.ContextsEqualExcludingAutoProperties(newUser, client.Context);
+                AssertHelpers.ContextsEqual(newUser, client.Context);
                 Assert.Equal(client.Context, stub.ReceivedContext);
             }
         }
@@ -255,7 +255,7 @@ namespace LaunchDarkly.Sdk.Client
                 await client.IdentifyAsync(KeylessAnonUser);
 
                 Assert.Equal("fake-device-id", client.Context.Key);
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
             }
@@ -274,7 +274,7 @@ namespace LaunchDarkly.Sdk.Client
 
                 generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
             }
@@ -303,7 +303,7 @@ namespace LaunchDarkly.Sdk.Client
 
                 generatedKey = client.Context.Key;
                 Assert.NotNull(generatedKey);
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
              }
@@ -341,7 +341,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(KeylessAnonUser);
 
-                AssertHelpers.ContextsEqualExcludingAutoProperties(
+                AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
                     client.Context);
                 Assert.Equal(client.Context, stub.ReceivedContext);
