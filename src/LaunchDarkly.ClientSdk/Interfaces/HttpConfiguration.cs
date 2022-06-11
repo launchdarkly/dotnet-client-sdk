@@ -181,5 +181,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             }
             return ret;
         }
+
+        internal static HttpConfiguration Default() =>
+            new HttpConfiguration(HttpProperties.Default, null, HttpConfigurationBuilder.DefaultResponseStartTimeout, false);
     }
 }

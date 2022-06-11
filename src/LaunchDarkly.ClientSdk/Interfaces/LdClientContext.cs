@@ -15,17 +15,13 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     /// may also include non-public properties that are relevant only when creating one of the built-in
     /// component types and are not accessible to custom components.
     /// </para>
-    /// <para>
-    /// Some properties are in <see cref="BasicConfiguration"/> instead because they are required in
-    /// situations where the <see cref="LdClientContext"/> has not been fully constructed yet.
-    /// </para>
     /// </remarks>
     public sealed class LdClientContext
     {
         /// <summary>
-        /// The basic properties common to all components.
+        /// The configured mobile key.
         /// </summary>
-        public BasicConfiguration Basic { get; }
+        public string MobileKey { get; }
 
         /// <summary>
         /// The configured logger for the SDK.
@@ -64,35 +60,89 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <param name="configuration">the SDK configuration</param>
         public LdClientContext(
             Configuration configuration
-            ) : this(configuration, null, null, null) { }
+            ) : this(configuration, null) { }
+
+        internal LdClientContext(
+            string mobileKey,
+            Logger baseLogger,
+            bool enableBackgroundUpdating,
+            bool evaluationReasons,
+            HttpConfiguration http,
+            ServiceEndpoints serviceEndpoints,
+            IDiagnosticDisabler diagnosticDisabler,
+            IDiagnosticStore diagnosticStore,
+            TaskExecutor taskExecutor
+            )
+        {
+            MobileKey = mobileKey;
+            BaseLogger = baseLogger;
+            EnableBackgroundUpdating = enableBackgroundUpdating;
+            EvaluationReasons = evaluationReasons;
+            Http = http;
+            ServiceEndpoints = serviceEndpoints ?? Components.ServiceEndpoints().Build();
+            DiagnosticDisabler = diagnosticDisabler;
+            DiagnosticStore = diagnosticStore;
+            TaskExecutor = taskExecutor ?? new TaskExecutor(null,
+                PlatformSpecific.AsyncScheduler.ScheduleAction,
+                baseLogger
+                );
+        }
 
         internal LdClientContext(
             Configuration configuration,
-            object eventSender,
-            IDiagnosticStore diagnosticStore,
-            IDiagnosticDisabler diagnosticDisabler
-            )
-        {
-            this.Basic = new BasicConfiguration(configuration.MobileKey);
+            object eventSender
+            ) :
+            this(
+                configuration.MobileKey,
+                MakeLogger(configuration),
+                configuration.EnableBackgroundUpdating,
+                configuration.EvaluationReasons,
+                (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
+                    .CreateHttpConfiguration(MakeMinimalContext(configuration.MobileKey)),
+                configuration.ServiceEndpoints,
+                null,
+                null,
+                new TaskExecutor(
+                    eventSender,
+                    PlatformSpecific.AsyncScheduler.ScheduleAction,
+                    MakeLogger(configuration)
+                )
+            ) { }
 
+        internal static Logger MakeLogger(Configuration configuration)
+        {
             var logConfig = (configuration.LoggingConfigurationBuilder ?? Components.Logging())
                 .CreateLoggingConfiguration();
             var logAdapter = logConfig.LogAdapter ?? Logs.None;
-            this.BaseLogger = logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
-
-            this.EnableBackgroundUpdating = configuration.EnableBackgroundUpdating;
-            this.EvaluationReasons = configuration.EvaluationReasons;
-            this.Http = (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
-                .CreateHttpConfiguration(this.Basic);
-            this.ServiceEndpoints = configuration.ServiceEndpoints;
-
-            this.DiagnosticStore = diagnosticStore;
-            this.DiagnosticDisabler = diagnosticDisabler;
-            this.TaskExecutor = new TaskExecutor(
-                eventSender,
-                PlatformSpecific.AsyncScheduler.ScheduleAction,
-                this.BaseLogger
-                );
+            return logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
         }
+
+        internal static LdClientContext MakeMinimalContext(string mobileKey) =>
+            new LdClientContext(
+                mobileKey,
+                Logs.None.Logger(""),
+                false,
+                false,
+                HttpConfiguration.Default(),
+                null,
+                null,
+                null,
+                null
+            );
+
+        internal LdClientContext WithDiagnostics(
+            IDiagnosticDisabler newDiagnosticDisabler,
+            IDiagnosticStore newDiagnosticStore
+            ) =>
+            new LdClientContext(
+                MobileKey,
+                BaseLogger,
+                EnableBackgroundUpdating,
+                EvaluationReasons,
+                Http,
+                ServiceEndpoints,
+                newDiagnosticDisabler,
+                newDiagnosticStore,
+                TaskExecutor);
     }
 }
