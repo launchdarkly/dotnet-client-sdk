@@ -1,6 +1,6 @@
 ﻿using LaunchDarkly.Sdk.Client.Integrations;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Interface for a factory that creates some implementation of <see cref="IPersistentDataStore"/>.

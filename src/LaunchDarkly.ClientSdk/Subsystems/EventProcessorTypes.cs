@@ -1,5 +1,5 @@
 ﻿
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Parameter types for use by <see cref="IEventProcessor"/> implementations.

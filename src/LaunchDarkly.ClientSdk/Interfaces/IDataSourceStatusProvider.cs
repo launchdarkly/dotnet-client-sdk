@@ -29,7 +29,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </para>
         /// <para>
         /// For a custom data source implementation, it is the responsibility of the data source to report its
-        /// status via <see cref="IDataSourceUpdateSink"/>; if it does not do so, the status will always be reported
+        /// status via <see cref="Subsystems.IDataSourceUpdateSink"/>; if it does not do so, the status will always be reported
         /// as <see cref="DataSourceState.Initializing"/>.
         /// </para>
         /// </remarks>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Json;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;

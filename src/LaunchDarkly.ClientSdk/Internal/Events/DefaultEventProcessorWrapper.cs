@@ -1,4 +1,4 @@
-﻿using LaunchDarkly.Sdk.Client.Interfaces;
+﻿using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Events;
 
 namespace LaunchDarkly.Sdk.Client.Internal.Events

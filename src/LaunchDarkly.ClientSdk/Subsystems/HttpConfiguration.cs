@@ -5,7 +5,7 @@ using System.Net.Http;
 using LaunchDarkly.Sdk.Internal.Http;
 using LaunchDarkly.Sdk.Client.Integrations;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Encapsulates top-level HTTP configuration that applies to all SDK components.

@@ -1,6 +1,8 @@
-﻿using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+﻿using LaunchDarkly.Sdk.Client.Interfaces;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
+
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     // Note: In .NET server-side SDK 6.x, Java SDK 5.x, and Go SDK 5.x, where this component was added, it
     // is called "DataSourceUpdates". This name was thought to be a bit confusing, since it receives updates

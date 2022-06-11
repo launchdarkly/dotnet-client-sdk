@@ -1,5 +1,5 @@
 ﻿
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Optional interface for components to describe their own configuration.

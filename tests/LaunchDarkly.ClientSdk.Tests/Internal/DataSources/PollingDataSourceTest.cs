@@ -1,13 +1,13 @@
 ﻿using System;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 using static LaunchDarkly.Sdk.Client.MockResponses;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 using static LaunchDarkly.Sdk.Client.TestHttpUtils;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
