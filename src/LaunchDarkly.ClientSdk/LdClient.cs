@@ -255,8 +255,8 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="initialContext">the user needed for client operations (must not be <see langword="null"/>);
-        /// if the user's <see cref="User.Key"/> is <see langword="null"/> and <see cref="User.Anonymous"/>
+        /// <param name="initialContext">the context needed for client operations (must not be <see langword="null"/>);
+        /// if the user's <see cref="Context.Key"/> is <see langword="null"/> and <see cref="Context.Transient"/>
         /// is <see langword="true"/>, it will be assigned a key that uniquely identifies this device</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
         public static LdClient Init(string mobileKey, Context initialContext, TimeSpan maxWaitTime)
@@ -281,8 +281,8 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="initialContext">the user needed for client operations;
-        /// if the user's <see cref="User.Key"/> is <see langword="null"/> and <see cref="User.Anonymous"/>
+        /// <param name="initialContext">the context needed for client operations;
+        /// if the user's <see cref="Context.Key"/> is <see langword="null"/> and <see cref="Context.Transient"/>
         /// is <see langword="true"/>, it will be assigned a key that uniquely identifies this device</param>
         public static async Task<LdClient> InitAsync(string mobileKey, Context initialContext)
         {

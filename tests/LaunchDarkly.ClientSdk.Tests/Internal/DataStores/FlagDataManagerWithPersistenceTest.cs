@@ -231,9 +231,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             {
                 Context.New("key1"),
                 Context.New("key2"),
-                Context.NewWithKind("kind2", "key1"),
-                Context.NewMulti(Context.NewWithKind("kind1", "key1"), Context.NewWithKind("kind2", "key2")),
-                Context.NewMulti(Context.NewWithKind("kind1", "key1"), Context.NewWithKind("kind2", "key3"))
+                Context.New(ContextKind.Of("kind2"), "key1"),
+                Context.NewMulti(Context.New(ContextKind.Of("kind1"), "key1"), Context.New(ContextKind.Of("kind2"), "key2")),
+                Context.NewMulti(Context.New(ContextKind.Of("kind1"), "key1"), Context.New(ContextKind.Of("kind2"), "key3"))
             };
             var store = MakeStore(contexts.Length);
             for (var i = 0; i < contexts.Length; i++)
