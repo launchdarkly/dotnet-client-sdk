@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using LaunchDarkly.Logging;
+﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Json;
 using Xunit;
 using Xunit.Sdk;
