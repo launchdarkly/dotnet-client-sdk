@@ -46,14 +46,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _status = new StateMonitor<DataSourceStatus, StateAndError>(initialStatus, MaybeUpdateStatus, log);
         }
 
-        public void Init(User user, FullDataSet data)
+        public void Init(Context context, FullDataSet data)
         {
-            _dataStore.Init(user, data, true);
+            _dataStore.Init(context, data, true);
 
             ImmutableDictionary<string, FeatureFlag> oldValues, newValues;
             lock (_lastValuesLock)
             {
-                _lastValues.TryGetValue(user.Key, out oldValues);
+                _lastValues.TryGetValue(context.Key, out oldValues);
                 var builder = ImmutableDictionary.CreateBuilder<string, FeatureFlag>();
                 foreach (var newEntry in data.Items)
                 {
@@ -64,7 +64,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     }
                 }
                 newValues = builder.ToImmutable();
-                _lastValues = _lastValues.SetItem(user.Key, newValues);
+                _lastValues = _lastValues.SetItem(context.Key, newValues);
             }
 
             UpdateStatus(DataSourceState.Valid, null);
@@ -105,37 +105,38 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             }
         }
 
-        public void Upsert(User user, string key, ItemDescriptor data)
+        public void Upsert(Context context, string flagKey, ItemDescriptor data)
         {
-            var updated = _dataStore.Upsert(key, data);
+            var updated = _dataStore.Upsert(flagKey, data);
             if (!updated)
             {
                 return;
             }
 
             FeatureFlag oldFlag = null;
+            var contextKey = context.FullyQualifiedKey;
             lock (_lastValuesLock)
             {
-                _lastValues.TryGetValue(user.Key, out var oldValues);
+                _lastValues.TryGetValue(contextKey, out var oldValues);
                 if (oldValues is null)
                 {
                     // didn't have any flags for this user
                     var initValues = ImmutableDictionary<string, FeatureFlag>.Empty;
                     if (data.Item != null)
                     {
-                        initValues = initValues.SetItem(key, data.Item);
+                        initValues = initValues.SetItem(flagKey, data.Item);
                     }
-                    _lastValues = _lastValues.SetItem(user.Key, initValues);
+                    _lastValues = _lastValues.SetItem(contextKey, initValues);
                     return; // don't bother with change events if we had no previous data
                 }
-                oldValues.TryGetValue(key, out oldFlag);
+                oldValues.TryGetValue(flagKey, out oldFlag);
                 var newValues = data.Item is null ?
-                    oldValues.Remove(key) : oldValues.SetItem(key, data.Item);
-                _lastValues = _lastValues.SetItem(user.Key, newValues);
+                    oldValues.Remove(flagKey) : oldValues.SetItem(flagKey, data.Item);
+                _lastValues = _lastValues.SetItem(contextKey, newValues);
             }
             if (oldFlag?.Variation != data.Item?.Variation)
             {
-                var eventArgs = new FlagValueChangeEvent(key,
+                var eventArgs = new FlagValueChangeEvent(flagKey,
                     oldFlag?.Value ?? LdValue.Null,
                     data.Item?.Value ?? LdValue.Null,
                     data.Item is null

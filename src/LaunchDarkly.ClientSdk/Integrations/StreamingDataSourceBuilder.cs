@@ -88,7 +88,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public IDataSource CreateDataSource(
             LdClientContext context,
             IDataSourceUpdateSink updateSink,
-            User currentUser,
+            Context currentContext,
             bool inBackground
             )
         {
@@ -110,13 +110,13 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 // When in the background, always use polling instead of streaming
                 return new PollingDataSourceBuilder()
                     .BackgroundPollInterval(_backgroundPollInterval)
-                    .CreateDataSource(context, updateSink, currentUser, true);
+                    .CreateDataSource(context, updateSink, currentContext, true);
             }
 
             var logger = context.BaseLogger.SubLogger(LogNames.DataSourceSubLog);
             var requestor = new FeatureFlagRequestor(
                 pollingBaseUri,
-                currentUser,
+                currentContext,
                 context.EvaluationReasons,
                 context.Http,
                 logger
@@ -124,7 +124,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             return new StreamingDataSource(
                 updateSink,
-                currentUser,
+                currentContext,
                 baseUri,
                 context.EvaluationReasons,
                 _initialReconnectDelay,

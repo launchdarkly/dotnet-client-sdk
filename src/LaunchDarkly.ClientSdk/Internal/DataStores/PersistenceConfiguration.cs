@@ -1,5 +1,4 @@
-﻿using System;
-using LaunchDarkly.Sdk.Client.Interfaces;
+﻿using LaunchDarkly.Sdk.Client.Interfaces;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {

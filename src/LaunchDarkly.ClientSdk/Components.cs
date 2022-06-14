@@ -165,7 +165,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
         /// <seealso cref="Persistence"/>
         public static PersistenceConfigurationBuilder NoPersistence =>
-            Persistence().Storage(NullPersistentDataStoreFactory.Instance).MaxCachedUsers(0);
+            Persistence().Storage(NullPersistentDataStoreFactory.Instance).MaxCachedContexts(0);
 
         /// <summary>
         /// Returns a configuration builder for the SDK's persistent storage configuration.

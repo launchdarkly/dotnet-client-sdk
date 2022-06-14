@@ -11,7 +11,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 {
     public class TestDataTest : BaseTest
     {
-        private static readonly User _initialUser = User.WithKey("user0");
+        private static readonly Context _initialUser = Context.New("user0");
 
         private readonly TestData _td = TestData.DataSource();
         private readonly MockDataSourceUpdateSink _updates = new MockDataSourceUpdateSink();

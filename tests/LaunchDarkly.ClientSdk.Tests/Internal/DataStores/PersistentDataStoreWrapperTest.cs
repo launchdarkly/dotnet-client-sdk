@@ -33,21 +33,21 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         }
 
         [Fact]
-        public void GetUserDataForUnknownUser()
+        public void GetContextDataForUnknownContext()
         {
-            var data = _wrapper.GetUserData(UserKey);
+            var data = _wrapper.GetContextData(UserKey);
             Assert.Null(data);
             Assert.Empty(logCapture.GetMessages());
         }
 
         [Fact]
-        public void GetUserDataForKnownUserWithValidData()
+        public void GetContextDataForKnownContextWithValidData()
         {
             var expectedData = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
             var serializedData = expectedData.ToJsonString();
             _persistentStore.SetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey, serializedData);
 
-            var data = _wrapper.GetUserData(UserHash);
+            var data = _wrapper.GetContextData(UserHash);
             Assert.NotNull(data);
             AssertHelpers.DataSetsEqual(expectedData, data.Value);
             Assert.Empty(logCapture.GetMessages());
@@ -58,7 +58,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         {
             var data = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
 
-            _wrapper.SetUserData(UserHash, data);
+            _wrapper.SetContextData(UserHash, data);
 
             var serializedData = _persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey);
             AssertJsonEqual(data.ToJsonString(), serializedData);
@@ -69,10 +69,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         {
             var data = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
 
-            _wrapper.SetUserData(UserHash, data);
+            _wrapper.SetContextData(UserHash, data);
             Assert.NotNull(_persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey));
 
-            _wrapper.RemoveUserData(UserHash);
+            _wrapper.RemoveContextData(UserHash);
             Assert.Null(_persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey));
         }
 

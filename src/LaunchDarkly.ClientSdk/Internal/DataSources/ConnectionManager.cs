@@ -15,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     /// <remarks>
     /// Whenever the state of this object is modified by <see cref="SetForceOffline(bool)"/>,
     /// <see cref="SetNetworkEnabled(bool)"/>, <see cref="SetInBackground(bool)"/>,
-    /// <see cref="SetUser(User)"/>, or <see cref="Start"/>, it will decide whether to make a new
+    /// <see cref="SetContext(Context)"/>, or <see cref="Start"/>, it will decide whether to make a new
     /// connection, drop an existing connection, both, or neither. If the caller wants to know when a
     /// new connection (if any) is ready, it should <c>await</c> the returned task.
     ///
@@ -40,7 +40,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private bool _forceOffline = false;
         private bool _networkEnabled = false;
         private bool _inBackground = false;
-        private User _user = null;
+        private Context _context;
         private IDataSource _dataSource = null;
 
         // Note that these properties do not have simple setter methods, because the setters all
@@ -70,7 +70,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             IEventProcessor eventProcessor,
             DiagnosticDisablerImpl diagnosticDisabler,
             bool enableBackgroundUpdating,
-            User initialUser,
+            Context initialContext,
             Logger log
             )
         {
@@ -80,7 +80,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _eventProcessor = eventProcessor;
             _diagnosticDisabler = diagnosticDisabler;
             _enableBackgroundUpdating = enableBackgroundUpdating;
-            _user = initialUser;
+            _context = initialContext;
             _log = log;
         }
 
@@ -193,10 +193,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         /// <summary>
         /// Updates the current user.
         /// </summary>
-        /// <param name="user">the new user</param>
+        /// <param name="context">the new context</param>
         /// <returns>a task that is completed when we have received data for the new user, if the
         /// data source is online, or completed immediately otherwise</returns>
-        public Task<bool> SetUser(User user)
+        public Task<bool> SetContext(Context context)
         {
             return LockUtils.WithWriteLock(_lock, () =>
             {
@@ -204,7 +204,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 {
                     return Task.FromResult(false);
                 }
-                _user = user;
+                _context = context;
                 _initialized = false;
                 return OpenOrCloseConnectionIfNecessary(true);
             });
@@ -283,7 +283,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     // started. The state will then be updated as appropriate by the data source either
                     // calling UpdateStatus, or Init which implies UpdateStatus(Valid).
                     _updateSink.UpdateStatus(DataSourceState.Initializing, null);
-                    _dataSource = _dataSourceFactory.CreateDataSource(_clientContext, _updateSink, _user, _inBackground);
+                    _dataSource = _dataSourceFactory.CreateDataSource(_clientContext, _updateSink, _context, _inBackground);
                     return _dataSource.Start()
                         .ContinueWith(SetInitializedIfUpdateProcessorStartedSuccessfully);
                 }

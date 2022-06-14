@@ -36,7 +36,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private static readonly HttpMethod ReportMethod = new HttpMethod("REPORT");
 
         private readonly Uri _baseUri;
-        private readonly User _currentUser;
+        private readonly Context _currentContext;
         private readonly bool _useReport;
         private readonly bool _withReasons;
         private readonly HttpClient _httpClient;
@@ -46,7 +46,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         internal FeatureFlagRequestor(
             Uri baseUri,
-            User user,
+            Context context,
             bool withReasons,
             HttpConfiguration httpConfig,
             Logger log
@@ -55,7 +55,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             this._baseUri = baseUri;
             this._httpConfig = httpConfig;
             this._httpClient = httpConfig.HttpProperties.NewHttpClient();
-            this._currentUser = user;
+            this._currentContext = context;
             this._useReport = httpConfig.UseReport;
             this._withReasons = withReasons;
             this._log = log;
@@ -70,14 +70,14 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private HttpRequestMessage GetRequestMessage()
         {
             var path = StandardEndpoints.PollingRequestGetRequestPath(
-                Base64.UrlSafeEncode(DataModelSerialization.SerializeUser(_currentUser)));
+                Base64.UrlSafeEncode(DataModelSerialization.SerializeContext(_currentContext)));
             return new HttpRequestMessage(HttpMethod.Get, MakeRequestUriWithPath(path));
         }
 
         private HttpRequestMessage ReportRequestMessage()
         {
             var request = new HttpRequestMessage(ReportMethod, MakeRequestUriWithPath(StandardEndpoints.PollingRequestReportRequestPath));
-            request.Content = new StringContent(DataModelSerialization.SerializeUser(_currentUser), Encoding.UTF8, Constants.APPLICATION_JSON);
+            request.Content = new StringContent(DataModelSerialization.SerializeContext(_currentContext), Encoding.UTF8, Constants.APPLICATION_JSON);
             return request;
         }
 

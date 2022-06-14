@@ -14,13 +14,13 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </summary>
         /// <param name="context">configuration of the current client instance</param>
         /// <param name="updateSink">the destination for pushing data and status updates</param>
-        /// <param name="currentUser">the current user attributes</param>
+        /// <param name="currentContext">the current evaluation context</param>
         /// <param name="inBackground">true if the application is known to be in the background</param>
         /// <returns>an <see cref="IDataSource"/> instance</returns>
         IDataSource CreateDataSource(
             LdClientContext context,
             IDataSourceUpdateSink updateSink,
-            User currentUser,
+            Context currentContext,
             bool inBackground
             );
     }

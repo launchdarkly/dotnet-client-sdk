@@ -20,21 +20,21 @@ namespace LaunchDarkly.Sdk.Client
             Assert.Equal(expected.Version, actual.Version);
         }
 
-        public static void UsersEqual(User expected, User actual) =>
+        public static void ContextsEqual(Context expected, Context actual) =>
             AssertJsonEqual(LdJsonSerialization.SerializeObject(expected),
                 LdJsonSerialization.SerializeObject(actual));
 
-        public static void UsersEqualExcludingAutoProperties(User expected, User actual)
+        public static void ContextsEqualExcludingAutoProperties(Context expected, Context actual)
         {
-            var builder = User.Builder(expected);
+            var builder = Context.BuilderFromContext(expected);
             foreach (var autoProp in new string[] { "device", "os" })
             {
-                if (!actual.GetAttribute(UserAttribute.ForName(autoProp)).IsNull)
+                if (!actual.GetValue(autoProp).IsNull)
                 {
-                    builder.Custom(autoProp, actual.GetAttribute(UserAttribute.ForName(autoProp)));
+                    builder.Set(autoProp, actual.GetValue(autoProp));
                 }
             }
-            UsersEqual(builder.Build(), actual);
+            ContextsEqual(builder.Build(), actual);
         }
 
         public static void LogMessageRegex(LogCapture logCapture, bool shouldHave, LogLevel level, string pattern)

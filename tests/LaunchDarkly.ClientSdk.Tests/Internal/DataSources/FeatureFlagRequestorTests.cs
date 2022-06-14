@@ -22,8 +22,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         // User key constructed to test base64 encoding that differs between the standard and "URL and Filename safe"
         // base64 encodings from RFC4648. We need to use the URL safe encoding for flag requests.
-        private static readonly User _user = User.WithKey("foo_bar__?");
-        private const string _encodedUser = "eyJrZXkiOiJmb29fYmFyX18_In0=";
+        private static readonly Context _context = Context.New("foo_bar__?");
         // Note that in a real use case, the user encoding may vary depending on the target platform, because the SDK adds custom
         // user attributes like "os". But the lower-level FeatureFlagRequestor component does not do that.
 
@@ -51,7 +50,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
                 using (var requestor = new FeatureFlagRequestor(
                     baseUri,
-                    _user,
+                    _context,
                     withReasons,
                     new LdClientContext(config).Http,
                     testLogger))
@@ -62,7 +61,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
                     var req = server.Recorder.RequireRequest();
                     Assert.Equal("GET", req.Method);
-                    Assert.Equal(expectedPathWithoutUser + _encodedUser, req.Path);
+                    AssertHelpers.ContextsEqual(_context, TestUtil.Base64ContextFromUrlPath(req.Path, expectedPathWithoutUser));
                     Assert.Equal(expectedQuery, req.Query);
                     Assert.Equal(_mobileKey, req.Headers["Authorization"]);
                     Assert.Equal("", req.Body);
@@ -96,7 +95,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
                 using (var requestor = new FeatureFlagRequestor(
                     baseUri,
-                    _user,
+                    _context,
                     withReasons,
                     new LdClientContext(config).Http,
                     testLogger))
@@ -110,8 +109,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     Assert.Equal(expectedPath, req.Path);
                     Assert.Equal(expectedQuery, req.Query);
                     Assert.Equal(_mobileKey, req.Headers["Authorization"]);
-                    AssertJsonEqual(LdJsonSerialization.SerializeObject(_user),
-                        TestUtil.NormalizeJsonUser(LdValue.Parse(req.Body)));
+                    AssertJsonEqual(LdJsonSerialization.SerializeObject(_context), req.Body);
                 }
             }
         }

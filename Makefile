@@ -14,9 +14,9 @@ TESTFRAMEWORK ?= netcoreapp2.1
 
 # temporary skips for contract tests that can't pass till more U2C work is done
 TEST_HARNESS_PARAMS := $(TEST_HARNESS_PARAMS) \
-	-skip events/alias \
-	-skip events/custom \
-	-skip events/user/inlineUsers=true
+    -skip events/requests/method
+# events/request/method only fails because the latest alpha LaunchDarkly.InternalSdk
+# doesn't set the correct schema version
 
 build-contract-tests:
 	@cd contract-tests && dotnet build TestService.csproj
@@ -30,7 +30,7 @@ start-contract-test-service-bg:
 
 run-contract-tests:
 	@curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh \
-      | VERSION=v1 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end $(TEST_HARNESS_PARAMS)" sh
+      | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end $(TEST_HARNESS_PARAMS)" sh
 
 contract-tests: build-contract-tests start-contract-test-service-bg run-contract-tests
 

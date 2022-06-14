@@ -11,7 +11,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
             public IDataSource CreateDataSource(
                 LdClientContext context,
                 IDataSourceUpdateSink updateSink,
-                User currentUser,
+                Context currentContext,
                 bool inBackground
                 ) =>
                 new NullDataSource();
@@ -42,11 +42,11 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
             public void Flush() { }
 
-            public void RecordCustomEvent(EventProcessorTypes.CustomEvent e) { }
+            public void RecordCustomEvent(in EventProcessorTypes.CustomEvent e) { }
 
-            public void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e) { }
+            public void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e) { }
 
-            public void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e) { }
+            public void RecordIdentifyEvent(in EventProcessorTypes.IdentifyEvent e) { }
 
             public void SetOffline(bool offline) { }
         }

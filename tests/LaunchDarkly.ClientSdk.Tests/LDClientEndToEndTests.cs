@@ -21,8 +21,8 @@ namespace LaunchDarkly.Sdk.Client
     // expected ways.
     public class LdClientEndToEndTests : BaseTest
     {
-        private static readonly User _user = User.WithKey("foo");
-        private static readonly User _otherUser = User.WithKey("bar");
+        private static readonly Context _user = Context.New("foo");
+        private static readonly Context _otherUser = Context.New("bar");
 
         private static readonly FullDataSet _flagData1 = new DataSetBuilder()
             .Add("flag1", 1, LdValue.Of("value1"), 0)
@@ -163,7 +163,7 @@ namespace LaunchDarkly.Sdk.Client
                     var success = client.Identify(_otherUser, TimeSpan.FromSeconds(5));
                     Assert.True(success);
                     Assert.True(client.Initialized);
-                    Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
+                    Assert.Equal(_otherUser.Key, client.Context.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     var req2 = VerifyRequest(server.Recorder, mode);
                     Assert.NotEqual(user1RequestPath, req2.Path);
@@ -192,7 +192,7 @@ namespace LaunchDarkly.Sdk.Client
                     var success = await client.IdentifyAsync(_otherUser);
                     Assert.True(success);
                     Assert.True(client.Initialized);
-                    Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
+                    Assert.Equal(_otherUser.Key, client.Context.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     var req2 = VerifyRequest(server.Recorder, mode);
                     Assert.NotEqual(user1RequestPath, req2.Path);

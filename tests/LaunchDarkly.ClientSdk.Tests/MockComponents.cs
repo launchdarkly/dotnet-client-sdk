@@ -38,7 +38,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             public IDataSource Instance { get; set; }
             public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink,
-                User currentUser, bool inBackground) => Instance;
+                Context currentContext, bool inBackground) => Instance;
         }
 
         private class SingleEventProcessorFactory : IEventProcessorFactory
@@ -99,14 +99,14 @@ namespace LaunchDarkly.Sdk.Client
         internal class ReceivedInit
         {
             public FullDataSet Data { get; set; }
-            public User User { get; set; }
+            public Context Context{ get; set; }
         }
 
         internal class ReceivedUpsert
         {
             public string Key { get; set; }
             public ItemDescriptor Data { get; set; }
-            public User User { get; set; }
+            public Context Context { get; set; }
         }
 
         internal class ReceivedStatusUpdate
@@ -117,26 +117,26 @@ namespace LaunchDarkly.Sdk.Client
 
         public readonly EventSink<object> Actions = new EventSink<object>();
 
-        public void Init(User user, FullDataSet data) =>
-            Actions.Enqueue(new ReceivedInit { Data = data, User = user });
+        public void Init(Context context, FullDataSet data) =>
+            Actions.Enqueue(new ReceivedInit { Data = data, Context = context});
 
-        public void Upsert(User user, string key, ItemDescriptor data) =>
-            Actions.Enqueue(new ReceivedUpsert { Key = key, Data = data, User = user });
+        public void Upsert(Context context, string key, ItemDescriptor data) =>
+            Actions.Enqueue(new ReceivedUpsert { Key = key, Data = data, Context = context });
 
         public void UpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError) =>
             Actions.Enqueue(new ReceivedStatusUpdate { State = newState, Error = newError });
 
-        public FullDataSet ExpectInit(User user)
+        public FullDataSet ExpectInit(Context context)
         {
             var action = Assert.IsType<ReceivedInit>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
-            AssertHelpers.UsersEqual(user, action.User);
+            AssertHelpers.ContextsEqual(context, action.Context);
             return action.Data;
         }
 
-        public ItemDescriptor ExpectUpsert(User user, string key)
+        public ItemDescriptor ExpectUpsert(Context context, string key)
         {
             var action = Assert.IsType<ReceivedUpsert>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
-            Assert.Equal(user, action.User);
+            AssertHelpers.ContextsEqual(context, action.Context);
             Assert.Equal(key, action.Key);
             return action.Data;
         }
@@ -212,13 +212,13 @@ namespace LaunchDarkly.Sdk.Client
 
         public void Dispose() { }
 
-        public void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e) =>
+        public void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e) =>
             Events.Add(e);
 
-        public void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e) =>
+        public void RecordIdentifyEvent(in EventProcessorTypes.IdentifyEvent e) =>
             Events.Add(e);
 
-        public void RecordCustomEvent(EventProcessorTypes.CustomEvent e) =>
+        public void RecordCustomEvent(in EventProcessorTypes.CustomEvent e) =>
             Events.Add(e);
     }
 
@@ -313,11 +313,11 @@ namespace LaunchDarkly.Sdk.Client
         private PersistentDataStoreWrapper WithWrapper(string mobileKey) =>
             new PersistentDataStoreWrapper(this, mobileKey, Logs.None.Logger(""));
 
-        internal void SetupUserData(string mobileKey, string userKey, FullDataSet data) =>
-            WithWrapper(mobileKey).SetUserData(Base64.UrlSafeSha256Hash(userKey), data);
+        internal void SetupUserData(string mobileKey, string contextKey, FullDataSet data) =>
+            WithWrapper(mobileKey).SetContextData(Base64.UrlSafeSha256Hash(contextKey), data);
 
-        internal FullDataSet? InspectUserData(string mobileKey, string userKey) =>
-            WithWrapper(mobileKey).GetUserData(Base64.UrlSafeSha256Hash(userKey));
+        internal FullDataSet? InspectUserData(string mobileKey, string contextKey) =>
+            WithWrapper(mobileKey).GetContextData(Base64.UrlSafeSha256Hash(contextKey));
 
         internal UserIndex InspectUserIndex(string mobileKey) =>
             WithWrapper(mobileKey).GetIndex();
@@ -327,7 +327,7 @@ namespace LaunchDarkly.Sdk.Client
     {
         internal IDataSourceUpdateSink UpdateSink;
 
-        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, User currentUser, bool inBackground)
+        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, Context currentContext, bool inBackground)
         {
             UpdateSink = updateSink;
             return new MockDataSourceThatNeverInitializes();
@@ -336,43 +336,43 @@ namespace LaunchDarkly.Sdk.Client
 
     internal class MockDataSourceFactoryFromLambda : IDataSourceFactory
     {
-        private readonly Func<LdClientContext, IDataSourceUpdateSink, User, bool, IDataSource> _fn;
+        private readonly Func<LdClientContext, IDataSourceUpdateSink, Context, bool, IDataSource> _fn;
 
-        internal MockDataSourceFactoryFromLambda(Func<LdClientContext, IDataSourceUpdateSink, User, bool, IDataSource> fn)
+        internal MockDataSourceFactoryFromLambda(Func<LdClientContext, IDataSourceUpdateSink, Context, bool, IDataSource> fn)
         {
             _fn = fn;
         }
 
-        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, User currentUser, bool inBackground) =>
-            _fn(context, updateSink, currentUser, inBackground);
+        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, Context currentContext, bool inBackground) =>
+            _fn(context, updateSink, currentContext, inBackground);
     }
 
     internal class MockPollingProcessor : IDataSource
     {
         private IDataSourceUpdateSink _updateSink;
-        private User _user;
+        private Context _context;
         private FullDataSet? _data;
 
-        public User ReceivedUser => _user;
+        public Context ReceivedContext => _context;
 
-        public MockPollingProcessor(FullDataSet? data) : this(null, null, data) { }
+        public MockPollingProcessor(FullDataSet? data) : this(null, new Context(), data) { }
 
-        private MockPollingProcessor(IDataSourceUpdateSink updateSink, User user, FullDataSet? data)
+        private MockPollingProcessor(IDataSourceUpdateSink updateSink, Context context, FullDataSet? data)
         {
             _updateSink = updateSink;
-            _user = user;
+            _context = context;
             _data = data;
         }
 
         public static IDataSourceFactory Factory(FullDataSet? data) =>
-            new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
-                new MockPollingProcessor(updates, user, data));
+            new MockDataSourceFactoryFromLambda((ctx, updates, context, bg) =>
+                new MockPollingProcessor(updates, context, data));
 
         public IDataSourceFactory AsFactory() =>
-            new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
+            new MockDataSourceFactoryFromLambda((ctx, updates, context, bg) =>
             {
                 this._updateSink = updates;
-                this._user = user;
+                this._context = context;
                 return this;
             });
 
@@ -394,7 +394,7 @@ namespace LaunchDarkly.Sdk.Client
             IsRunning = true;
             if (_updateSink != null && _data != null)
             {
-                _updateSink.Init(_user, _data.Value);
+                _updateSink.Init(_context, _data.Value);
             }
             return Task.FromResult(true);
         }
@@ -402,13 +402,13 @@ namespace LaunchDarkly.Sdk.Client
 
     internal class MockDataSourceFromLambda : IDataSource
     {
-        private readonly User _user;
+        private readonly Context _context;
         private readonly Func<Task> _startFn;
         private bool _initialized;
 
-        public MockDataSourceFromLambda(User user, Func<Task> startFn)
+        public MockDataSourceFromLambda(Context context, Func<Task> startFn)
         {
-            _user = user;
+            _context = context;
             _startFn = startFn;
         }
 

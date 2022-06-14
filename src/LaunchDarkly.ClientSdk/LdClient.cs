@@ -31,7 +31,7 @@ namespace LaunchDarkly.Sdk.Client
 
         // Immutable client state
         readonly Configuration _config;
-        readonly LdClientContext _context;
+        readonly LdClientContext _clientContext;
         readonly IDataSourceStatusProvider _dataSourceStatusProvider;
         readonly IDataSourceUpdateSink _dataSourceUpdateSink;
         readonly FlagDataManager _dataStore;
@@ -47,15 +47,15 @@ namespace LaunchDarkly.Sdk.Client
 
         // Mutable client state (some state is also in the ConnectionManager)
         readonly ReaderWriterLockSlim _stateLock = new ReaderWriterLockSlim();
-        volatile User _user;
+        private Context _context;
 
         /// <summary>
         /// The singleton instance used by your application throughout its lifetime. Once this exists, you cannot
         /// create a new client instance unless you first call <see cref="Dispose()"/> on this one.
         /// </summary>
         /// <remarks>
-        /// Use the static factory methods <see cref="Init(Configuration, User, TimeSpan)"/> or
-        /// <see cref="InitAsync(Configuration, User)"/> to set this <see cref="LdClient"/> instance.
+        /// Use the static factory methods <see cref="Init(Configuration, Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, Context)"/> to set this <see cref="LdClient"/> instance.
         /// </remarks>
         public static LdClient Instance => _instance;
 
@@ -70,14 +70,14 @@ namespace LaunchDarkly.Sdk.Client
         public Configuration Config => _config;
 
         /// <summary>
-        /// The current user for all SDK operations.
+        /// The current evaluation context for all SDK operations.
         /// </summary>
         /// <remarks>
-        /// This is initially the user specified for <see cref="Init(Configuration, User, TimeSpan)"/> or
-        /// <see cref="InitAsync(Configuration, User)"/>, but can be changed later with <see cref="Identify(User, TimeSpan)"/>
-        /// or <see cref="IdentifyAsync(User)"/>.
+        /// This is initially the context specified for <see cref="Init(Configuration, Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, Context)"/>, but can be changed later with
+        /// <see cref="Identify(Context, TimeSpan)"/> or <see cref="IdentifyAsync(Context)"/>.
         /// </remarks>
-        public User User => LockUtils.WithReadLock(_stateLock, () => _user);
+        public Context Context => LockUtils.WithReadLock(_stateLock, () => _context);
 
         /// <inheritdoc/>
         public bool Offline => _connectionManager.ForceOffline;
@@ -119,28 +119,23 @@ namespace LaunchDarkly.Sdk.Client
         // without using WithConfigAnduser(config, user)
         LdClient() { }
 
-        LdClient(Configuration configuration, User user, TimeSpan startWaitTime)
+        LdClient(Configuration configuration, Context initialContext, TimeSpan startWaitTime)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
             var diagnosticStore = _config.DiagnosticOptOut ? null :
                 new ClientDiagnosticStore(_config, startWaitTime);
             var diagnosticDisabler = _config.DiagnosticOptOut ? null :
                 new DiagnosticDisablerImpl();
 
-            _context = new LdClientContext(configuration, this, diagnosticStore, diagnosticDisabler);
-            _log = _context.BaseLogger;
-            _taskExecutor = _context.TaskExecutor;
-            diagnosticStore?.SetContext(_context);
+            _clientContext = new LdClientContext(configuration, this, diagnosticStore, diagnosticDisabler);
+            _log = _clientContext.BaseLogger;
+            _taskExecutor = _clientContext.TaskExecutor;
+            diagnosticStore?.SetContext(_clientContext);
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
             var persistenceConfiguration = (configuration.PersistenceConfigurationBuilder ?? Components.Persistence())
-                .CreatePersistenceConfiguration(_context);
+                .CreatePersistenceConfiguration(_clientContext);
             _dataStore = new FlagDataManager(
                 configuration.MobileKey,
                 persistenceConfiguration,
@@ -149,16 +144,16 @@ namespace LaunchDarkly.Sdk.Client
 
             _userDecorator = new UserDecorator(configuration.DeviceInfo ?? new DefaultDeviceInfo(),
                 _dataStore.PersistentStore);
-            _user = _userDecorator.DecorateUser(user);
+            _context = _userDecorator.DecorateContext(initialContext);
 
-            // If we had cached data for the new user, set the current in-memory flag data state to use
+            // If we had cached data for the new context, set the current in-memory flag data state to use
             // that data, so that any Variation calls made before Identify has completed will use the
             // last known values.
-            var cachedData = _dataStore.GetCachedData(_user);
+            var cachedData = _dataStore.GetCachedData(_context);
             if (cachedData != null)
             {
-                _log.Debug("Cached flag data is available for this user");
-                _dataStore.Init(_user, cachedData.Value, false); // false means "don't rewrite the flags to persistent storage"
+                _log.Debug("Cached flag data is available for this context");
+                _dataStore.Init(_context, cachedData.Value, false); // false means "don't rewrite the flags to persistent storage"
             }
 
             var dataSourceUpdateSink = new DataSourceUpdateSinkImpl(
@@ -180,17 +175,17 @@ namespace LaunchDarkly.Sdk.Client
             diagnosticDisabler?.SetDisabled(!isConnected || configuration.Offline);
 
             _eventProcessor = (configuration.EventProcessorFactory ?? Components.SendEvents())
-                .CreateEventProcessor(_context);
+                .CreateEventProcessor(_clientContext);
             _eventProcessor.SetOffline(configuration.Offline || !isConnected);
 
             _connectionManager = new ConnectionManager(
-                _context,
+                _clientContext,
                 dataSourceFactory,
                 _dataSourceUpdateSink,
                 _eventProcessor,
                 diagnosticDisabler,
                 configuration.EnableBackgroundUpdating,
-                _user,
+                _context,
                 _log
                 );
             _connectionManager.SetForceOffline(configuration.Offline);
@@ -213,7 +208,7 @@ namespace LaunchDarkly.Sdk.Client
                 _eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
                 {
                     Timestamp = UnixMillisecondTime.Now,
-                    User = user
+                    Context = _context
                 });
             }
 
@@ -247,9 +242,9 @@ namespace LaunchDarkly.Sdk.Client
         /// an <see cref="Initialized"/> property of <see langword="false"/>.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use <see cref="InitAsync(string, User)"/>. To
+        /// If you would rather this happen asynchronously, use <see cref="InitAsync(string, Context)"/>. To
         /// specify additional configuration options rather than just the mobile key, use
-        /// <see cref="Init(Configuration, User, TimeSpan)"/> or <see cref="InitAsync(Configuration, User)"/>.
+        /// <see cref="Init(Configuration, Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -258,15 +253,15 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="user">the user needed for client operations (must not be <see langword="null"/>);
+        /// <param name="initialContext">the user needed for client operations (must not be <see langword="null"/>);
         /// if the user's <see cref="User.Key"/> is <see langword="null"/> and <see cref="User.Anonymous"/>
         /// is <see langword="true"/>, it will be assigned a key that uniquely identifies this device</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
-        public static LdClient Init(string mobileKey, User user, TimeSpan maxWaitTime)
+        public static LdClient Init(string mobileKey, Context initialContext, TimeSpan maxWaitTime)
         {
             var config = Configuration.Default(mobileKey);
 
-            return Init(config, user, maxWaitTime);
+            return Init(config, initialContext, maxWaitTime);
         }
 
         /// <summary>
@@ -284,14 +279,14 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="user">the user needed for client operations (must not be <see langword="null"/>);
+        /// <param name="initialContext">the user needed for client operations;
         /// if the user's <see cref="User.Key"/> is <see langword="null"/> and <see cref="User.Anonymous"/>
         /// is <see langword="true"/>, it will be assigned a key that uniquely identifies this device</param>
-        public static async Task<LdClient> InitAsync(string mobileKey, User user)
+        public static async Task<LdClient> InitAsync(string mobileKey, Context initialContext)
         {
             var config = Configuration.Default(mobileKey);
 
-            return await InitAsync(config, user);
+            return await InitAsync(config, initialContext);
         }
 
         /// <summary>
@@ -306,9 +301,9 @@ namespace LaunchDarkly.Sdk.Client
         /// an <see cref="Initialized"/> property of <see langword="false"/>.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use <see cref="InitAsync(Configuration, User)"/>.
+        /// If you would rather this happen asynchronously, use <see cref="InitAsync(Configuration, Context)"/>.
         /// If you do not need to specify configuration options other than the mobile key, you can use
-        /// <see cref="Init(string, User, TimeSpan)"/> or <see cref="InitAsync(string, User)"/>.
+        /// <see cref="Init(string, Context, TimeSpan)"/> or <see cref="InitAsync(string, Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -317,19 +312,19 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <returns>The singleton LdClient instance.</returns>
         /// <param name="config">The client configuration object</param>
-        /// <param name="user">The user needed for client operations. Must not be null.
+        /// <param name="initialContext">The initial evaluation context.
         /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
         /// <param name="maxWaitTime">The maximum length of time to wait for the client to initialize.
         /// If this time elapses, the method will not throw an exception but will return the client in
         /// an uninitialized state.</param>
-        public static LdClient Init(Configuration config, User user, TimeSpan maxWaitTime)
+        public static LdClient Init(Configuration config, Context initialContext, TimeSpan maxWaitTime)
         {
             if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxWaitTime));
             }
 
-            var c = CreateInstance(config, user, maxWaitTime);
+            var c = CreateInstance(config, initialContext, maxWaitTime);
             c.Start(maxWaitTime);
             return c;
         }
@@ -341,21 +336,21 @@ namespace LaunchDarkly.Sdk.Client
         /// from the LaunchDarkly service.
         /// 
         /// This is the creation point for LdClient, you must use this static method or the more basic
-        /// <see cref="InitAsync(string, User)"/> to instantiate the single instance of LdClient
+        /// <see cref="InitAsync(string, Context)"/> to instantiate the single instance of LdClient
         /// for the lifetime of your application.
         /// </summary>
         /// <returns>The singleton LdClient instance.</returns>
-        /// <param name="config">The client configuration object</param>
-        /// <param name="user">The user needed for client operations. Must not be null.
+        /// <param name="config">The client configuration object.</param>
+        /// <param name="initialContext">The initial evaluation context.
         /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
-        public static async Task<LdClient> InitAsync(Configuration config, User user)
+        public static async Task<LdClient> InitAsync(Configuration config, Context initialContext)
         {
-            var c = CreateInstance(config, user, TimeSpan.Zero);
+            var c = CreateInstance(config, initialContext, TimeSpan.Zero);
             await c.StartAsync();
             return c;
         }
 
-        static LdClient CreateInstance(Configuration configuration, User user, TimeSpan maxWaitTime)
+        static LdClient CreateInstance(Configuration configuration, Context initialContext, TimeSpan maxWaitTime)
         {
             lock (_createInstanceLock)
             {
@@ -364,7 +359,7 @@ namespace LaunchDarkly.Sdk.Client
                     throw new Exception("LdClient instance already exists.");
                 }
 
-                var c = new LdClient(configuration, user, maxWaitTime);
+                var c = new LdClient(configuration, initialContext, maxWaitTime);
                 _instance = c;
                 return c;
             }
@@ -468,14 +463,14 @@ namespace LaunchDarkly.Sdk.Client
                 if (!Initialized)
                 {
                     _log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
-                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, User, defaultJson,
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context, defaultJson,
                         EvaluationErrorKind.ClientNotReady));
                     return errorResult(EvaluationErrorKind.ClientNotReady);
                 }
                 else
                 {
                     _log.Info("Unknown feature flag {0}; returning default value", featureKey);
-                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, User, defaultJson,
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context, defaultJson,
                         EvaluationErrorKind.FlagNotFound));
                     return errorResult(EvaluationErrorKind.FlagNotFound);
                 }
@@ -508,7 +503,7 @@ namespace LaunchDarkly.Sdk.Client
                     result = new EvaluationDetail<T>(converter.ToType(flag.Value), flag.Variation, flag.Reason ?? EvaluationReason.OffReason);
                 }
             }
-            var featureEvent = eventFactory.NewEvaluationEvent(featureKey, flag, User,
+            var featureEvent = eventFactory.NewEvaluationEvent(featureKey, flag, Context,
                 new EvaluationDetail<LdValue>(valueJson, flag.Variation, flag.Reason ?? EvaluationReason.OffReason), defaultJson);
             SendEvaluationEventIfOnline(featureEvent);
             return result;
@@ -538,7 +533,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 Timestamp = UnixMillisecondTime.Now,
                 EventKey = eventName,
-                User = User,
+                Context = Context,
                 Data = data,
                 MetricValue = metricValue
             });
@@ -551,7 +546,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 Timestamp = UnixMillisecondTime.Now,
                 EventKey = eventName,
-                User = User,
+                Context = Context,
                 Data = data
             });
         }
@@ -569,47 +564,37 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <inheritdoc/>
-        public bool Identify(User user, TimeSpan maxWaitTime)
+        public bool Identify(Context context, TimeSpan maxWaitTime)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            return AsyncUtils.WaitSafely(() => IdentifyAsync(user), maxWaitTime);
+            return AsyncUtils.WaitSafely(() => IdentifyAsync(context), maxWaitTime);
         }
 
         /// <inheritdoc/>
-        public async Task<bool> IdentifyAsync(User user)
+        public async Task<bool> IdentifyAsync(Context context)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            User newUser = _userDecorator.DecorateUser(user);
-            User oldUser = newUser; // this initialization is overwritten below, it's only here to satisfy the compiler
+            Context newContext = _userDecorator.DecorateContext(context);
+            Context oldContext = newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>
             {
-                oldUser = _user;
-                _user = newUser;
+                oldContext = _context;
+                _context = newContext;
             });
 
-            // If we had cached data for the new user, set the current in-memory flag data state to use
+            // If we had cached data for the new context, set the current in-memory flag data state to use
             // that data, so that any Variation calls made before Identify has completed will use the
             // last known values. If we did not have cached data, then we update the current in-memory
             // state to reflect that there is no flag data, so that Variation calls done before completion
-            // will receive default values rather than the previous user's values. This does not modify
+            // will receive default values rather than the previous context's values. This does not modify
             // any flags in persistent storage, and (currently) it does *not* trigger any FlagValueChanged
             // events from FlagTracker.
-            var cachedData = _dataStore.GetCachedData(newUser);
+            var cachedData = _dataStore.GetCachedData(newContext);
             if (cachedData != null)
             {
-                _log.Debug("Identify found cached flag data for the new user");
+                _log.Debug("Identify found cached flag data for the new context");
             }
             _dataStore.Init(
-                newUser,
+                newContext,
                 cachedData ?? new DataStoreTypes.FullDataSet(null),
                 false // false means "don't rewrite the flags to persistent storage"
                 );
@@ -617,10 +602,10 @@ namespace LaunchDarkly.Sdk.Client
             EventProcessorIfEnabled().RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
             {
                 Timestamp = UnixMillisecondTime.Now,
-                User = user
+                Context = newContext
             });
 
-            return await _connectionManager.SetUser(newUser);
+            return await _connectionManager.SetContext(newContext);
         }
 
         /// <summary>

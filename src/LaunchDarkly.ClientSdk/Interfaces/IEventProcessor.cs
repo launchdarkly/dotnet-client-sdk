@@ -26,19 +26,19 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// events service as an individual event, or may only be added into summary data.
         /// </remarks>
         /// <param name="e">parameters for an evaluation event</param>
-        void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e);
+        void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e);
 
         /// <summary>
         /// Records a set of user properties.
         /// </summary>
         /// <param name="e">parameters for an identify event</param>
-        void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e);
+        void RecordIdentifyEvent(in EventProcessorTypes.IdentifyEvent e);
 
         /// <summary>
         /// Records a custom event.
         /// </summary>
         /// <param name="e">parameters for a custom event</param>
-        void RecordCustomEvent(EventProcessorTypes.CustomEvent e);
+        void RecordCustomEvent(in EventProcessorTypes.CustomEvent e);
 
         /// <summary>
         /// Puts the component into offline mode if appropriate.

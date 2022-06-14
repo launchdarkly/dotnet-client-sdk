@@ -56,13 +56,12 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         {
             var b = _tester.New();
             Assert.Empty(b._privateAttributes);
-            b.PrivateAttributes(UserAttribute.Name);
-            b.PrivateAttributes(UserAttribute.Email, UserAttribute.ForName("other"));
-            b.PrivateAttributeNames("country");
+            b.PrivateAttributes("name");
+            b.PrivateAttributes("/address/street", "other");
             Assert.Equal(
-                new HashSet<UserAttribute>
+                new HashSet<AttributeRef>
                 {
-                    UserAttribute.Name, UserAttribute.Email, UserAttribute.Country, UserAttribute.ForName("other")
+                    AttributeRef.FromPath("name"), AttributeRef.FromPath("/address/street"), AttributeRef.FromPath("other")
                 },
                 b._privateAttributes);
         }

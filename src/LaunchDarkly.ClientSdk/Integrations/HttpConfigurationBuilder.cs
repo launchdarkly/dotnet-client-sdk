@@ -61,7 +61,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// LaunchDarkly server, for any individual network connection.
         /// </para>
         /// <para>
-        /// It is not the same as the timeout parameter to <see cref="LdClient.Init(Configuration, User, TimeSpan)"/>,
+        /// It is not the same as the timeout parameter to <see cref="LdClient.Init(Configuration, Context, TimeSpan)"/>,
         /// which limits the time for initializing the SDK regardless of how many individual HTTP requests
         /// are done in that time.
         /// </para>
@@ -170,7 +170,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <c>HttpClient</c>.
         /// </para>
         /// <para>
-        /// It is not the same as the timeout parameter to<see cref= "LdClient.Init(Configuration, User, TimeSpan)" />,
+        /// It is not the same as the timeout parameter to<see cref= "LdClient.Init(Configuration, Context, TimeSpan)" />,
         /// which limits the time for initializing the SDK regardless of how many individual HTTP requests
         /// are done in that time.
         /// </para>

@@ -65,7 +65,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         internal int _capacity = DefaultCapacity;
         internal TimeSpan _diagnosticRecordingInterval = DefaultDiagnosticRecordingInterval;
         internal TimeSpan _flushInterval = DefaultFlushInterval;
-        internal HashSet<UserAttribute> _privateAttributes = new HashSet<UserAttribute>();
+        internal HashSet<AttributeRef> _privateAttributes = new HashSet<AttributeRef>();
         internal IEventSender _eventSender = null; // used in testing
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </summary>
         /// <remarks>
         /// If this is <see langword="true"/>, all user attribute values (other than the key) will be private, not just
-        /// the attributes specified in <see cref="PrivateAttributes(UserAttribute[])"/> or on a per-user basis with
+        /// the attributes specified in <see cref="PrivateAttributes(string[])"/> or on a per-user basis with
         /// <see cref="UserBuilder"/> methods. By default, it is <see langword="false"/>.
         /// </remarks>
         /// <param name="allAttributesPrivate">true if all user attributes should be private</param>
@@ -164,44 +164,17 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// Marks a set of attribute names as private.
         /// </summary>
         /// <remarks>
-        /// Any users sent to LaunchDarkly with this configuration active will have attributes with these
+        /// Any contexts sent to LaunchDarkly with this configuration active will have attributes with these
         /// names removed. This is in addition to any attributes that were marked as private for an
-        /// individual user with <see cref="UserBuilder"/> methods.
+        /// individual context with <see cref="ContextBuilder"/> methods.
         /// </remarks>
-        /// <param name="attributes">a set of attributes that will be removed from user data set to LaunchDarkly</param>
+        /// <param name="attributes">a set of attributes that will be removed from context data set to LaunchDarkly</param>
         /// <returns>the builder</returns>
-        /// <seealso cref="PrivateAttributeNames(string[])"/>
-        public EventProcessorBuilder PrivateAttributes(params UserAttribute[] attributes)
+        public EventProcessorBuilder PrivateAttributes(params string[] attributes)
         {
             foreach (var a in attributes)
             {
-                _privateAttributes.Add(a);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Marks a set of attribute names as private.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Any users sent to LaunchDarkly with this configuration active will have attributes with these
-        /// names removed. This is in addition to any attributes that were marked as private for an
-        /// individual user with <see cref="UserBuilder"/> methods.
-        /// </para>
-        /// <para>
-        /// Using <see cref="PrivateAttributes(UserAttribute[])"/> is preferable to avoid the possibility of
-        /// misspelling a built-in attribute.
-        /// </para>
-        /// </remarks>
-        /// <param name="attributes">a set of names that will be removed from user data set to LaunchDarkly</param>
-        /// <returns>the builder</returns>
-        /// <seealso cref="PrivateAttributes(UserAttribute[])"/>
-        public EventProcessorBuilder PrivateAttributeNames(params string[] attributes)
-        {
-            foreach (var a in attributes)
-            {
-                _privateAttributes.Add(UserAttribute.ForName(a));
+                _privateAttributes.Add(AttributeRef.FromPath(a));
             }
             return this;
         }
@@ -253,7 +226,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 EventsUri = baseUri.AddPath(StandardEndpoints.AnalyticsEventsPostRequestPath),
                 DiagnosticRecordingInterval = _diagnosticRecordingInterval,
                 DiagnosticUri = baseUri.AddPath(StandardEndpoints.DiagnosticEventsPostRequestPath),
-                PrivateAttributeNames = _privateAttributes.ToImmutableHashSet(),
+                PrivateAttributes = _privateAttributes.ToImmutableHashSet(),
                 RetryInterval = TimeSpan.FromSeconds(1)
             };
         }

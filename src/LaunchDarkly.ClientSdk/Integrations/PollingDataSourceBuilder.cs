@@ -89,7 +89,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public IDataSource CreateDataSource(
             LdClientContext context,
             IDataSourceUpdateSink updateSink,
-            User currentUser,
+            Context currentContext,
             bool inBackground
             )
         {
@@ -107,7 +107,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             var logger = context.BaseLogger.SubLogger(LogNames.DataSourceSubLog);
             var requestor = new FeatureFlagRequestor(
                 baseUri,
-                currentUser,
+                currentContext,
                 context.EvaluationReasons,
                 context.Http,
                 logger
@@ -115,7 +115,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             return new PollingDataSource(
                 updateSink,
-                currentUser,
+                currentContext,
                 requestor,
                 _pollInterval,
                 TimeSpan.Zero,

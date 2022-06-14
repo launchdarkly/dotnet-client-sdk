@@ -27,37 +27,37 @@ namespace LaunchDarkly.Sdk.Client.Internal
             _osName = PlatformSpecific.UserMetadata.OSName;
         }
 
-        public User DecorateUser(User user)
+        public Context DecorateContext(Context context)
         {
-            IUserBuilder buildUser = null;
+            ContextBuilder builder = null;
 
             if (_deviceName != null)
             {
-                if (buildUser is null)
+                if (builder is null)
                 {
-                    buildUser = User.Builder(user);
+                    builder = Context.BuilderFromContext(context);
                 }
-                buildUser.Custom("device", _deviceName);
+                builder.Set("device", _deviceName);
             }
             if (_osName != null)
             {
-                if (buildUser is null)
+                if (builder is null)
                 {
-                    buildUser = User.Builder(user);
+                    builder = Context.BuilderFromContext(context);
                 }
-                buildUser.Custom("os", _osName);
+                builder.Set("os", _osName);
             }
-            // If you pass in a user with a null or blank key, one will be assigned to them.
-            if (String.IsNullOrEmpty(user.Key))
+            // The use of a magic constant here is temporary because the current implementation of Context doesn't allow a null key
+            if (context.Key == Constants.AutoKeyMagicValue)
             {
-                if (buildUser is null)
+                if (builder is null)
                 {
-                    buildUser = User.Builder(user);
+                    builder = Context.BuilderFromContext(context);
                 }
                 var anonUserKey = GetOrCreateAnonUserKey();
-                buildUser.Key(anonUserKey).Anonymous(true);
+                builder.Key(anonUserKey).Transient(true);
             }
-            return buildUser is null ? user : buildUser.Build();
+            return builder is null ? context : builder.Build();
         }
 
         private string GetOrCreateAnonUserKey()

@@ -19,12 +19,11 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private static FullDataSet AllData =>
             new DataSetBuilder().Add("flag1", Flag).Build();
         private static readonly TimeSpan BriefInterval = TimeSpan.FromMilliseconds(20);
-        private static readonly User simpleUser = User.WithKey("me");
-        private const string encodedSimpleUser = "eyJrZXkiOiJtZSJ9";
+        private static readonly Context simpleUser = Context.New("me");
 
         private readonly MockDataSourceUpdateSink _updateSink = new MockDataSourceUpdateSink();
 
-        private IDataSource MakeDataSource(Uri baseUri, User user, Action<ConfigurationBuilder> modConfig = null)
+        private IDataSource MakeDataSource(Uri baseUri, Context context, Action<ConfigurationBuilder> modConfig = null)
         {
             var builder = BasicConfig()
                 .DataSource(Components.PollingDataSource())
@@ -32,7 +31,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             modConfig?.Invoke(builder);
             var config = builder.Build();
             return config.DataSourceFactory.CreateDataSource(new LdClientContext(config), _updateSink,
-                user, false);
+                context, false);
         }
 
         public PollingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
@@ -61,7 +60,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
                     var request = server.Recorder.RequireRequest();
                     Assert.Equal("GET", request.Method);
-                    Assert.Equal(expectedPathWithoutUser + encodedSimpleUser, request.Path);
+                    AssertHelpers.ContextsEqual(simpleUser, TestUtil.Base64ContextFromUrlPath(request.Path, expectedPathWithoutUser));
                     Assert.Equal(expectedQuery, request.Query);
                 }
             }
