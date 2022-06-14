@@ -111,10 +111,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             store.Init(BasicUser, DataSet1, true);
             store.Init(OtherUser, DataSet2, true);
 
-            var index = _persistentStore.InspectUserIndex(BasicMobileKey);
+            var index = _persistentStore.InspectContextIndex(BasicMobileKey);
             Assert.Equal(
                 ImmutableList.Create(Base64.UrlSafeSha256Hash(BasicUser.Key), Base64.UrlSafeSha256Hash(OtherUser.Key)),
-                index.Data.Select(e => e.UserId).ToImmutableList()
+                index.Data.Select(e => e.ContextId).ToImmutableList()
                 );
         }
 
@@ -131,10 +131,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             store.Init(OtherUser, DataSet2, true);
             store.Init(user3, dataSet3, true);
 
-            var index = _persistentStore.InspectUserIndex(BasicMobileKey);
+            var index = _persistentStore.InspectContextIndex(BasicMobileKey);
             Assert.Equal(
                 ImmutableList.Create(Base64.UrlSafeSha256Hash(OtherUser.Key), Base64.UrlSafeSha256Hash(user3.Key)),
-                index.Data.Select(e => e.UserId).ToImmutableList()
+                index.Data.Select(e => e.ContextId).ToImmutableList()
                 );
         }
 
@@ -218,6 +218,36 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             var data = _persistentStore.InspectUserData(BasicMobileKey, BasicUser.Key);
             Assert.NotNull(data);
             AssertHelpers.DataSetsEqual(data1a, data.Value);
+        }
+
+        [Fact]
+        public void FlagsAreStoredByFullyQualifiedKeyForSingleAndMultiKindContexts()
+        {
+            // This tests that we are correctly disambiguating contexts based on their FullyQualifiedKey,
+            // which includes both key and kind information (and, for multi-kind contexts, is based on
+            // concatenating the individual kinds). If we were using only the Key property, these users
+            // would collide.
+            var contexts = new Context[]
+            {
+                Context.New("key1"),
+                Context.New("key2"),
+                Context.NewWithKind("kind2", "key1"),
+                Context.NewMulti(Context.NewWithKind("kind1", "key1"), Context.NewWithKind("kind2", "key2")),
+                Context.NewMulti(Context.NewWithKind("kind1", "key1"), Context.NewWithKind("kind2", "key3"))
+            };
+            var store = MakeStore(contexts.Length);
+            for (var i = 0; i < contexts.Length; i++)
+            {
+                var initData = new DataSetBuilder().Add("flag", 1, LdValue.Of(i), 0).Build();
+                store.Init(contexts[i], initData, true);
+            }
+            for (var i = 0; i < contexts.Length; i++)
+            {
+                var data = store.GetCachedData(contexts[i]);
+                Assert.NotNull(data);
+                var flagValue = data.Value.Items[0].Value.Item.Value;
+                Assert.Equal(LdValue.Of(i), flagValue);
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
-    internal class UserDecorator
+    internal class ContextDecorator
     {
         private readonly IDeviceInfo _deviceInfo;
         private readonly PersistentDataStoreWrapper _store;
@@ -14,7 +14,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         private string _cachedAnonUserKey = null;
         private object _anonUserKeyLock = new object();
 
-        public UserDecorator(
+        public ContextDecorator(
             IDeviceInfo deviceInfo,
             PersistentDataStoreWrapper store
             )
@@ -31,36 +31,36 @@ namespace LaunchDarkly.Sdk.Client.Internal
         {
             ContextBuilder builder = null;
 
-            if (_deviceName != null)
+            Func<ContextBuilder> lazyBuilder = () =>
             {
                 if (builder is null)
                 {
                     builder = Context.BuilderFromContext(context);
                 }
-                builder.Set("device", _deviceName);
+                return builder;
+            };
+
+            if (_deviceName != null)
+            {
+                lazyBuilder().Set("device", _deviceName);
             }
             if (_osName != null)
             {
-                if (builder is null)
-                {
-                    builder = Context.BuilderFromContext(context);
-                }
-                builder.Set("os", _osName);
+                lazyBuilder().Set("os", _osName);
             }
-            // The use of a magic constant here is temporary because the current implementation of Context doesn't allow a null key
-            if (context.Key == Constants.AutoKeyMagicValue)
+            if (IsAutoContext(context))
             {
-                if (builder is null)
-                {
-                    builder = Context.BuilderFromContext(context);
-                }
-                var anonUserKey = GetOrCreateAnonUserKey();
-                builder.Key(anonUserKey).Transient(true);
+                var anonKey = GetOrCreateAutoContextKey();
+                lazyBuilder().Key(anonKey).Transient(true);
             }
             return builder is null ? context : builder.Build();
         }
 
-        private string GetOrCreateAnonUserKey()
+        private bool IsAutoContext(Context context) =>
+            context.Transient && context.Key == Constants.AutoKeyMagicValue;
+        // The use of a magic constant here is temporary because the current implementation of Context doesn't allow a null key
+
+        private string GetOrCreateAutoContextKey()
         {
             lock (_anonUserKeyLock)
             {

@@ -79,7 +79,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         [Fact]
         public void GetIndex()
         {
-            var expectedIndex = new UserIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
+            var expectedIndex = new ContextIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
             _persistentStore.SetValue(ExpectedEnvironmentNamespace, ExpectedIndexKey, expectedIndex.Serialize());
 
             var index = _wrapper.GetIndex();
@@ -89,7 +89,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         [Fact]
         public void SetIndex()
         {
-            var index = new UserIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
+            var index = new ContextIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
 
             _wrapper.SetIndex(index);
 

@@ -7,34 +7,34 @@ using LaunchDarkly.JsonStream;
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
     /// <summary>
-    /// Used internally to track which users have flag data in the persistent store.
+    /// Used internally to track which contexts have flag data in the persistent store.
     /// </summary>
-    internal class UserIndex
+    internal class ContextIndex
     {
         internal ImmutableList<IndexEntry> Data { get; }
 
         internal struct IndexEntry
         {
-            public string UserId { get; set; }
+            public string ContextId { get; set; }
             public UnixMillisecondTime Timestamp { get; set; }
         }
 
-        internal UserIndex(ImmutableList<IndexEntry> data = null)
+        internal ContextIndex(ImmutableList<IndexEntry> data = null)
         {
             Data = data ?? ImmutableList<IndexEntry>.Empty;
         }
 
-        public UserIndex UpdateTimestamp(string userId, UnixMillisecondTime timestamp)
+        public ContextIndex UpdateTimestamp(string contextId, UnixMillisecondTime timestamp)
         {
             var builder = ImmutableList.CreateBuilder<IndexEntry>();
-            builder.AddRange(Data.Where(e => e.UserId != userId));
-            builder.Add(new IndexEntry { UserId = userId, Timestamp = timestamp });
-            return new UserIndex(builder.ToImmutable());
+            builder.AddRange(Data.Where(e => e.ContextId != contextId));
+            builder.Add(new IndexEntry { ContextId = contextId, Timestamp = timestamp });
+            return new ContextIndex(builder.ToImmutable());
         }
 
-        public UserIndex Prune(int maxUsersToRetain, out IEnumerable<string> removedUserIds)
+        public ContextIndex Prune(int maxContextsToRetain, out IEnumerable<string> removedUserIds)
         {
-            if (Data.Count <= maxUsersToRetain)
+            if (Data.Count <= maxContextsToRetain)
             {
                 removedUserIds = ImmutableList<string>.Empty;
                 return this;
@@ -42,13 +42,13 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             // The data will normally already be in ascending timestamp order, in which case this Sort
             // won't do anything, but this is just in case unsorted data somehow got persisted.
             var sorted = Data.Sort((e1, e2) => e1.Timestamp.CompareTo(e2.Timestamp));
-            var numDrop = Data.Count - maxUsersToRetain;
-            removedUserIds = ImmutableList.CreateRange(sorted.Take(numDrop).Select(e => e.UserId));
-            return new UserIndex(ImmutableList.CreateRange(sorted.Skip(numDrop)));
+            var numDrop = Data.Count - maxContextsToRetain;
+            removedUserIds = ImmutableList.CreateRange(sorted.Take(numDrop).Select(e => e.ContextId));
+            return new ContextIndex(ImmutableList.CreateRange(sorted.Skip(numDrop)));
         }
 
         /// <summary>
-        /// Returns a JSON representation of the user index.
+        /// Returns a JSON representation of the context index.
         /// </summary>
         /// <returns>the JSON representation</returns>
         public string Serialize()
@@ -60,7 +60,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
                 {
                     using (var aw1 = aw0.Array())
                     {
-                        aw1.String(e.UserId);
+                        aw1.String(e.ContextId);
                         aw1.Long(e.Timestamp.Value);
                     }
                 }
@@ -69,17 +69,17 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         }
 
         /// <summary>
-        /// Parses the user index from a JSON representation. If the JSON string is null or
-        /// empty, it returns an empty user index.
+        /// Parses the context index from a JSON representation. If the JSON string is null or
+        /// empty, it returns an empty index.
         /// </summary>
         /// <param name="json">the JSON representation</param>
         /// <returns>the parsed data</returns>
         /// <exception cref="FormatException">if the JSON is malformed</exception>
-        public static UserIndex Deserialize(string json)
+        public static ContextIndex Deserialize(string json)
         {
             if (string.IsNullOrEmpty(json))
             {
-                return new UserIndex();
+                return new ContextIndex();
             }
             var builder = ImmutableList.CreateBuilder<IndexEntry>();
             try
@@ -90,11 +90,11 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
                     var ar1 = r.Array();
                     if (ar1.Next(ref r))
                     {
-                        var userId = r.String();
+                        var contextId = r.String();
                         if (ar1.Next(ref r))
                         {
                             var timeMillis = r.Long();
-                            builder.Add(new IndexEntry { UserId = userId, Timestamp = UnixMillisecondTime.OfMillis(timeMillis) });
+                            builder.Add(new IndexEntry { ContextId = contextId, Timestamp = UnixMillisecondTime.OfMillis(timeMillis) });
                             ar1.Next(ref r);
                         }
                     }
@@ -102,9 +102,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             }
             catch (Exception e)
             {
-                throw new FormatException("invalid stored user index", e);
+                throw new FormatException("invalid stored context index", e);
             }
-            return new UserIndex(builder.ToImmutable());
+            return new ContextIndex(builder.ToImmutable());
         }
     }
 }

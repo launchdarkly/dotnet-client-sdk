@@ -319,7 +319,7 @@ namespace LaunchDarkly.Sdk.Client
         internal FullDataSet? InspectUserData(string mobileKey, string contextKey) =>
             WithWrapper(mobileKey).GetContextData(Base64.UrlSafeSha256Hash(contextKey));
 
-        internal UserIndex InspectUserIndex(string mobileKey) =>
+        internal ContextIndex InspectContextIndex(string mobileKey) =>
             WithWrapper(mobileKey).GetIndex();
     }
 

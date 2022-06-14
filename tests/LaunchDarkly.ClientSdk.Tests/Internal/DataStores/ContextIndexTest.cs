@@ -6,12 +6,12 @@ using static LaunchDarkly.TestHelpers.JsonAssertions;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
-    public class UserIndexTest
+    public class ContextIndexTest
     {
         [Fact]
         public void EmptyConstructor()
         {
-            var ui = new UserIndex();
+            var ui = new ContextIndex();
             Assert.NotNull(ui.Data);
             Assert.Empty(ui.Data);
         }
@@ -19,7 +19,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         [Fact]
         public void Serialize()
         {
-            var ui = new UserIndex()
+            var ui = new ContextIndex()
                 .UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000))
                 .UpdateTimestamp("user2", UnixMillisecondTime.OfMillis(2000));
 
@@ -33,7 +33,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         public void Deserialize()
         {
             var json = @"[[""user1"",1000],[""user2"",2000]]";
-            var ui = UserIndex.Deserialize(json);
+            var ui = ContextIndex.Deserialize(json);
 
             Assert.NotNull(ui.Data);
             Assert.Collection(ui.Data,
@@ -45,25 +45,25 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         public void DeserializeMalformedJson()
         {
             Assert.ThrowsAny<FormatException>(() =>
-                UserIndex.Deserialize("}"));
+                ContextIndex.Deserialize("}"));
 
             Assert.ThrowsAny<FormatException>(() =>
-                UserIndex.Deserialize("["));
+                ContextIndex.Deserialize("["));
 
             Assert.ThrowsAny<FormatException>(() =>
-                UserIndex.Deserialize("[[true,1000]]"));
+                ContextIndex.Deserialize("[[true,1000]]"));
 
             Assert.ThrowsAny<FormatException>(() =>
-                UserIndex.Deserialize(@"[[""user1"",false]]"));
+                ContextIndex.Deserialize(@"[[""user1"",false]]"));
 
             Assert.ThrowsAny<FormatException>(() =>
-                UserIndex.Deserialize("[3]"));
+                ContextIndex.Deserialize("[3]"));
         }
 
         [Fact]
         public void UpdateTimestampForExistingUser()
         {
-            var ui = new UserIndex()
+            var ui = new ContextIndex()
                 .UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000))
                 .UpdateTimestamp("user2", UnixMillisecondTime.OfMillis(2000));
 
@@ -77,7 +77,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         [Fact]
         public void PruneRemovesLeastRecentUsers()
         {
-            var ui = new UserIndex()
+            var ui = new ContextIndex()
                 .UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000))
                 .UpdateTimestamp("user2", UnixMillisecondTime.OfMillis(2000))
                 .UpdateTimestamp("user3", UnixMillisecondTime.OfMillis(1111)) // deliberately out of order
@@ -95,7 +95,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         [Fact]
         public void PruneWhenLimitIsNotExceeded()
         {
-            var ui = new UserIndex()
+            var ui = new ContextIndex()
                 .UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000))
                 .UpdateTimestamp("user2", UnixMillisecondTime.OfMillis(2000));
 
@@ -106,10 +106,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             Assert.Empty(removed2);
         }
 
-        private Action<UserIndex.IndexEntry> AssertEntry(string id, int millis) =>
+        private Action<ContextIndex.IndexEntry> AssertEntry(string id, int millis) =>
             e =>
             {
-                Assert.Equal(id, e.UserId);
+                Assert.Equal(id, e.ContextId);
                 Assert.Equal(UnixMillisecondTime.OfMillis(millis), e.Timestamp);
             };
     }
