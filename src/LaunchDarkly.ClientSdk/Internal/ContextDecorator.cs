@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
 
 namespace LaunchDarkly.Sdk.Client.Internal
@@ -7,8 +9,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
     {
         private readonly PersistentDataStoreWrapper _store;
 
-        private string _cachedAnonUserKey = null;
-        private object _anonUserKeyLock = new object();
+        private Dictionary<ContextKind, string> _cachedGeneratedKey = new Dictionary<ContextKind, string>();
+        private object _generatedKeyLock = new object();
 
         public ContextDecorator(
             PersistentDataStoreWrapper store
@@ -19,33 +21,47 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         public Context DecorateContext(Context context)
         {
-            if (IsAutoContext(context))
+            if (context.Multiple)
             {
-                var anonKey = GetOrCreateAutoContextKey();
-                return Context.BuilderFromContext(context).Key(anonKey).Transient(true).Build();
+                if (context.MultiKindContexts.Any(ContextNeedsGeneratedKey))
+                {
+                    var builder = Context.MultiBuilder();
+                    foreach (var c in context.MultiKindContexts)
+                    {
+                        builder.Add(ContextNeedsGeneratedKey(c) ? SingleKindContextWithGeneratedKey(c) : c);
+                    }
+                    return builder.Build();
+                }
+            }
+            else if (ContextNeedsGeneratedKey(context))
+            {
+                return SingleKindContextWithGeneratedKey(context);
             }
             return context;
         }
 
-        private bool IsAutoContext(Context context) =>
+        private Context SingleKindContextWithGeneratedKey(Context context) =>
+            Context.BuilderFromContext(context).Key(GetOrCreateAutoContextKey(context.Kind)).Build();
+
+        private bool ContextNeedsGeneratedKey(Context context) =>
             context.Transient && context.Key == Constants.AutoKeyMagicValue;
         // The use of a magic constant here is temporary because the current implementation of Context doesn't allow a null key
 
-        private string GetOrCreateAutoContextKey()
+        private string GetOrCreateAutoContextKey(ContextKind contextKind)
         {
-            lock (_anonUserKeyLock)
+            lock (_generatedKeyLock)
             {
-                if (_cachedAnonUserKey != null)
+                if (_cachedGeneratedKey.TryGetValue(contextKind, out var key))
                 {
-                    return _cachedAnonUserKey;
+                    return key;
                 }
-                var uniqueId = _store?.GetAnonymousUserKey();
+                var uniqueId = _store?.GetGeneratedContextKey(contextKind);
                 if (uniqueId is null)
                 {
                     uniqueId = Guid.NewGuid().ToString();
-                    _store?.SetAnonymousUserKey(uniqueId);
+                    _store?.SetGeneratedContextKey(contextKind, uniqueId);
                 }
-                _cachedAnonUserKey = uniqueId;
+                _cachedGeneratedKey[contextKind] = uniqueId;
                 return uniqueId;
             }
         }
