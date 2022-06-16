@@ -24,19 +24,6 @@ namespace LaunchDarkly.Sdk.Client
             AssertJsonEqual(LdJsonSerialization.SerializeObject(expected),
                 LdJsonSerialization.SerializeObject(actual));
 
-        public static void ContextsEqualExcludingAutoProperties(Context expected, Context actual)
-        {
-            var builder = Context.BuilderFromContext(expected);
-            foreach (var autoProp in new string[] { "device", "os" })
-            {
-                if (!actual.GetValue(autoProp).IsNull)
-                {
-                    builder.Set(autoProp, actual.GetValue(autoProp));
-                }
-            }
-            ContextsEqual(builder.Build(), actual);
-        }
-
         public static void LogMessageRegex(LogCapture logCapture, bool shouldHave, LogLevel level, string pattern)
         {
             if (logCapture.HasMessageWithRegex(level, pattern) != shouldHave)
