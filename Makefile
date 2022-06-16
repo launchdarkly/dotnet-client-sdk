@@ -13,10 +13,7 @@ BUILDFRAMEWORKS ?= netcoreapp2.1
 TESTFRAMEWORK ?= netcoreapp2.1
 
 # temporary skips for contract tests that can't pass till more U2C work is done
-TEST_HARNESS_PARAMS := $(TEST_HARNESS_PARAMS) \
-    -skip events/requests/method
-# events/request/method only fails because the latest alpha LaunchDarkly.InternalSdk
-# doesn't set the correct schema version
+# TEST_HARNESS_PARAMS := 
 
 build-contract-tests:
 	@cd contract-tests && dotnet build TestService.csproj
