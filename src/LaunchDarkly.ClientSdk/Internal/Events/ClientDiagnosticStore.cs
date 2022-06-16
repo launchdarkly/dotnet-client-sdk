@@ -10,20 +10,20 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
     internal class ClientDiagnosticStore : DiagnosticStoreBase
     {
+        private readonly LdClientContext _context;
         private readonly Configuration _config;
         private readonly TimeSpan _startWaitTime;
 
-        private LdClientContext _context;
-
-        protected override string SdkKeyOrMobileKey => _context.Basic.MobileKey;
+        protected override string SdkKeyOrMobileKey => _context.MobileKey;
         protected override string SdkName => "dotnet-client-sdk";
         protected override IEnumerable<LdValue> ConfigProperties => GetConfigProperties();
         protected override string DotNetTargetFramework => GetDotNetTargetFramework();
         protected override HttpProperties HttpProperties => _context.Http.HttpProperties;
         protected override Type TypeOfLdClient => typeof(LdClient);
 
-        internal ClientDiagnosticStore(Configuration config, TimeSpan startWaitTime)
+        internal ClientDiagnosticStore(LdClientContext context, Configuration config, TimeSpan startWaitTime)
         {
+            _context = context;
             _config = config;
             _startWaitTime = startWaitTime;
             // We pass in startWaitTime separately because in the client-side SDK, it is not
@@ -33,15 +33,6 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             // there's no such thing as a startup timeout within the SDK (in which case this
             // parameter will be zero and the corresponding property in the diagnostic event
             // data will be zero, since there is no meaningful value for it).
-        }
-
-        internal void SetContext(LdClientContext context)
-        {
-            // This is done as a separate step, called from the LdClient constructor, because
-            // the DiagnosticStore object has to be created before the LdClientContext - since
-            // the LdClientContext includes a reference to the DiagnosticStore (for components
-            // like StreamingDataSource to use).
-            _context = context;
         }
 
         private IEnumerable<LdValue> GetConfigProperties()

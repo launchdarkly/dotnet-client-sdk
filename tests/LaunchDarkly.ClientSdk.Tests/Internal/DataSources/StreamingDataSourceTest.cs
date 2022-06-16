@@ -41,7 +41,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var config = BasicConfig()
                 .ServiceEndpoints(Components.ServiceEndpoints().Streaming(baseUri).Polling(baseUri))
                 .Build();
-            var clientContext = new LdClientContext(config, null, diagnosticStore, null);
+            var clientContext = new LdClientContext(config, null).WithDiagnostics(null, diagnosticStore);
             return Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay)
                 .CreateDataSource(clientContext, _updateSink, context, false);
         }

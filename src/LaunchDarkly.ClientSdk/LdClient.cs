@@ -122,15 +122,16 @@ namespace LaunchDarkly.Sdk.Client
         LdClient(Configuration configuration, Context initialContext, TimeSpan startWaitTime)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            var baseContext = new LdClientContext(configuration, this);
+
             var diagnosticStore = _config.DiagnosticOptOut ? null :
-                new ClientDiagnosticStore(_config, startWaitTime);
+                new ClientDiagnosticStore(baseContext, _config, startWaitTime);
             var diagnosticDisabler = _config.DiagnosticOptOut ? null :
                 new DiagnosticDisablerImpl();
+            _clientContext = baseContext.WithDiagnostics(diagnosticDisabler, diagnosticStore);
 
-            _clientContext = new LdClientContext(configuration, this, diagnosticStore, diagnosticDisabler);
             _log = _clientContext.BaseLogger;
             _taskExecutor = _clientContext.TaskExecutor;
-            diagnosticStore?.SetContext(_clientContext);
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
