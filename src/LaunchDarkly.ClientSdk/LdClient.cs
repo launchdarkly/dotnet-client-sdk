@@ -22,6 +22,25 @@ namespace LaunchDarkly.Sdk.Client
     /// A client for the LaunchDarkly API. Client instances are thread-safe. Your application should instantiate
     /// a single <c>LdClient</c> for the lifetime of their application.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Like all client-side LaunchDarkly SDKs, the <c>LdClient</c> always has a single current <see cref="Context"/>.
+    /// You specify this context at initialization time, and you can change it later with <see cref="Identify(Context, TimeSpan)"/>
+    /// or <see cref="IdentifyAsync(Context)"/>. All subsequent calls to evaluation methods like
+    /// <see cref="BoolVariation(string, bool)"/> refer to the flag values for the current context.
+    /// </para>
+    /// <para>
+    /// Normally, the SDK uses the exact context that you have specified in the <see cref="Context"/>. However,
+    /// you can also tell the SDK to generate a randomized identifier and use this as the context's
+    /// <see cref="Context.Key"/>. To do this, set the context's <see cref="ContextBuilder.Transient(bool)"/>
+    /// property to <see langword="true"/> and set its key to <see langword="null"/>. The generated key will
+    /// be a pseudo-random UUID. If you subsequently set the current context to another context like this
+    /// during the lifetime of the <c>LdClient</c>, it will reuse the same generated key; and if persistent
+    /// storage is available (see <see cref="Components.Persistence"/>, it will cache the key so that it will
+    /// also be reused even if the app is restarted. If persistent storage is not available, then the SDK would
+    /// generate a different key after a restart.
+    /// </para>
+    /// </remarks>
     public sealed class LdClient : ILdClient
     {
         static readonly EventFactory _eventFactoryDefault = EventFactory.Default;
@@ -144,8 +163,7 @@ namespace LaunchDarkly.Sdk.Client
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
 
-            _contextDecorator = new ContextDecorator(configuration.DeviceInfo ?? new DefaultDeviceInfo(),
-                _dataStore.PersistentStore);
+            _contextDecorator = new ContextDecorator(_dataStore.PersistentStore);
             _context = _contextDecorator.DecorateContext(initialContext);
 
             // If we had cached data for the new context, set the current in-memory flag data state to use
@@ -255,9 +273,8 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="initialContext">the context needed for client operations (must not be <see langword="null"/>);
-        /// if the user's <see cref="Context.Key"/> is <see langword="null"/> and <see cref="Context.Transient"/>
-        /// is <see langword="true"/>, it will be assigned a key that uniquely identifies this device</param>
+        /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
         public static LdClient Init(string mobileKey, Context initialContext, TimeSpan maxWaitTime)
         {
@@ -267,12 +284,18 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags asynchronously.
+        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
+        /// asynchronously.
         /// </summary>
         /// <remarks>
         /// <para>
         /// The returned task will yield the <see cref="LdClient"/> instance once the first response from
         /// the LaunchDarkly service is returned (or immediately if it is in offline mode).
+        /// </para>
+        /// <para>
+        /// If you would rather this happen synchronously, use <see cref="Init(string, Context, TimeSpan)"/>. To
+        /// specify additional configuration options rather than just the mobile key, you can use
+        /// <see cref="Init(Configuration, Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -281,9 +304,8 @@ namespace LaunchDarkly.Sdk.Client
         /// </remarks>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="initialContext">the context needed for client operations;
-        /// if the user's <see cref="Context.Key"/> is <see langword="null"/> and <see cref="Context.Transient"/>
-        /// is <see langword="true"/>, it will be assigned a key that uniquely identifies this device</param>
+        /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
         public static async Task<LdClient> InitAsync(string mobileKey, Context initialContext)
         {
             var config = Configuration.Default(mobileKey);
@@ -312,13 +334,13 @@ namespace LaunchDarkly.Sdk.Client
         /// for the lifetime of your application.
         /// </para>
         /// </remarks>
-        /// <returns>The singleton LdClient instance.</returns>
-        /// <param name="config">The client configuration object</param>
-        /// <param name="initialContext">The initial evaluation context.
-        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
-        /// <param name="maxWaitTime">The maximum length of time to wait for the client to initialize.
-        /// If this time elapses, the method will not throw an exception but will return the client in
-        /// an uninitialized state.</param>
+        /// <returns>the singleton LdClient instance</returns>
+        /// <param name="config">the client configuration</param>
+        /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
+        /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize;
+        /// if this time elapses, the method will not throw an exception but will return the client in
+        /// an uninitialized state</param>
         public static LdClient Init(Configuration config, Context initialContext, TimeSpan maxWaitTime)
         {
             if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
@@ -332,19 +354,28 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
-        /// fetching Feature Flags. This constructor should be used if you do not want to wait 
-        /// for the IUpdateProcessor instance to finish initializing and receive the first response
-        /// from the LaunchDarkly service.
-        /// 
-        /// This is the creation point for LdClient, you must use this static method or the more basic
-        /// <see cref="InitAsync(string, Context)"/> to instantiate the single instance of LdClient
-        /// for the lifetime of your application.
+        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
+        /// asynchronously.
         /// </summary>
-        /// <returns>The singleton LdClient instance.</returns>
-        /// <param name="config">The client configuration object.</param>
-        /// <param name="initialContext">The initial evaluation context.
-        /// If the user's Key is null, it will be assigned a key that uniquely identifies this device.</param>
+        /// <remarks>
+        /// <para>
+        /// The returned task will yield the <see cref="LdClient"/> instance once the first response from
+        /// the LaunchDarkly service is returned (or immediately if it is in offline mode).
+        /// </para>
+        /// <para>
+        /// If you would rather this happen synchronously, use <see cref="Init(Configuration, Context, TimeSpan)"/>.
+        /// If you do not need to specify configuration options other than the mobile key, you can use
+        /// <see cref="Init(string, Context, TimeSpan)"/> or <see cref="InitAsync(string, Context)"/>.
+        /// </para>
+        /// <para>
+        /// You must use one of these static factory methods to instantiate the single instance of LdClient
+        /// for the lifetime of your application.
+        /// </para>
+        /// </remarks>
+        /// <returns>the singleton LdClient instance</returns>
+        /// <param name="config">the client configuration</param>
+        /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
         public static async Task<LdClient> InitAsync(Configuration config, Context initialContext)
         {
             var c = CreateInstance(config, initialContext, TimeSpan.Zero);

@@ -15,20 +15,6 @@ namespace LaunchDarkly.Sdk.Client.Android.Tests
         }
 
         [Fact]
-        public void CanGetUniqueUserKey()
-        {
-            var anonUser = Context.Builder(Internal.Constants.AutoKeyMagicValue).Transient(true).Build();
-            var config = BasicConfig()
-                .DeviceInfo(null).Build();
-            using (var client = TestUtil.CreateClient(config, anonUser))
-            {
-                var context = client.Context;
-                Assert.NotNull(context.Key);
-                Assert.NotEqual("", context.Key);
-            }
-        }
-
-        [Fact]
         public void EventHandlerIsCalledOnUIThread()
         {
             var td = TestData.DataSource();

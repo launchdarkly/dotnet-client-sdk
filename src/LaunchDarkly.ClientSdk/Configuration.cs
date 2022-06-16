@@ -31,7 +31,6 @@ namespace LaunchDarkly.Sdk.Client
         // Settable only for testing
         internal IBackgroundModeManager BackgroundModeManager { get; }
         internal IConnectivityStateManager ConnectivityStateManager { get; }
-        internal IDeviceInfo DeviceInfo { get; }
 
         /// <summary>
         /// A factory object that creates an implementation of <see cref="IDataSource"/>, which will
@@ -167,7 +166,6 @@ namespace LaunchDarkly.Sdk.Client
 
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
-            DeviceInfo = builder._deviceInfo;
         }
     }
 }

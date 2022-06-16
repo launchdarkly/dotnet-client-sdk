@@ -322,14 +322,15 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// If you do not want to wait, you can either set <c>maxWaitTime</c> to zero or call <see cref="IdentifyAsync(Context)"/>.
         /// </para>
         /// </remarks>
-        /// <param name="context">the new context</param>
+        /// <param name="context">the new evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum time to wait for the new flag values</param>
         /// <returns>true if new flag values were obtained</returns>
         bool Identify(Context context, TimeSpan maxWaitTime);
 
         /// <summary>
-        /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
-        /// an analytics event to tell LaunchDarkly about the user.
+        /// Changes the current evaluation context, requests flags for that context from LaunchDarkly if we are online,
+        /// and generates an analytics event to tell LaunchDarkly about the context.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -342,7 +343,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// and yields <see langword="true"/>.
         /// </para>
         /// </remarks>
-        /// <param name="context">the new context</param>
+        /// <param name="context">the new evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a task that yields true if new flag values were obtained</returns>
         Task<bool> IdentifyAsync(Context context);
 

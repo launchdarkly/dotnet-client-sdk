@@ -151,25 +151,6 @@ namespace LaunchDarkly.Sdk.Client
         public void ExpectNoMoreActions() => Actions.ExpectNoValue();
     }
 
-    internal class MockDeviceInfo : IDeviceInfo
-    {
-        internal const string GeneratedId = "fake-generated-id";
-
-        private readonly string key;
-
-        public MockDeviceInfo() : this(GeneratedId) { }
-
-        public MockDeviceInfo(string key)
-        {
-            this.key = key;
-        }
-
-        public string UniqueDeviceId()
-        {
-            return key;
-        }
-    }
-
     internal class MockDiagnosticStore : IDiagnosticStore
     {
         internal struct StreamInit
