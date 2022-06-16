@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.IsolatedStorage;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {

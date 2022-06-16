@@ -47,6 +47,7 @@
     <PackageReference Include="LaunchDarkly.Logging" Version="1.0.1" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
+    <Folder Include="Subsystems\" />
   </ItemGroup>
 
   <!-- dependencies and source files for .NET Standard (all versions) -->
@@ -73,6 +74,53 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Subsystems\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Subsystems\DataStoreTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\EventProcessorTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\HttpConfiguration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IDataSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IDataSourceFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IDataSourceStatusProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IDataSourceUpdateSink.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IDiagnosticDescription.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IEventProcessor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IEventProcessorFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IPersistentDataStore.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\IPersistentDataStoreFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\LdClientContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Subsystems\LoggingConfiguration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <AssemblyOriginatorKeyFile>../../LaunchDarkly.ClientSdk.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>

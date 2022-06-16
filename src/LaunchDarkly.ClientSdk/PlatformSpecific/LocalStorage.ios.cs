@@ -1,5 +1,5 @@
 ﻿using Foundation;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {

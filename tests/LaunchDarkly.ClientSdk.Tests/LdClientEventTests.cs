@@ -1,10 +1,10 @@
 ﻿using System;
 using LaunchDarkly.Sdk.Client.Integrations;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {

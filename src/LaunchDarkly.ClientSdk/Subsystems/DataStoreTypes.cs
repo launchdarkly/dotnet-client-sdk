@@ -5,7 +5,7 @@ using System.Linq;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Types that are used by the data store and related interfaces.

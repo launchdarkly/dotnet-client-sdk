@@ -3,7 +3,7 @@ using LaunchDarkly.Sdk.Json;
 using Xunit;
 using Xunit.Sdk;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 using static LaunchDarkly.TestHelpers.JsonAssertions;
 
 namespace LaunchDarkly.Sdk.Client
