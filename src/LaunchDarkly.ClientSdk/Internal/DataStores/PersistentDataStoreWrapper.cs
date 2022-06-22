@@ -96,16 +96,20 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         public void SetIndex(ContextIndex index) =>
             HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, EnvironmentMetadataKey, index.Serialize()));
 
-        public string GetAnonymousUserKey() =>
-            HandleErrorsAndLock(() => _persistentStore.GetValue(_globalNamespace, GlobalAnonContextKey));
+        public string GetGeneratedContextKey(ContextKind contextKind) =>
+            HandleErrorsAndLock(() => _persistentStore.GetValue(_globalNamespace, KeyForGeneratedContextKey(contextKind)));
 
-        public void SetAnonymousUserKey(string value) =>
-            HandleErrorsAndLock(() => _persistentStore.SetValue(_globalNamespace, GlobalAnonContextKey, value));
+        public void SetGeneratedContextKey(ContextKind contextKind, string value) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_globalNamespace,
+                KeyForGeneratedContextKey(contextKind), value));
 
         public void Dispose() =>
             _persistentStore.Dispose();
 
         private static string KeyForContextId(string contextId) => EnvironmentContextDataKeyPrefix + contextId;
+
+        private static string KeyForGeneratedContextKey(ContextKind contextKind) =>
+            contextKind.IsDefault ? GlobalAnonContextKey : (GlobalAnonContextKey + ":" + contextKind.Value);
 
         private void MaybeLogStoreError(Exception e)
         {

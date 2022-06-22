@@ -40,6 +40,10 @@ namespace LaunchDarkly.Sdk.Client
     /// also be reused even if the app is restarted. If persistent storage is not available, then the SDK would
     /// generate a different key after a restart.
     /// </para>
+    /// <para>
+    /// If you use more than one <see cref="ContextKind"/> in your evaluation contexts, and you request a
+    /// randomized key as described above, a different key is generated for each kind.
+    /// </para>
     /// </remarks>
     public sealed class LdClient : ILdClient
     {

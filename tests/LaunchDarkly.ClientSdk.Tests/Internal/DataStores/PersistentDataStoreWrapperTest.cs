@@ -17,7 +17,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         private static readonly string UserHash = Base64.UrlSafeSha256Hash(UserKey);
         private static readonly string ExpectedUserFlagsKey = "flags_" + UserHash;
         private static readonly string ExpectedIndexKey = "index";
-        private static readonly string ExpectedAnonUserKey = "anonUser";
+        private static readonly string ExpectedGeneratedContextKey = "anonUser";
 
         private readonly MockPersistentDataStore _persistentStore;
         private readonly PersistentDataStoreWrapper _wrapper;
@@ -98,17 +98,21 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         }
 
         [Fact]
-        public void GetAnonymousUserKey()
+        public void GetGeneratedContextKey()
         {
-            _persistentStore.SetValue(ExpectedGlobalNamespace, ExpectedAnonUserKey, "user1");
-            Assert.Equal("user1", _wrapper.GetAnonymousUserKey());
+            _persistentStore.SetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey, "key1");
+            _persistentStore.SetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey + ":org", "key2");
+            Assert.Equal("key1", _wrapper.GetGeneratedContextKey(ContextKind.Default));
+            Assert.Equal("key2", _wrapper.GetGeneratedContextKey(ContextKind.Of("org")));
         }
 
         [Fact]
-        public void SetAnonymousUserKey()
+        public void SetGeneratedContextKey()
         {
-            _wrapper.SetAnonymousUserKey("user1");
-            Assert.Equal("user1", _persistentStore.GetValue(ExpectedGlobalNamespace, ExpectedAnonUserKey));
+            _wrapper.SetGeneratedContextKey(ContextKind.Default, "key1");
+            _wrapper.SetGeneratedContextKey(ContextKind.Of("org"), "key2");
+            Assert.Equal("key1", _persistentStore.GetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey));
+            Assert.Equal("key2", _persistentStore.GetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey + ":org"));
         }
     }
 }
