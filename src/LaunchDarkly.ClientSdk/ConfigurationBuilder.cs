@@ -45,7 +45,6 @@ namespace LaunchDarkly.Sdk.Client
         // Internal properties only settable for testing
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
-        internal IDeviceInfo _deviceInfo;
 
         internal ConfigurationBuilder(string mobileKey)
         {
@@ -350,12 +349,6 @@ namespace LaunchDarkly.Sdk.Client
         internal ConfigurationBuilder ConnectivityStateManager(IConnectivityStateManager connectivityStateManager)
         {
             _connectivityStateManager = connectivityStateManager;
-            return this;
-        }
-
-        internal ConfigurationBuilder DeviceInfo(IDeviceInfo deviceInfo)
-        {
-            _deviceInfo = deviceInfo;
             return this;
         }
     }
