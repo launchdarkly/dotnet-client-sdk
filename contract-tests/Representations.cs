@@ -72,6 +72,8 @@ namespace TestService
         public EvaluateAllFlagsParams EvaluateAll { get; set; }
         public IdentifyEventParams IdentifyEvent { get; set; }
         public CustomEventParams CustomEvent { get; set; }
+        public ContextBuildParams ContextBuild { get; set; }
+        public ContextConvertParams ContextConvert { get; set; }
     }
 
     public class EvaluateFlagParams
@@ -110,5 +112,33 @@ namespace TestService
         public LdValue Data { get; set; }
         public bool OmitNullData { get; set; }
         public double? MetricValue { get; set; }
+    }
+
+    public class ContextBuildParams
+    {
+        public ContextBuildSingleParams Single;
+        public ContextBuildSingleParams[] Multi;
+    }
+
+    public class ContextBuildSingleParams
+    {
+        public string Kind;
+        public string Key;
+        public string Name;
+        public bool Anonymous;
+        public string Secondary;
+        public string[] Private;
+        public Dictionary<string, LdValue> Custom;
+    }
+
+    public class ContextBuildResponse
+    {
+        public string Output;
+        public string Error;
+    }
+
+    public class ContextConvertParams
+    {
+        public string Input;
     }
 }
