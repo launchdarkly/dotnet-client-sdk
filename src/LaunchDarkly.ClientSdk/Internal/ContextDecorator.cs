@@ -8,32 +8,39 @@ namespace LaunchDarkly.Sdk.Client.Internal
     internal class ContextDecorator
     {
         private readonly PersistentDataStoreWrapper _store;
+        private readonly bool _generateAnonymousKeys;
 
         private Dictionary<ContextKind, string> _cachedGeneratedKey = new Dictionary<ContextKind, string>();
         private object _generatedKeyLock = new object();
 
         public ContextDecorator(
-            PersistentDataStoreWrapper store
+            PersistentDataStoreWrapper store,
+            bool generateAnonymousKeys
             )
         {
             _store = store;
+            _generateAnonymousKeys = generateAnonymousKeys;
         }
 
         public Context DecorateContext(Context context)
         {
+            if (!_generateAnonymousKeys)
+            {
+                return context;
+            }
             if (context.Multiple)
             {
-                if (context.MultiKindContexts.Any(ContextNeedsGeneratedKey))
+                if (context.MultiKindContexts.Any(c => c.Anonymous))
                 {
                     var builder = Context.MultiBuilder();
                     foreach (var c in context.MultiKindContexts)
                     {
-                        builder.Add(ContextNeedsGeneratedKey(c) ? SingleKindContextWithGeneratedKey(c) : c);
+                        builder.Add(c.Anonymous ? SingleKindContextWithGeneratedKey(c) : c);
                     }
                     return builder.Build();
                 }
             }
-            else if (ContextNeedsGeneratedKey(context))
+            else if (context.Anonymous)
             {
                 return SingleKindContextWithGeneratedKey(context);
             }
@@ -42,10 +49,6 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         private Context SingleKindContextWithGeneratedKey(Context context) =>
             Context.BuilderFromContext(context).Key(GetOrCreateAutoContextKey(context.Kind)).Build();
-
-        private bool ContextNeedsGeneratedKey(Context context) =>
-            context.Transient && context.Key == Constants.AutoKeyMagicValue;
-        // The use of a magic constant here is temporary because the current implementation of Context doesn't allow a null key
 
         private string GetOrCreateAutoContextKey(ContextKind contextKind)
         {

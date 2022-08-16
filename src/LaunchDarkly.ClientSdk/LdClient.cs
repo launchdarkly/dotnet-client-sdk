@@ -32,13 +32,7 @@ namespace LaunchDarkly.Sdk.Client
     /// <para>
     /// Normally, the SDK uses the exact context that you have specified in the <see cref="Context"/>. However,
     /// you can also tell the SDK to generate a randomized identifier and use this as the context's
-    /// <see cref="Context.Key"/>. To do this, set the context's <see cref="ContextBuilder.Transient(bool)"/>
-    /// property to <see langword="true"/> and set its key to <see langword="null"/>. The generated key will
-    /// be a pseudo-random GUID. If you subsequently set the current context to another context like this
-    /// during the lifetime of the <c>LdClient</c>, it will reuse the same generated key; and if persistent
-    /// storage is available (see <see cref="Components.Persistence"/>, it will cache the key so that it will
-    /// also be reused even if the app is restarted. If persistent storage is not available, then the SDK would
-    /// generate a different key after a restart.
+    /// <see cref="Context.Key"/>; see <see cref="ConfigurationBuilder.GenerateAnonymousKeys(bool)"/>.
     /// </para>
     /// <para>
     /// If you use more than one <see cref="ContextKind"/> in your evaluation contexts, and you request a
@@ -167,7 +161,7 @@ namespace LaunchDarkly.Sdk.Client
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
 
-            _contextDecorator = new ContextDecorator(_dataStore.PersistentStore);
+            _contextDecorator = new ContextDecorator(_dataStore.PersistentStore, configuration.GenerateAnonymousKeys);
             _context = _contextDecorator.DecorateContext(initialContext);
 
             // If we had cached data for the new context, set the current in-memory flag data state to use

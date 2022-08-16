@@ -36,11 +36,13 @@ namespace LaunchDarkly.Sdk.Client
         /// A factory object that creates an implementation of <see cref="IDataSource"/>, which will
         /// receive feature flag data.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>
         public IDataSourceFactory DataSourceFactory { get; }
 
         /// <summary>
         /// True if diagnostic events have been disabled.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.DiagnosticOptOut(bool)"/>
         public bool DiagnosticOptOut { get; }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <remarks>
         /// This is only relevant on mobile platforms.
         /// </remarks>
+        /// <seealso cref="ConfigurationBuilder.EnableBackgroundUpdating(bool)"/>
         public bool EnableBackgroundUpdating { get; }
 
         /// <summary>
@@ -61,22 +64,32 @@ namespace LaunchDarkly.Sdk.Client
         /// increases the size of network requests, such information is not sent unless you set this option
         /// to <see langword="true"/>.
         /// </remarks>
+        /// <seealso cref="ConfigurationBuilder.EvaluationReasons(bool)"/>
         public bool EvaluationReasons { get; }
 
         /// <summary>
         /// A factory object that creates an implementation of <see cref="IEventProcessor"/>, responsible
         /// for sending analytics events.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>
         public IEventProcessorFactory EventProcessorFactory { get; }
+
+        /// <summary>
+        /// True if the SDK should provide unique keys for anonymous contexts.
+        /// </summary>
+        /// <seealso cref="ConfigurationBuilder.GenerateAnonymousKeys(bool)"/>
+        public bool GenerateAnonymousKeys { get; }
 
         /// <summary>
         /// HTTP configuration properties for the SDK.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Http(HttpConfigurationBuilder)"/>
         public HttpConfigurationBuilder HttpConfigurationBuilder { get; }
 
         /// <summary>
         /// Logging configuration properties for the SDK.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)"/>
         public LoggingConfigurationBuilder LoggingConfigurationBuilder { get; }
 
         /// <summary>
@@ -90,16 +103,19 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// Whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Offline(bool)"/>
         public bool Offline { get; }
 
         /// <summary>
         /// Persistent storage configuration properties for the SDK.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
         public PersistenceConfigurationBuilder PersistenceConfigurationBuilder { get; }
 
         /// <summary>
         /// Defines the base service URIs used by SDK components.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.ServiceEndpoints(ServiceEndpointsBuilder)"/>
         public ServiceEndpoints ServiceEndpoints { get; }
 
         /// <summary>
@@ -157,6 +173,7 @@ namespace LaunchDarkly.Sdk.Client
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
             EvaluationReasons = builder._evaluationReasons;
             EventProcessorFactory = builder._eventProcessorFactory;
+            GenerateAnonymousKeys = builder._generateAnonymousKeys;
             HttpConfigurationBuilder = builder._httpConfigurationBuilder;
             LoggingConfigurationBuilder = builder._loggingConfigurationBuilder;
             MobileKey = builder._mobileKey;
