@@ -19,7 +19,7 @@ jobs:
   test_dotnet_standard:
     # Technically we could omit the "build the SDK" step here if we made this job depend on the build products
     # from build_android_and_ios. However, setting up the Linux build is so much faster than the Mac host that
-    # it' better to let this one run independently so we can get quick CI feedback for any basic problems.
+    # it's better to let this one run independently so we can get quick CI feedback for any basic problems.
     docker:
       - image: ldcircleci/dotnet5-release:1
       # This image is based on mcr.microsoft.com/dotnet/sdk:5.0-focal but is in a
