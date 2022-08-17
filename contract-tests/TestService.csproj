@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TestFramework Condition="'$(TESTFRAMEWORK)' == ''">netcoreapp2.1</TestFramework>
+    <TestFramework Condition="'$(TESTFRAMEWORK)' == ''">net6.0</TestFramework>
     <TargetFrameworks>$(TESTFRAMEWORK)</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>ContractTestService</AssemblyName>

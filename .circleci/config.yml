@@ -21,17 +21,13 @@ jobs:
     # from build_android_and_ios. However, setting up the Linux build is so much faster than the Mac host that
     # it's better to let this one run independently so we can get quick CI feedback for any basic problems.
     docker:
-      - image: ldcircleci/dotnet5-release:1
-      # This image is based on mcr.microsoft.com/dotnet/sdk:5.0-focal but is in a
-      # slightly better state for us to install the make tool (apt-get update has
-      # already been done). See: https://github.com/launchdarkly/sdks-ci-docker
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-focal
     environment:
       ASPNETCORE_SUPPRESSSTATUSMESSAGES: "true" # suppresses annoying debug output from embedded HTTP servers in tests
       TEST_HARNESS_PARAMS: -junit /tmp/circle-reports/contract-tests-junit.xml
-      TESTFRAMEWORK: net5.0
+      TESTFRAMEWORK: net6.0
     steps:
       - checkout
-      - run: apt install -y make
       - run: mkdir -p /tmp/circle-reports
       - run: dotnet restore src/LaunchDarkly.ClientSdk
       - run: dotnet build src/LaunchDarkly.ClientSdk -f netstandard2.0
@@ -43,11 +39,16 @@ jobs:
               --logger:"junit;LogFilePath=/tmp/circle-reports/unit-tests.xml" \
               tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj
 
-      - run: make build-contract-tests
       - run:
-          command: make start-contract-test-service
+          name: build contract tests
+          command: ./scripts/build-contract-tests.sh
+      - run:
+          name: run contract test service
+          command: ./scripts/start-contract-test-service.sh
           background: true
-      - run: make run-contract-tests
+      - run:
+          name: run contract tests
+          command: ./scripts/run-contract-tests.sh
 
       - store_test_results:
           path: /tmp/circle-reports
