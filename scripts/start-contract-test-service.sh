@@ -1,2 +1,2 @@
 #!/bin/bash
-cd contract-tests && dotnet bin/Debug/${TESTFRAMEWORK:-netcoreapp3.1}/ContractTestService.dll
+cd contract-tests && dotnet bin/Debug/${TESTFRAMEWORK:-net6.0}/ContractTestService.dll

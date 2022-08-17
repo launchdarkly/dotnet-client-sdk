@@ -21,11 +21,11 @@ jobs:
     # from build_android_and_ios. However, setting up the Linux build is so much faster than the Mac host that
     # it's better to let this one run independently so we can get quick CI feedback for any basic problems.
     docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:3.1-focal
+      - image: mcr.microsoft.com/dotnet/sdk:6.0-focal
     environment:
       ASPNETCORE_SUPPRESSSTATUSMESSAGES: "true" # suppresses annoying debug output from embedded HTTP servers in tests
       TEST_HARNESS_PARAMS: -junit /tmp/circle-reports/contract-tests-junit.xml
-      TESTFRAMEWORK: netcoreapp3.1
+      TESTFRAMEWORK: net6.0
     steps:
       - checkout
       - run: mkdir -p /tmp/circle-reports
