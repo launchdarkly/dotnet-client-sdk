@@ -23,7 +23,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void SingleKindTransientContextWithSpecificKeyIsUnchanged()
         {
-            var context = Context.Builder("key1").Transient(true).Name("name").Build();
+            var context = Context.Builder("key1").Anonymous(true).Name("name").Build();
 
             AssertHelpers.ContextsEqual(context,
                 MakeDecoratorWithoutPersistence().DecorateContext(context));
@@ -43,7 +43,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         public void MultiKindContextIsUnchangedIfNoIndividualContextsNeedGeneratedKey()
         {
             var c1 = Context.Builder("key1").Kind(Kind1).Name("name1").Build();
-            var c2 = Context.Builder("key2").Kind(Kind2).Transient(true).Name("name2").Build();
+            var c2 = Context.Builder("key2").Kind(Kind2).Anonymous(true).Name("name2").Build();
 
             var multiContext = Context.NewMulti(c1, c2);
 
@@ -55,7 +55,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         public void MultiKindContextGetsGeneratedKeyForIndividualContext()
         {
             var c1 = Context.Builder("key1").Kind(Kind1).Name("name1").Build();
-            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Transient(true).Name("name2").Build();
+            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Anonymous(true).Name("name2").Build();
             var multiContext = Context.NewMulti(c1, c2);
             var transformedMulti = MakeDecoratorWithoutPersistence().DecorateContext(multiContext);
 
@@ -74,8 +74,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void MultiKindContextGetsSeparateGeneratedKeyForEachKind()
         {
-            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Transient(true).Name("name1").Build();
-            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Transient(true).Name("name2").Build();
+            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Anonymous(true).Name("name1").Build();
+            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Anonymous(true).Name("name2").Build();
             var multiContext = Context.NewMulti(c1, c2);
             var transformedMulti = MakeDecoratorWithoutPersistence().DecorateContext(multiContext);
 
@@ -96,8 +96,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void GeneratedKeysPersistPerKindIfPersistentStorageIsEnabled()
         {
-            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Transient(true).Name("name1").Build();
-            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Transient(true).Name("name2").Build();
+            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Anonymous(true).Name("name1").Build();
+            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Anonymous(true).Name("name2").Build();
             var multiContext = Context.NewMulti(c1, c2);
 
             var store = new MockPersistentDataStore();
@@ -119,8 +119,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void GeneratedKeysAreReusedDuringLifetimeOfSdkEvenIfPersistentStorageIsDisabled()
         {
-            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Transient(true).Name("name1").Build();
-            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Transient(true).Name("name2").Build();
+            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Anonymous(true).Name("name1").Build();
+            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Anonymous(true).Name("name2").Build();
             var multiContext = Context.NewMulti(c1, c2);
 
             var store = new MockPersistentDataStore();
@@ -140,8 +140,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void GeneratedKeysAreNotReusedAcrossRestartsIfPersistentStorageIsDisabled()
         {
-            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Transient(true).Name("name1").Build();
-            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Transient(true).Name("name2").Build();
+            var c1 = TestUtil.BuildAutoContext().Kind(Kind1).Anonymous(true).Name("name1").Build();
+            var c2 = TestUtil.BuildAutoContext().Kind(Kind2).Anonymous(true).Name("name2").Build();
             var multiContext = Context.NewMulti(c1, c2);
 
             var decorator1 = MakeDecoratorWithoutPersistence();

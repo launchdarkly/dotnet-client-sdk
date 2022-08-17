@@ -44,7 +44,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
             Context.BuilderFromContext(context).Key(GetOrCreateAutoContextKey(context.Kind)).Build();
 
         private bool ContextNeedsGeneratedKey(Context context) =>
-            context.Transient && context.Key == Constants.AutoKeyMagicValue;
+            context.Anonymous && context.Key == Constants.AutoKeyMagicValue;
         // The use of a magic constant here is temporary because the current implementation of Context doesn't allow a null key
 
         private string GetOrCreateAutoContextKey(ContextKind contextKind)

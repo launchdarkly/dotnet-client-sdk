@@ -32,7 +32,7 @@ namespace LaunchDarkly.Sdk.Client
     /// <para>
     /// Normally, the SDK uses the exact context that you have specified in the <see cref="Context"/>. However,
     /// you can also tell the SDK to generate a randomized identifier and use this as the context's
-    /// <see cref="Context.Key"/>. To do this, set the context's <see cref="ContextBuilder.Transient(bool)"/>
+    /// <see cref="Context.Key"/>. To do this, set the context's <see cref="ContextBuilder.Anonymous(bool)"/>
     /// property to <see langword="true"/> and set its key to <see langword="null"/>. The generated key will
     /// be a pseudo-random GUID. If you subsequently set the current context to another context like this
     /// during the lifetime of the <c>LdClient</c>, it will reuse the same generated key; and if persistent

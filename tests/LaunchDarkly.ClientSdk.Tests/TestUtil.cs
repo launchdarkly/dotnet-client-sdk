@@ -32,7 +32,7 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         public static ContextBuilder BuildAutoContext() =>
-            Context.Builder(Constants.AutoKeyMagicValue).Transient(true);
+            Context.Builder(Constants.AutoKeyMagicValue).Anonymous(true);
 
         public static T WithClientLock<T>(Func<T> f)
         {
