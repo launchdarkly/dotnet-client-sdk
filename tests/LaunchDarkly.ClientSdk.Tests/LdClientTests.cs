@@ -8,10 +8,11 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientTests : BaseTest
     {
-        private static readonly Context KeylessAnonUser = TestUtil.BuildAutoContext()
-                .Set("email", "example")
-                .Set("other", 3)
-                .Build();
+        private static readonly Context AnonUser = Context.Builder("anon-placeholder-key")
+            .Anonymous(true)
+            .Set("email", "example")
+            .Set("other", 3)
+            .Build();
 
         public LdClientTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
@@ -54,80 +55,94 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public async Task InitWithKeylessAnonUserAddsRandomizedKey()
+        public async Task InitWithAnonUserAddsRandomizedKey()
         {
             // Note, we don't care about polling mode vs. streaming mode for this functionality.
-            var config = BasicConfig().Persistence(Components.NoPersistence).Build();
+            var config = BasicConfig().Persistence(Components.NoPersistence).GenerateAnonymousKeys(true).Build();
 
             string key1;
 
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
                 key1 = client.Context.Key;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key1).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
                     client.Context);
             }
 
             // Starting again should generate a new key, since we've turned off persistence
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
                 var key2 = client.Context.Key;
                 Assert.NotNull(key2);
                 Assert.NotEqual("", key2);
                 Assert.NotEqual(key1, key2);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key2).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key2).Build(),
                     client.Context);
             }
         }
 
         [Fact]
-        public async Task InitWithKeylessAnonUserCanReusePreviousRandomizedKey()
+        public async Task InitWithAnonUserDoesNotChangeKeyIfConfigOptionIsNotSet()
+        {
+            // Note, we don't care about polling mode vs. streaming mode for this functionality.
+            var config = BasicConfig().Persistence(Components.NoPersistence).Build();
+
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
+            {
+                AssertHelpers.ContextsEqual(AnonUser, client.Context);
+            }
+        }
+
+        [Fact]
+        public async Task InitWithAnonUserCanReusePreviousRandomizedKey()
         {
             // Note, we don't care about polling mode vs. streaming mode for this functionality.
             var store = new MockPersistentDataStore();
-            var config = BasicConfig().Persistence(Components.Persistence().Storage(store.AsSingletonFactory())).Build();
+            var config = BasicConfig().Persistence(Components.Persistence().Storage(store.AsSingletonFactory()))
+                .GenerateAnonymousKeys(true).Build();
 
             string key1;
 
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
                 key1 = client.Context.Key;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key1).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
                     client.Context);
             }
 
             // Starting again should reuse the persisted key
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
                 Assert.Equal(key1, client.Context.Key);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key1).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
                     client.Context);
             }
         }
         
         [Fact]
-        public async void InitWithKeylessAnonUserPassesGeneratedUserToDataSource()
+        public async void InitWithAnonUserPassesGeneratedUserToDataSource()
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
             var config = BasicConfig()
                 .DataSource(stub.AsFactory())
+                .GenerateAnonymousKeys(true)
                 .Build();
 
-            using (var client = await LdClient.InitAsync(config, KeylessAnonUser))
+            using (var client = await LdClient.InitAsync(config, AnonUser))
             {
-                Assert.NotEqual(KeylessAnonUser, stub.ReceivedContext);
+                Assert.NotEqual(AnonUser, stub.ReceivedContext);
                 Assert.Equal(client.Context, stub.ReceivedContext);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(stub.ReceivedContext.Key).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(stub.ReceivedContext.Key).Build(),
                     stub.ReceivedContext);
             }
         }
@@ -235,21 +250,21 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public async Task IdentifyWithKeylessAnonUserAddsRandomizedKey()
+        public async Task IdentifyWithAnonUserAddsRandomizedKey()
         {
-            var config = BasicConfig().Persistence(Components.NoPersistence).Build();
+            var config = BasicConfig().Persistence(Components.NoPersistence).GenerateAnonymousKeys(true).Build();
 
             string key1;
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
                 key1 = client.Context.Key;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key1).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
                     client.Context);
 
                 var anonUser2 = TestUtil.BuildAutoContext().Name("other").Build();
@@ -263,67 +278,82 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
                 var key3 = client.Context.Key;
                 Assert.NotNull(key3);
                 Assert.NotEqual("", key3);
                 Assert.NotEqual(key1, key3); // The previously generated key was discarded with the previous client.
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key3).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key3).Build(),
                     client.Context);
             }
         }
 
         [Fact]
-        public async Task IdentifyWithKeylessAnonUserCanReusePersistedRandomizedKey()
+        public async Task IdentifyWithAnonUserDoesNotChangeKeyIfConfigOptionIsNotSet()
+        {
+            var config = BasicConfig().Persistence(Components.NoPersistence).Build();
+
+            using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
+            {
+                await client.IdentifyAsync(AnonUser);
+
+                AssertHelpers.ContextsEqual(AnonUser, client.Context);
+            }
+        }
+
+        [Fact]
+        public async Task IdentifyWithAnonUserCanReusePersistedRandomizedKey()
         {
             var store = new MockPersistentDataStore();
-            var config = BasicConfig().Persistence(Components.Persistence().Storage(store.AsSingletonFactory())).Build();
+            var config = BasicConfig().Persistence(Components.Persistence().Storage(store.AsSingletonFactory()))
+                .GenerateAnonymousKeys(true).Build();
 
             string key1;
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
                 key1 = client.Context.Key;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key1).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
                     client.Context);
             }
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
                 var key2 = client.Context.Key;
                 Assert.Equal(key1, key2);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(key2).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(key2).Build(),
                     client.Context);
             }
         }
 
         [Fact]
-        public async void IdentifyWithKeylessAnonUserPassesGeneratedUserToDataSource()
+        public async void IdentifyWithAnonUserPassesGeneratedUserToDataSource()
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
             var config = BasicConfig()
                 .DataSource(stub.AsFactory())
+                .GenerateAnonymousKeys(true)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
-                Assert.NotEqual(KeylessAnonUser, stub.ReceivedContext);
+                Assert.NotEqual(AnonUser, stub.ReceivedContext);
                 Assert.Equal(client.Context, stub.ReceivedContext);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(KeylessAnonUser).Key(client.Context.Key).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(client.Context.Key).Build(),
                     stub.ReceivedContext);
             }
         }

@@ -3,7 +3,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.JsonStream;
-using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Json;
 using Xunit;
@@ -32,7 +31,7 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         public static ContextBuilder BuildAutoContext() =>
-            Context.Builder(Constants.AutoKeyMagicValue).Anonymous(true);
+            Context.Builder("placeholder").Anonymous(true);
 
         public static T WithClientLock<T>(Func<T> f)
         {

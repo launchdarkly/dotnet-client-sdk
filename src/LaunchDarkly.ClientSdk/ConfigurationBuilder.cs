@@ -35,6 +35,7 @@ namespace LaunchDarkly.Sdk.Client
         internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
         internal IEventProcessorFactory _eventProcessorFactory = null;
+        internal bool _generateAnonymousKeys = false;
         internal HttpConfigurationBuilder _httpConfigurationBuilder = null;
         internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
         internal string _mobileKey;
@@ -180,6 +181,45 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder Events(IEventProcessorFactory eventProcessorFactory)
         {
             _eventProcessorFactory = eventProcessorFactory;
+            return this;
+        }
+
+        /// <summary>
+        /// Set to <see langword="true"/> to make the SDK provide unique keys for anonymous contexts.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// If enabled, this option changes the SDK's behavior whenever the <see cref="Context"/> (as given to
+        /// methods like <see cref="LdClient.Init(string, Context, System.TimeSpan)"/> or
+        /// <see cref="LdClient.Identify(Context, System.TimeSpan)"/>) has an <see cref="Context.Anonymous"/>
+        /// property of <see langword="true"/>, as follows:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description> The first time this happens in the application, the SDK will generate a
+        /// pseudo-random GUID and overwrite the context's <see cref="Context.Key"/> with this string.
+        /// </description></item>
+        /// <item><description> The SDK will then cache this key so that the same key will be reused next time.
+        /// </description></item>
+        /// <item><description>This uses the same mechanism as the caching of flag values, so if persistent storage
+        /// is available (see <see cref="Components.Persistence"/>), the key will persist across restarts; otherwise,
+        /// it will persist only during the lifetime of the <c>LdClient</c>. </description></item>
+        /// </list>
+        /// <para>
+        /// If you use multiple <see cref="ContextKind"/>s, this behavior is per-kind: that is, a separate
+        /// randomized key is generated and cached for each context kind.
+        /// </para>
+        /// <para>
+        /// A <see cref="Context"/> must always have a key, even if the key will later be overwritten by the
+        /// SDK, so if you use this functionality you must still provide a placeholder key. This ensures that if
+        /// the SDK configuration is changed so <see cref="GenerateAnonymousKeys(bool)"/> is no longer enabled,
+        /// the SDK will still be able to use the context for evaluations.
+        /// </para>
+        /// </remarks>
+        /// <param name="generateAnonymousKeys">true to enable automatic anonymous key generation</param>
+        /// <returns>the same builder</returns>
+        public ConfigurationBuilder GenerateAnonymousKeys(bool generateAnonymousKeys)
+        {
+            _generateAnonymousKeys = generateAnonymousKeys;
             return this;
         }
 
