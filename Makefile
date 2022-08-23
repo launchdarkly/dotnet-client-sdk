@@ -9,25 +9,19 @@ clean:
 	dotnet clean
 
 TEMP_TEST_OUTPUT=/tmp/sdk-contract-test-service.log
-BUILDFRAMEWORKS ?= netcoreapp2.1
-TESTFRAMEWORK ?= netcoreapp2.1
-
-# temporary skips for contract tests that can't pass till more U2C work is done
-# TEST_HARNESS_PARAMS := 
 
 build-contract-tests:
-	@cd contract-tests && dotnet build TestService.csproj
+	@./scripts/build-contract-tests.sh
 
 start-contract-test-service:
-	@cd contract-tests && dotnet bin/Debug/${TESTFRAMEWORK}/ContractTestService.dll
+	@./scripts/start-contract-test-service.sh
 
 start-contract-test-service-bg:
 	@echo "Test service output will be captured in $(TEMP_TEST_OUTPUT)"
-	@make start-contract-test-service >$(TEMP_TEST_OUTPUT) 2>&1 &
+	@./scripts/start-contract-test-service.sh >$(TEMP_TEST_OUTPUT) 2>&1 &
 
 run-contract-tests:
-	@curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh \
-      | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end $(TEST_HARNESS_PARAMS)" sh
+	@./scripts/run-contract-tests.sh
 
 contract-tests: build-contract-tests start-contract-test-service-bg run-contract-tests
 
