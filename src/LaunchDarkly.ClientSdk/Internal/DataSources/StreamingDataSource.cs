@@ -1,9 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
-using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
@@ -152,7 +152,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 HandleMessage(e.EventName, e.Message.Data);
             }
-            catch (JsonReadException ex)
+            catch (InvalidDataException ex)
             {
                 _log.Error("LaunchDarkly service request failed or received invalid data: {0}",
                     LogValues.ExceptionSummary(ex));

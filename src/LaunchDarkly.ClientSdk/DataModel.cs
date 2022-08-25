@@ -1,8 +1,11 @@
 ﻿using System;
-using LaunchDarkly.JsonStream;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Json;
 
 using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
+using static LaunchDarkly.Sdk.Internal.JsonConverterHelpers;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -21,7 +24,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// Represents the state of a feature flag evaluation received from LaunchDarkly.
         /// </summary>
-        [JsonStreamConverter(typeof(FeatureFlagJsonConverter))]
+        [JsonConverter(typeof(FeatureFlagJsonConverter))]
         public sealed class FeatureFlag : IEquatable<FeatureFlag>, IJsonSerializable
         {
             internal LdValue Value { get; }
@@ -81,14 +84,12 @@ namespace LaunchDarkly.Sdk.Client
                 new ItemDescriptor(Version, this);
         }
 
-        internal sealed class FeatureFlagJsonConverter : IJsonStreamConverter
+        internal sealed class FeatureFlagJsonConverter : JsonConverter<FeatureFlag>
         {
-            public object ReadJson(ref JReader reader)
-            {
-                return ReadJsonValue(ref reader);
-            }
+            public override FeatureFlag Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+                ReadJsonValue(ref reader);
 
-            public static FeatureFlag ReadJsonValue(ref JReader reader)
+            public static FeatureFlag ReadJsonValue(ref Utf8JsonReader reader)
             {
                 LdValue value = LdValue.Null;
                 int version = 0;
@@ -99,47 +100,34 @@ namespace LaunchDarkly.Sdk.Client
                 bool trackReason = false;
                 UnixMillisecondTime? debugEventsUntilDate = null;
 
-                for (var or = reader.Object(); or.Next(ref reader);)
+                for (var obj = RequireObject(ref reader); obj.Next(ref reader);)
                 {
-                    // The use of multiple == tests instead of switch allows for a slight optimization on
-                    // some platforms where it wouldn't always need to allocate a string for or.Name. See:
-                    // https://github.com/launchdarkly/dotnet-jsonstream/blob/main/src/LaunchDarkly.JsonStream/PropertyNameToken.cs
-                    var name = or.Name;
-                    if (name == "value")
+                    switch (obj.Name)
                     {
-                        value = LdJsonConverters.LdValueConverter.ReadJsonValue(ref reader);
-                    }
-                    else if (name == "version")
-                    {
-                        version = reader.Int();
-                    }
-                    else if (name == "flagVersion")
-                    {
-                        flagVersion = reader.IntOrNull();
-                    }
-                    else if (name == "variation")
-                    {
-                        variation = reader.IntOrNull();
-                    }
-                    else if (name == "reason")
-                    {
-                        reason = LdJsonConverters.EvaluationReasonConverter.ReadJsonNullableValue(ref reader);
-                    }
-                    else if (name == "trackEvents")
-                    {
-                        trackEvents = reader.Bool();
-                    }
-                    else if (name == "trackReason")
-                    {
-                        trackReason = reader.Bool();
-                    }
-                    else if (name == "debugEventsUntilDate")
-                    {
-                        var dt = reader.LongOrNull();
-                        if (dt.HasValue)
-                        {
-                            debugEventsUntilDate = UnixMillisecondTime.OfMillis(dt.Value);
-                        }
+                        case "value":
+                            value = LdJsonConverters.LdValueConverter.ReadJsonValue(ref reader);
+                            break;
+                        case "version":
+                            version = reader.GetInt32();
+                            break;
+                        case "flagVersion":
+                            flagVersion = JsonConverterHelpers.GetIntOrNull(ref reader);
+                            break;
+                        case "variation":
+                            variation = JsonConverterHelpers.GetIntOrNull(ref reader);
+                            break;
+                        case "reason":
+                            reason = JsonSerializer.Deserialize<EvaluationReason?>(ref reader);
+                            break;
+                        case "trackEvents":
+                            trackEvents = reader.GetBoolean();
+                            break;
+                        case "trackReason":
+                            trackReason = reader.GetBoolean();
+                            break;
+                        case "debugEventsUntilDate":
+                            debugEventsUntilDate = JsonSerializer.Deserialize<UnixMillisecondTime?>(ref reader);
+                            break;
                     }
                 }
 
@@ -155,32 +143,30 @@ namespace LaunchDarkly.Sdk.Client
                     );
             }
 
-            public void WriteJson(object o, IValueWriter writer)
-            {
-                if (!(o is FeatureFlag value))
-                {
-                    throw new InvalidOperationException();
-                }
+            public override void Write(Utf8JsonWriter writer, FeatureFlag value, JsonSerializerOptions options) =>
                 WriteJsonValue(value, writer);
-            }
 
-            public static void WriteJsonValue(FeatureFlag value, IValueWriter writer)
+            public static void WriteJsonValue(FeatureFlag value, Utf8JsonWriter writer)
             {
-                using (var ow = writer.Object())
+                writer.WriteStartObject();
+
+                JsonConverterHelpers.WriteLdValue(writer, "value", value.Value);
+                writer.WriteNumber("version", value.Version);
+                JsonConverterHelpers.WriteIntIfNotNull(writer, "flagVersion", value.FlagVersion);
+                JsonConverterHelpers.WriteIntIfNotNull(writer, "variation", value.Variation);
+                if (value.Reason.HasValue)
                 {
-                    LdJsonConverters.LdValueConverter.WriteJsonValue(value.Value, ow.Name("value"));
-                    ow.Name("version").Int(value.Version);
-                    ow.MaybeName("flagVersion", value.FlagVersion.HasValue).Int(value.FlagVersion.GetValueOrDefault());
-                    ow.MaybeName("variation", value.Variation.HasValue).Int(value.Variation.GetValueOrDefault());
-                    if (value.Reason.HasValue)
-                    {
-                        LdJsonConverters.EvaluationReasonConverter.WriteJsonValue(value.Reason.Value, ow.Name("reason"));
-                    }
-                    ow.MaybeName("trackEvents", value.TrackEvents).Bool(value.TrackEvents);
-                    ow.MaybeName("trackReason", value.TrackReason).Bool(value.TrackReason);
-                    ow.MaybeName("debugEventsUntilDate", value.DebugEventsUntilDate.HasValue)
-                        .Long(value.DebugEventsUntilDate.GetValueOrDefault().Value);
+                    writer.WritePropertyName("reason");
+                    JsonSerializer.Serialize(writer, value.Reason.Value);
                 }
+                JsonConverterHelpers.WriteBooleanIfTrue(writer, "trackEvents", value.TrackEvents);
+                JsonConverterHelpers.WriteBooleanIfTrue(writer, "trackReason", value.TrackReason);
+                if (value.DebugEventsUntilDate.HasValue)
+                {
+                    writer.WriteNumber("debugEventsUntilDate", value.DebugEventsUntilDate.Value.Value);
+                }
+
+                writer.WriteEndObject();
             }
         }
     }

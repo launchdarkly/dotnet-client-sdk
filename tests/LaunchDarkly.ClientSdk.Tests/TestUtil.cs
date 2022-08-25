@@ -2,8 +2,8 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using LaunchDarkly.JsonStream;
 using LaunchDarkly.Sdk.Client.Subsystems;
+using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Json;
 using Xunit;
 
@@ -132,18 +132,19 @@ namespace LaunchDarkly.Sdk.Client
 
         internal static string MakeJsonData(FullDataSet data)
         {
-            var w = JWriter.New();
-            using (var ow = w.Object())
+            return JsonUtils.WriteJsonAsString(w =>
             {
+                w.WriteStartObject();
                 foreach (var item in data.Items)
                 {
                     if (item.Value.Item != null)
                     {
-                        FeatureFlagJsonConverter.WriteJsonValue(item.Value.Item, ow.Name(item.Key));
+                        w.WritePropertyName(item.Key);
+                        FeatureFlagJsonConverter.WriteJsonValue(item.Value.Item, w);
                     }
                 }
-            }
-            return w.GetString();
+                w.WriteEndObject();
+            });
         }
     }
 }
