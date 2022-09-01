@@ -29,12 +29,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private const string _allDataJson = "{}"; // Note that in this implementation, unlike the .NET SDK, FeatureFlagRequestor does not unmarshal the response
 
         [Theory]
-        [InlineData("", false, "/msdk/evalx/users/", "")]
-        [InlineData("", true, "/msdk/evalx/users/", "?withReasons=true")]
-        [InlineData("/basepath", false, "/basepath/msdk/evalx/users/", "")]
-        [InlineData("/basepath", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
-        [InlineData("/basepath/", false, "/basepath/msdk/evalx/users/", "")]
-        [InlineData("/basepath/", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
+        [InlineData("", false, "/msdk/evalx/contexts/", "")]
+        [InlineData("", true, "/msdk/evalx/contexts/", "?withReasons=true")]
+        [InlineData("/basepath", false, "/basepath/msdk/evalx/contexts/", "")]
+        [InlineData("/basepath", true, "/basepath/msdk/evalx/contexts/", "?withReasons=true")]
+        [InlineData("/basepath/", false, "/basepath/msdk/evalx/contexts/", "")]
+        [InlineData("/basepath/", true, "/basepath/msdk/evalx/contexts/", "?withReasons=true")]
         public async Task GetFlagsUsesCorrectUriAndMethodInGetModeAsync(
             string baseUriExtraPath,
             bool withReasons,
@@ -72,12 +72,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         // REPORT mode is known to fail in Android (ch47341)
 #if !__ANDROID__
         [Theory]
-        [InlineData("", false, "/msdk/evalx/user", "")]
-        [InlineData("", true, "/msdk/evalx/user", "?withReasons=true")]
-        [InlineData("/basepath", false, "/basepath/msdk/evalx/user", "")]
-        [InlineData("/basepath", true, "/basepath/msdk/evalx/user", "?withReasons=true")]
-        [InlineData("/basepath/", false, "/basepath/msdk/evalx/user", "")]
-        [InlineData("/basepath/", true, "/basepath/msdk/evalx/user", "?withReasons=true")]
+        [InlineData("", false, "/msdk/evalx/context", "")]
+        [InlineData("", true, "/msdk/evalx/context", "?withReasons=true")]
+        [InlineData("/basepath", false, "/basepath/msdk/evalx/context", "")]
+        [InlineData("/basepath", true, "/basepath/msdk/evalx/context", "?withReasons=true")]
+        [InlineData("/basepath/", false, "/basepath/msdk/evalx/context", "")]
+        [InlineData("/basepath/", true, "/basepath/msdk/evalx/context", "?withReasons=true")]
         public async Task GetFlagsUsesCorrectUriAndMethodInReportModeAsync(
             string baseUriExtraPath,
             bool withReasons,

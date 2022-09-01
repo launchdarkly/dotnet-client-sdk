@@ -572,7 +572,7 @@ namespace LaunchDarkly.Sdk.Client
         public static readonly UpdateMode Polling = new UpdateMode
         {
             IsStreaming = false,
-            FlagsPathRegex = "^/msdk/evalx/users/[^/?]+"
+            FlagsPathRegex = "^/msdk/evalx/contexts/[^/?]+"
         };
 
         public override string ToString() => IsStreaming ? "Streaming" : "Polling";
