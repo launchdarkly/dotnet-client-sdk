@@ -37,12 +37,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         public PollingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
 
         [Theory]
-        [InlineData("", false, "/msdk/evalx/users/", "")]
-        [InlineData("", true, "/msdk/evalx/users/", "?withReasons=true")]
-        [InlineData("/basepath", false, "/basepath/msdk/evalx/users/", "")]
-        [InlineData("/basepath", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
-        [InlineData("/basepath/", false, "/basepath/msdk/evalx/users/", "")]
-        [InlineData("/basepath/", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
+        [InlineData("", false, "/msdk/evalx/contexts/", "")]
+        [InlineData("", true, "/msdk/evalx/contexts/", "?withReasons=true")]
+        [InlineData("/basepath", false, "/basepath/msdk/evalx/contexts/", "")]
+        [InlineData("/basepath", true, "/basepath/msdk/evalx/contexts/", "?withReasons=true")]
+        [InlineData("/basepath/", false, "/basepath/msdk/evalx/contexts/", "")]
+        [InlineData("/basepath/", true, "/basepath/msdk/evalx/contexts/", "?withReasons=true")]
         public void PollingRequestHasCorrectUri(
             string baseUriExtraPath,
             bool withReasons,
