@@ -31,6 +31,7 @@ namespace TestService
     {
         private static readonly string[] Capabilities = {
             "client-side",
+            "context-type",
             "mobile",
             "service-endpoints",
             "singleton",
