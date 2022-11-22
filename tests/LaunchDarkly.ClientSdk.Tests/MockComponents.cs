@@ -27,32 +27,51 @@ namespace LaunchDarkly.Sdk.Client
 
     internal static class MockComponentExtensions
     {
-        public static IDataSourceFactory AsSingletonFactory(this IDataSource instance) =>
-            new SingleDataSourceFactory { Instance = instance };
+        // Normally SDK configuration always specifies component factories rather than component instances,
+        // so that the SDK can handle the component lifecycle and dependency injection. However, in tests,
+        // we often want to set up a specific component instance; .AsSingletonFactory() wraps it in a
+        // factory that always returns that instance.
+        public static IComponentConfigurer<T> AsSingletonFactory<T>(this T instance) =>
+            MockComponents.ComponentConfigurerFromLambda<T>((clientContext) => instance);
 
-        public static IEventProcessorFactory AsSingletonFactory(this IEventProcessor instance) =>
-            new SingleEventProcessorFactory { Instance = instance };
+        public static IComponentConfigurer<T> AsSingletonFactoryWithDiagnosticDescription<T>(this T instance, LdValue description) =>
+            new SingleComponentFactoryWithDiagnosticDescription<T> { Instance = instance, Description = description };
 
-        public static IPersistentDataStoreFactory AsSingletonFactory(this IPersistentDataStore instance) =>
-            new SinglePersistentDataStoreFactory { Instance = instance };
-
-        private class SingleDataSourceFactory : IDataSourceFactory
+        private class SingleComponentFactoryWithDiagnosticDescription<T> : IComponentConfigurer<T>, IDiagnosticDescription
         {
-            public IDataSource Instance { get; set; }
-            public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink,
-                Context currentContext, bool inBackground) => Instance;
+            public T Instance { get; set; }
+            public LdValue Description { get; set; }
+            public LdValue DescribeConfiguration(LdClientContext context) => Description;
+            public T Build(LdClientContext context) => Instance;
+        }
+    }
+
+    internal static class MockComponents
+    {
+        public static IComponentConfigurer<T> ComponentConfigurerFromLambda<T>(Func<LdClientContext, T> factory) =>
+            new ComponentConfigurerFromLambdaImpl<T>() { Factory = factory };
+
+        private class ComponentConfigurerFromLambdaImpl<T> : IComponentConfigurer<T>
+        {
+            public Func<LdClientContext, T> Factory { get; set; }
+            public T Build(LdClientContext context) => Factory(context);
+        }
+    }
+
+    internal class CapturingComponentConfigurer<T>: IComponentConfigurer<T>
+    {
+        private readonly IComponentConfigurer<T> _factory;
+        public LdClientContext ReceivedClientContext { get; private set; }
+
+        public CapturingComponentConfigurer(IComponentConfigurer<T> factory)
+        {
+            _factory = factory;
         }
 
-        private class SingleEventProcessorFactory : IEventProcessorFactory
+        public T Build(LdClientContext clientContext)
         {
-            public IEventProcessor Instance { get; set; }
-            public IEventProcessor CreateEventProcessor(LdClientContext context) => Instance;
-        }
-
-        private class SinglePersistentDataStoreFactory : IPersistentDataStoreFactory
-        {
-            public IPersistentDataStore Instance { get; set; }
-            public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) => Instance;
+            ReceivedClientContext = clientContext;
+            return _factory.Build(clientContext);
         }
     }
 
@@ -306,37 +325,11 @@ namespace LaunchDarkly.Sdk.Client
             WithWrapper(mobileKey).GetIndex();
     }
 
-    internal class CapturingDataSourceFactory : IDataSourceFactory
-    {
-        internal IDataSourceUpdateSink UpdateSink;
-
-        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, Context currentContext, bool inBackground)
-        {
-            UpdateSink = updateSink;
-            return new MockDataSourceThatNeverInitializes();
-        }
-    }
-
-    internal class MockDataSourceFactoryFromLambda : IDataSourceFactory
-    {
-        private readonly Func<LdClientContext, IDataSourceUpdateSink, Context, bool, IDataSource> _fn;
-
-        internal MockDataSourceFactoryFromLambda(Func<LdClientContext, IDataSourceUpdateSink, Context, bool, IDataSource> fn)
-        {
-            _fn = fn;
-        }
-
-        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, Context currentContext, bool inBackground) =>
-            _fn(context, updateSink, currentContext, inBackground);
-    }
-
     internal class MockPollingProcessor : IDataSource
     {
         private IDataSourceUpdateSink _updateSink;
         private Context _context;
         private FullDataSet? _data;
-
-        public Context ReceivedContext => _context;
 
         public MockPollingProcessor(FullDataSet? data) : this(null, new Context(), data) { }
 
@@ -347,17 +340,9 @@ namespace LaunchDarkly.Sdk.Client
             _data = data;
         }
 
-        public static IDataSourceFactory Factory(FullDataSet? data) =>
-            new MockDataSourceFactoryFromLambda((ctx, updates, context, bg) =>
-                new MockPollingProcessor(updates, context, data));
-
-        public IDataSourceFactory AsFactory() =>
-            new MockDataSourceFactoryFromLambda((ctx, updates, context, bg) =>
-            {
-                this._updateSink = updates;
-                this._context = context;
-                return this;
-            });
+        public static IComponentConfigurer<IDataSource> Factory(FullDataSet? data) =>
+            MockComponents.ComponentConfigurerFromLambda<IDataSource>(clientContext =>
+                new MockPollingProcessor(clientContext.DataSourceUpdateSink, clientContext.CurrentContext, data));
 
         public bool IsRunning
         {

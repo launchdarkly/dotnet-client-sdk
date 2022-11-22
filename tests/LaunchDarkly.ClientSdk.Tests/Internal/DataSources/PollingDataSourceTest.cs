@@ -30,8 +30,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .ServiceEndpoints(Components.ServiceEndpoints().Polling(baseUri));
             modConfig?.Invoke(builder);
             var config = builder.Build();
-            return config.DataSourceFactory.CreateDataSource(new LdClientContext(config), _updateSink,
-                context, false);
+            return config.DataSource.Build(new LdClientContext(config, context).WithDataSourceUpdateSink(_updateSink));
         }
 
         public PollingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }

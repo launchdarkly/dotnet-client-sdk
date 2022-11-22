@@ -52,7 +52,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     baseUri,
                     _context,
                     withReasons,
-                    new LdClientContext(config).Http,
+                    new LdClientContext(config, _context).Http,
                     testLogger))
                 {
                     var resp = await requestor.FeatureFlagsAsync();
@@ -97,7 +97,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     baseUri,
                     _context,
                     withReasons,
-                    new LdClientContext(config).Http,
+                    new LdClientContext(config, _context).Http,
                     testLogger))
                 {
                     var resp = await requestor.FeatureFlagsAsync();

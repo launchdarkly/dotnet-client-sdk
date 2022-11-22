@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,15 +43,16 @@ namespace LaunchDarkly.Sdk.Client
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
+                .DataSource(dataSourceConfig)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
                 var actualUser = client.Context; // may have been transformed e.g. to add device/OS properties
                 Assert.Equal(BasicUser.Key, actualUser.Key);
-                Assert.Equal(actualUser, stub.ReceivedContext);
+                Assert.Equal(actualUser, dataSourceConfig.ReceivedClientContext.CurrentContext);
             }
         }
 
@@ -102,7 +104,8 @@ namespace LaunchDarkly.Sdk.Client
         {
             // Note, we don't care about polling mode vs. streaming mode for this functionality.
             var store = new MockPersistentDataStore();
-            var config = BasicConfig().Persistence(Components.Persistence().Storage(store.AsSingletonFactory()))
+            var config = BasicConfig().Persistence(Components.Persistence().Storage(
+                store.AsSingletonFactory<IPersistentDataStore>()))
                 .GenerateAnonymousKeys(true).Build();
 
             string key1;
@@ -132,18 +135,20 @@ namespace LaunchDarkly.Sdk.Client
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
+                .DataSource(dataSourceConfig)
                 .GenerateAnonymousKeys(true)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, AnonUser))
             {
-                Assert.NotEqual(AnonUser, stub.ReceivedContext);
-                Assert.Equal(client.Context, stub.ReceivedContext);
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.NotEqual(AnonUser, receivedContext);
+                Assert.Equal(client.Context, receivedContext);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(AnonUser).Key(stub.ReceivedContext.Key).Build(),
-                    stub.ReceivedContext);
+                    Context.BuilderFromContext(AnonUser).Key(receivedContext.Key).Build(),
+                    receivedContext);
             }
         }
 
@@ -182,19 +187,19 @@ namespace LaunchDarkly.Sdk.Client
             var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
             var finishedIdentifyUserB = new SemaphoreSlim(0, 1);
 
-            var dataSourceFactory = new MockDataSourceFactoryFromLambda((ctx, updates, context, bg) =>
-                new MockDataSourceFromLambda(context, async () =>
+            var dataSourceFactory = MockComponents.ComponentConfigurerFromLambda<IDataSource>(ctx =>
+                new MockDataSourceFromLambda(ctx.CurrentContext, async () =>
                 {
-                    switch (context.Key)
+                    switch (ctx.CurrentContext.Key)
                     {
                         case "a":
-                            updates.Init(context, userAFlags);
+                            ctx.DataSourceUpdateSink.Init(ctx.CurrentContext, userAFlags);
                             break;
 
                         case "b":
                             startedIdentifyUserB.Release();
                             await canFinishIdentifyUserB.WaitAsync();
-                            updates.Init(context, userBFlags);
+                            ctx.DataSourceUpdateSink.Init(ctx.CurrentContext, userBFlags);
                             break;
                     }
                 }));
@@ -233,19 +238,22 @@ namespace LaunchDarkly.Sdk.Client
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
             Context newUser = Context.New("new-user");
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
+                .DataSource(dataSourceConfig)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
                 AssertHelpers.ContextsEqual(BasicUser, client.Context);
-                Assert.Equal(client.Context, stub.ReceivedContext);
+                Assert.Equal(client.Context, receivedContext);
 
                 await client.IdentifyAsync(newUser);
 
+                receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
                 AssertHelpers.ContextsEqual(newUser, client.Context);
-                Assert.Equal(client.Context, stub.ReceivedContext);
+                Assert.Equal(client.Context, receivedContext);
             }
         }
 
@@ -307,7 +315,8 @@ namespace LaunchDarkly.Sdk.Client
         public async Task IdentifyWithAnonUserCanReusePersistedRandomizedKey()
         {
             var store = new MockPersistentDataStore();
-            var config = BasicConfig().Persistence(Components.Persistence().Storage(store.AsSingletonFactory()))
+            var config = BasicConfig().Persistence(Components.Persistence().Storage(
+                store.AsSingletonFactory<IPersistentDataStore>()))
                 .GenerateAnonymousKeys(true).Build();
 
             string key1;
@@ -341,8 +350,9 @@ namespace LaunchDarkly.Sdk.Client
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
+                .DataSource(dataSourceConfig)
                 .GenerateAnonymousKeys(true)
                 .Build();
 
@@ -350,11 +360,12 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(AnonUser);
 
-                Assert.NotEqual(AnonUser, stub.ReceivedContext);
-                Assert.Equal(client.Context, stub.ReceivedContext);
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.NotEqual(AnonUser, receivedContext);
+                Assert.Equal(client.Context, receivedContext);
                 AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(AnonUser).Key(client.Context.Key).Build(),
-                    stub.ReceivedContext);
+                    receivedContext);
             }
         }
 
@@ -392,7 +403,7 @@ namespace LaunchDarkly.Sdk.Client
             var mockUpdateProc = new MockPollingProcessor(null);
             var mockConnectivityStateManager = new MockConnectivityStateManager(true);
             var config = BasicConfig()
-                .DataSource(mockUpdateProc.AsFactory())
+                .DataSource(mockUpdateProc.AsSingletonFactory<IDataSource>())
                 .ConnectivityStateManager(mockConnectivityStateManager)
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
@@ -408,7 +419,7 @@ namespace LaunchDarkly.Sdk.Client
             var storage = new MockPersistentDataStore();
             var data = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
             var config = BasicConfig()
-                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory()))
+                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory<IPersistentDataStore>()))
                 .Offline(true)
                 .Build();
             storage.SetupUserData(config.MobileKey, BasicUser.Key, data);
@@ -426,7 +437,7 @@ namespace LaunchDarkly.Sdk.Client
             var initialFlags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
             var config = BasicConfig()
                 .DataSource(MockPollingProcessor.Factory(initialFlags))
-                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory()))
+                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory<IPersistentDataStore>()))
                 .Build();
 
             using (var client = TestUtil.CreateClient(config, BasicUser))
@@ -442,7 +453,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var eventProcessor = new MockEventProcessor();
             var config = BasicConfig()
-                .Events(eventProcessor.AsSingletonFactory())
+                .Events(eventProcessor.AsSingletonFactory<IEventProcessor>())
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
             {
@@ -457,7 +468,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = BasicConfig()
                 .ConnectivityStateManager(connectivityStateManager)
-                .Events(eventProcessor.AsSingletonFactory())
+                .Events(eventProcessor.AsSingletonFactory<IEventProcessor>())
                 .Offline(true)
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
@@ -486,7 +497,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = BasicConfig()
                 .ConnectivityStateManager(connectivityStateManager)
-                .Events(eventProcessor.AsSingletonFactory())
+                .Events(eventProcessor.AsSingletonFactory<IEventProcessor>())
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
             {

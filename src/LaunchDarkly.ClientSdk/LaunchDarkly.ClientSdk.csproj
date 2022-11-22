@@ -77,6 +77,9 @@
     <Compile Update="Subsystems\IDataSourceStatusProvider.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Subsystems\IComponentConfigurer.cs">
+      <SubType></SubType>
+    </Compile>
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <AssemblyOriginatorKeyFile>../../LaunchDarkly.ClientSdk.snk</AssemblyOriginatorKeyFile>

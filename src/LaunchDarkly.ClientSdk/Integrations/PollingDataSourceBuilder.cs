@@ -19,7 +19,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// </para>
     /// <para>
     /// To use polling mode, create a builder with <see cref="Components.PollingDataSource"/>, change its properties
-    /// with the methods of this class, and pass it to <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>.
+    /// with the methods of this class, and pass it to <see cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>.
     /// </para>
     /// <para>
     /// Setting <see cref="ConfigurationBuilder.Offline(bool)"/> to <see langword="true"/> will supersede this
@@ -34,7 +34,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     ///         .Build();
     /// </code>
     /// </example>
-    public sealed class PollingDataSourceBuilder : IDataSourceFactory, IDiagnosticDescription
+    public sealed class PollingDataSourceBuilder : IComponentConfigurer<IDataSource>, IDiagnosticDescription
     {
         /// <summary>
         /// The default value for <see cref="PollInterval(TimeSpan)"/>: 5 minutes.
@@ -86,40 +86,35 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         /// <inheritdoc/>
-        public IDataSource CreateDataSource(
-            LdClientContext context,
-            IDataSourceUpdateSink updateSink,
-            Context currentContext,
-            bool inBackground
-            )
+        public IDataSource Build(LdClientContext clientContext)
         {
-            if (!inBackground)
+            if (!clientContext.InBackground)
             {
-                context.BaseLogger.Warn("You should only disable the streaming API if instructed to do so by LaunchDarkly support");
+                clientContext.BaseLogger.Warn("You should only disable the streaming API if instructed to do so by LaunchDarkly support");
             }
             var baseUri = StandardEndpoints.SelectBaseUri(
-                context.ServiceEndpoints,
+                clientContext.ServiceEndpoints,
                 e => e.PollingBaseUri,
                 "Polling",
-                context.BaseLogger
+                clientContext.BaseLogger
                 );
 
-            var logger = context.BaseLogger.SubLogger(LogNames.DataSourceSubLog);
+            var logger = clientContext.BaseLogger.SubLogger(LogNames.DataSourceSubLog);
             var requestor = new FeatureFlagRequestor(
                 baseUri,
-                currentContext,
-                context.EvaluationReasons,
-                context.Http,
+                clientContext.CurrentContext,
+                clientContext.EvaluationReasons,
+                clientContext.Http,
                 logger
                 );
 
             return new PollingDataSource(
-                updateSink,
-                currentContext,
+                clientContext.DataSourceUpdateSink,
+                clientContext.CurrentContext,
                 requestor,
                 _pollInterval,
                 TimeSpan.Zero,
-                context.TaskExecutor,
+                clientContext.TaskExecutor,
                 logger
                 );
         }

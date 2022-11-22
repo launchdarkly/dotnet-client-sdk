@@ -32,8 +32,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 .ServiceEndpoints(Components.ServiceEndpoints().Streaming(baseUri).Polling(baseUri));
             modConfig?.Invoke(builder);
             var config = builder.Build();
-            return config.DataSourceFactory.CreateDataSource(new LdClientContext(config), _updateSink,
-                context, false);
+            return config.DataSource.Build(new LdClientContext(config, context).WithDataSourceUpdateSink(_updateSink));
         }
 
         private IDataSource MakeDataSourceWithDiagnostics(Uri baseUri, Context context, IDiagnosticStore diagnosticStore)
@@ -41,9 +40,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             var config = BasicConfig()
                 .ServiceEndpoints(Components.ServiceEndpoints().Streaming(baseUri).Polling(baseUri))
                 .Build();
-            var clientContext = new LdClientContext(config, null).WithDiagnostics(null, diagnosticStore);
-            return Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay)
-                .CreateDataSource(clientContext, _updateSink, context, false);
+            var clientContext = new LdClientContext(config, context).WithDiagnostics(null, diagnosticStore)
+                .WithDataSourceUpdateSink(_updateSink);
+            return Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay).Build(clientContext);
         }
 
         private void WithDataSourceAndServer(Handler responseHandler, Action<IDataSource, HttpServer, Task> action)

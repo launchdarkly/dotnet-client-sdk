@@ -1,6 +1,7 @@
 ﻿using System;
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -66,7 +67,7 @@ namespace LaunchDarkly.Sdk.Client
         public void DataSourceStatusStartsAsInitializing()
         {
             var config = BasicConfig()
-                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
+                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory<IDataSource>())
                 .Build();
 
             using (var client = TestUtil.CreateClient(config, BasicUser))
@@ -80,7 +81,8 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void DataSourceStatusRemainsInitializingAfterErrorIfNeverInitialized()
         {
-            var dataSourceFactory = new CapturingDataSourceFactory();
+            var dataSourceFactory = new CapturingComponentConfigurer<IDataSource>(
+                new MockDataSource().AsSingletonFactory<IDataSource>());
 
             var config = BasicConfig()
                 .DataSource(dataSourceFactory)
@@ -92,7 +94,8 @@ namespace LaunchDarkly.Sdk.Client
                 client.DataSourceStatusProvider.StatusChanged += statuses.Add;
 
                 var errorInfo = DataSourceStatus.ErrorInfo.FromHttpError(503);
-                dataSourceFactory.UpdateSink.UpdateStatus(DataSourceState.Interrupted, errorInfo);
+                dataSourceFactory.ReceivedClientContext.DataSourceUpdateSink.UpdateStatus(
+                    DataSourceState.Interrupted, errorInfo);
 
                 var newStatus1 = statuses.ExpectValue();
                 Assert.Equal(DataSourceState.Initializing, newStatus1.State);
@@ -103,7 +106,8 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void DataSourceStatusIsInterruptedAfterErrorIfAlreadyInitialized()
         {
-            var dataSourceFactory = new CapturingDataSourceFactory();
+            var dataSourceFactory = new CapturingComponentConfigurer<IDataSource>(
+                new MockDataSource().AsSingletonFactory<IDataSource>());
 
             var config = BasicConfig()
                 .DataSource(dataSourceFactory)
@@ -114,13 +118,15 @@ namespace LaunchDarkly.Sdk.Client
                 var statuses = new EventSink<DataSourceStatus>();
                 client.DataSourceStatusProvider.StatusChanged += statuses.Add;
 
-                dataSourceFactory.UpdateSink.UpdateStatus(DataSourceState.Valid, null);
+                dataSourceFactory.ReceivedClientContext.DataSourceUpdateSink.UpdateStatus(
+                    DataSourceState.Valid, null);
 
                 var newStatus1 = statuses.ExpectValue();
                 Assert.Equal(DataSourceState.Valid, newStatus1.State);
 
                 var errorInfo = DataSourceStatus.ErrorInfo.FromHttpError(503);
-                dataSourceFactory.UpdateSink.UpdateStatus(DataSourceState.Interrupted, errorInfo);
+                dataSourceFactory.ReceivedClientContext.DataSourceUpdateSink.UpdateStatus(
+                    DataSourceState.Interrupted, errorInfo);
 
                 var newStatus2 = statuses.ExpectValue();
                 Assert.Equal(DataSourceState.Interrupted, newStatus2.State);

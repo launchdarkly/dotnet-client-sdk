@@ -45,7 +45,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     ///         .VariationForUser("some-user-key", false));
     /// </code>
     /// </example>
-    public sealed class TestData : IDataSourceFactory
+    public sealed class TestData : IComponentConfigurer<IDataSource>
     {
         #region Private fields
 
@@ -196,18 +196,13 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         /// <inheritdoc/>
-        public IDataSource CreateDataSource(
-            LdClientContext context,
-            IDataSourceUpdateSink updateSink,
-            Context currentContext,
-            bool inBackground
-            )
+        public IDataSource Build(LdClientContext clientContext)
         {
             var instance = new DataSourceImpl(
                 this,
-                updateSink,
-                currentContext,
-                context.BaseLogger.SubLogger("DataSource.TestData")
+                clientContext.DataSourceUpdateSink,
+                clientContext.CurrentContext,
+                clientContext.BaseLogger.SubLogger("DataSource.TestData")
                 );
             lock (_lock)
             {

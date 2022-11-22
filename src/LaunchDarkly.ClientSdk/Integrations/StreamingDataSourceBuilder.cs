@@ -15,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// By default, the SDK uses a streaming connection to receive feature flag data from LaunchDarkly. If you want
     /// to customize the behavior of the connection, create a builder with <see cref="Components.StreamingDataSource"/>,
     /// change its properties with the methods of this class, and pass it to
-    /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>.
+    /// <see cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>.
     /// </para>
     /// <para>
     /// Setting <see cref="ConfigurationBuilder.Offline(bool)"/> to <see langword="true"/> will supersede this
@@ -30,7 +30,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     ///         .Build();
     /// </code>
     /// </example>
-    public sealed class StreamingDataSourceBuilder : IDataSourceFactory, IDiagnosticDescription
+    public sealed class StreamingDataSourceBuilder : IComponentConfigurer<IDataSource>, IDiagnosticDescription
     {
         /// <summary>
         /// The default value for <see cref="InitialReconnectDelay(TimeSpan)"/>: 1000 milliseconds.
@@ -85,53 +85,48 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         /// <inheritdoc/>
-        public IDataSource CreateDataSource(
-            LdClientContext context,
-            IDataSourceUpdateSink updateSink,
-            Context currentContext,
-            bool inBackground
-            )
+        public IDataSource Build(LdClientContext clientContext)
         {
             var baseUri = StandardEndpoints.SelectBaseUri(
-                context.ServiceEndpoints,
+                clientContext.ServiceEndpoints,
                 e => e.StreamingBaseUri,
                 "Streaming",
-                context.BaseLogger
+                clientContext.BaseLogger
                 );
             var pollingBaseUri = StandardEndpoints.SelectBaseUri(
-                context.ServiceEndpoints,
+                clientContext.ServiceEndpoints,
                 e => e.PollingBaseUri,
                 "Polling",
-                context.BaseLogger
+                clientContext.BaseLogger
                 );
 
-            if (inBackground)
+            if (clientContext.InBackground)
             {
                 // When in the background, always use polling instead of streaming
                 return new PollingDataSourceBuilder()
                     .BackgroundPollInterval(_backgroundPollInterval)
-                    .CreateDataSource(context, updateSink, currentContext, true);
+                    .Build(clientContext);
             }
 
-            var logger = context.BaseLogger.SubLogger(LogNames.DataSourceSubLog);
+            var logger = clientContext.BaseLogger.SubLogger(LogNames.DataSourceSubLog);
             var requestor = new FeatureFlagRequestor(
                 pollingBaseUri,
-                currentContext,
-                context.EvaluationReasons,
-                context.Http,
+                clientContext.CurrentContext,
+                clientContext.EvaluationReasons,
+                clientContext.Http,
                 logger
                 );
 
             return new StreamingDataSource(
-                updateSink,
-                currentContext,
+                clientContext.DataSourceUpdateSink,
+                clientContext.CurrentContext,
                 baseUri,
-                context.EvaluationReasons,
+                clientContext.EvaluationReasons,
                 _initialReconnectDelay,
                 requestor,
-                context.Http,
+                clientContext.Http,
                 logger,
-                context.DiagnosticStore
+                clientContext.DiagnosticStore
                 );
         }
 

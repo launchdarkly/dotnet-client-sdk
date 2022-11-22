@@ -13,7 +13,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// </para>
     /// <para>
     /// By default, the SDK uses a persistence mechanism that is specific to each platform, as
-    /// described in <see cref="Storage(IPersistentDataStoreFactory)"/>. To use a custom persistence
+    /// described in <see cref="Storage(IComponentConfigurer{IPersistentDataStore})"/>. To use a custom persistence
     /// implementation, or to customize related properties defined in this class, create a builder with
     /// <see cref="Components.Persistence"/>, change its properties with the methods of this class, and
     /// pass it to <see cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>.
@@ -41,7 +41,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </summary>
         public const int UnlimitedCachedContexts = -1;
 
-        private  IPersistentDataStoreFactory _storeFactory = null;
+        private IComponentConfigurer<IPersistentDataStore> _storeFactory = null;
         private int _maxCachedContexts = DefaultMaxCachedContexts;
 
         internal PersistenceConfigurationBuilder() { }
@@ -58,7 +58,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <param name="persistentDataStoreFactory">a factory for the custom storage implementation, or
         /// <see langword="null"/> to use the default implementation</param>
         /// <returns>the builder</returns>
-        public PersistenceConfigurationBuilder Storage(IPersistentDataStoreFactory persistentDataStoreFactory)
+        public PersistenceConfigurationBuilder Storage(IComponentConfigurer<IPersistentDataStore> persistentDataStoreFactory)
         {
             _storeFactory = persistentDataStoreFactory;
             return this;
@@ -91,10 +91,10 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             return this;
         }
 
-        internal PersistenceConfiguration CreatePersistenceConfiguration(LdClientContext context) =>
+        internal PersistenceConfiguration Build(LdClientContext clientContext) =>
             new PersistenceConfiguration(
                 _storeFactory is null ? PlatformSpecific.LocalStorage.Instance :
-                    _storeFactory.CreatePersistentDataStore(context),
+                    _storeFactory.Build(clientContext),
                 _maxCachedContexts
                 );
     }

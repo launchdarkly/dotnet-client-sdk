@@ -13,11 +13,11 @@ namespace LaunchDarkly.Sdk.Client
         private static readonly Context user = Context.New("userkey");
         private readonly TestData _testData = TestData.DataSource();
         private MockEventProcessor eventProcessor = new MockEventProcessor();
-        private IEventProcessorFactory _factory;
+        private IComponentConfigurer<IEventProcessor> _factory;
 
         public LdClientEventTests(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _factory = eventProcessor.AsSingletonFactory();
+            _factory = eventProcessor.AsSingletonFactory<IEventProcessor>();
         }
 
         private LdClient MakeClient(Context c) =>
@@ -198,7 +198,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = BasicConfig()
-                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
+                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory<IDataSource>())
                 .Events(_factory);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
@@ -307,7 +307,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = BasicConfig()
-                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
+                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory<IDataSource>())
                 .Events(_factory);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))

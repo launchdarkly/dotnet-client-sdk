@@ -7,9 +7,8 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
     /// <remarks>
     /// <para>
     /// The SDK uses a simplified JSON representation of its configuration when recording diagnostics data.
-    /// Any class that implements <see cref="IDataSourceFactory"/>, <see cref="IEventProcessorFactory"/>,
-    /// or <see cref="IPersistentDataStoreFactory"/> may choose to contribute values to this representation,
-    /// although the SDK may or may not use them.
+    /// Any class that implements <see cref="IComponentConfigurer{T}"/> may choose to contribute values to
+    /// this representation, although the SDK may or may not use them.
     /// </para>
     /// <para>
     /// The <see cref="DescribeConfiguration"/> method should return either <see cref="LdValue.Null"/>or a

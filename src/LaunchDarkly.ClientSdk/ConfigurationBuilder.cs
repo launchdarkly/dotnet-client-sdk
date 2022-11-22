@@ -30,11 +30,11 @@ namespace LaunchDarkly.Sdk.Client
         // will replace it with a platform-specific implementation.
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
-        internal IDataSourceFactory _dataSourceFactory = null;
+        internal IComponentConfigurer<IDataSource> _dataSource = null;
         internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
-        internal IEventProcessorFactory _eventProcessorFactory = null;
+        internal IComponentConfigurer<IEventProcessor> _events = null;
         internal bool _generateAnonymousKeys = false;
         internal HttpConfigurationBuilder _httpConfigurationBuilder = null;
         internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
@@ -54,11 +54,11 @@ namespace LaunchDarkly.Sdk.Client
 
         internal ConfigurationBuilder(Configuration copyFrom)
         {
-            _dataSourceFactory = copyFrom.DataSourceFactory;
+            _dataSource = copyFrom.DataSource;
             _diagnosticOptOut = copyFrom.DiagnosticOptOut;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
             _evaluationReasons = copyFrom.EvaluationReasons;
-            _eventProcessorFactory = copyFrom.EventProcessorFactory;
+            _events = copyFrom.Events;
             _httpConfigurationBuilder = copyFrom.HttpConfigurationBuilder;
             _loggingConfigurationBuilder = copyFrom.LoggingConfigurationBuilder;
             _mobileKey = copyFrom.MobileKey;
@@ -92,16 +92,16 @@ namespace LaunchDarkly.Sdk.Client
         /// to configure them.
         /// </para>
         /// <para>
-        /// This overwrites any previous options set with <see cref="DataSource(IDataSourceFactory)"/>.
+        /// This overwrites any previous options set with <see cref="DataSource(IComponentConfigurer{IDataSource})"/>.
         /// If you want to set multiple options, set them on the same <see cref="StreamingDataSourceBuilder"/>
         /// or <see cref="PollingDataSourceBuilder"/>.
         /// </para>
         /// </remarks>
-        /// <param name="dataSourceFactory">the factory object</param>
+        /// <param name="dataSourceConfig">the factory object</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder DataSource(IDataSourceFactory dataSourceFactory)
+        public ConfigurationBuilder DataSource(IComponentConfigurer<IDataSource> dataSourceConfig)
         {
-            _dataSourceFactory = dataSourceFactory;
+            _dataSource = dataSourceConfig;
             return this;
         }
 
@@ -172,15 +172,15 @@ namespace LaunchDarkly.Sdk.Client
         /// disable events with <see cref="Components.NoEvents"/>.
         /// </para>
         /// <para>
-        /// This overwrites any previous options set with <see cref="Events(IEventProcessorFactory)"/>.
+        /// This overwrites any previous options set with <see cref="Events(IComponentConfigurer{IEventProcessor})"/>.
         /// If you want to set multiple options, set them on the same <see cref="EventProcessorBuilder"/>.
         /// </para>
         /// </remarks>
-        /// <param name="eventProcessorFactory">a builder/factory object for event configuration</param>
+        /// <param name="eventsConfig">a builder/factory object for event configuration</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder Events(IEventProcessorFactory eventProcessorFactory)
+        public ConfigurationBuilder Events(IComponentConfigurer<IEventProcessor> eventsConfig)
         {
-            _eventProcessorFactory = eventProcessorFactory;
+            _events = eventsConfig;
             return this;
         }
 

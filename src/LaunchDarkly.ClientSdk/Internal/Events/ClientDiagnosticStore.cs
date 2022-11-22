@@ -44,8 +44,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
                 .Build();
 
             // Allow each pluggable component to describe its own relevant properties.
-            yield return GetComponentDescription(_config.DataSourceFactory ?? Components.StreamingDataSource());
-            yield return GetComponentDescription(_config.EventProcessorFactory ?? Components.SendEvents());
+            yield return GetComponentDescription(_config.DataSource ?? Components.StreamingDataSource());
+            yield return GetComponentDescription(_config.Events ?? Components.SendEvents());
             yield return GetComponentDescription(_config.HttpConfigurationBuilder ?? Components.HttpConfiguration());
         }
 
