@@ -103,7 +103,7 @@ namespace LaunchDarkly.Sdk.Client
                 {
                     // The use of multiple == tests instead of switch allows for a slight optimization on
                     // some platforms where it wouldn't always need to allocate a string for or.Name. See:
-                    // https://github.com/launchdarkly/dotnet-jsonstream/blob/master/src/LaunchDarkly.JsonStream/PropertyNameToken.cs
+                    // https://github.com/launchdarkly/dotnet-jsonstream/blob/main/src/LaunchDarkly.JsonStream/PropertyNameToken.cs
                     var name = or.Name;
                     if (name == "value")
                     {
