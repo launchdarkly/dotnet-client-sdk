@@ -13,7 +13,7 @@ jobs:
   # The main build happens on a Mac host
   - circleCI:
       mac:
-        xcode: "12.4.0"
+        xcode: "13.4.1"
       context: org-global
       steps:
         - step: prepare
