@@ -19,7 +19,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
         public TestDataTest(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _context = new LdClientContext(Configuration.Builder("key").Logging(testLogging).Build());
+            _context = new LdClientContext(Configuration.Builder("key").Logging(testLogging).Build(), _initialUser);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
         private void CreateAndStart()
         {
-            var ds = _td.CreateDataSource(_context, _updates, _initialUser, false);
+            var ds = _td.Build(_context.WithDataSourceUpdateSink(_updates).WithContextAndBackgroundState(_initialUser, false));
             var started = ds.Start();
             Assert.True(started.IsCompleted);
         }
@@ -212,7 +212,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             Action<ItemDescriptor> assertion)
         {
             var tdTemp = TestData.DataSource();
-            using (var ds = tdTemp.CreateDataSource(_context, _updates, _initialUser, false))
+            using (var ds = tdTemp.Build(_context.WithDataSourceUpdateSink(_updates).WithContextAndBackgroundState(_initialUser, false)))
             {
                 ds.Start();
                 _updates.ExpectInit(_initialUser);

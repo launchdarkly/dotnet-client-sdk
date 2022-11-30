@@ -1,6 +1,7 @@
 ﻿using System;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Integrations;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -45,11 +46,11 @@ namespace LaunchDarkly.Sdk.Client
             Configuration.Builder(BasicMobileKey)
                 .BackgroundModeManager(new MockBackgroundModeManager())
                 .ConnectivityStateManager(new MockConnectivityStateManager(true))
-                .DataSource(new MockDataSource().AsSingletonFactory())
+                .DataSource(new MockDataSource().AsSingletonFactory<IDataSource>())
                 .Events(Components.NoEvents)
                 .Logging(testLogging)
                 .Persistence(
-                    Components.Persistence().Storage(new MockPersistentDataStore().AsSingletonFactory())
+                    Components.Persistence().Storage(new MockPersistentDataStore().AsSingletonFactory<IPersistentDataStore>())
                 );
     }
 }

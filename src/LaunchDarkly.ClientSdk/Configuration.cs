@@ -36,8 +36,8 @@ namespace LaunchDarkly.Sdk.Client
         /// A factory object that creates an implementation of <see cref="IDataSource"/>, which will
         /// receive feature flag data.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>
-        public IDataSourceFactory DataSourceFactory { get; }
+        /// <seealso cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>
+        public IComponentConfigurer<IDataSource> DataSource { get; }
 
         /// <summary>
         /// True if diagnostic events have been disabled.
@@ -71,8 +71,8 @@ namespace LaunchDarkly.Sdk.Client
         /// A factory object that creates an implementation of <see cref="IEventProcessor"/>, responsible
         /// for sending analytics events.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>
-        public IEventProcessorFactory EventProcessorFactory { get; }
+        /// <seealso cref="ConfigurationBuilder.Events(IComponentConfigurer{IEventProcessor})"/>
+        public IComponentConfigurer<IEventProcessor> Events { get; }
 
         /// <summary>
         /// True if the SDK should provide unique keys for anonymous contexts.
@@ -168,11 +168,11 @@ namespace LaunchDarkly.Sdk.Client
 
         internal Configuration(ConfigurationBuilder builder)
         {
-            DataSourceFactory = builder._dataSourceFactory;
+            DataSource = builder._dataSource;
             DiagnosticOptOut = builder._diagnosticOptOut;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
             EvaluationReasons = builder._evaluationReasons;
-            EventProcessorFactory = builder._eventProcessorFactory;
+            Events = builder._events;
             GenerateAnonymousKeys = builder._generateAnonymousKeys;
             HttpConfigurationBuilder = builder._httpConfigurationBuilder;
             LoggingConfigurationBuilder = builder._loggingConfigurationBuilder;

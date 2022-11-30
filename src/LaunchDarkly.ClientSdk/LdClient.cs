@@ -140,7 +140,7 @@ namespace LaunchDarkly.Sdk.Client
         LdClient(Configuration configuration, Context initialContext, TimeSpan startWaitTime)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            var baseContext = new LdClientContext(configuration, this);
+            var baseContext = new LdClientContext(configuration, initialContext, this);
 
             var diagnosticStore = _config.DiagnosticOptOut ? null :
                 new ClientDiagnosticStore(baseContext, _config, startWaitTime);
@@ -154,7 +154,7 @@ namespace LaunchDarkly.Sdk.Client
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
             var persistenceConfiguration = (configuration.PersistenceConfigurationBuilder ?? Components.Persistence())
-                .CreatePersistenceConfiguration(_clientContext);
+                .Build(_clientContext);
             _dataStore = new FlagDataManager(
                 configuration.MobileKey,
                 persistenceConfiguration,
@@ -185,15 +185,15 @@ namespace LaunchDarkly.Sdk.Client
             _dataSourceStatusProvider = new DataSourceStatusProviderImpl(dataSourceUpdateSink);
             _flagTracker = new FlagTrackerImpl(dataSourceUpdateSink);
 
-            var dataSourceFactory = configuration.DataSourceFactory ?? Components.StreamingDataSource();
+            var dataSourceFactory = configuration.DataSource ?? Components.StreamingDataSource();
 
             _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
             var isConnected = _connectivityStateManager.IsConnected;
 
             diagnosticDisabler?.SetDisabled(!isConnected || configuration.Offline);
 
-            _eventProcessor = (configuration.EventProcessorFactory ?? Components.SendEvents())
-                .CreateEventProcessor(_clientContext);
+            _eventProcessor = (configuration.Events ?? Components.SendEvents())
+                .Build(_clientContext);
             _eventProcessor.SetOffline(configuration.Offline || !isConnected);
 
             _connectionManager = new ConnectionManager(

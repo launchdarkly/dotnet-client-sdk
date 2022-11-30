@@ -34,7 +34,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void DataSource()
         {
-            var prop = _tester.Property(c => c.DataSourceFactory, (b, v) => b.DataSource(v));
+            var prop = _tester.Property(c => c.DataSource, (b, v) => b.DataSource(v));
             prop.AssertDefault(null);
             prop.AssertCanSet(new ComponentsImpl.NullDataSourceFactory());
         }
@@ -66,7 +66,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void Events()
         {
-            var prop = _tester.Property(c => c.EventProcessorFactory, (b, v) => b.Events(v));
+            var prop = _tester.Property(c => c.Events, (b, v) => b.Events(v));
             prop.AssertDefault(null);
             prop.AssertCanSet(new ComponentsImpl.NullEventProcessorFactory());
         }

@@ -17,7 +17,7 @@ namespace LaunchDarkly.Sdk.Client
     /// apply any desired configuration change to the object that that method returns (such as
     /// <see cref="StreamingDataSourceBuilder.InitialReconnectDelay(System.TimeSpan)"/>), and then use the
     /// corresponding method in <see cref="ConfigurationBuilder"/> (such as
-    /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>) to use that
+    /// <see cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>) to use that
     /// configured component in the SDK.
     /// </remarks>
     public static class Components
@@ -114,7 +114,7 @@ namespace LaunchDarkly.Sdk.Client
         /// Returns a configuration object that disables analytics events.
         /// </summary>
         /// <remarks>
-        /// Passing this to <see cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/> causes
+        /// Passing this to <see cref="ConfigurationBuilder.Events(IComponentConfigurer{IEventProcessor})"/> causes
         /// the SDK to discard all analytics events and not send them to LaunchDarkly, regardless of
         /// any other configuration.
         /// </remarks>
@@ -125,9 +125,9 @@ namespace LaunchDarkly.Sdk.Client
         ///         .Build();
         /// </code>
         /// </example>
-        /// <seealso cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>
+        /// <seealso cref="ConfigurationBuilder.Events(IComponentConfigurer{IEventProcessor})"/>
         /// <seealso cref="SendEvents"/>
-        public static IEventProcessorFactory NoEvents =>
+        public static IComponentConfigurer<IEventProcessor> NoEvents =>
             ComponentsImpl.NullEventProcessorFactory.Instance;
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <para>
         /// To use only polling mode, call this method to obtain a builder, change its properties with the
         /// <see cref="PollingDataSourceBuilder"/> methods, and pass it to
-        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>.
+        /// <see cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>.
         /// </para>
         /// <para>
         /// Setting <see cref="ConfigurationBuilder.Offline(bool)"/> to <see langword="true"/> will superseded this
@@ -225,7 +225,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </example>
         /// <returns>a builder for setting polling connection properties</returns>
         /// <see cref="StreamingDataSource"/>
-        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>
+        /// <see cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>
         public static PollingDataSourceBuilder PollingDataSource() =>
             new PollingDataSourceBuilder();
 
@@ -237,7 +237,7 @@ namespace LaunchDarkly.Sdk.Client
         /// The default configuration has events enabled with default settings. If you want to
         /// customize this behavior, call this method to obtain a builder, change its properties
         /// with the <see cref="EventProcessorBuilder"/> methods, and pass it to
-        /// <see cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>.
+        /// <see cref="ConfigurationBuilder.Events(IComponentConfigurer{IEventProcessor})"/>.
         /// </para>
         /// <para>
         /// To completely disable sending analytics events, use <see cref="NoEvents"/> instead.
@@ -253,7 +253,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </code>
         /// </example>
         /// <returns>a builder for setting event properties</returns>
-        /// <seealso cref="ConfigurationBuilder.Events(IEventProcessorFactory)"/>
+        /// <seealso cref="ConfigurationBuilder.Events(IComponentConfigurer{IEventProcessor})"/>
         /// <seealso cref="NoEvents"/>
         public static EventProcessorBuilder SendEvents() => new EventProcessorBuilder();
 
@@ -291,7 +291,7 @@ namespace LaunchDarkly.Sdk.Client
         /// the default behavior, you do not need to call this method. However, if you want to customize the behavior
         /// of the connection, call this method to obtain a builder, change its properties with the
         /// <see cref="StreamingDataSourceBuilder"/> methods, and pass it to
-        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>.
+        /// <see cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>.
         /// </para>
         /// <para>
         /// The SDK may still use polling mode sometimes even when streaming mode is enabled, such as
@@ -312,7 +312,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </example>
         /// <returns>a builder for setting streaming connection properties</returns>
         /// <see cref="PollingDataSource"/>
-        /// <see cref="ConfigurationBuilder.DataSource(IDataSourceFactory)"/>
+        /// <see cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>
         public static StreamingDataSourceBuilder StreamingDataSource() =>
             new StreamingDataSourceBuilder();
     }

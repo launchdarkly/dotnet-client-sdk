@@ -5,14 +5,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal static class ComponentsImpl
     {
-        internal sealed class NullDataSourceFactory : IDataSourceFactory
+        internal sealed class NullDataSourceFactory : IComponentConfigurer<IDataSource>
         {
-            public IDataSource CreateDataSource(
-                LdClientContext context,
-                IDataSourceUpdateSink updateSink,
-                Context currentContext,
-                bool inBackground
-                ) =>
+            public IDataSource Build(LdClientContext context) =>
                 new NullDataSource();
         }
 
@@ -25,11 +20,11 @@ namespace LaunchDarkly.Sdk.Client.Internal
             public Task<bool> Start() => Task.FromResult(true);
         }
 
-        internal sealed class NullEventProcessorFactory : IEventProcessorFactory
+        internal sealed class NullEventProcessorFactory : IComponentConfigurer<IEventProcessor>
         {
             internal static readonly NullEventProcessorFactory Instance = new NullEventProcessorFactory();
 
-            public IEventProcessor CreateEventProcessor(LdClientContext context) =>
+            public IEventProcessor Build(LdClientContext context) =>
                 NullEventProcessor.Instance;
         }
 

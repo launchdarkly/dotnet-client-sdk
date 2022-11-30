@@ -54,7 +54,6 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
     /// of this. The SDK will decide whether to log the exception.
     /// </para>
     /// </remarks>
-    /// <seealso cref="IPersistentDataStoreFactory"/>
     public interface IPersistentDataStore : IDisposable
     {
         /// <summary>

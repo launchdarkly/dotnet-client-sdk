@@ -30,7 +30,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly Logger _log;
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         private readonly LdClientContext _clientContext;
-        private readonly IDataSourceFactory _dataSourceFactory;
+        private readonly IComponentConfigurer<IDataSource> _dataSourceFactory;
         private readonly IDataSourceUpdateSink _updateSink;
         private readonly IEventProcessor _eventProcessor;
         private readonly DiagnosticDisablerImpl _diagnosticDisabler;
@@ -66,7 +66,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         internal ConnectionManager(
             LdClientContext clientContext,
-            IDataSourceFactory dataSourceFactory,
+            IComponentConfigurer<IDataSource> dataSourceFactory,
             IDataSourceUpdateSink updateSink,
             IEventProcessor eventProcessor,
             DiagnosticDisablerImpl diagnosticDisabler,
@@ -284,7 +284,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     // started. The state will then be updated as appropriate by the data source either
                     // calling UpdateStatus, or Init which implies UpdateStatus(Valid).
                     _updateSink.UpdateStatus(DataSourceState.Initializing, null);
-                    _dataSource = _dataSourceFactory.CreateDataSource(_clientContext, _updateSink, _context, _inBackground);
+                    _dataSource = _dataSourceFactory.Build(
+                        _clientContext.WithContextAndBackgroundState(_context, _inBackground)
+                            .WithDataSourceUpdateSink(_updateSink));
                     return _dataSource.Start()
                         .ContinueWith(SetInitializedIfUpdateProcessorStartedSuccessfully);
                 }

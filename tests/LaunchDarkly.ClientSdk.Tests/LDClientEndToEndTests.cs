@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
@@ -271,7 +272,7 @@ namespace LaunchDarkly.Sdk.Client
         public void OfflineClientUsesCachedFlagsSync()
         {
             var sharedPersistenceConfig = Components.Persistence()
-                .Storage(new MockPersistentDataStore().AsSingletonFactory());
+                .Storage(new MockPersistentDataStore().AsSingletonFactory<IPersistentDataStore>());
 
             // streaming vs. polling should make no difference for this
             using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
@@ -296,7 +297,7 @@ namespace LaunchDarkly.Sdk.Client
         public async Task OfflineClientUsesCachedFlagsAsync()
         {
             var sharedPersistenceConfig = Components.Persistence()
-                .Storage(new MockPersistentDataStore().AsSingletonFactory());
+                .Storage(new MockPersistentDataStore().AsSingletonFactory<IPersistentDataStore>());
 
             // streaming vs. polling should make no difference for this
             using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
@@ -494,7 +495,7 @@ namespace LaunchDarkly.Sdk.Client
         private Configuration BaseConfig(Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
             var builder = BasicConfig()
-                .Events(new MockEventProcessor().AsSingletonFactory());
+                .Events(new MockEventProcessor().AsSingletonFactory<IEventProcessor>());
             builder = extraConfig is null ? builder : extraConfig(builder);
             return builder.Build();
         }

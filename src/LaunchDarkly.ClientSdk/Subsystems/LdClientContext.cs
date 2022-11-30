@@ -11,7 +11,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Factory interfaces like <see cref="IDataSourceFactory"/> receive this class as a parameter.
+    /// The component factory interface <see cref="IComponentConfigurer{T}"/> receives this class as a parameter.
     /// Its public properties provide information about the SDK configuration and environment. The SDK
     /// may also include non-public properties that are relevant only when creating one of the built-in
     /// component types and are not accessible to custom components.
@@ -30,6 +30,21 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         public Logger BaseLogger { get; }
 
         /// <summary>
+        /// The current evaluation context.
+        /// </summary>
+        public Context CurrentContext { get; }
+
+        /// <summary>
+        /// A component that <see cref="IDataSource"/> implementations use to deliver status updates to
+        /// the SDK.
+        /// </summary>
+        /// <remarks>
+        /// This property is only set when the SDK is calling an <see cref="IDataSource"/> factory.
+        /// Otherwise it is null.
+        /// </remarks>
+        public IDataSourceUpdateSink DataSourceUpdateSink { get; }
+
+        /// <summary>
         /// Whether to enable feature flag updates when the application is running in the background.
         /// </summary>
         public bool EnableBackgroundUpdating { get; }
@@ -43,6 +58,11 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         /// The HTTP configuration properties.
         /// </summary>
         public HttpConfiguration Http { get; }
+
+        /// <summary>
+        /// True if the application is currently in a background state.
+        /// </summary>
+        public bool InBackground { get; }
 
         /// <summary>
         /// The configured service base URIs.
@@ -59,16 +79,21 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         /// Creates an instance.
         /// </summary>
         /// <param name="configuration">the SDK configuration</param>
+        /// <param name="currentContext">the current evaluation context</param>
         public LdClientContext(
-            Configuration configuration
-            ) : this(configuration, null) { }
+            Configuration configuration,
+            Context currentContext
+            ) : this(configuration, currentContext, null) { }
 
         internal LdClientContext(
             string mobileKey,
             Logger baseLogger,
+            Context currentContext,
+            IDataSourceUpdateSink dataSourceUpdateSink,
             bool enableBackgroundUpdating,
             bool evaluationReasons,
             HttpConfiguration http,
+            bool inBackground,
             ServiceEndpoints serviceEndpoints,
             IDiagnosticDisabler diagnosticDisabler,
             IDiagnosticStore diagnosticStore,
@@ -77,9 +102,12 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         {
             MobileKey = mobileKey;
             BaseLogger = baseLogger;
+            CurrentContext = currentContext;
+            DataSourceUpdateSink = dataSourceUpdateSink;
             EnableBackgroundUpdating = enableBackgroundUpdating;
             EvaluationReasons = evaluationReasons;
             Http = http;
+            InBackground = inBackground;
             ServiceEndpoints = serviceEndpoints ?? Components.ServiceEndpoints().Build();
             DiagnosticDisabler = diagnosticDisabler;
             DiagnosticStore = diagnosticStore;
@@ -91,15 +119,19 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
 
         internal LdClientContext(
             Configuration configuration,
+            Context currentContext,
             object eventSender
             ) :
             this(
                 configuration.MobileKey,
                 MakeLogger(configuration),
+                currentContext,
+                null,
                 configuration.EnableBackgroundUpdating,
                 configuration.EvaluationReasons,
                 (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
                     .CreateHttpConfiguration(MakeMinimalContext(configuration.MobileKey)),
+                false,
                 configuration.ServiceEndpoints,
                 null,
                 null,
@@ -118,18 +150,58 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             return logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
         }
 
-        internal static LdClientContext MakeMinimalContext(string mobileKey) =>
+        internal static LdClientContext MakeMinimalContext(
+            string mobileKey
+            ) =>
             new LdClientContext(
                 mobileKey,
                 Logs.None.Logger(""),
+                new Context(),
+                null,
                 false,
                 false,
                 HttpConfiguration.Default(),
+                false,
                 null,
                 null,
                 null,
                 null
             );
+
+        internal LdClientContext WithContextAndBackgroundState(
+            Context newCurrentContext,
+            bool newInBackground
+            ) =>
+            new LdClientContext(
+                MobileKey,
+                BaseLogger,
+                newCurrentContext,
+                DataSourceUpdateSink,
+                EnableBackgroundUpdating,
+                EvaluationReasons,
+                Http,
+                newInBackground,
+                ServiceEndpoints,
+                DiagnosticDisabler,
+                DiagnosticStore,
+                TaskExecutor);
+
+        internal LdClientContext WithDataSourceUpdateSink(
+            IDataSourceUpdateSink newDataSourceUpdateSink
+            ) =>
+            new LdClientContext(
+                MobileKey,
+                BaseLogger,
+                CurrentContext,
+                newDataSourceUpdateSink,
+                EnableBackgroundUpdating,
+                EvaluationReasons,
+                Http,
+                InBackground,
+                ServiceEndpoints,
+                DiagnosticDisabler,
+                DiagnosticStore,
+                TaskExecutor);
 
         internal LdClientContext WithDiagnostics(
             IDiagnosticDisabler newDiagnosticDisabler,
@@ -138,9 +210,12 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             new LdClientContext(
                 MobileKey,
                 BaseLogger,
+                CurrentContext,
+                DataSourceUpdateSink,
                 EnableBackgroundUpdating,
                 EvaluationReasons,
                 Http,
+                InBackground,
                 ServiceEndpoints,
                 newDiagnosticDisabler,
                 newDiagnosticStore,
