@@ -35,8 +35,13 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         public Context CurrentContext { get; }
 
         /// <summary>
-        /// 
+        /// A component that <see cref="IDataSource"/> implementations use to deliver status updates to
+        /// the SDK.
         /// </summary>
+        /// <remarks>
+        /// This property is only set when the SDK is calling an <see cref="IDataSource"/> factory.
+        /// Otherwise it is null.
+        /// </remarks>
         public IDataSourceUpdateSink DataSourceUpdateSink { get; }
 
         /// <summary>
