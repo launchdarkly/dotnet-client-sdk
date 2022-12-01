@@ -35,7 +35,8 @@ namespace TestService
             "mobile",
             "service-endpoints",
             "singleton",
-            "strongly-typed"
+            "strongly-typed",
+            "user-type"
         };
 
         public readonly Handler Handler;

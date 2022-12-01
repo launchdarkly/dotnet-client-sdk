@@ -38,7 +38,14 @@ namespace TestService
                 startWaitTime = TimeSpan.FromMilliseconds(sdkParams.StartWaitTimeMs.Value);
             }
 
-            _client = LdClient.Init(config, sdkParams.ClientSide.InitialContext, startWaitTime);
+            if (sdkParams.ClientSide.InitialContext != null)
+            {
+                _client = LdClient.Init(config, sdkParams.ClientSide.InitialContext.Value, startWaitTime);
+            }
+            else
+            {
+                _client = LdClient.Init(config, sdkParams.ClientSide.InitialUser, startWaitTime);
+            }
             if (!_client.Initialized && !sdkParams.InitCanFail)
             {
                 _client.Dispose();
@@ -64,7 +71,14 @@ namespace TestService
                     return (true, DoEvaluateAll(command.EvaluateAll));
 
                 case "identifyEvent":
-                    await _client.IdentifyAsync(command.IdentifyEvent.Context);
+                    if (command.IdentifyEvent.Context != null)
+                    {
+                        await _client.IdentifyAsync(command.IdentifyEvent.Context.Value);
+                    }
+                    else
+                    {
+                        await _client.IdentifyAsync(command.IdentifyEvent.User);
+                    }
                     return (true, null);
 
                 case "customEvent":

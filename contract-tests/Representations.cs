@@ -65,7 +65,8 @@ namespace TestService
     public class SdkClientSideParams
     {
         public bool? EvaluationReasons { get; set; }
-        public Context InitialContext { get; set; }
+        public Context? InitialContext { get; set; }
+        public User InitialUser { get; set; }
         public bool? UseReport { get; set; }
     }
 
@@ -107,7 +108,8 @@ namespace TestService
 
     public class IdentifyEventParams
     {
-        public Context Context { get; set; }
+        public Context? Context { get; set; }
+        public User User { get; set; }
     }
 
     public class CustomEventParams

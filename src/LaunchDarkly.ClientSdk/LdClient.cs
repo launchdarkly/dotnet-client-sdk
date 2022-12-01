@@ -269,17 +269,38 @@ namespace LaunchDarkly.Sdk.Client
         /// for the lifetime of your application.
         /// </para>
         /// </remarks>
-        /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
+        /// <returns>the singleton <see cref="LdClient"/> instance</returns>
+        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
+        /// <seealso cref="Init(string, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, Context)"/>
         public static LdClient Init(string mobileKey, Context initialContext, TimeSpan maxWaitTime)
         {
             var config = Configuration.Default(mobileKey);
 
             return Init(config, initialContext, maxWaitTime);
         }
+
+        /// <summary>
+        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags.
+        /// </summary>
+        /// <remarks>
+        /// This is equivalent to <see cref="Init(string, Context, TimeSpan)"/>, but using the
+        /// <see cref="User"/> type instead of <see cref="Context"/>.
+        /// </remarks>
+        /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="initialUser">the initial user attributes; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
+        /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
+        /// <returns>the singleton <see cref="LdClient"/> instance</returns>
+        /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
+        /// <seealso cref="Init(string, Context, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, User)"/>
+        public static LdClient Init(string mobileKey, User initialUser, TimeSpan maxWaitTime) =>
+            Init(mobileKey, Context.FromUser(initialUser), maxWaitTime);
 
         /// <summary>
         /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
@@ -300,16 +321,30 @@ namespace LaunchDarkly.Sdk.Client
         /// for the lifetime of your application.
         /// </para>
         /// </remarks>
-        /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
+        /// <returns>a Task that resolves to the singleton LdClient instance</returns>
         public static async Task<LdClient> InitAsync(string mobileKey, Context initialContext)
         {
             var config = Configuration.Default(mobileKey);
 
             return await InitAsync(config, initialContext);
         }
+
+        /// <summary>
+        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
+        /// asynchronously.
+        /// </summary>
+        /// <remarks>
+        /// This is equivalent to <see cref="InitAsync(string, Context)"/>, but using the
+        /// <see cref="User"/> type instead of <see cref="Context"/>.
+        /// </remarks>
+        /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="initialUser">the initial user attributes</param>
+        /// <returns>a Task that resolves to the singleton LdClient instance</returns>
+        public static Task<LdClient> InitAsync(string mobileKey, User initialUser) =>
+            InitAsync(mobileKey, Context.FromUser(initialUser));
 
         /// <summary>
         /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
@@ -332,13 +367,16 @@ namespace LaunchDarkly.Sdk.Client
         /// for the lifetime of your application.
         /// </para>
         /// </remarks>
-        /// <returns>the singleton LdClient instance</returns>
         /// <param name="config">the client configuration</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize;
         /// if this time elapses, the method will not throw an exception but will return the client in
         /// an uninitialized state</param>
+        /// <returns>the singleton LdClient instance</returns>
+        /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
+        /// <seealso cref="Init(string, Context, TimeSpan)"/>
+        /// <seealso cref="InitAsync(Configuration, Context)"/>
         public static LdClient Init(Configuration config, Context initialContext, TimeSpan maxWaitTime)
         {
             if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
@@ -350,6 +388,26 @@ namespace LaunchDarkly.Sdk.Client
             c.Start(maxWaitTime);
             return c;
         }
+
+        /// <summary>
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
+        /// fetching Feature Flags.
+        /// </summary>
+        /// <remarks>
+        /// This is equivalent to <see cref="Init(Configuration, Context, TimeSpan)"/>, but using the
+        /// <see cref="User"/> type instead of <see cref="Context"/>.
+        /// </remarks>
+        /// <param name="config">the client configuration</param>
+        /// <param name="initialUser">the initial user attributes</param>
+        /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize;
+        /// if this time elapses, the method will not throw an exception but will return the client in
+        /// an uninitialized state</param>
+        /// <returns>the singleton LdClient instance</returns>
+        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
+        /// <seealso cref="Init(string, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(Configuration, User)"/>
+        public static LdClient Init(Configuration config, User initialUser, TimeSpan maxWaitTime) =>
+            Init(config, Context.FromUser(initialUser), maxWaitTime);
 
         /// <summary>
         /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
@@ -370,16 +428,36 @@ namespace LaunchDarkly.Sdk.Client
         /// for the lifetime of your application.
         /// </para>
         /// </remarks>
-        /// <returns>the singleton LdClient instance</returns>
         /// <param name="config">the client configuration</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
+        /// <returns>a Task that resolves to the singleton LdClient instance</returns>
+        /// <seealso cref="InitAsync(Configuration, User)"/>
+        /// <seealso cref="InitAsync(string, Context)"/>
+        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
         public static async Task<LdClient> InitAsync(Configuration config, Context initialContext)
         {
             var c = CreateInstance(config, initialContext, TimeSpan.Zero);
             await c.StartAsync();
             return c;
         }
+
+        /// <summary>
+        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
+        /// asynchronously.
+        /// </summary>
+        /// <remarks>
+        /// This is equivalent to <see cref="InitAsync(Configuration, Context)"/>, but using the
+        /// <see cref="User"/> type instead of <see cref="Context"/>.
+        /// </remarks>
+        /// <param name="config">the client configuration</param>
+        /// <param name="initialUser">the initial user attributes</param>
+        /// <returns>a Task that resolves to the singleton LdClient instance</returns>
+        /// <seealso cref="InitAsync(Configuration, Context)"/>
+        /// <seealso cref="InitAsync(string, User)"/>
+        /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
+        public static Task<LdClient> InitAsync(Configuration config, User initialUser) =>
+            InitAsync(config, Context.FromUser(initialUser));
 
         static LdClient CreateInstance(Configuration configuration, Context initialContext, TimeSpan maxWaitTime)
         {
