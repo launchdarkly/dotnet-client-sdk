@@ -618,10 +618,8 @@ namespace LaunchDarkly.Sdk.Client
             return result;
         }
 
-        private void SendEvaluationEventIfOnline(EventProcessorTypes.EvaluationEvent e)
-        {
+        private void SendEvaluationEventIfOnline(EventProcessorTypes.EvaluationEvent e) =>
             EventProcessorIfEnabled().RecordEvaluationEvent(e);
-        }
 
         /// <inheritdoc/>
         public IDictionary<string, LdValue> AllFlags()
@@ -636,8 +634,7 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <inheritdoc/>
-        public void Track(string eventName, LdValue data, double metricValue)
-        {
+        public void Track(string eventName, LdValue data, double metricValue) =>
             EventProcessorIfEnabled().RecordCustomEvent(new EventProcessorTypes.CustomEvent
             {
                 Timestamp = UnixMillisecondTime.Now,
@@ -646,11 +643,9 @@ namespace LaunchDarkly.Sdk.Client
                 Data = data,
                 MetricValue = metricValue
             });
-        }
 
         /// <inheritdoc/>
-        public void Track(string eventName, LdValue data)
-        {
+        public void Track(string eventName, LdValue data) =>
             EventProcessorIfEnabled().RecordCustomEvent(new EventProcessorTypes.CustomEvent
             {
                 Timestamp = UnixMillisecondTime.Now,
@@ -658,19 +653,18 @@ namespace LaunchDarkly.Sdk.Client
                 Context = Context,
                 Data = data
             });
-        }
 
         /// <inheritdoc/>
-        public void Track(string eventName)
-        {
+        public void Track(string eventName) =>
             Track(eventName, LdValue.Null);
-        }
 
         /// <inheritdoc/>
-        public void Flush()
-        {
+        public void Flush() =>
             _eventProcessor.Flush(); // eventProcessor will ignore this if it is offline
-        }
+
+        /// <inheritdoc/>
+        public bool FlushAndWait(TimeSpan timeout) =>
+            _eventProcessor.FlushAndWait(timeout);
 
         /// <inheritdoc/>
         public bool Identify(Context context, TimeSpan maxWaitTime)

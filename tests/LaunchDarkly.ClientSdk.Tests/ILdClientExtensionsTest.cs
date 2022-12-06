@@ -146,6 +146,8 @@ namespace LaunchDarkly.Sdk.Client
 
             public void Flush() { }
 
+            public bool FlushAndWait(TimeSpan timeout) => true;
+
             public bool Identify(Context context, System.TimeSpan maxWaitTime) =>
                 throw new System.NotImplementedException();
 
