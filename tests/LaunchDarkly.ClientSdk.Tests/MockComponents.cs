@@ -214,6 +214,8 @@ namespace LaunchDarkly.Sdk.Client
 
         public bool FlushAndWait(TimeSpan timeout) => true;
 
+        public Task<bool> FlushAndWaitAsync(TimeSpan timeout) => Task.FromResult(true);
+
         public void Dispose() { }
 
         public void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e) =>

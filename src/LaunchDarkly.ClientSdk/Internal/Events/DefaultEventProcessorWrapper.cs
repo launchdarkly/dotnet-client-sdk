@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Events;
 
@@ -57,6 +58,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         public void Flush() => _eventProcessor.Flush();
 
         public bool FlushAndWait(TimeSpan timeout) => _eventProcessor.FlushAndWait(timeout);
+
+        public Task<bool> FlushAndWaitAsync(TimeSpan timeout) => _eventProcessor.FlushAndWaitAsync(timeout);
 
         public void Dispose() => _eventProcessor.Dispose();
     }

@@ -368,6 +368,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </para>
         /// </remarks>
         /// <seealso cref="FlushAndWait(TimeSpan)"/>
+        /// <seealso cref="FlushAndWaitAsync(TimeSpan)"/>
         void Flush();
 
         /// <summary>
@@ -395,13 +396,34 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// that FlushAndWait does not shut down the SDK client.
         /// </para>
         /// <para>
-        /// For more information, see: <a href="https://docs.launchdarkly.com/sdk/features/flush#net-client-side">
+        /// For more information, see: <a href="https://docs.launchdarkly.com/sdk/features/flush#net-server-side">
         /// Flushing Events</a>.
         /// </para>
         /// </remarks>
         /// <param name="timeout">the maximum time to wait</param>
         /// <returns>true if completed, false if timed out</returns>
         /// <seealso cref="Flush"/>
+        /// <seealso cref="FlushAndWaitAsync(TimeSpan)"/>
         bool FlushAndWait(TimeSpan timeout);
+
+        /// <summary>
+        /// Tells the client to deliver any pending analytics events now, returning a Task that can be awaited.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is equivalent to <see cref="FlushAndWait(TimeSpan)"/>, but with asynchronous semantics so it
+        /// does not block the calling thread. The difference between this and <see cref="Flush"/> is that you
+        /// can await the task to simulate blocking behavior.
+        /// </para>
+        /// <para>
+        /// For more information, see: <a href="https://docs.launchdarkly.com/sdk/features/flush#net-server-side">
+        /// Flushing Events</a>.
+        /// </para>
+        /// </remarks>
+        /// <param name="timeout">the maximum time to wait</param>
+        /// <returns>a Task that resolves to true if completed, false if timed out</returns>
+        /// <seealso cref="Flush"/>
+        /// <seealso cref="FlushAndWait(TimeSpan)"/>
+        Task<bool> FlushAndWaitAsync(TimeSpan timeout);
     }
 }

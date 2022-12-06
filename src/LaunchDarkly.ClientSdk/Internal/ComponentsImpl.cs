@@ -39,6 +39,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
             public bool FlushAndWait(TimeSpan timeout) => true;
 
+            public Task<bool> FlushAndWaitAsync(TimeSpan timeout) => Task.FromResult(true);
+
             public void RecordCustomEvent(in EventProcessorTypes.CustomEvent e) { }
 
             public void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e) { }
