@@ -13,7 +13,7 @@ msbuild /restore /p:Configuration=Release "${PROJECT_FILE}"
 # Sign the code with osslsigncode (which was installed in mac-prepare.sh)
 
 SIGNCODE_DIR="${LD_RELEASE_TEMP_DIR}/osslsigncode"
-SIGNCODE="${SIGNCODE_DIR}/osslsigncode"
+SIGNCODE="${SIGNCODE_DIR}/bin/osslsigncode"
 
 echo ""
 echo "Signing assemblies..."
