@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Client.Interfaces;
 
 namespace LaunchDarkly.Sdk.Client.Subsystems
 {
@@ -47,14 +49,25 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         void SetOffline(bool offline);
 
         /// <summary>
-        /// Specifies that any buffered events should be sent as soon as possible, rather than waiting
-        /// for the next flush interval.
+        /// Specifies that any buffered events should be sent as soon as possible.
         /// </summary>
-        /// <remarks>
-        /// This method triggers an asynchronous task, so events still may not be sent until a later
-        /// until a later time. However, calling <see cref="IDisposable.Dispose"/> will synchronously
-        /// deliver any events that were not yet delivered prior to shutting down.
-        /// </remarks>
+        /// <seealso cref="ILdClient.Flush"/>
         void Flush();
+
+        /// <summary>
+        /// Delivers any pending analytics events synchronously now.
+        /// </summary>
+        /// <param name="timeout">the maximum time to wait</param>
+        /// <returns>true if completed, false if timed out</returns>
+        /// <seealso cref="ILdClient.FlushAndWait(TimeSpan)"/>
+        bool FlushAndWait(TimeSpan timeout);
+
+        /// <summary>
+        /// Delivers any pending analytics events now, returning a Task that can be awaited.
+        /// </summary>
+        /// <param name="timeout">the maximum time to wait</param>
+        /// <returns>a Task that resolves to true if completed, false if timed out</returns>
+        /// <seealso cref="ILdClient.FlushAndWaitAsync(TimeSpan)"/>
+        Task<bool> FlushAndWaitAsync(TimeSpan timeout);
     }
 }

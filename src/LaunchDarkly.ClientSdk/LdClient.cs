@@ -661,16 +661,20 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <inheritdoc/>
-        public void Track(string eventName)
-        {
+        public void Track(string eventName) =>
             Track(eventName, LdValue.Null);
-        }
 
         /// <inheritdoc/>
-        public void Flush()
-        {
+        public void Flush() =>
             _eventProcessor.Flush(); // eventProcessor will ignore this if it is offline
-        }
+
+        /// <inheritdoc/>
+        public bool FlushAndWait(TimeSpan timeout) =>
+            _eventProcessor.FlushAndWait(timeout);
+
+        /// <inheritdoc/>
+        public Task<bool> FlushAndWaitAsync(TimeSpan timeout) =>
+            _eventProcessor.FlushAndWaitAsync(timeout);
 
         /// <inheritdoc/>
         public bool Identify(Context context, TimeSpan maxWaitTime)
