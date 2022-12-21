@@ -40,7 +40,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     {
         //static ActivityLifecycleContextListener lifecycleListener;
 
-        internal static Context AppContext =>
+        internal static Android.Content.Context AppContext =>
             Application.Context;
 
         //internal static Activity GetCurrentActivity(bool throwOnNull)
@@ -92,7 +92,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
         //    AppContext.GetSystemService(Context.CameraService) as CameraManager;
 
         internal static ConnectivityManager ConnectivityManager =>
-            AppContext.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
+            AppContext.GetSystemService(Android.Content.Context.ConnectivityService) as ConnectivityManager;
 
         //internal static Vibrator Vibrator =>
         //    AppContext.GetSystemService(Context.VibratorService) as Vibrator;

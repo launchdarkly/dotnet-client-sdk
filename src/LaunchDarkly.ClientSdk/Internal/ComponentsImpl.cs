@@ -1,19 +1,14 @@
-﻿using System.Threading.Tasks;
-using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.DataStores;
+﻿using System;
+using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
     internal static class ComponentsImpl
     {
-        internal sealed class NullDataSourceFactory : IDataSourceFactory
+        internal sealed class NullDataSourceFactory : IComponentConfigurer<IDataSource>
         {
-            public IDataSource CreateDataSource(
-                LdClientContext context,
-                IDataSourceUpdateSink updateSink,
-                User currentUser,
-                bool inBackground
-                ) =>
+            public IDataSource Build(LdClientContext context) =>
                 new NullDataSource();
         }
 
@@ -26,11 +21,11 @@ namespace LaunchDarkly.Sdk.Client.Internal
             public Task<bool> Start() => Task.FromResult(true);
         }
 
-        internal sealed class NullEventProcessorFactory : IEventProcessorFactory
+        internal sealed class NullEventProcessorFactory : IComponentConfigurer<IEventProcessor>
         {
             internal static readonly NullEventProcessorFactory Instance = new NullEventProcessorFactory();
 
-            public IEventProcessor CreateEventProcessor(LdClientContext context) =>
+            public IEventProcessor Build(LdClientContext context) =>
                 NullEventProcessor.Instance;
         }
 
@@ -42,13 +37,15 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
             public void Flush() { }
 
-            public void RecordAliasEvent(EventProcessorTypes.AliasEvent e) { }
+            public bool FlushAndWait(TimeSpan timeout) => true;
 
-            public void RecordCustomEvent(EventProcessorTypes.CustomEvent e) { }
+            public Task<bool> FlushAndWaitAsync(TimeSpan timeout) => Task.FromResult(true);
 
-            public void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e) { }
+            public void RecordCustomEvent(in EventProcessorTypes.CustomEvent e) { }
 
-            public void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e) { }
+            public void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e) { }
+
+            public void RecordIdentifyEvent(in EventProcessorTypes.IdentifyEvent e) { }
 
             public void SetOffline(bool offline) { }
         }

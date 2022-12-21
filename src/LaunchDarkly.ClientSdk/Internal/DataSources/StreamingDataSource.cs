@@ -1,17 +1,18 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
-using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Internal.Http;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
@@ -27,7 +28,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private readonly IDataSourceUpdateSink _updateSink;
         private readonly Uri _baseUri;
-        private readonly User _user;
+        private readonly Context _context;
         private readonly bool _useReport;
         private readonly bool _withReasons;
         private readonly TimeSpan _initialReconnectDelay;
@@ -44,7 +45,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         internal StreamingDataSource(
             IDataSourceUpdateSink updateSink,
-            User user,
+            Context context,
             Uri baseUri,
             bool withReasons,
             TimeSpan initialReconnectDelay,
@@ -55,7 +56,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             )
         {
             this._updateSink = updateSink;
-            this._user = user;
+            this._context = context;
             this._baseUri = baseUri;
             this._useReport = httpConfig.UseReport;
             this._withReasons = withReasons;
@@ -77,7 +78,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     _httpProperties,
                     ReportMethod,
                     MakeRequestUriWithPath(StandardEndpoints.StreamingReportRequestPath),
-                    DataModelSerialization.SerializeUser(_user)
+                    DataModelSerialization.SerializeContext(_context)
                     );
             }
             else
@@ -86,7 +87,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     _httpProperties,
                     HttpMethod.Get,
                     MakeRequestUriWithPath(StandardEndpoints.StreamingGetRequestPath(
-                        Base64.UrlSafeEncode(DataModelSerialization.SerializeUser(_user)))),
+                        Base64.UrlSafeEncode(DataModelSerialization.SerializeContext(_context)))),
                     null
                     );
             }
@@ -151,7 +152,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 HandleMessage(e.EventName, e.Message.Data);
             }
-            catch (JsonReadException ex)
+            catch (InvalidDataException ex)
             {
                 _log.Error("LaunchDarkly service request failed or received invalid data: {0}",
                     LogValues.ExceptionSummary(ex));
@@ -222,7 +223,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 case Constants.PUT:
                     {
                         var allData = DataModelSerialization.DeserializeV1Schema(messageData);
-                        _updateSink.Init(_user, allData);
+                        _updateSink.Init(_context, allData);
                         if (!_initialized.GetAndSet(true))
                         {
                             _initTask.SetResult(true);
@@ -236,7 +237,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                             var parsed = LdValue.Parse(messageData);
                             var flagkey = parsed.Get(Constants.KEY).AsString;
                             var featureFlag = DataModelSerialization.DeserializeFlag(messageData);
-                            _updateSink.Upsert(_user, flagkey, featureFlag.ToItemDescriptor());
+                            _updateSink.Upsert(_context, flagkey, featureFlag.ToItemDescriptor());
                         }
                         catch (Exception ex)
                         {
@@ -253,7 +254,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                             int version = parsed.Get(Constants.VERSION).AsInt;
                             string flagKey = parsed.Get(Constants.KEY).AsString;
                             var deletedItem = new ItemDescriptor(version, null);
-                            _updateSink.Upsert(_user, flagKey, deletedItem);
+                            _updateSink.Upsert(_context, flagKey, deletedItem);
                         }
                         catch (Exception ex)
                         {
@@ -271,7 +272,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                                 var response = await _requestor.FeatureFlagsAsync();
                                 var flagsAsJsonString = response.jsonResponse;
                                 var allData = DataModelSerialization.DeserializeV1Schema(flagsAsJsonString);
-                                _updateSink.Init(_user, allData);
+                                _updateSink.Init(_context, allData);
                                 if (!_initialized.GetAndSet(true))
                                 {
                                     _initTask.SetResult(true);

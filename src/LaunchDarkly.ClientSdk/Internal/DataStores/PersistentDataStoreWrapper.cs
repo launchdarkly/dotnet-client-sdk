@@ -1,10 +1,10 @@
 ﻿using System;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Concurrent;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
@@ -25,9 +25,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
     internal sealed class PersistentDataStoreWrapper : IDisposable
     {
         private const string NamespacePrefix = "LaunchDarkly";
-        private const string GlobalAnonUserKey = "anonUser";
+        private const string GlobalAnonContextKey = "anonUser";
         private const string EnvironmentMetadataKey = "index";
-        private const string EnvironmentUserDataKeyPrefix = "flags_";
+        private const string EnvironmentContextDataKeyPrefix = "flags_";
 
         private readonly IPersistentDataStore _persistentStore;
         private readonly string _globalNamespace;
@@ -50,9 +50,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             _environmentNamespace = NamespacePrefix + "_" + Base64.UrlSafeSha256Hash(mobileKey);
         }
 
-        public FullDataSet? GetUserData(string userId)
+        public FullDataSet? GetContextData(string contextId)
         {
-            var serializedData = HandleErrorsAndLock(() => _persistentStore.GetValue(_environmentNamespace, KeyForUserId(userId)));
+            var serializedData = HandleErrorsAndLock(() => _persistentStore.GetValue(_environmentNamespace, KeyForContextId(contextId)));
             if (serializedData is null)
             {
                 return null;
@@ -68,44 +68,48 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
             }
         }
 
-        public void SetUserData(string userId, FullDataSet data) =>
-            HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, KeyForUserId(userId),
+        public void SetContextData(string contextId, FullDataSet data) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, KeyForContextId(contextId),
                 DataModelSerialization.SerializeAll(data)));
 
-        public void RemoveUserData(string userId) =>
-            HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, KeyForUserId(userId), null));
+        public void RemoveContextData(string contextId) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, KeyForContextId(contextId), null));
 
-        public UserIndex GetIndex()
+        public ContextIndex GetIndex()
         {
             string data = HandleErrorsAndLock(() => _persistentStore.GetValue(_environmentNamespace, EnvironmentMetadataKey));
             if (data is null)
             {
-                return new UserIndex();
+                return new ContextIndex();
             }
             try
             {
-                return UserIndex.Deserialize(data);
+                return ContextIndex.Deserialize(data);
             }
             catch (Exception)
             {
                 _log.Warn("Discarding invalid data from persistent store index");
-                return new UserIndex();
+                return new ContextIndex();
             }
         }
 
-        public void SetIndex(UserIndex index) =>
+        public void SetIndex(ContextIndex index) =>
             HandleErrorsAndLock(() => _persistentStore.SetValue(_environmentNamespace, EnvironmentMetadataKey, index.Serialize()));
 
-        public string GetAnonymousUserKey() =>
-            HandleErrorsAndLock(() => _persistentStore.GetValue(_globalNamespace, GlobalAnonUserKey));
+        public string GetGeneratedContextKey(ContextKind contextKind) =>
+            HandleErrorsAndLock(() => _persistentStore.GetValue(_globalNamespace, KeyForGeneratedContextKey(contextKind)));
 
-        public void SetAnonymousUserKey(string value) =>
-            HandleErrorsAndLock(() => _persistentStore.SetValue(_globalNamespace, GlobalAnonUserKey, value));
+        public void SetGeneratedContextKey(ContextKind contextKind, string value) =>
+            HandleErrorsAndLock(() => _persistentStore.SetValue(_globalNamespace,
+                KeyForGeneratedContextKey(contextKind), value));
 
         public void Dispose() =>
             _persistentStore.Dispose();
 
-        private static string KeyForUserId(string userId) => EnvironmentUserDataKeyPrefix + userId;
+        private static string KeyForContextId(string contextId) => EnvironmentContextDataKeyPrefix + contextId;
+
+        private static string KeyForGeneratedContextKey(ContextKind contextKind) =>
+            contextKind.IsDefault ? GlobalAnonContextKey : (GlobalAnonContextKey + ":" + contextKind.Value);
 
         private void MaybeLogStoreError(Exception e)
         {

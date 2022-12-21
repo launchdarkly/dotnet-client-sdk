@@ -17,7 +17,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         private static readonly string UserHash = Base64.UrlSafeSha256Hash(UserKey);
         private static readonly string ExpectedUserFlagsKey = "flags_" + UserHash;
         private static readonly string ExpectedIndexKey = "index";
-        private static readonly string ExpectedAnonUserKey = "anonUser";
+        private static readonly string ExpectedGeneratedContextKey = "anonUser";
 
         private readonly MockPersistentDataStore _persistentStore;
         private readonly PersistentDataStoreWrapper _wrapper;
@@ -33,21 +33,21 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         }
 
         [Fact]
-        public void GetUserDataForUnknownUser()
+        public void GetContextDataForUnknownContext()
         {
-            var data = _wrapper.GetUserData(UserKey);
+            var data = _wrapper.GetContextData(UserKey);
             Assert.Null(data);
             Assert.Empty(logCapture.GetMessages());
         }
 
         [Fact]
-        public void GetUserDataForKnownUserWithValidData()
+        public void GetContextDataForKnownContextWithValidData()
         {
             var expectedData = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
             var serializedData = expectedData.ToJsonString();
             _persistentStore.SetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey, serializedData);
 
-            var data = _wrapper.GetUserData(UserHash);
+            var data = _wrapper.GetContextData(UserHash);
             Assert.NotNull(data);
             AssertHelpers.DataSetsEqual(expectedData, data.Value);
             Assert.Empty(logCapture.GetMessages());
@@ -58,7 +58,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         {
             var data = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
 
-            _wrapper.SetUserData(UserHash, data);
+            _wrapper.SetContextData(UserHash, data);
 
             var serializedData = _persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey);
             AssertJsonEqual(data.ToJsonString(), serializedData);
@@ -69,17 +69,17 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         {
             var data = new DataSetBuilder().Add("flagkey", 1, LdValue.Of(true), 0).Build();
 
-            _wrapper.SetUserData(UserHash, data);
+            _wrapper.SetContextData(UserHash, data);
             Assert.NotNull(_persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey));
 
-            _wrapper.RemoveUserData(UserHash);
+            _wrapper.RemoveContextData(UserHash);
             Assert.Null(_persistentStore.GetValue(ExpectedEnvironmentNamespace, ExpectedUserFlagsKey));
         }
 
         [Fact]
         public void GetIndex()
         {
-            var expectedIndex = new UserIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
+            var expectedIndex = new ContextIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
             _persistentStore.SetValue(ExpectedEnvironmentNamespace, ExpectedIndexKey, expectedIndex.Serialize());
 
             var index = _wrapper.GetIndex();
@@ -89,7 +89,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         [Fact]
         public void SetIndex()
         {
-            var index = new UserIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
+            var index = new ContextIndex().UpdateTimestamp("user1", UnixMillisecondTime.OfMillis(1000));
 
             _wrapper.SetIndex(index);
 
@@ -98,17 +98,21 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         }
 
         [Fact]
-        public void GetAnonymousUserKey()
+        public void GetGeneratedContextKey()
         {
-            _persistentStore.SetValue(ExpectedGlobalNamespace, ExpectedAnonUserKey, "user1");
-            Assert.Equal("user1", _wrapper.GetAnonymousUserKey());
+            _persistentStore.SetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey, "key1");
+            _persistentStore.SetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey + ":org", "key2");
+            Assert.Equal("key1", _wrapper.GetGeneratedContextKey(ContextKind.Default));
+            Assert.Equal("key2", _wrapper.GetGeneratedContextKey(ContextKind.Of("org")));
         }
 
         [Fact]
-        public void SetAnonymousUserKey()
+        public void SetGeneratedContextKey()
         {
-            _wrapper.SetAnonymousUserKey("user1");
-            Assert.Equal("user1", _persistentStore.GetValue(ExpectedGlobalNamespace, ExpectedAnonUserKey));
+            _wrapper.SetGeneratedContextKey(ContextKind.Default, "key1");
+            _wrapper.SetGeneratedContextKey(ContextKind.Of("org"), "key2");
+            Assert.Equal("key1", _persistentStore.GetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey));
+            Assert.Equal("key2", _persistentStore.GetValue(ExpectedGlobalNamespace, ExpectedGeneratedContextKey + ":org"));
         }
     }
 }

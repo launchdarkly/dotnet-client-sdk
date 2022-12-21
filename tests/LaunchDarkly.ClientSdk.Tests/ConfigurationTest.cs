@@ -32,17 +32,9 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void AutoAliasingOptOut()
-        {
-            var prop = _tester.Property(c => c.AutoAliasingOptOut, (b, v) => b.AutoAliasingOptOut(v));
-            prop.AssertDefault(false);
-            prop.AssertCanSet(true);
-        }
-
-        [Fact]
         public void DataSource()
         {
-            var prop = _tester.Property(c => c.DataSourceFactory, (b, v) => b.DataSource(v));
+            var prop = _tester.Property(c => c.DataSource, (b, v) => b.DataSource(v));
             prop.AssertDefault(null);
             prop.AssertCanSet(new ComponentsImpl.NullDataSourceFactory());
         }
@@ -74,7 +66,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void Events()
         {
-            var prop = _tester.Property(c => c.EventProcessorFactory, (b, v) => b.Events(v));
+            var prop = _tester.Property(c => c.Events, (b, v) => b.Events(v));
             prop.AssertDefault(null);
             prop.AssertCanSet(new ComponentsImpl.NullEventProcessorFactory());
         }
@@ -124,7 +116,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var prop = _tester.Property(c => c.PersistenceConfigurationBuilder, (b, v) => b.Persistence(v));
             prop.AssertDefault(null);
-            prop.AssertCanSet(Components.Persistence().MaxCachedUsers(2));
+            prop.AssertCanSet(Components.Persistence().MaxCachedContexts(2));
         }
 
         [Fact]

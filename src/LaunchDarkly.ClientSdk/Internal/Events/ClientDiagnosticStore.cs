@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
 
@@ -10,20 +10,20 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
     internal class ClientDiagnosticStore : DiagnosticStoreBase
     {
+        private readonly LdClientContext _context;
         private readonly Configuration _config;
         private readonly TimeSpan _startWaitTime;
 
-        private LdClientContext _context;
-
-        protected override string SdkKeyOrMobileKey => _context.Basic.MobileKey;
+        protected override string SdkKeyOrMobileKey => _context.MobileKey;
         protected override string SdkName => "dotnet-client-sdk";
         protected override IEnumerable<LdValue> ConfigProperties => GetConfigProperties();
         protected override string DotNetTargetFramework => GetDotNetTargetFramework();
         protected override HttpProperties HttpProperties => _context.Http.HttpProperties;
         protected override Type TypeOfLdClient => typeof(LdClient);
 
-        internal ClientDiagnosticStore(Configuration config, TimeSpan startWaitTime)
+        internal ClientDiagnosticStore(LdClientContext context, Configuration config, TimeSpan startWaitTime)
         {
+            _context = context;
             _config = config;
             _startWaitTime = startWaitTime;
             // We pass in startWaitTime separately because in the client-side SDK, it is not
@@ -35,27 +35,17 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             // data will be zero, since there is no meaningful value for it).
         }
 
-        internal void SetContext(LdClientContext context)
-        {
-            // This is done as a separate step, called from the LdClient constructor, because
-            // the DiagnosticStore object has to be created before the LdClientContext - since
-            // the LdClientContext includes a reference to the DiagnosticStore (for components
-            // like StreamingDataSource to use).
-            _context = context;
-        }
-
         private IEnumerable<LdValue> GetConfigProperties()
         {
             yield return LdValue.BuildObject()
-                .WithAutoAliasingOptOut(_config.AutoAliasingOptOut)
                 .WithStartWaitTime(_startWaitTime)
                 .Add("backgroundPollingDisabled", !_config.EnableBackgroundUpdating)
                 .Add("evaluationReasonsRequested", _config.EvaluationReasons)
                 .Build();
 
             // Allow each pluggable component to describe its own relevant properties.
-            yield return GetComponentDescription(_config.DataSourceFactory ?? Components.StreamingDataSource());
-            yield return GetComponentDescription(_config.EventProcessorFactory ?? Components.SendEvents());
+            yield return GetComponentDescription(_config.DataSource ?? Components.StreamingDataSource());
+            yield return GetComponentDescription(_config.Events ?? Components.SendEvents());
             yield return GetComponentDescription(_config.HttpConfigurationBuilder ?? Components.HttpConfiguration());
         }
 

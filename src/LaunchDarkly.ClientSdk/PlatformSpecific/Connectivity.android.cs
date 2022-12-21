@@ -238,7 +238,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
         public ConnectivityBroadcastReceiver(Action onChanged) =>
             this.onChanged = onChanged;
 
-        public override async void OnReceive(Context context, Intent intent)
+        public override async void OnReceive(Android.Content.Context context, Intent intent)
         {
             if (intent.Action != ConnectivityManager.ConnectivityAction)
                 return;

@@ -1,6 +1,6 @@
 ﻿
 using static LaunchDarkly.Sdk.Client.DataModel;
-using static LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
@@ -19,7 +19,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         internal EvaluationEvent NewEvaluationEvent(
             string flagKey,
             FeatureFlag flag,
-            User user,
+            Context context,
             EvaluationDetail<LdValue> result,
             LdValue defaultValue
             )
@@ -32,7 +32,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             return new EvaluationEvent
             {
                 Timestamp = UnixMillisecondTime.Now,
-                User = user,
+                Context = context,
                 FlagKey = flagKey,
                 FlagVersion = flag.FlagVersion ?? flag.Version,
                 Variation = result.VariationIndex,
@@ -47,7 +47,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         internal EvaluationEvent NewDefaultValueEvaluationEvent(
             string flagKey,
             FeatureFlag flag,
-            User user,
+            Context context,
             LdValue defaultValue,
             EvaluationErrorKind errorKind
             )
@@ -55,7 +55,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             return new EvaluationEvent
             {
                 Timestamp = UnixMillisecondTime.Now,
-                User = user,
+                Context = context,
                 FlagKey = flagKey,
                 FlagVersion = flag.FlagVersion ?? flag.Version,
                 Value = defaultValue,
@@ -68,7 +68,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
 
         internal EvaluationEvent NewUnknownFlagEvaluationEvent(
             string flagKey,
-            User user,
+            Context context,
             LdValue defaultValue,
             EvaluationErrorKind errorKind
             )
@@ -76,7 +76,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
             return new EvaluationEvent
             {
                 Timestamp = UnixMillisecondTime.Now,
-                User = user,
+                Context = context,
                 FlagKey = flagKey,
                 Value = defaultValue,
                 Default = defaultValue,

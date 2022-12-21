@@ -31,10 +31,12 @@ namespace TestService
     {
         private static readonly string[] Capabilities = {
             "client-side",
+            "context-type",
             "mobile",
             "service-endpoints",
             "singleton",
-            "strongly-typed"
+            "strongly-typed",
+            "user-type"
         };
 
         public readonly Handler Handler;
@@ -54,9 +56,6 @@ namespace TestService
             
             var service = new SimpleJsonService();
             Handler = service.Handler;
-
-            // Tell the service about the custom JSON conversions for LaunchDarkly SDK types like User
-            service.SetJsonConverters(LaunchDarkly.Sdk.Json.LdJsonNet.Converter);
 
             service.Route(HttpMethod.Get, "/", GetStatus);
             service.Route(HttpMethod.Delete, "/", ForceQuit);

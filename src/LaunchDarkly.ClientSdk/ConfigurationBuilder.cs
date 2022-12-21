@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using System.Net.Http;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Integrations;
-using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.Events;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -33,12 +30,12 @@ namespace LaunchDarkly.Sdk.Client
         // will replace it with a platform-specific implementation.
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
-        internal bool _autoAliasingOptOut = false;
-        internal IDataSourceFactory _dataSourceFactory = null;
+        internal IComponentConfigurer<IDataSource> _dataSource = null;
         internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
         internal bool _evaluationReasons = false;
-        internal IEventProcessorFactory _eventProcessorFactory = null;
+        internal IComponentConfigurer<IEventProcessor> _events = null;
+        internal bool _generateAnonymousKeys = false;
         internal HttpConfigurationBuilder _httpConfigurationBuilder = null;
         internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
         internal string _mobileKey;
@@ -49,7 +46,6 @@ namespace LaunchDarkly.Sdk.Client
         // Internal properties only settable for testing
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
-        internal IDeviceInfo _deviceInfo;
 
         internal ConfigurationBuilder(string mobileKey)
         {
@@ -58,12 +54,11 @@ namespace LaunchDarkly.Sdk.Client
 
         internal ConfigurationBuilder(Configuration copyFrom)
         {
-            _autoAliasingOptOut = copyFrom.AutoAliasingOptOut;
-            _dataSourceFactory = copyFrom.DataSourceFactory;
+            _dataSource = copyFrom.DataSource;
             _diagnosticOptOut = copyFrom.DiagnosticOptOut;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
             _evaluationReasons = copyFrom.EvaluationReasons;
-            _eventProcessorFactory = copyFrom.EventProcessorFactory;
+            _events = copyFrom.Events;
             _httpConfigurationBuilder = copyFrom.HttpConfigurationBuilder;
             _loggingConfigurationBuilder = copyFrom.LoggingConfigurationBuilder;
             _mobileKey = copyFrom.MobileKey;
@@ -83,26 +78,6 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Whether to disable the automatic sending of an alias event when the current user is changed
-        /// to a non-anonymous user and the previous user was anonymous.
-        /// </summary>
-        /// <remarks>
-        /// By default, if you call <see cref="LdClient.Identify(User, TimeSpan)"/> or
-        /// <see cref="LdClient.IdentifyAsync(User)"/> with a non-anonymous user, and the current user
-        /// (previously specified either with one of those methods or when creating the <see cref="LdClient"/>)
-        /// was anonymous, the SDK assumes the two users should be correlated and sends an analytics
-        /// event equivalent to calling <see cref="LdClient.Alias(User, User)"/>. Setting
-        /// AutoAliasingOptOut to <see langword="true"/> disables this behavior.
-        /// </remarks>
-        /// <param name="autoAliasingOptOut">true to disable automatic user aliasing</param>
-        /// <returns>the same builder</returns>
-        public ConfigurationBuilder AutoAliasingOptOut(bool autoAliasingOptOut)
-        {
-            _autoAliasingOptOut = autoAliasingOptOut;
-            return this;
-        }
-
-        /// <summary>
         /// Sets the implementation of the component that receives feature flag data from LaunchDarkly,
         /// using a factory object.
         /// </summary>
@@ -117,16 +92,16 @@ namespace LaunchDarkly.Sdk.Client
         /// to configure them.
         /// </para>
         /// <para>
-        /// This overwrites any previous options set with <see cref="DataSource(IDataSourceFactory)"/>.
+        /// This overwrites any previous options set with <see cref="DataSource(IComponentConfigurer{IDataSource})"/>.
         /// If you want to set multiple options, set them on the same <see cref="StreamingDataSourceBuilder"/>
         /// or <see cref="PollingDataSourceBuilder"/>.
         /// </para>
         /// </remarks>
-        /// <param name="dataSourceFactory">the factory object</param>
+        /// <param name="dataSourceConfig">the factory object</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder DataSource(IDataSourceFactory dataSourceFactory)
+        public ConfigurationBuilder DataSource(IComponentConfigurer<IDataSource> dataSourceConfig)
         {
-            _dataSourceFactory = dataSourceFactory;
+            _dataSource = dataSourceConfig;
             return this;
         }
 
@@ -197,15 +172,54 @@ namespace LaunchDarkly.Sdk.Client
         /// disable events with <see cref="Components.NoEvents"/>.
         /// </para>
         /// <para>
-        /// This overwrites any previous options set with <see cref="Events(IEventProcessorFactory)"/>.
+        /// This overwrites any previous options set with <see cref="Events(IComponentConfigurer{IEventProcessor})"/>.
         /// If you want to set multiple options, set them on the same <see cref="EventProcessorBuilder"/>.
         /// </para>
         /// </remarks>
-        /// <param name="eventProcessorFactory">a builder/factory object for event configuration</param>
+        /// <param name="eventsConfig">a builder/factory object for event configuration</param>
         /// <returns>the same builder</returns>
-        public ConfigurationBuilder Events(IEventProcessorFactory eventProcessorFactory)
+        public ConfigurationBuilder Events(IComponentConfigurer<IEventProcessor> eventsConfig)
         {
-            _eventProcessorFactory = eventProcessorFactory;
+            _events = eventsConfig;
+            return this;
+        }
+
+        /// <summary>
+        /// Set to <see langword="true"/> to make the SDK provide unique keys for anonymous contexts.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// If enabled, this option changes the SDK's behavior whenever the <see cref="Context"/> (as given to
+        /// methods like <see cref="LdClient.Init(string, Context, System.TimeSpan)"/> or
+        /// <see cref="LdClient.Identify(Context, System.TimeSpan)"/>) has an <see cref="Context.Anonymous"/>
+        /// property of <see langword="true"/>, as follows:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description> The first time this happens in the application, the SDK will generate a
+        /// pseudo-random GUID and overwrite the context's <see cref="Context.Key"/> with this string.
+        /// </description></item>
+        /// <item><description> The SDK will then cache this key so that the same key will be reused next time.
+        /// </description></item>
+        /// <item><description>This uses the same mechanism as the caching of flag values, so if persistent storage
+        /// is available (see <see cref="Components.Persistence"/>), the key will persist across restarts; otherwise,
+        /// it will persist only during the lifetime of the <c>LdClient</c>. </description></item>
+        /// </list>
+        /// <para>
+        /// If you use multiple <see cref="ContextKind"/>s, this behavior is per-kind: that is, a separate
+        /// randomized key is generated and cached for each context kind.
+        /// </para>
+        /// <para>
+        /// A <see cref="Context"/> must always have a key, even if the key will later be overwritten by the
+        /// SDK, so if you use this functionality you must still provide a placeholder key. This ensures that if
+        /// the SDK configuration is changed so <see cref="GenerateAnonymousKeys(bool)"/> is no longer enabled,
+        /// the SDK will still be able to use the context for evaluations.
+        /// </para>
+        /// </remarks>
+        /// <param name="generateAnonymousKeys">true to enable automatic anonymous key generation</param>
+        /// <returns>the same builder</returns>
+        public ConfigurationBuilder GenerateAnonymousKeys(bool generateAnonymousKeys)
+        {
+            _generateAnonymousKeys = generateAnonymousKeys;
             return this;
         }
 
@@ -375,12 +389,6 @@ namespace LaunchDarkly.Sdk.Client
         internal ConfigurationBuilder ConnectivityStateManager(IConnectivityStateManager connectivityStateManager)
         {
             _connectivityStateManager = connectivityStateManager;
-            return this;
-        }
-
-        internal ConfigurationBuilder DeviceInfo(IDeviceInfo deviceInfo)
-        {
-            _deviceInfo = deviceInfo;
             return this;
         }
     }

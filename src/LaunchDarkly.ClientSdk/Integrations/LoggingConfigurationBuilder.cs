@@ -1,6 +1,6 @@
 using System;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client.Integrations
 {

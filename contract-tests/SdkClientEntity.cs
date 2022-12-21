@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk;
 using LaunchDarkly.Sdk.Client;
+using LaunchDarkly.Sdk.Json;
 
 namespace TestService
 {
@@ -37,7 +38,14 @@ namespace TestService
                 startWaitTime = TimeSpan.FromMilliseconds(sdkParams.StartWaitTimeMs.Value);
             }
 
-            _client = LdClient.Init(config, sdkParams.ClientSide.InitialUser, startWaitTime);
+            if (sdkParams.ClientSide.InitialContext != null)
+            {
+                _client = LdClient.Init(config, sdkParams.ClientSide.InitialContext.Value, startWaitTime);
+            }
+            else
+            {
+                _client = LdClient.Init(config, sdkParams.ClientSide.InitialUser, startWaitTime);
+            }
             if (!_client.Initialized && !sdkParams.InitCanFail)
             {
                 _client.Dispose();
@@ -63,7 +71,14 @@ namespace TestService
                     return (true, DoEvaluateAll(command.EvaluateAll));
 
                 case "identifyEvent":
-                    await _client.IdentifyAsync(command.IdentifyEvent.User);
+                    if (command.IdentifyEvent.Context != null)
+                    {
+                        await _client.IdentifyAsync(command.IdentifyEvent.Context.Value);
+                    }
+                    else
+                    {
+                        await _client.IdentifyAsync(command.IdentifyEvent.User);
+                    }
                     return (true, null);
 
                 case "customEvent":
@@ -82,13 +97,15 @@ namespace TestService
                     }
                     return (true, null);
 
-                case "aliasEvent":
-                    _client.Alias(command.AliasEvent.User, command.AliasEvent.PreviousUser);
-                    return (true, null);
-
                 case "flushEvents":
                     _client.Flush();
                     return (true, null);
+
+                case "contextBuild":
+                    return (true, DoContextBuild(command.ContextBuild));
+
+                case "contextConvert":
+                    return (true, DoContextConvert(command.ContextConvert));
 
                 default:
                     return (false, null);
@@ -187,6 +204,66 @@ namespace TestService
             };
         }
 
+        private ContextBuildResponse DoContextBuild(ContextBuildParams p)
+        {
+            Context c;
+            if (p.Multi is null)
+            {
+                c = DoContextBuildSingle(p.Single);
+            }
+            else
+            {
+                var b = Context.MultiBuilder();
+                foreach (var s in p.Multi)
+                {
+                    b.Add(DoContextBuildSingle(s));
+                }
+                c = b.Build();
+            }
+            if (c.Valid)
+            {
+                return new ContextBuildResponse { Output = LdJsonSerialization.SerializeObject(c) };
+            }
+            return new ContextBuildResponse { Error = c.Error };
+        }
+
+        private Context DoContextBuildSingle(ContextBuildSingleParams s)
+        {
+            var b = Context.Builder(s.Key)
+                .Kind(s.Kind)
+                .Name(s.Name)
+                .Anonymous(s.Anonymous);
+            if (!(s.Private is null))
+            {
+                b.Private(s.Private);
+            }
+            if (!(s.Custom is null))
+            {
+                foreach (var kv in s.Custom)
+                {
+                    b.Set(kv.Key, kv.Value);
+                }
+            }
+            return b.Build();
+        }
+
+        private ContextBuildResponse DoContextConvert(ContextConvertParams p)
+        {
+            try
+            {
+                var c = LdJsonSerialization.DeserializeObject<Context>(p.Input);
+                if (c.Valid)
+                {
+                    return new ContextBuildResponse { Output = LdJsonSerialization.SerializeObject(c) };
+                }
+                return new ContextBuildResponse { Error = c.Error };
+            }
+            catch (Exception e)
+            {
+                return new ContextBuildResponse { Error = e.ToString() };
+            }
+        }
+
         private static Configuration BuildSdkConfig(SdkConfigParams sdkParams, ILogAdapter logAdapter, string tag)
         {
             var builder = Configuration.Builder(sdkParams.Credential);
@@ -251,8 +328,7 @@ namespace TestService
             {
                 endpoints.Events(eventParams.BaseUri);
                 var events = Components.SendEvents()
-                    .AllAttributesPrivate(eventParams.AllAttributesPrivate)
-                    .InlineUsersInEvents(eventParams.InlineUsers);
+                    .AllAttributesPrivate(eventParams.AllAttributesPrivate);
                 if (eventParams.Capacity.HasValue && eventParams.Capacity.Value > 0)
                 {
                     events.Capacity(eventParams.Capacity.Value);
@@ -263,7 +339,7 @@ namespace TestService
                 }
                 if (eventParams.GlobalPrivateAttributes != null)
                 {
-                    events.PrivateAttributeNames(eventParams.GlobalPrivateAttributes);
+                    events.PrivateAttributes(eventParams.GlobalPrivateAttributes);
                 }
                 builder.Events(events);
                 builder.DiagnosticOptOut(!eventParams.EnableDiagnostics);
@@ -275,11 +351,6 @@ namespace TestService
                 http.UseReport(sdkParams.ClientSide.UseReport.Value);
             }
             builder.Http(http);
-
-            if (sdkParams.ClientSide.AutoAliasingOptOut.HasValue)
-            {
-                builder.AutoAliasingOptOut(sdkParams.ClientSide.AutoAliasingOptOut.Value);
-            }
 
             if (sdkParams.ClientSide.EvaluationReasons.HasValue)
             {

@@ -9,7 +9,7 @@ namespace LaunchDarkly.Sdk.Client
     {
         const string flagKey = "flag-key";
         const string nonexistentFlagKey = "some flag key";
-        static readonly User user = User.WithKey("userkey");
+        static readonly Context user = Context.New("userkey");
 
         private readonly TestData _testData = TestData.DataSource();
 

@@ -12,13 +12,13 @@ namespace LaunchDarkly.Sdk.Client.Internal
             new Uri("https://mobile.launchdarkly.com")
             );
 
-        internal static string StreamingGetRequestPath(string userDataBase64) =>
-            "/meval/" + userDataBase64;
+        internal static string StreamingGetRequestPath(string contextDataBase64) =>
+            "/meval/" + contextDataBase64;
         internal const string StreamingReportRequestPath = "/meval";
 
-        internal static string PollingRequestGetRequestPath(string userDataBase64) =>
-            "msdk/evalx/users/" + userDataBase64;
-        internal const string PollingRequestReportRequestPath = "msdk/evalx/user";
+        internal static string PollingRequestGetRequestPath(string contextDataBase64) =>
+            "msdk/evalx/contexts/" + contextDataBase64;
+        internal const string PollingRequestReportRequestPath = "msdk/evalx/context";
 
         internal const string AnalyticsEventsPostRequestPath = "mobile/events/bulk";
 

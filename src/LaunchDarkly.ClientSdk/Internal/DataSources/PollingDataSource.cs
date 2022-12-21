@@ -1,12 +1,13 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using LaunchDarkly.JsonStream;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Internal.Http;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
@@ -14,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     {
         private readonly IFeatureFlagRequestor _featureFlagRequestor;
         private readonly IDataSourceUpdateSink _updateSink;
-        private readonly User _user;
+        private readonly Context _context;
         private readonly TimeSpan _pollingInterval;
         private readonly TimeSpan _initialDelay;
         private readonly Logger _log;
@@ -25,7 +26,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         internal PollingDataSource(
             IDataSourceUpdateSink updateSink,
-            User user,
+            Context context,
             IFeatureFlagRequestor featureFlagRequestor,
             TimeSpan pollingInterval,
             TimeSpan initialDelay,
@@ -34,7 +35,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         {
             this._featureFlagRequestor = featureFlagRequestor;
             this._updateSink = updateSink;
-            this._user = user;
+            this._context = context;
             this._pollingInterval = pollingInterval;
             this._initialDelay = initialDelay;
             this._taskExecutor = taskExecutor;
@@ -71,7 +72,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 {
                     var flagsAsJsonString = response.jsonResponse;
                     var allData = DataModelSerialization.DeserializeV1Schema(flagsAsJsonString);
-                    _updateSink.Init(_user, allData);
+                    _updateSink.Init(_context, allData);
 
                     if (_initialized.GetAndSet(true) == false)
                     {
@@ -100,7 +101,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     ((IDisposable)this).Dispose();
                 }
             }
-            catch (JsonReadException ex)
+            catch (InvalidDataException ex)
             {
                 _log.Error("Polling request received malformed data: {0}", LogValues.ExceptionSummary(ex));
                 _updateSink.UpdateStatus(DataSourceState.Interrupted,

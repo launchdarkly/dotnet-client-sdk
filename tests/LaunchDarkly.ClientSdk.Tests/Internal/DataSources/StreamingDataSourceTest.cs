@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Json;
@@ -19,32 +19,30 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
     {
         private static readonly TimeSpan BriefReconnectDelay = TimeSpan.FromMilliseconds(10);
 
-        private readonly User simpleUser = User.WithKey("me");
-        private const string encodedSimpleUser = "eyJrZXkiOiJtZSJ9";
+        private readonly Context simpleUser = Context.New("me");
 
         private MockDataSourceUpdateSink _updateSink = new MockDataSourceUpdateSink();
         
         public StreamingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
 
-        private IDataSource MakeDataSource(Uri baseUri, User user, Action<ConfigurationBuilder> modConfig = null)
+        private IDataSource MakeDataSource(Uri baseUri, Context context, Action<ConfigurationBuilder> modConfig = null)
         {
             var builder = BasicConfig()
                 .DataSource(Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay))
                 .ServiceEndpoints(Components.ServiceEndpoints().Streaming(baseUri).Polling(baseUri));
             modConfig?.Invoke(builder);
             var config = builder.Build();
-            return config.DataSourceFactory.CreateDataSource(new LdClientContext(config), _updateSink,
-                user, false);
+            return config.DataSource.Build(new LdClientContext(config, context).WithDataSourceUpdateSink(_updateSink));
         }
 
-        private IDataSource MakeDataSourceWithDiagnostics(Uri baseUri, User user, IDiagnosticStore diagnosticStore)
+        private IDataSource MakeDataSourceWithDiagnostics(Uri baseUri, Context context, IDiagnosticStore diagnosticStore)
         {
             var config = BasicConfig()
                 .ServiceEndpoints(Components.ServiceEndpoints().Streaming(baseUri).Polling(baseUri))
                 .Build();
-            var context = new LdClientContext(config, null, diagnosticStore, null);
-            return Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay)
-                .CreateDataSource(context, _updateSink, user, false);
+            var clientContext = new LdClientContext(config, context).WithDiagnostics(null, diagnosticStore)
+                .WithDataSourceUpdateSink(_updateSink);
+            return Components.StreamingDataSource().InitialReconnectDelay(BriefReconnectDelay).Build(clientContext);
         }
 
         private void WithDataSourceAndServer(Handler responseHandler, Action<IDataSource, HttpServer, Task> action)
@@ -81,7 +79,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 {
                     dataSource.Start();
                     var req = server.Recorder.RequireRequest();
-                    Assert.Equal(expectedPathWithoutUser + encodedSimpleUser, req.Path);
+                    AssertHelpers.ContextsEqual(simpleUser, TestUtil.Base64ContextFromUrlPath(req.Path, expectedPathWithoutUser));
                     Assert.Equal(expectedQuery, req.Query);
                     Assert.Equal("GET", req.Method);
                 }

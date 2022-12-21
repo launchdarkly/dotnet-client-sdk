@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using Xunit;
 using Xunit.Abstractions;
 

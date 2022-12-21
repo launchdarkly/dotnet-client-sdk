@@ -9,12 +9,12 @@ namespace LaunchDarkly.Sdk.Client.Internal
     public class DataModelSerializationTest
     {
         [Fact]
-        public void SerializeUser()
+        public void SerializeContext()
         {
-            var user = User.Builder("user-key")
-                .FirstName("Lucy").LastName("Cat").Build();
+            var user = Context.Builder("user-key")
+                .Set("firstName", "Lucy").Set("lastName", "Cat").Build();
             AssertJsonEqual(LdJsonSerialization.SerializeObject(user),
-                DataModelSerialization.SerializeUser(user));
+                DataModelSerialization.SerializeContext(user));
         }
 
         [Fact]

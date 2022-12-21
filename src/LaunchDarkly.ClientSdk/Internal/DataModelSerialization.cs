@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using LaunchDarkly.JsonStream;
+using System.Text;
+using System.Text.Json;
+using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Json;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
+using static LaunchDarkly.Sdk.Internal.JsonConverterHelpers;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
     // Methods for converting data to or from a serialized form.
     //
-    // The JSON representation of a User is defined along with User in LaunchDarkly.CommonSdk.
+    // The JSON representation of a Context is defined along with Context in LaunchDarkly.CommonSdk.
     //
     // The serialized representation of a single FeatureFlag is simply a JSON object containing
     // its properties, as defined in FeatureFlag.
@@ -29,26 +32,27 @@ namespace LaunchDarkly.Sdk.Client.Internal
     {
         private const string ParseErrorMessage = "Data was not in a recognized format";
 
-        internal static string SerializeUser(User user) =>
-            LdJsonSerialization.SerializeObject(user);
+        internal static string SerializeContext(Context context) =>
+            LdJsonSerialization.SerializeObject(context);
 
         internal static string SerializeFlag(FeatureFlag flag) =>
             LdJsonSerialization.SerializeObject(flag);
 
         internal static string SerializeAll(FullDataSet allData)
         {
-            var w = JWriter.New();
-            using (var ow = w.Object())
+            return JsonUtils.WriteJsonAsString(w =>
             {
+                w.WriteStartObject();
                 foreach (var item in allData.Items)
                 {
                     if (item.Value.Item != null)
                     {
-                        FeatureFlagJsonConverter.WriteJsonValue(item.Value.Item, ow.Name(item.Key));
+                        w.WritePropertyName(item.Key);
+                        JsonSerializer.Serialize(w, item.Value.Item);
                     }
                 }
-            }
-            return w.GetString();
+                w.WriteEndObject();
+            });
         }
 
         internal static FeatureFlag DeserializeFlag(string json)
@@ -88,18 +92,21 @@ namespace LaunchDarkly.Sdk.Client.Internal
         internal static FullDataSet DeserializeV1Schema(string serializedData)
         {
             var builder = ImmutableList.CreateBuilder<KeyValuePair<string, ItemDescriptor>>();
-            var r = JReader.FromString(serializedData);
+            var r = new Utf8JsonReader(Encoding.UTF8.GetBytes(serializedData));
+            r.Read();
+
             try
             {
-                for (var or = r.Object(); or.Next(ref r);)
+                for (var obj = RequireObject(ref r); obj.Next(ref r);)
                 {
+                    var name = obj.Name;
                     var flag = FeatureFlagJsonConverter.ReadJsonValue(ref r);
-                    builder.Add(new KeyValuePair<string, ItemDescriptor>(or.Name.ToString(), flag.ToItemDescriptor()));
+                    builder.Add(new KeyValuePair<string, ItemDescriptor>(name, flag.ToItemDescriptor()));
                 }
             }
             catch (Exception e)
             {
-                throw new InvalidDataException(ParseErrorMessage, r.TranslateException(e));
+                throw new InvalidDataException(ParseErrorMessage, e);
             }
             return new FullDataSet(builder.ToImmutable());
         }

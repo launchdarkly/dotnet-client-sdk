@@ -1,7 +1,7 @@
 ﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Integrations;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Encapsulates the SDK's general logging configuration.

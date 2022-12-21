@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using LaunchDarkly.JsonStream;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
+using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Json;
+using Xunit;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -17,7 +20,18 @@ namespace LaunchDarkly.Sdk.Client
 
         private static ThreadLocal<bool> InClientLock = new ThreadLocal<bool>();
 
-        public static LdClientContext SimpleContext => new LdClientContext(Configuration.Default("key"));
+        public static LdClientContext SimpleContext => new LdClientContext(Configuration.Default("key"), Context.New("userkey"));
+
+        public static Context Base64ContextFromUrlPath(string path, string pathPrefix)
+        {
+            Assert.StartsWith(pathPrefix, path);
+            var base64String = path.Substring(pathPrefix.Length);
+            var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(base64String));
+            return LdJsonSerialization.DeserializeObject<Context>(decoded);
+        }
+
+        public static ContextBuilder BuildAutoContext() =>
+            Context.Builder("placeholder").Anonymous(true);
 
         public static T WithClientLock<T>(Func<T> f)
         {
@@ -83,12 +97,12 @@ namespace LaunchDarkly.Sdk.Client
         // Calls LdClient.Init, but then sets LdClient.Instance to null so other tests can
         // instantiate their own independent clients. Application code cannot do this because
         // the LdClient.Instance setter has internal scope.
-        public static LdClient CreateClient(Configuration config, User user, TimeSpan? timeout = null)
+        public static LdClient CreateClient(Configuration config, Context context, TimeSpan? timeout = null)
         {
             return WithClientLock(() =>
             {
                 ClearClient();
-                LdClient client = LdClient.Init(config, user, timeout ?? TimeSpan.FromSeconds(1));
+                LdClient client = LdClient.Init(config, context, timeout ?? TimeSpan.FromSeconds(1));
                 client.DetachInstance();
                 return client;
             });
@@ -97,12 +111,12 @@ namespace LaunchDarkly.Sdk.Client
         // Calls LdClient.Init, but then sets LdClient.Instance to null so other tests can
         // instantiate their own independent clients. Application code cannot do this because
         // the LdClient.Instance setter has internal scope.
-        public static async Task<LdClient> CreateClientAsync(Configuration config, User user)
+        public static async Task<LdClient> CreateClientAsync(Configuration config, Context context)
         {
             return await WithClientLockAsync(async () =>
             {
                 ClearClient();
-                LdClient client = await LdClient.InitAsync(config, user);
+                LdClient client = await LdClient.InitAsync(config, context);
                 client.DetachInstance();
                 return client;
             });
@@ -118,39 +132,19 @@ namespace LaunchDarkly.Sdk.Client
 
         internal static string MakeJsonData(FullDataSet data)
         {
-            var w = JWriter.New();
-            using (var ow = w.Object())
+            return JsonUtils.WriteJsonAsString(w =>
             {
+                w.WriteStartObject();
                 foreach (var item in data.Items)
                 {
                     if (item.Value.Item != null)
                     {
-                        FeatureFlagJsonConverter.WriteJsonValue(item.Value.Item, ow.Name(item.Key));
+                        w.WritePropertyName(item.Key);
+                        FeatureFlagJsonConverter.WriteJsonValue(item.Value.Item, w);
                     }
                 }
-            }
-            return w.GetString();
-        }
-
-        public static string NormalizeJsonUser(LdValue json)
-        {
-            // It's undefined whether a user with no custom attributes will have "custom":{} or not
-            if (json.Type == LdValueType.Object && json.Get("custom").Type == LdValueType.Object)
-            {
-                if (json.Count == 0)
-                {
-                    var o1 = LdValue.BuildObject();
-                    foreach (var kv in json.AsDictionary(LdValue.Convert.Json))
-                    {
-                        if (kv.Key != "custom")
-                        {
-                            o1.Add(kv.Key, kv.Value);
-                        }
-                    }
-                    return o1.Build().ToJsonString();
-                }
-            }
-            return json.ToJsonString();
+                w.WriteEndObject();
+            });
         }
     }
 }

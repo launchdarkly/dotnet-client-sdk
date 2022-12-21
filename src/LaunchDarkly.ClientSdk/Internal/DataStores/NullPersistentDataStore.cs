@@ -1,13 +1,12 @@
-﻿using System.Collections.Immutable;
-using LaunchDarkly.Sdk.Client.Interfaces;
+﻿using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
-    internal sealed class NullPersistentDataStoreFactory : IPersistentDataStoreFactory
+    internal sealed class NullPersistentDataStoreFactory : IComponentConfigurer<IPersistentDataStore>
     {
         internal static readonly NullPersistentDataStoreFactory Instance = new NullPersistentDataStoreFactory();
 
-        public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) =>
+        public IPersistentDataStore Build(LdClientContext context) =>
             NullPersistentDataStore.Instance;
     }
 

@@ -1,5 +1,5 @@
-﻿using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.Internal.DataStores;
+﻿using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
@@ -13,7 +13,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     /// </para>
     /// <para>
     /// By default, the SDK uses a persistence mechanism that is specific to each platform, as
-    /// described in <see cref="Storage(IPersistentDataStoreFactory)"/>. To use a custom persistence
+    /// described in <see cref="Storage(IComponentConfigurer{IPersistentDataStore})"/>. To use a custom persistence
     /// implementation, or to customize related properties defined in this class, create a builder with
     /// <see cref="Components.Persistence"/>, change its properties with the methods of this class, and
     /// pass it to <see cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>.
@@ -31,18 +31,18 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     public sealed class PersistenceConfigurationBuilder
     {
         /// <summary>
-        /// Default value for <see cref="MaxCachedUsers(int)"/>: 5.
+        /// Default value for <see cref="MaxCachedContexts(int)"/>: 5.
         /// </summary>
-        public const int DefaultMaxCachedUsers = 5;
+        public const int DefaultMaxCachedContexts = 5;
 
         /// <summary>
-        /// Passing this value (or any negative number) to <see cref="MaxCachedUsers(int)"/>
+        /// Passing this value (or any negative number) to <see cref="MaxCachedContexts(int)"/>
         /// means there is no limit on cached user data.
         /// </summary>
-        public const int UnlimitedCachedUsers = -1;
+        public const int UnlimitedCachedContexts = -1;
 
-        private  IPersistentDataStoreFactory _storeFactory = null;
-        private int _maxCachedUsers = DefaultMaxCachedUsers;
+        private IComponentConfigurer<IPersistentDataStore> _storeFactory = null;
+        private int _maxCachedContexts = DefaultMaxCachedContexts;
 
         internal PersistenceConfigurationBuilder() { }
 
@@ -58,7 +58,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <param name="persistentDataStoreFactory">a factory for the custom storage implementation, or
         /// <see langword="null"/> to use the default implementation</param>
         /// <returns>the builder</returns>
-        public PersistenceConfigurationBuilder Storage(IPersistentDataStoreFactory persistentDataStoreFactory)
+        public PersistenceConfigurationBuilder Storage(IComponentConfigurer<IPersistentDataStore> persistentDataStoreFactory)
         {
             _storeFactory = persistentDataStoreFactory;
             return this;
@@ -78,24 +78,24 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// flag data it has received since the current <c>LdClient</c> instance was started.
         /// </para>
         /// <para>
-        /// A value of <see cref="UnlimitedCachedUsers"/> or any other negative number means there is no
+        /// A value of <see cref="UnlimitedCachedContexts"/> or any other negative number means there is no
         /// limit. Use this mode with caution, as it could cause the size of mobile device preferences to
         /// grow indefinitely if your application uses many different user keys on the same device.
         /// </para>
         /// </remarks>
-        /// <param name="maxCachedUsers"></param>
+        /// <param name="maxCachedContexts"></param>
         /// <returns></returns>
-        public PersistenceConfigurationBuilder MaxCachedUsers(int maxCachedUsers)
+        public PersistenceConfigurationBuilder MaxCachedContexts(int maxCachedContexts)
         {
-            _maxCachedUsers = maxCachedUsers;
+            _maxCachedContexts = maxCachedContexts;
             return this;
         }
 
-        internal PersistenceConfiguration CreatePersistenceConfiguration(LdClientContext context) =>
+        internal PersistenceConfiguration Build(LdClientContext clientContext) =>
             new PersistenceConfiguration(
                 _storeFactory is null ? PlatformSpecific.LocalStorage.Instance :
-                    _storeFactory.CreatePersistentDataStore(context),
-                _maxCachedUsers
+                    _storeFactory.Build(clientContext),
+                _maxCachedContexts
                 );
     }
 }

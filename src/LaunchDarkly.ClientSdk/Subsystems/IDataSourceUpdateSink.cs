@@ -1,6 +1,8 @@
-﻿using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+﻿using LaunchDarkly.Sdk.Client.Interfaces;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
+
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     // Note: In .NET server-side SDK 6.x, Java SDK 5.x, and Go SDK 5.x, where this component was added, it
     // is called "DataSourceUpdates". This name was thought to be a bit confusing, since it receives updates
@@ -18,19 +20,19 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <summary>
         /// Completely overwrites the current contents of the data store with a set of items for each collection.
         /// </summary>
-        /// <param name="user">the current user</param>
+        /// <param name="context">the current evaluation context</param>
         /// <param name="data">the data set</param>
         /// <returns>true if the update succeeded, false if it failed</returns>
-        void Init(User user, FullDataSet data);
+        void Init(Context context, FullDataSet data);
 
         /// <summary>
         /// Updates or inserts an item. For updates, the object will only be updated if the existing
         /// version is less than the new version.
         /// </summary>
-        /// <param name="user">the current user</param>
+        /// <param name="context">the current evaluation context</param>
         /// <param name="key">the feature flag key</param>
         /// <param name="data">the item data</param>
-        void Upsert(User user, string key, ItemDescriptor data);
+        void Upsert(Context context, string key, ItemDescriptor data);
 
         /// <summary>
         /// Informs the SDK of a change in the data source's status.
@@ -55,7 +57,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <para>
         /// Data source implementations normally should not need to set the state to
         /// <see cref="DataSourceState.Valid"/>, because that will happen automatically if they call
-        /// <see cref="Init(User, FullDataSet)"/>.
+        /// <see cref="Init(Context, FullDataSet)"/>.
         /// </para>
         /// </remarks>
         /// <param name="newState">the data source state</param>

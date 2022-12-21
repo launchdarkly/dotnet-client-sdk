@@ -2,6 +2,7 @@
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -30,31 +31,18 @@ namespace LaunchDarkly.Sdk.Client
         // Settable only for testing
         internal IBackgroundModeManager BackgroundModeManager { get; }
         internal IConnectivityStateManager ConnectivityStateManager { get; }
-        internal IDeviceInfo DeviceInfo { get; }
-
-        /// <summary>
-        /// Whether to disable the automatic sending of an alias event when the current user is changed
-        /// to a non-anonymous user and the previous user was anonymous.
-        /// </summary>
-        /// <remarks>
-        /// By default, if you call <see cref="LdClient.Identify(User, TimeSpan)"/> or
-        /// <see cref="LdClient.IdentifyAsync(User)"/> with a non-anonymous user, and the current user
-        /// (previously specified either with one of those methods or when creating the <see cref="LdClient"/>)
-        /// was anonymous, the SDK assumes the two users should be correlated and sends an analytics
-        /// event equivalent to calling <see cref="LdClient.Alias(User, User)"/>. Setting
-        /// AutoAliasingOptOut to <see langword="true"/> disables this behavior.
-        /// </remarks>
-        public bool AutoAliasingOptOut { get; }
 
         /// <summary>
         /// A factory object that creates an implementation of <see cref="IDataSource"/>, which will
         /// receive feature flag data.
         /// </summary>
-        public IDataSourceFactory DataSourceFactory { get; }
+        /// <seealso cref="ConfigurationBuilder.DataSource(IComponentConfigurer{IDataSource})"/>
+        public IComponentConfigurer<IDataSource> DataSource { get; }
 
         /// <summary>
         /// True if diagnostic events have been disabled.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.DiagnosticOptOut(bool)"/>
         public bool DiagnosticOptOut { get; }
 
         /// <summary>
@@ -63,6 +51,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <remarks>
         /// This is only relevant on mobile platforms.
         /// </remarks>
+        /// <seealso cref="ConfigurationBuilder.EnableBackgroundUpdating(bool)"/>
         public bool EnableBackgroundUpdating { get; }
 
         /// <summary>
@@ -75,22 +64,32 @@ namespace LaunchDarkly.Sdk.Client
         /// increases the size of network requests, such information is not sent unless you set this option
         /// to <see langword="true"/>.
         /// </remarks>
+        /// <seealso cref="ConfigurationBuilder.EvaluationReasons(bool)"/>
         public bool EvaluationReasons { get; }
 
         /// <summary>
         /// A factory object that creates an implementation of <see cref="IEventProcessor"/>, responsible
         /// for sending analytics events.
         /// </summary>
-        public IEventProcessorFactory EventProcessorFactory { get; }
+        /// <seealso cref="ConfigurationBuilder.Events(IComponentConfigurer{IEventProcessor})"/>
+        public IComponentConfigurer<IEventProcessor> Events { get; }
+
+        /// <summary>
+        /// True if the SDK should provide unique keys for anonymous contexts.
+        /// </summary>
+        /// <seealso cref="ConfigurationBuilder.GenerateAnonymousKeys(bool)"/>
+        public bool GenerateAnonymousKeys { get; }
 
         /// <summary>
         /// HTTP configuration properties for the SDK.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Http(HttpConfigurationBuilder)"/>
         public HttpConfigurationBuilder HttpConfigurationBuilder { get; }
 
         /// <summary>
         /// Logging configuration properties for the SDK.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)"/>
         public LoggingConfigurationBuilder LoggingConfigurationBuilder { get; }
 
         /// <summary>
@@ -104,16 +103,19 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// Whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Offline(bool)"/>
         public bool Offline { get; }
 
         /// <summary>
         /// Persistent storage configuration properties for the SDK.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
         public PersistenceConfigurationBuilder PersistenceConfigurationBuilder { get; }
 
         /// <summary>
         /// Defines the base service URIs used by SDK components.
         /// </summary>
+        /// <seealso cref="ConfigurationBuilder.ServiceEndpoints(ServiceEndpointsBuilder)"/>
         public ServiceEndpoints ServiceEndpoints { get; }
 
         /// <summary>
@@ -166,12 +168,12 @@ namespace LaunchDarkly.Sdk.Client
 
         internal Configuration(ConfigurationBuilder builder)
         {
-            AutoAliasingOptOut = builder._autoAliasingOptOut;
-            DataSourceFactory = builder._dataSourceFactory;
+            DataSource = builder._dataSource;
             DiagnosticOptOut = builder._diagnosticOptOut;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
             EvaluationReasons = builder._evaluationReasons;
-            EventProcessorFactory = builder._eventProcessorFactory;
+            Events = builder._events;
+            GenerateAnonymousKeys = builder._generateAnonymousKeys;
             HttpConfigurationBuilder = builder._httpConfigurationBuilder;
             LoggingConfigurationBuilder = builder._loggingConfigurationBuilder;
             MobileKey = builder._mobileKey;
@@ -181,7 +183,6 @@ namespace LaunchDarkly.Sdk.Client
 
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
-            DeviceInfo = builder._deviceInfo;
         }
     }
 }

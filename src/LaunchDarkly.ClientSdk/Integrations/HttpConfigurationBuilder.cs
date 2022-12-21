@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
 
@@ -61,7 +61,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// LaunchDarkly server, for any individual network connection.
         /// </para>
         /// <para>
-        /// It is not the same as the timeout parameter to <see cref="LdClient.Init(Configuration, User, TimeSpan)"/>,
+        /// It is not the same as the timeout parameter to <see cref="LdClient.Init(Configuration, Context, TimeSpan)"/>,
         /// which limits the time for initializing the SDK regardless of how many individual HTTP requests
         /// are done in that time.
         /// </para>
@@ -170,7 +170,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <c>HttpClient</c>.
         /// </para>
         /// <para>
-        /// It is not the same as the timeout parameter to<see cref= "LdClient.Init(Configuration, User, TimeSpan)" />,
+        /// It is not the same as the timeout parameter to<see cref= "LdClient.Init(Configuration, Context, TimeSpan)" />,
         /// which limits the time for initializing the SDK regardless of how many individual HTTP requests
         /// are done in that time.
         /// </para>
@@ -233,11 +233,11 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// Called internally by the SDK to create an implementation instance. Applications do not need
         /// to call this method.
         /// </summary>
-        /// <param name="basicConfiguration">provides the basic SDK configuration properties</param>
+        /// <param name="context">provides SDK configuration data</param>
         /// <returns>an <see cref="HttpConfiguration"/></returns>
-        public HttpConfiguration CreateHttpConfiguration(BasicConfiguration basicConfiguration) =>
+        public HttpConfiguration CreateHttpConfiguration(LdClientContext context) =>
             new HttpConfiguration(
-                MakeHttpProperties(basicConfiguration),
+                MakeHttpProperties(context),
                 _messageHandler,
                 _responseStartTimeout,
                 _useReport
@@ -246,14 +246,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <inheritdoc/>
         public LdValue DescribeConfiguration(LdClientContext context) =>
             LdValue.BuildObject()
-                .WithHttpProperties(MakeHttpProperties(context.Basic))
+                .WithHttpProperties(MakeHttpProperties(context))
                 .Add("useReport", _useReport)
                 .Set("socketTimeoutMillis", _responseStartTimeout.TotalMilliseconds)
                     // WithHttpProperties normally sets socketTimeoutMillis to the ReadTimeout value,
                     // which is more correct, but we can't really set ReadTimeout in this SDK
                 .Build();
 
-        private HttpProperties MakeHttpProperties(BasicConfiguration basic)
+        private HttpProperties MakeHttpProperties(LdClientContext context)
         {
             Func<HttpProperties, HttpMessageHandler> handlerFn;
             if (_messageHandler is null)
@@ -266,7 +266,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             }
 
             var httpProperties = HttpProperties.Default
-                .WithAuthorizationKey(basic.MobileKey)
+                .WithAuthorizationKey(context.MobileKey)
                 .WithConnectTimeout(_connectTimeout)
                 .WithHttpMessageHandlerFactory(handlerFn)
                 .WithProxy(_proxy)

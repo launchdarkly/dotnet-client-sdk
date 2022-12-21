@@ -4,7 +4,7 @@ using LaunchDarkly.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 {
@@ -13,8 +13,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly FlagDataManager _store;
         private readonly FlagTrackerImpl _flagTracker;
         private readonly DataSourceUpdateSinkImpl _updateSink;
-        private readonly User _basicUser = User.WithKey("user-key");
-        private readonly User _otherUser = User.WithKey("other-key");
+        private readonly Context _basicUser = Context.New("user-key");
+        private readonly Context _otherUser = Context.New("other-key");
 
         public DataSourceUpdateSinkImplTest(ITestOutputHelper testOutput) : base(testOutput)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -8,12 +9,11 @@ namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientTests : BaseTest
     {
-        private static readonly User KeylessAnonUser =
-            User.Builder((string)null)
-                .Anonymous(true)
-                .Email("example").AsPrivateAttribute() // give it some more attributes so we can verify they are preserved
-                .Custom("other", 3)
-                .Build();
+        private static readonly Context AnonUser = Context.Builder("anon-placeholder-key")
+            .Anonymous(true)
+            .Set("email", "example")
+            .Set("other", 3)
+            .Build();
 
         public LdClientTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
@@ -21,13 +21,6 @@ namespace LaunchDarkly.Sdk.Client
         public void CannotCreateClientWithNullConfig()
         {
             Assert.Throws<ArgumentNullException>(() => LdClient.Init((Configuration)null, BasicUser, TimeSpan.Zero));
-        }
-
-        [Fact]
-        public void CannotCreateClientWithNullUser()
-        {
-            var config = BasicConfig().Build();
-            Assert.Throws<ArgumentNullException>(() => LdClient.Init(config, null, TimeSpan.Zero));
         }
 
         [Fact]
@@ -50,104 +43,112 @@ namespace LaunchDarkly.Sdk.Client
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
+                .DataSource(dataSourceConfig)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
-                var actualUser = client.User; // may have been transformed e.g. to add device/OS properties
+                var actualUser = client.Context; // may have been transformed e.g. to add device/OS properties
                 Assert.Equal(BasicUser.Key, actualUser.Key);
-                Assert.Equal(actualUser, stub.ReceivedUser);
+                Assert.Equal(actualUser, dataSourceConfig.ReceivedClientContext.CurrentContext);
             }
         }
 
         [Fact]
-        public async Task InitWithKeylessAnonUserAddsKey()
+        public async Task InitWithAnonUserAddsRandomizedKey()
         {
             // Note, we don't care about polling mode vs. streaming mode for this functionality.
-            var mockDeviceInfo = new MockDeviceInfo("fake-device-id");
-            var config = BasicConfig().DeviceInfo(mockDeviceInfo).Persistence(Components.NoPersistence).Build();
+            var config = BasicConfig().Persistence(Components.NoPersistence).GenerateAnonymousKeys(true).Build();
 
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            string key1;
+
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                Assert.Equal("fake-device-id", client.User.Key);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                key1 = client.Context.Key;
+                Assert.NotNull(key1);
+                Assert.NotEqual("", key1);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
+                    client.Context);
+            }
+
+            // Starting again should generate a new key, since we've turned off persistence
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
+            {
+                var key2 = client.Context.Key;
+                Assert.NotNull(key2);
+                Assert.NotEqual("", key2);
+                Assert.NotEqual(key1, key2);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key2).Build(),
+                    client.Context);
             }
         }
 
-#if __MOBILE__
         [Fact]
-        public async Task InitWithKeylessAnonUserUsesStableDeviceIDOnMobilePlatforms()
+        public async Task InitWithAnonUserDoesNotChangeKeyIfConfigOptionIsNotSet()
         {
+            // Note, we don't care about polling mode vs. streaming mode for this functionality.
             var config = BasicConfig().Persistence(Components.NoPersistence).Build();
 
-            string generatedKey = null;
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                generatedKey = client.User.Key;
-                Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
-            }
-
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
-            {
-                Assert.Equal(generatedKey, client.User.Key);
+                AssertHelpers.ContextsEqual(AnonUser, client.Context);
             }
         }
-#endif
 
-#if !__MOBILE__
         [Fact]
-        public async Task InitWithKeylessAnonUserGeneratesRandomizedIdOnNonMobilePlatforms()
+        public async Task InitWithAnonUserCanReusePreviousRandomizedKey()
         {
-            var config = BasicConfig()
-                .Persistence(Components.Persistence().Storage(new MockPersistentDataStore().AsSingletonFactory()))
-                .Build();
+            // Note, we don't care about polling mode vs. streaming mode for this functionality.
+            var store = new MockPersistentDataStore();
+            var config = BasicConfig().Persistence(Components.Persistence().Storage(
+                store.AsSingletonFactory<IPersistentDataStore>()))
+                .GenerateAnonymousKeys(true).Build();
 
-            string generatedKey = null;
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            string key1;
+
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                generatedKey = client.User.Key;
-                Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                key1 = client.Context.Key;
+                Assert.NotNull(key1);
+                Assert.NotEqual("", key1);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
+                    client.Context);
             }
 
-            using (var client = await TestUtil.CreateClientAsync(config, KeylessAnonUser))
+            // Starting again should reuse the persisted key
+            using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                Assert.Equal(generatedKey, client.User.Key);
-            }
-
-            // Now use a configuration where persistence is disabled - a different key is generated
-            var configWithoutPersistence = BasicConfig().Persistence(Components.NoPersistence).Build();
-            using (var client = await TestUtil.CreateClientAsync(configWithoutPersistence, KeylessAnonUser))
-            {
-                Assert.NotNull(client.User.Key);
-                Assert.NotEqual(generatedKey, client.User.Key);
+                Assert.Equal(key1, client.Context.Key);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
+                    client.Context);
             }
         }
-#endif
-
+        
         [Fact]
-        public async void InitWithKeylessAnonUserPassesGeneratedUserToDataSource()
+        public async void InitWithAnonUserPassesGeneratedUserToDataSource()
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
+                .DataSource(dataSourceConfig)
+                .GenerateAnonymousKeys(true)
                 .Build();
 
-            using (var client = await LdClient.InitAsync(config, KeylessAnonUser))
+            using (var client = await LdClient.InitAsync(config, AnonUser))
             {
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(stub.ReceivedUser.Key).Build(),
-                    stub.ReceivedUser);
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.NotEqual(AnonUser, receivedContext);
+                Assert.Equal(client.Context, receivedContext);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(receivedContext.Key).Build(),
+                    receivedContext);
             }
         }
 
@@ -156,25 +157,25 @@ namespace LaunchDarkly.Sdk.Client
         {
             using (var client = TestUtil.CreateClient(BasicConfig().Build(), BasicUser))
             {
-                var updatedUser = User.WithKey("some new key");
+                var updatedUser = Context.New("some new key");
                 var success = client.Identify(updatedUser, TimeSpan.FromSeconds(1));
                 Assert.True(success);
-                Assert.Equal(client.User.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
+                Assert.Equal(client.Context.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
             }
         }
 
         [Fact]
         public Task IdentifyAsyncCompletesOnlyWhenNewFlagsAreAvailable()
-            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => client.IdentifyAsync(user));
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, context) => client.IdentifyAsync(context));
 
         [Fact]
         public Task IdentifySyncCompletesOnlyWhenNewFlagsAreAvailable()
-            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, user) => Task.Run(() => client.Identify(user, TimeSpan.FromSeconds(4))));
+            => IdentifyCompletesOnlyWhenNewFlagsAreAvailable((client, context) => Task.Run(() => client.Identify(context, TimeSpan.FromSeconds(4))));
 
-        private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, User, Task> identifyTask)
+        private async Task IdentifyCompletesOnlyWhenNewFlagsAreAvailable(Func<LdClient, Context, Task> identifyTask)
         {
-            var userA = User.WithKey("a");
-            var userB = User.WithKey("b");
+            var userA = Context.New("a");
+            var userB = Context.New("b");
 
             var flagKey = "flag";
             var userAFlags = new DataSetBuilder()
@@ -186,19 +187,19 @@ namespace LaunchDarkly.Sdk.Client
             var canFinishIdentifyUserB = new SemaphoreSlim(0, 1);
             var finishedIdentifyUserB = new SemaphoreSlim(0, 1);
 
-            var dataSourceFactory = new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
-                new MockDataSourceFromLambda(user, async () =>
+            var dataSourceFactory = MockComponents.ComponentConfigurerFromLambda<IDataSource>(ctx =>
+                new MockDataSourceFromLambda(ctx.CurrentContext, async () =>
                 {
-                    switch (user.Key)
+                    switch (ctx.CurrentContext.Key)
                     {
                         case "a":
-                            updates.Init(user, userAFlags);
+                            ctx.DataSourceUpdateSink.Init(ctx.CurrentContext, userAFlags);
                             break;
 
                         case "b":
                             startedIdentifyUserB.Release();
                             await canFinishIdentifyUserB.WaitAsync();
-                            updates.Init(user, userBFlags);
+                            ctx.DataSourceUpdateSink.Init(ctx.CurrentContext, userBFlags);
                             break;
                     }
                 }));
@@ -232,147 +233,139 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public void IdentifyWithNullUserThrowsException()
-        {
-            using (var client = TestUtil.CreateClient(BasicConfig().Build(), BasicUser))
-            {
-                Assert.Throws<ArgumentNullException>(() => client.Identify(null, TimeSpan.Zero));
-            }
-        }
-
-        [Fact]
-        public void IdentifyAsyncWithNullUserThrowsException()
-        {
-            using (var client = TestUtil.CreateClient(BasicConfig().Build(), BasicUser))
-            {
-                Assert.ThrowsAsync<AggregateException>(async () => await client.IdentifyAsync(null));
-                // note that exceptions thrown out of an async task are always wrapped in AggregateException
-            }
-        }
-
-        [Fact]
         public async void IdentifyPassesUserToDataSource()
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
-            User newUser = User.WithKey("new-user");
+            Context newUser = Context.New("new-user");
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
+                .DataSource(dataSourceConfig)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
-                AssertHelpers.UsersEqualExcludingAutoProperties(BasicUser, client.User);
-                Assert.Equal(client.User, stub.ReceivedUser);
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                AssertHelpers.ContextsEqual(BasicUser, client.Context);
+                Assert.Equal(client.Context, receivedContext);
 
                 await client.IdentifyAsync(newUser);
 
-                AssertHelpers.UsersEqualExcludingAutoProperties(newUser, client.User);
-                Assert.Equal(client.User, stub.ReceivedUser);
+                receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                AssertHelpers.ContextsEqual(newUser, client.Context);
+                Assert.Equal(client.Context, receivedContext);
             }
         }
 
         [Fact]
-        public async Task IdentifyWithKeylessAnonUserAddsKey()
+        public async Task IdentifyWithAnonUserAddsRandomizedKey()
         {
-            var mockDeviceInfo = new MockDeviceInfo("fake-device-id");
-            var config = BasicConfig().DeviceInfo(mockDeviceInfo).Persistence(Components.NoPersistence).Build();
+            var config = BasicConfig().Persistence(Components.NoPersistence).GenerateAnonymousKeys(true).Build();
+
+            string key1;
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
-                Assert.Equal("fake-device-id", client.User.Key);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
+                key1 = client.Context.Key;
+                Assert.NotNull(key1);
+                Assert.NotEqual("", key1);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
+                    client.Context);
+
+                var anonUser2 = TestUtil.BuildAutoContext().Name("other").Build();
+                await client.IdentifyAsync(anonUser2);
+                var key2 = client.Context.Key;
+                Assert.Equal(key1, key2); // Even though persistence is disabled, the key is stable during the lifetime of the SDK client.
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(anonUser2).Key(key2).Build(),
+                    client.Context);
+            }
+
+            using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
+            {
+                await client.IdentifyAsync(AnonUser);
+
+                var key3 = client.Context.Key;
+                Assert.NotNull(key3);
+                Assert.NotEqual("", key3);
+                Assert.NotEqual(key1, key3); // The previously generated key was discarded with the previous client.
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key3).Build(),
+                    client.Context);
             }
         }
 
-#if __MOBILE__
         [Fact]
-        public async Task IdentifyWithKeylessAnonUserUsesStableDeviceIDOnMobilePlatforms()
+        public async Task IdentifyWithAnonUserDoesNotChangeKeyIfConfigOptionIsNotSet()
         {
             var config = BasicConfig().Persistence(Components.NoPersistence).Build();
-            
-            string generatedKey = null;
-            using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
-            {
-                await client.IdentifyAsync(KeylessAnonUser);
-
-                generatedKey = client.User.Key;
-                Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
-            }
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                client.Identify(KeylessAnonUser, TimeSpan.FromSeconds(1));
+                await client.IdentifyAsync(AnonUser);
 
-                Assert.Equal(generatedKey, client.User.Key);
+                AssertHelpers.ContextsEqual(AnonUser, client.Context);
             }
         }
-#endif
 
-#if !__MOBILE__
         [Fact]
-        public async Task IdentifyWithKeylessAnonUserGeneratesRandomizedIdOnNonMobilePlatforms()
+        public async Task IdentifyWithAnonUserCanReusePersistedRandomizedKey()
         {
-            var config = BasicConfig()
-                .Persistence(Components.Persistence().Storage(new MockPersistentDataStore().AsSingletonFactory()))
-                .Build();
+            var store = new MockPersistentDataStore();
+            var config = BasicConfig().Persistence(Components.Persistence().Storage(
+                store.AsSingletonFactory<IPersistentDataStore>()))
+                .GenerateAnonymousKeys(true).Build();
 
-            string generatedKey = null;
-            using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
-            {
-                await client.IdentifyAsync(KeylessAnonUser);
-
-                generatedKey = client.User.Key;
-                Assert.NotNull(generatedKey);
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
-             }
+            string key1;
 
             using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
-                Assert.Equal(generatedKey, client.User.Key);
+                key1 = client.Context.Key;
+                Assert.NotNull(key1);
+                Assert.NotEqual("", key1);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key1).Build(),
+                    client.Context);
             }
 
-            // Now use a configuration where persistence is disabled - a different key is generated
-            var configWithoutPersistence = BasicConfig().Persistence(Components.NoPersistence).Build();
-            using (var client = await TestUtil.CreateClientAsync(configWithoutPersistence, BasicUser))
+            using (var client = await TestUtil.CreateClientAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
-                Assert.NotNull(client.User.Key);
-                Assert.NotEqual(generatedKey, client.User.Key);
+                var key2 = client.Context.Key;
+                Assert.Equal(key1, key2);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(key2).Build(),
+                    client.Context);
             }
         }
-#endif
 
         [Fact]
-        public async void IdentifyWithKeylessAnonUserPassesGeneratedUserToDataSource()
+        public async void IdentifyWithAnonUserPassesGeneratedUserToDataSource()
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
 
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
-                .DataSource(stub.AsFactory())
-                .DeviceInfo(new MockDeviceInfo())
+                .DataSource(dataSourceConfig)
+                .GenerateAnonymousKeys(true)
                 .Build();
 
             using (var client = await LdClient.InitAsync(config, BasicUser))
             {
-                await client.IdentifyAsync(KeylessAnonUser);
+                await client.IdentifyAsync(AnonUser);
 
-                AssertHelpers.UsersEqualExcludingAutoProperties(
-                    User.Builder(KeylessAnonUser).Key(client.User.Key).Build(),
-                    client.User);
-                Assert.Equal(client.User, stub.ReceivedUser);
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.NotEqual(AnonUser, receivedContext);
+                Assert.Equal(client.Context, receivedContext);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(client.Context.Key).Build(),
+                    receivedContext);
             }
         }
 
@@ -410,7 +403,7 @@ namespace LaunchDarkly.Sdk.Client
             var mockUpdateProc = new MockPollingProcessor(null);
             var mockConnectivityStateManager = new MockConnectivityStateManager(true);
             var config = BasicConfig()
-                .DataSource(mockUpdateProc.AsFactory())
+                .DataSource(mockUpdateProc.AsSingletonFactory<IDataSource>())
                 .ConnectivityStateManager(mockConnectivityStateManager)
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
@@ -426,7 +419,7 @@ namespace LaunchDarkly.Sdk.Client
             var storage = new MockPersistentDataStore();
             var data = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
             var config = BasicConfig()
-                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory()))
+                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory<IPersistentDataStore>()))
                 .Offline(true)
                 .Build();
             storage.SetupUserData(config.MobileKey, BasicUser.Key, data);
@@ -444,7 +437,7 @@ namespace LaunchDarkly.Sdk.Client
             var initialFlags = new DataSetBuilder().Add("flag", 1, LdValue.Of(100), 0).Build();
             var config = BasicConfig()
                 .DataSource(MockPollingProcessor.Factory(initialFlags))
-                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory()))
+                .Persistence(Components.Persistence().Storage(storage.AsSingletonFactory<IPersistentDataStore>()))
                 .Build();
 
             using (var client = TestUtil.CreateClient(config, BasicUser))
@@ -460,7 +453,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             var eventProcessor = new MockEventProcessor();
             var config = BasicConfig()
-                .Events(eventProcessor.AsSingletonFactory())
+                .Events(eventProcessor.AsSingletonFactory<IEventProcessor>())
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
             {
@@ -475,7 +468,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = BasicConfig()
                 .ConnectivityStateManager(connectivityStateManager)
-                .Events(eventProcessor.AsSingletonFactory())
+                .Events(eventProcessor.AsSingletonFactory<IEventProcessor>())
                 .Offline(true)
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
@@ -504,7 +497,7 @@ namespace LaunchDarkly.Sdk.Client
             var eventProcessor = new MockEventProcessor();
             var config = BasicConfig()
                 .ConnectivityStateManager(connectivityStateManager)
-                .Events(eventProcessor.AsSingletonFactory())
+                .Events(eventProcessor.AsSingletonFactory<IEventProcessor>())
                 .Build();
             using (var client = TestUtil.CreateClient(config, BasicUser))
             {

@@ -1,36 +1,35 @@
 ﻿using System;
 using LaunchDarkly.Sdk.Client.Integrations;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
-using static LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
     public class LdClientEventTests : BaseTest
     {
-        private static readonly User user = User.WithKey("userkey");
+        private static readonly Context user = Context.New("userkey");
         private readonly TestData _testData = TestData.DataSource();
         private MockEventProcessor eventProcessor = new MockEventProcessor();
-        private IEventProcessorFactory _factory;
+        private IComponentConfigurer<IEventProcessor> _factory;
 
         public LdClientEventTests(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _factory = eventProcessor.AsSingletonFactory();
+            _factory = eventProcessor.AsSingletonFactory<IEventProcessor>();
         }
 
-        private LdClient MakeClient(User u) =>
+        private LdClient MakeClient(Context c) =>
             LdClient.Init(BasicConfig().DataSource(_testData).Events(_factory).Build(),
-                u, TimeSpan.FromSeconds(1));
+                c, TimeSpan.FromSeconds(1));
 
         [Fact]
         public void IdentifySendsIdentifyEvent()
         {
             using (LdClient client = MakeClient(user))
             {
-                User user1 = User.WithKey("userkey1");
+                Context user1 = Context.New("userkey1");
                 client.Identify(user1, TimeSpan.FromSeconds(1));
                 Assert.Collection(eventProcessor.Events,
                     e => CheckIdentifyEvent(e, user), // there's always an initial identify event
@@ -49,7 +48,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(user.Key, ce.Context.Key);
                         Assert.Equal(LdValue.Null, ce.Data);
                         Assert.Null(ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -69,7 +68,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(user.Key, ce.Context.Key);
                         Assert.Equal(data, ce.Data);
                         Assert.Null(ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -90,96 +89,11 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.User.Key);
+                        Assert.Equal(user.Key, ce.Context.Key);
                         Assert.Equal(data, ce.Data);
                         Assert.Equal(metricValue, ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
                     });
-            }
-        }
-
-        [Fact]
-        public void AliasSendsAliasEvent()
-        {
-            User oldUser = User.Builder("anon-key").Anonymous(true).Build();
-            User newUser = User.WithKey("real-key");
-
-            using (LdClient client = MakeClient(user))
-            {
-                client.Alias(user, oldUser);
-                Assert.Collection(eventProcessor.Events,
-                    e => CheckIdentifyEvent(e, user),
-                    e => {
-                        AliasEvent ae = Assert.IsType<AliasEvent>(e);
-                        Assert.Equal(user, ae.User);
-                        Assert.Equal(oldUser, ae.PreviousUser);
-                        Assert.NotEqual(0, ae.Timestamp.Value);
-                    });
-            }
-        }
-
-        [Fact]
-        public void IdentifySendsAliasEventFromAnonUserToNonAnonUserIfNotOptedOut()
-        {
-            User oldUser = User.Builder("anon-key").Anonymous(true).Build();
-            User newUser = User.WithKey("real-key");
-
-            using (LdClient client = MakeClient(oldUser))
-            {
-                User actualOldUser = client.User; // so we can get any automatic properties that the client added
-                client.Identify(newUser, TimeSpan.FromSeconds(1));
-
-                Assert.Collection(eventProcessor.Events,
-                    e => CheckIdentifyEvent(e, actualOldUser),
-                    e => CheckIdentifyEvent(e, newUser),
-                    e => {
-                        AliasEvent ae = Assert.IsType<AliasEvent>(e);
-                        Assert.Equal(newUser, ae.User);
-                        Assert.Equal(actualOldUser, ae.PreviousUser);
-                        Assert.NotEqual(0, ae.Timestamp.Value);
-                    });
-            }
-        }
-
-        [Fact]
-        public void IdentifyDoesNotSendAliasEventIfOptedOUt()
-        {
-            User oldUser = User.Builder("anon-key").Anonymous(true).Build();
-            User newUser = User.WithKey("real-key");
-
-            var config = BasicConfig()
-                .Events(_factory)
-                .AutoAliasingOptOut(true)
-                .Build();
-            
-            using (LdClient client = TestUtil.CreateClient(config, oldUser))
-            {
-                User actualOldUser = client.User; // so we can get any automatic properties that the client added
-                client.Identify(newUser, TimeSpan.FromSeconds(1));
-
-                Assert.Collection(eventProcessor.Events,
-                    e => CheckIdentifyEvent(e, actualOldUser),
-                    e => CheckIdentifyEvent(e, newUser));
-            }
-        }
-
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        public void IdentifyDoesNotSendAliasEventIfNewUserIsAnonymousOrOldUserIsNot(
-            bool oldAnon, bool newAnon)
-        {
-            User oldUser = User.Builder("old-key").Anonymous(oldAnon).Build();
-            User newUser = User.Builder("new-key").Anonymous(newAnon).Build();
-
-            using (LdClient client = MakeClient(oldUser))
-            {
-                client.Identify(newUser, TimeSpan.FromSeconds(1));
-
-                Assert.Collection(eventProcessor.Events,
-                    e => CheckIdentifyEvent(e, oldUser),
-                    e => CheckIdentifyEvent(e, newUser));
             }
         }
 
@@ -284,7 +198,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = BasicConfig()
-                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
+                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory<IDataSource>())
                 .Events(_factory);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
@@ -393,7 +307,7 @@ namespace LaunchDarkly.Sdk.Client
         public void VariationSendsFeatureEventWithReasonForUnknownFlagWhenClientIsNotInitialized()
         {
             var config = BasicConfig()
-                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory())
+                .DataSource(new MockDataSourceThatNeverInitializes().AsSingletonFactory<IDataSource>())
                 .Events(_factory);
 
             using (LdClient client = TestUtil.CreateClient(config.Build(), user))
@@ -419,10 +333,10 @@ namespace LaunchDarkly.Sdk.Client
             }
         }
 
-        private void CheckIdentifyEvent(object e, User u)
+        private void CheckIdentifyEvent(object e, Context c)
         {
             IdentifyEvent ie = Assert.IsType<IdentifyEvent>(e);
-            Assert.Equal(u.Key, ie.User.Key);
+            Assert.Equal(c.Key, ie.Context.Key);
             Assert.NotEqual(0, ie.Timestamp.Value);
         }
     }

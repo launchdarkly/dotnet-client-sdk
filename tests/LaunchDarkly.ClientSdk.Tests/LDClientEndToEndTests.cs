@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.Sdk.Client.Interfaces;
-using LaunchDarkly.Sdk.Client.PlatformSpecific;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 using static LaunchDarkly.Sdk.Client.MockResponses;
 
 namespace LaunchDarkly.Sdk.Client
@@ -21,8 +21,8 @@ namespace LaunchDarkly.Sdk.Client
     // expected ways.
     public class LdClientEndToEndTests : BaseTest
     {
-        private static readonly User _user = User.WithKey("foo");
-        private static readonly User _otherUser = User.WithKey("bar");
+        private static readonly Context _user = Context.New("foo");
+        private static readonly Context _otherUser = Context.New("bar");
 
         private static readonly FullDataSet _flagData1 = new DataSetBuilder()
             .Add("flag1", 1, LdValue.Of("value1"), 0)
@@ -163,7 +163,7 @@ namespace LaunchDarkly.Sdk.Client
                     var success = client.Identify(_otherUser, TimeSpan.FromSeconds(5));
                     Assert.True(success);
                     Assert.True(client.Initialized);
-                    Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
+                    Assert.Equal(_otherUser.Key, client.Context.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     var req2 = VerifyRequest(server.Recorder, mode);
                     Assert.NotEqual(user1RequestPath, req2.Path);
@@ -192,7 +192,7 @@ namespace LaunchDarkly.Sdk.Client
                     var success = await client.IdentifyAsync(_otherUser);
                     Assert.True(success);
                     Assert.True(client.Initialized);
-                    Assert.Equal(_otherUser.Key, client.User.Key); // don't compare entire user, because SDK may have added device/os attributes
+                    Assert.Equal(_otherUser.Key, client.Context.Key); // don't compare entire user, because SDK may have added device/os attributes
 
                     var req2 = VerifyRequest(server.Recorder, mode);
                     Assert.NotEqual(user1RequestPath, req2.Path);
@@ -272,7 +272,7 @@ namespace LaunchDarkly.Sdk.Client
         public void OfflineClientUsesCachedFlagsSync()
         {
             var sharedPersistenceConfig = Components.Persistence()
-                .Storage(new MockPersistentDataStore().AsSingletonFactory());
+                .Storage(new MockPersistentDataStore().AsSingletonFactory<IPersistentDataStore>());
 
             // streaming vs. polling should make no difference for this
             using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
@@ -297,7 +297,7 @@ namespace LaunchDarkly.Sdk.Client
         public async Task OfflineClientUsesCachedFlagsAsync()
         {
             var sharedPersistenceConfig = Components.Persistence()
-                .Storage(new MockPersistentDataStore().AsSingletonFactory());
+                .Storage(new MockPersistentDataStore().AsSingletonFactory<IPersistentDataStore>());
 
             // streaming vs. polling should make no difference for this
             using (var server = HttpServer.Start(SetupResponse(_flagData1, UpdateMode.Polling)))
@@ -495,7 +495,7 @@ namespace LaunchDarkly.Sdk.Client
         private Configuration BaseConfig(Func<ConfigurationBuilder, ConfigurationBuilder> extraConfig = null)
         {
             var builder = BasicConfig()
-                .Events(new MockEventProcessor().AsSingletonFactory());
+                .Events(new MockEventProcessor().AsSingletonFactory<IEventProcessor>());
             builder = extraConfig is null ? builder : extraConfig(builder);
             return builder.Build();
         }
@@ -573,7 +573,7 @@ namespace LaunchDarkly.Sdk.Client
         public static readonly UpdateMode Polling = new UpdateMode
         {
             IsStreaming = false,
-            FlagsPathRegex = "^/msdk/evalx/users/[^/?]+"
+            FlagsPathRegex = "^/msdk/evalx/contexts/[^/?]+"
         };
 
         public override string ToString() => IsStreaming ? "Streaming" : "Polling";

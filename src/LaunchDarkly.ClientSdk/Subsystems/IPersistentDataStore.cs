@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Interface for a data store that holds feature flag data and other SDK properties in a
@@ -54,7 +54,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     /// of this. The SDK will decide whether to log the exception.
     /// </para>
     /// </remarks>
-    /// <seealso cref="IPersistentDataStoreFactory"/>
     public interface IPersistentDataStore : IDisposable
     {
         /// <summary>

@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using LaunchDarkly.Sdk;
 
+// Note, in order for System.Text.Json serialization/deserialization to work correctly, the members of
+// this class must be properties with get/set, rather than fields. The property names are automatically
+// camelCased by System.Text.Json.
+
 namespace TestService
 {
     public class Status
@@ -49,7 +53,6 @@ namespace TestService
         public bool EnableDiagnostics { get; set; }
         public string[] GlobalPrivateAttributes { get; set; }
         public long? FlushIntervalMs { get; set; }
-        public bool InlineUsers { get; set; }
     }
 
     public class SdkConfigServiceEndpointsParams
@@ -61,8 +64,8 @@ namespace TestService
 
     public class SdkClientSideParams
     {
-        public bool? AutoAliasingOptOut { get; set; }
         public bool? EvaluationReasons { get; set; }
+        public Context? InitialContext { get; set; }
         public User InitialUser { get; set; }
         public bool? UseReport { get; set; }
     }
@@ -74,7 +77,8 @@ namespace TestService
         public EvaluateAllFlagsParams EvaluateAll { get; set; }
         public IdentifyEventParams IdentifyEvent { get; set; }
         public CustomEventParams CustomEvent { get; set; }
-        public AliasEventParams AliasEvent { get; set; }
+        public ContextBuildParams ContextBuild { get; set; }
+        public ContextConvertParams ContextConvert { get; set; }
     }
 
     public class EvaluateFlagParams
@@ -104,6 +108,7 @@ namespace TestService
 
     public class IdentifyEventParams
     {
+        public Context? Context { get; set; }
         public User User { get; set; }
     }
 
@@ -115,9 +120,30 @@ namespace TestService
         public double? MetricValue { get; set; }
     }
 
-    public class AliasEventParams
+    public class ContextBuildParams
     {
-        public User User { get; set; }
-        public User PreviousUser { get; set; }
+        public ContextBuildSingleParams Single { get; set; }
+        public ContextBuildSingleParams[] Multi { get; set; }
+    }
+
+    public class ContextBuildSingleParams
+    {
+        public string Kind { get; set; }
+        public string Key { get; set; }
+        public string Name { get; set; }
+        public bool Anonymous { get; set; }
+        public string[] Private { get; set; }
+        public Dictionary<string, LdValue> Custom { get; set; }
+    }
+
+    public class ContextBuildResponse
+    {
+        public string Output { get; set; }
+        public string Error { get; set; }
+    }
+
+    public class ContextConvertParams
+    {
+        public string Input { get; set; }
     }
 }

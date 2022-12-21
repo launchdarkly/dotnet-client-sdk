@@ -146,10 +146,14 @@ namespace LaunchDarkly.Sdk.Client
 
             public void Flush() { }
 
-            public bool Identify(User user, System.TimeSpan maxWaitTime) =>
+            public bool FlushAndWait(TimeSpan timeout) => true;
+
+            public Task<bool> FlushAndWaitAsync(TimeSpan timeout) => Task.FromResult(true);
+
+            public bool Identify(Context context, System.TimeSpan maxWaitTime) =>
                 throw new System.NotImplementedException();
 
-            public Task<bool> IdentifyAsync(User user) =>
+            public Task<bool> IdentifyAsync(Context context) =>
                 throw new System.NotImplementedException();
 
             public int IntVariation(string key, int defaultValue = 0) =>
@@ -177,9 +181,6 @@ namespace LaunchDarkly.Sdk.Client
                 throw new System.NotImplementedException();
 
             public void Track(string eventName, LdValue data, double metricValue) =>
-                throw new System.NotImplementedException();
-
-            public void Alias(User user, User previousUser) =>
                 throw new System.NotImplementedException();
         }
     }

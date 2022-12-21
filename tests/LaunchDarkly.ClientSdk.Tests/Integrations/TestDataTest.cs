@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using Xunit;
 using Xunit.Abstractions;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
     public class TestDataTest : BaseTest
     {
-        private static readonly User _initialUser = User.WithKey("user0");
+        private static readonly Context _initialUser = Context.New("user0");
+        private static readonly Context _initialContextWithKind1 = Context.New(ContextKind.Of("kind1"), "key1");
+        private static readonly Context _initialContextWithKind2 = Context.New(ContextKind.Of("kind2"), "key1");
 
         private readonly TestData _td = TestData.DataSource();
         private readonly MockDataSourceUpdateSink _updates = new MockDataSourceUpdateSink();
@@ -19,7 +21,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
         public TestDataTest(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _context = new LdClientContext(Configuration.Builder("key").Logging(testLogging).Build());
+            _context = new LdClientContext(Configuration.Builder("key").Logging(testLogging).Build(), _initialUser);
         }
 
         [Fact]
@@ -87,6 +89,15 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             VerifyFlag(f => f.Variation(true).VariationForUser(_initialUser.Key, false), expectFalse);
             VerifyFlag(f => f.Variation(false).VariationForUser(_initialUser.Key, true), expectTrue);
 
+            VerifyFlag(f => f.Variation(true).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, false), _initialContextWithKind1, expectFalse); // matched
+            VerifyFlag(f => f.Variation(true).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, false), _initialContextWithKind2, expectTrue); // not matched
+            VerifyFlag(f => f.Variation(false).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, true), _initialContextWithKind1, expectTrue); // matched
+            VerifyFlag(f => f.Variation(false).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, true), _initialContextWithKind2, expectFalse); // not matched
+
             VerifyFlag(f => f.Variation(true).VariationFunc(u => false), expectFalse);
             VerifyFlag(f => f.Variation(false).VariationFunc(u => true), expectTrue);
 
@@ -113,6 +124,11 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             VerifyFlag(f => f.Variations(ab).Variation(aIndex).VariationForUser(_initialUser.Key, bIndex), expectB);
             VerifyFlag(f => f.Variations(ab).Variation(bIndex).VariationForUser(_initialUser.Key, aIndex), expectA);
 
+            VerifyFlag(f => f.Variations(ab).Variation(aIndex).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, bIndex), _initialContextWithKind1, expectB); // matched
+            VerifyFlag(f => f.Variations(ab).Variation(aIndex).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, bIndex), _initialContextWithKind2, expectA); // not matched
+
             VerifyFlag(f => f.Variations(ab).Variation(aIndex).VariationFunc(u => bIndex), expectB);
             VerifyFlag(f => f.Variations(ab).Variation(bIndex).VariationFunc(u => aIndex), expectA);
 
@@ -137,6 +153,11 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             VerifyFlag(f => f.Variations(ab).Variation(aVal).VariationForUser(_initialUser.Key, bVal), expectB);
             VerifyFlag(f => f.Variations(ab).Variation(bVal).VariationForUser(_initialUser.Key, aVal), expectA);
+
+            VerifyFlag(f => f.Variations(ab).Variation(aVal).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, bVal), _initialContextWithKind1, expectB); // matched
+            VerifyFlag(f => f.Variations(ab).Variation(aVal).VariationForKey(_initialContextWithKind1.Kind,
+                _initialContextWithKind1.Key, bVal), _initialContextWithKind2, expectA); // not matched
 
             VerifyFlag(f => f.Variations(ab).Variation(aVal).VariationFunc(u => bVal), expectB);
             VerifyFlag(f => f.Variations(ab).Variation(bVal).VariationFunc(u => aVal), expectA);
@@ -170,7 +191,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
         private void CreateAndStart()
         {
-            var ds = _td.CreateDataSource(_context, _updates, _initialUser, false);
+            var ds = _td.Build(_context.WithDataSourceUpdateSink(_updates).WithContextAndBackgroundState(_initialUser, false));
             var started = ds.Start();
             Assert.True(started.IsCompleted);
         }
@@ -209,17 +230,22 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         private void VerifyFlag(Func<TestData.FlagBuilder, TestData.FlagBuilder> builderFn,
+            Context context,
             Action<ItemDescriptor> assertion)
         {
             var tdTemp = TestData.DataSource();
-            using (var ds = tdTemp.CreateDataSource(_context, _updates, _initialUser, false))
+            using (var ds = tdTemp.Build(_context.WithDataSourceUpdateSink(_updates).WithContextAndBackgroundState(context, false)))
             {
                 ds.Start();
-                _updates.ExpectInit(_initialUser);
+                _updates.ExpectInit(context);
                 tdTemp.Update(builderFn(tdTemp.Flag("flag")));
-                var up = _updates.ExpectUpsert(_initialUser, "flag");
+                var up = _updates.ExpectUpsert(context, "flag");
                 assertion(up);
             }
         }
+
+        private void VerifyFlag(Func<TestData.FlagBuilder, TestData.FlagBuilder> builderFn,
+            Action<ItemDescriptor> assertion) =>
+            VerifyFlag(builderFn, _initialUser, assertion);
     }
 }

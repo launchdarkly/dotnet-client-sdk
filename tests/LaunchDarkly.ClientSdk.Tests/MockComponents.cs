@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
@@ -11,11 +12,12 @@ using LaunchDarkly.Sdk.Client.Internal.DataSources;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.TestHelpers;
 using Xunit;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client
 {
@@ -25,32 +27,51 @@ namespace LaunchDarkly.Sdk.Client
 
     internal static class MockComponentExtensions
     {
-        public static IDataSourceFactory AsSingletonFactory(this IDataSource instance) =>
-            new SingleDataSourceFactory { Instance = instance };
+        // Normally SDK configuration always specifies component factories rather than component instances,
+        // so that the SDK can handle the component lifecycle and dependency injection. However, in tests,
+        // we often want to set up a specific component instance; .AsSingletonFactory() wraps it in a
+        // factory that always returns that instance.
+        public static IComponentConfigurer<T> AsSingletonFactory<T>(this T instance) =>
+            MockComponents.ComponentConfigurerFromLambda<T>((clientContext) => instance);
 
-        public static IEventProcessorFactory AsSingletonFactory(this IEventProcessor instance) =>
-            new SingleEventProcessorFactory { Instance = instance };
+        public static IComponentConfigurer<T> AsSingletonFactoryWithDiagnosticDescription<T>(this T instance, LdValue description) =>
+            new SingleComponentFactoryWithDiagnosticDescription<T> { Instance = instance, Description = description };
 
-        public static IPersistentDataStoreFactory AsSingletonFactory(this IPersistentDataStore instance) =>
-            new SinglePersistentDataStoreFactory { Instance = instance };
-
-        private class SingleDataSourceFactory : IDataSourceFactory
+        private class SingleComponentFactoryWithDiagnosticDescription<T> : IComponentConfigurer<T>, IDiagnosticDescription
         {
-            public IDataSource Instance { get; set; }
-            public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink,
-                User currentUser, bool inBackground) => Instance;
+            public T Instance { get; set; }
+            public LdValue Description { get; set; }
+            public LdValue DescribeConfiguration(LdClientContext context) => Description;
+            public T Build(LdClientContext context) => Instance;
+        }
+    }
+
+    internal static class MockComponents
+    {
+        public static IComponentConfigurer<T> ComponentConfigurerFromLambda<T>(Func<LdClientContext, T> factory) =>
+            new ComponentConfigurerFromLambdaImpl<T>() { Factory = factory };
+
+        private class ComponentConfigurerFromLambdaImpl<T> : IComponentConfigurer<T>
+        {
+            public Func<LdClientContext, T> Factory { get; set; }
+            public T Build(LdClientContext context) => Factory(context);
+        }
+    }
+
+    internal class CapturingComponentConfigurer<T>: IComponentConfigurer<T>
+    {
+        private readonly IComponentConfigurer<T> _factory;
+        public LdClientContext ReceivedClientContext { get; private set; }
+
+        public CapturingComponentConfigurer(IComponentConfigurer<T> factory)
+        {
+            _factory = factory;
         }
 
-        private class SingleEventProcessorFactory : IEventProcessorFactory
+        public T Build(LdClientContext clientContext)
         {
-            public IEventProcessor Instance { get; set; }
-            public IEventProcessor CreateEventProcessor(LdClientContext context) => Instance;
-        }
-
-        private class SinglePersistentDataStoreFactory : IPersistentDataStoreFactory
-        {
-            public IPersistentDataStore Instance { get; set; }
-            public IPersistentDataStore CreatePersistentDataStore(LdClientContext context) => Instance;
+            ReceivedClientContext = clientContext;
+            return _factory.Build(clientContext);
         }
     }
 
@@ -99,14 +120,14 @@ namespace LaunchDarkly.Sdk.Client
         internal class ReceivedInit
         {
             public FullDataSet Data { get; set; }
-            public User User { get; set; }
+            public Context Context{ get; set; }
         }
 
         internal class ReceivedUpsert
         {
             public string Key { get; set; }
             public ItemDescriptor Data { get; set; }
-            public User User { get; set; }
+            public Context Context { get; set; }
         }
 
         internal class ReceivedStatusUpdate
@@ -117,26 +138,26 @@ namespace LaunchDarkly.Sdk.Client
 
         public readonly EventSink<object> Actions = new EventSink<object>();
 
-        public void Init(User user, FullDataSet data) =>
-            Actions.Enqueue(new ReceivedInit { Data = data, User = user });
+        public void Init(Context context, FullDataSet data) =>
+            Actions.Enqueue(new ReceivedInit { Data = data, Context = context});
 
-        public void Upsert(User user, string key, ItemDescriptor data) =>
-            Actions.Enqueue(new ReceivedUpsert { Key = key, Data = data, User = user });
+        public void Upsert(Context context, string key, ItemDescriptor data) =>
+            Actions.Enqueue(new ReceivedUpsert { Key = key, Data = data, Context = context });
 
         public void UpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError) =>
             Actions.Enqueue(new ReceivedStatusUpdate { State = newState, Error = newError });
 
-        public FullDataSet ExpectInit(User user)
+        public FullDataSet ExpectInit(Context context)
         {
             var action = Assert.IsType<ReceivedInit>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
-            AssertHelpers.UsersEqual(user, action.User);
+            AssertHelpers.ContextsEqual(context, action.Context);
             return action.Data;
         }
 
-        public ItemDescriptor ExpectUpsert(User user, string key)
+        public ItemDescriptor ExpectUpsert(Context context, string key)
         {
             var action = Assert.IsType<ReceivedUpsert>(Actions.ExpectValue(TimeSpan.FromSeconds(5)));
-            Assert.Equal(user, action.User);
+            AssertHelpers.ContextsEqual(context, action.Context);
             Assert.Equal(key, action.Key);
             return action.Data;
         }
@@ -148,25 +169,6 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         public void ExpectNoMoreActions() => Actions.ExpectNoValue();
-    }
-
-    internal class MockDeviceInfo : IDeviceInfo
-    {
-        internal const string GeneratedId = "fake-generated-id";
-
-        private readonly string key;
-
-        public MockDeviceInfo() : this(GeneratedId) { }
-
-        public MockDeviceInfo(string key)
-        {
-            this.key = key;
-        }
-
-        public string UniqueDeviceId()
-        {
-            return key;
-        }
     }
 
     internal class MockDiagnosticStore : IDiagnosticStore
@@ -210,18 +212,19 @@ namespace LaunchDarkly.Sdk.Client
 
         public void Flush() { }
 
+        public bool FlushAndWait(TimeSpan timeout) => true;
+
+        public Task<bool> FlushAndWaitAsync(TimeSpan timeout) => Task.FromResult(true);
+
         public void Dispose() { }
 
-        public void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e) =>
+        public void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e) =>
             Events.Add(e);
 
-        public void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e) =>
+        public void RecordIdentifyEvent(in EventProcessorTypes.IdentifyEvent e) =>
             Events.Add(e);
 
-        public void RecordCustomEvent(EventProcessorTypes.CustomEvent e) =>
-            Events.Add(e);
-
-        public void RecordAliasEvent(EventProcessorTypes.AliasEvent e) =>
+        public void RecordCustomEvent(in EventProcessorTypes.CustomEvent e) =>
             Events.Add(e);
     }
 
@@ -239,11 +242,11 @@ namespace LaunchDarkly.Sdk.Client
             public int EventCount;
         }
 
-        public Task<EventSenderResult> SendEventDataAsync(EventDataKind kind, string data, int eventCount)
+        public Task<EventSenderResult> SendEventDataAsync(EventDataKind kind, byte[] data, int eventCount)
         {
             if (!FilterKind.HasValue || kind == FilterKind.Value)
             {
-                Calls.Add(new Params { Kind = kind, Data = data, EventCount = eventCount });
+                Calls.Add(new Params { Kind = kind, Data = Encoding.UTF8.GetString(data), EventCount = eventCount });
             }
             return Task.FromResult(new EventSenderResult(DeliveryStatus.Succeeded, null));
         }
@@ -316,68 +319,34 @@ namespace LaunchDarkly.Sdk.Client
         private PersistentDataStoreWrapper WithWrapper(string mobileKey) =>
             new PersistentDataStoreWrapper(this, mobileKey, Logs.None.Logger(""));
 
-        internal void SetupUserData(string mobileKey, string userKey, FullDataSet data) =>
-            WithWrapper(mobileKey).SetUserData(Base64.UrlSafeSha256Hash(userKey), data);
+        internal void SetupUserData(string mobileKey, string contextKey, FullDataSet data) =>
+            WithWrapper(mobileKey).SetContextData(Base64.UrlSafeSha256Hash(contextKey), data);
 
-        internal FullDataSet? InspectUserData(string mobileKey, string userKey) =>
-            WithWrapper(mobileKey).GetUserData(Base64.UrlSafeSha256Hash(userKey));
+        internal FullDataSet? InspectUserData(string mobileKey, string contextKey) =>
+            WithWrapper(mobileKey).GetContextData(Base64.UrlSafeSha256Hash(contextKey));
 
-        internal UserIndex InspectUserIndex(string mobileKey) =>
+        internal ContextIndex InspectContextIndex(string mobileKey) =>
             WithWrapper(mobileKey).GetIndex();
-    }
-
-    internal class CapturingDataSourceFactory : IDataSourceFactory
-    {
-        internal IDataSourceUpdateSink UpdateSink;
-
-        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, User currentUser, bool inBackground)
-        {
-            UpdateSink = updateSink;
-            return new MockDataSourceThatNeverInitializes();
-        }
-    }
-
-    internal class MockDataSourceFactoryFromLambda : IDataSourceFactory
-    {
-        private readonly Func<LdClientContext, IDataSourceUpdateSink, User, bool, IDataSource> _fn;
-
-        internal MockDataSourceFactoryFromLambda(Func<LdClientContext, IDataSourceUpdateSink, User, bool, IDataSource> fn)
-        {
-            _fn = fn;
-        }
-
-        public IDataSource CreateDataSource(LdClientContext context, IDataSourceUpdateSink updateSink, User currentUser, bool inBackground) =>
-            _fn(context, updateSink, currentUser, inBackground);
     }
 
     internal class MockPollingProcessor : IDataSource
     {
         private IDataSourceUpdateSink _updateSink;
-        private User _user;
+        private Context _context;
         private FullDataSet? _data;
 
-        public User ReceivedUser => _user;
+        public MockPollingProcessor(FullDataSet? data) : this(null, new Context(), data) { }
 
-        public MockPollingProcessor(FullDataSet? data) : this(null, null, data) { }
-
-        private MockPollingProcessor(IDataSourceUpdateSink updateSink, User user, FullDataSet? data)
+        private MockPollingProcessor(IDataSourceUpdateSink updateSink, Context context, FullDataSet? data)
         {
             _updateSink = updateSink;
-            _user = user;
+            _context = context;
             _data = data;
         }
 
-        public static IDataSourceFactory Factory(FullDataSet? data) =>
-            new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
-                new MockPollingProcessor(updates, user, data));
-
-        public IDataSourceFactory AsFactory() =>
-            new MockDataSourceFactoryFromLambda((ctx, updates, user, bg) =>
-            {
-                this._updateSink = updates;
-                this._user = user;
-                return this;
-            });
+        public static IComponentConfigurer<IDataSource> Factory(FullDataSet? data) =>
+            MockComponents.ComponentConfigurerFromLambda<IDataSource>(clientContext =>
+                new MockPollingProcessor(clientContext.DataSourceUpdateSink, clientContext.CurrentContext, data));
 
         public bool IsRunning
         {
@@ -397,7 +366,7 @@ namespace LaunchDarkly.Sdk.Client
             IsRunning = true;
             if (_updateSink != null && _data != null)
             {
-                _updateSink.Init(_user, _data.Value);
+                _updateSink.Init(_context, _data.Value);
             }
             return Task.FromResult(true);
         }
@@ -405,13 +374,13 @@ namespace LaunchDarkly.Sdk.Client
 
     internal class MockDataSourceFromLambda : IDataSource
     {
-        private readonly User _user;
+        private readonly Context _context;
         private readonly Func<Task> _startFn;
         private bool _initialized;
 
-        public MockDataSourceFromLambda(User user, Func<Task> startFn)
+        public MockDataSourceFromLambda(Context context, Func<Task> startFn)
         {
-            _user = user;
+            _context = context;
             _startFn = startFn;
         }
 

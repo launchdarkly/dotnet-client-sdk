@@ -8,7 +8,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     {
         private readonly TestData _td = TestData.DataSource();
         private readonly Configuration _config;
-        private readonly User _user = User.WithKey("userkey");
+        private readonly Context _user = Context.New("userkey");
 
         public TestDataWithClientTest(ITestOutputHelper testOutput) : base(testOutput)
         {
@@ -60,11 +60,11 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 .VariationForUser("user1", LdValue.Of("green"))
                 .VariationForUser("user2", LdValue.Of("blue"))
                 .VariationFunc(user =>
-                    user.GetAttribute(UserAttribute.ForName("favoriteColor"))
+                    user.GetValue("favoriteColor")
                 ));
-            var user1 = User.WithKey("user1");
-            var user2 = User.WithKey("user2");
-            var user3 = User.Builder("user3").Custom("favoriteColor", "green").Build();
+            var user1 = Context.New("user1");
+            var user2 = Context.New("user2");
+            var user3 = Context.Builder("user3").Set("favoriteColor", "green").Build();
 
             using (var client = LdClient.Init(_config, user1, TimeSpan.FromSeconds(1)))
             {
@@ -76,6 +76,39 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
                 client.Identify(user3, TimeSpan.FromSeconds(1));
 
+                Assert.Equal("green", client.StringVariation("flag", ""));
+            }
+        }
+
+        [Fact]
+        public void CanSetValuePerContext()
+        {
+            ContextKind kind1 = ContextKind.Of("kind1"), kind2 = ContextKind.Of("kind2");
+            _td.Update(_td.Flag("flag")
+                .Variations(LdValue.Of("red"), LdValue.Of("green"), LdValue.Of("blue"))
+                .Variation(LdValue.Of("red"))
+                .VariationForKey(kind1, "key1", LdValue.Of("green"))
+                .VariationForKey(kind1, "key2", LdValue.Of("blue"))
+                .VariationForKey(kind2, "key1", LdValue.Of("blue"))
+                .VariationFunc(context =>
+                    context.GetValue("favoriteColor")
+                ));
+            var context1 = Context.New(kind1, "key1");
+            var context2 = Context.New(kind1, "key2");
+            var context3 = Context.New(kind2, "key1");
+            var context4 = Context.Builder("key4").Set("favoriteColor", "green").Build();
+
+            using (var client = LdClient.Init(_config, context1, TimeSpan.FromSeconds(1)))
+            {
+                Assert.Equal("green", client.StringVariation("flag", ""));
+
+                client.Identify(context2, TimeSpan.FromSeconds(1));
+                Assert.Equal("blue", client.StringVariation("flag", ""));
+
+                client.Identify(context3, TimeSpan.FromSeconds(1));
+                Assert.Equal("blue", client.StringVariation("flag", ""));
+
+                client.Identify(context4, TimeSpan.FromSeconds(1));
                 Assert.Equal("green", client.StringVariation("flag", ""));
             }
         }

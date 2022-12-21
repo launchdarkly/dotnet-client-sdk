@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Internal;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 {
@@ -35,8 +35,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 
         private volatile ImmutableDictionary<string, ItemDescriptor> _flags =
             ImmutableDictionary<string, ItemDescriptor>.Empty;
-        private volatile UserIndex _storeIndex = null;
-        private volatile string _currentUserId = null;
+        private volatile ContextIndex _storeIndex = null;
+        private string _currentContextId = null;
 
         public PersistentDataStoreWrapper PersistentStore => _persistentStore;
 
@@ -67,27 +67,27 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         }
 
         /// <summary>
-        /// Attempts to retrieve cached data for the specified user, if any. This does not
-        /// affect the current user/flags state.
+        /// Attempts to retrieve cached data for the specified context, if any. This does not
+        /// affect the current context/flags state.
         /// </summary>
-        /// <param name="user">a user</param>
-        /// <returns>that user's data from the persistent store, or null if none</returns>
-        public FullDataSet? GetCachedData(User user) =>
-            _persistentStore is null ? null : _persistentStore.GetUserData(UserIdFor(user));
+        /// <param name="context">an evaluation context</param>
+        /// <returns>that context's data from the persistent store, or null if none</returns>
+        public FullDataSet? GetCachedData(Context context) =>
+            _persistentStore is null ? null : _persistentStore.GetContextData(ContextIdFor(context));
 
         /// <summary>
-        /// Replaces the current flag data and updates the current-user state, optionally
+        /// Replaces the current flag data and updates the current-context state, optionally
         /// updating persistent storage as well.
         /// </summary>
-        /// <param name="user">the user who should become the current user</param>
+        /// <param name="context">the context that should become the current context</param>
         /// <param name="data">the full flag data</param>
         /// <param name="updatePersistentStorage">true to also update the flag data in
         /// persistent storage (if persistent storage is enabled)</param>
-        public void Init(User user, FullDataSet data, bool updatePersistentStorage)
+        public void Init(Context context, FullDataSet data, bool updatePersistentStorage)
         {
             var newFlags = data.Items.ToImmutableDictionary();
             IEnumerable<string> removedUserIds = null;
-            var userId = UserIdFor(user);
+            var contextId = ContextIdFor(context);
             var updatedIndex = _storeIndex;
 
             lock (_writerLock)
@@ -96,12 +96,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
 
                 if (_storeIndex != null)
                 {
-                    updatedIndex = _storeIndex.UpdateTimestamp(userId, UnixMillisecondTime.Now)
+                    updatedIndex = _storeIndex.UpdateTimestamp(contextId, UnixMillisecondTime.Now)
                         .Prune(_maxCachedUsers, out removedUserIds);
                     _storeIndex = updatedIndex;
                 }
 
-                _currentUserId = userId;
+                _currentContextId = contextId;
             }
 
             if (_persistentStore != null)
@@ -112,12 +112,12 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
                     {
                         foreach (var oldId in removedUserIds)
                         {
-                            _persistentStore.RemoveUserData(oldId);
+                            _persistentStore.RemoveContextData(oldId);
                         }
                     }
                     if (updatePersistentStorage)
                     {
-                        _persistentStore.SetUserData(userId, data);
+                        _persistentStore.SetContextData(contextId, data);
                     }
                     _persistentStore.SetIndex(updatedIndex);
                 }
@@ -162,7 +162,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
         public bool Upsert(string key, ItemDescriptor data)
         {
             var updatedFlags = _flags;
-            string userId = null;
+            string contextId = null;
 
             lock (_writerLock)
             {
@@ -172,15 +172,15 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataStores
                 }
                 updatedFlags = _flags.SetItem(key, data);
                 _flags = updatedFlags;
-                userId = _currentUserId;
+                contextId = _currentContextId;
             }
 
-            _persistentStore?.SetUserData(userId, new FullDataSet(updatedFlags));
+            _persistentStore?.SetContextData(contextId, new FullDataSet(updatedFlags));
             return true;
         }
 
         public void Dispose() => _persistentStore?.Dispose();
 
-        internal static string UserIdFor(User user) => Base64.UrlSafeSha256Hash(user.Key);
+        internal static string ContextIdFor(Context context) => Base64.UrlSafeSha256Hash(context.FullyQualifiedKey);
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System;
-using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Concurrent;
 using LaunchDarkly.TestHelpers.HttpTest;
 using Xunit;
 using Xunit.Abstractions;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
 using static LaunchDarkly.Sdk.Client.MockResponses;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 using static LaunchDarkly.Sdk.Client.TestHttpUtils;
 
 namespace LaunchDarkly.Sdk.Client.Internal.DataSources
@@ -19,31 +19,29 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private static FullDataSet AllData =>
             new DataSetBuilder().Add("flag1", Flag).Build();
         private static readonly TimeSpan BriefInterval = TimeSpan.FromMilliseconds(20);
-        private static readonly User simpleUser = User.WithKey("me");
-        private const string encodedSimpleUser = "eyJrZXkiOiJtZSJ9";
+        private static readonly Context simpleUser = Context.New("me");
 
         private readonly MockDataSourceUpdateSink _updateSink = new MockDataSourceUpdateSink();
 
-        private IDataSource MakeDataSource(Uri baseUri, User user, Action<ConfigurationBuilder> modConfig = null)
+        private IDataSource MakeDataSource(Uri baseUri, Context context, Action<ConfigurationBuilder> modConfig = null)
         {
             var builder = BasicConfig()
                 .DataSource(Components.PollingDataSource())
                 .ServiceEndpoints(Components.ServiceEndpoints().Polling(baseUri));
             modConfig?.Invoke(builder);
             var config = builder.Build();
-            return config.DataSourceFactory.CreateDataSource(new LdClientContext(config), _updateSink,
-                user, false);
+            return config.DataSource.Build(new LdClientContext(config, context).WithDataSourceUpdateSink(_updateSink));
         }
 
         public PollingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
 
         [Theory]
-        [InlineData("", false, "/msdk/evalx/users/", "")]
-        [InlineData("", true, "/msdk/evalx/users/", "?withReasons=true")]
-        [InlineData("/basepath", false, "/basepath/msdk/evalx/users/", "")]
-        [InlineData("/basepath", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
-        [InlineData("/basepath/", false, "/basepath/msdk/evalx/users/", "")]
-        [InlineData("/basepath/", true, "/basepath/msdk/evalx/users/", "?withReasons=true")]
+        [InlineData("", false, "/msdk/evalx/contexts/", "")]
+        [InlineData("", true, "/msdk/evalx/contexts/", "?withReasons=true")]
+        [InlineData("/basepath", false, "/basepath/msdk/evalx/contexts/", "")]
+        [InlineData("/basepath", true, "/basepath/msdk/evalx/contexts/", "?withReasons=true")]
+        [InlineData("/basepath/", false, "/basepath/msdk/evalx/contexts/", "")]
+        [InlineData("/basepath/", true, "/basepath/msdk/evalx/contexts/", "?withReasons=true")]
         public void PollingRequestHasCorrectUri(
             string baseUriExtraPath,
             bool withReasons,
@@ -61,7 +59,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
                     var request = server.Recorder.RequireRequest();
                     Assert.Equal("GET", request.Method);
-                    Assert.Equal(expectedPathWithoutUser + encodedSimpleUser, request.Path);
+                    AssertHelpers.ContextsEqual(simpleUser, TestUtil.Base64ContextFromUrlPath(request.Path, expectedPathWithoutUser));
                     Assert.Equal(expectedQuery, request.Query);
                 }
             }

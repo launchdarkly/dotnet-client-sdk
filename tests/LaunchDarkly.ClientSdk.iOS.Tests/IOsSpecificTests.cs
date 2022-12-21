@@ -15,35 +15,6 @@ namespace LaunchDarkly.Sdk.Client.iOS.Tests
         }
 
         [Fact]
-        public void UserHasOSAndDeviceAttributesForPlatform()
-        {
-            var baseUser = User.WithKey("key");
-            var config = BasicConfig().Build();
-            using (var client = TestUtil.CreateClient(config, baseUser))
-            {
-                var user = client.User;
-                Assert.Equal(baseUser.Key, user.Key);
-                Assert.Contains("os", user.Custom.Keys);
-                Assert.StartsWith("iOS ", user.Custom["os"].AsString);
-                Assert.Contains("device", user.Custom.Keys);
-            }
-        }
-
-        [Fact]
-        public void CanGetUniqueUserKey()
-        {
-            var anonUser = User.Builder((string)null).Anonymous(true).Build();
-            var config = BasicConfig()
-                .DeviceInfo(null).Build();
-            using (var client = TestUtil.CreateClient(config, anonUser))
-            {
-                var user = client.User;
-                Assert.NotNull(user.Key);
-                Assert.NotEqual("", user.Key);
-            }
-        }
-
-        [Fact]
         public void EventHandlerIsCalledOnUIThread()
         {
             var td = TestData.DataSource();

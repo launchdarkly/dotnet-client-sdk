@@ -5,7 +5,7 @@ using System.Net.Http;
 using LaunchDarkly.Sdk.Internal.Http;
 using LaunchDarkly.Sdk.Client.Integrations;
 
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Encapsulates top-level HTTP configuration that applies to all SDK components.
@@ -73,7 +73,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <c>HttpClient</c>.
         /// </para>
         /// <para>
-        /// It is not the same as the timeout parameter to<see cref= "LdClient.Init(Configuration, User, TimeSpan)" />,
+        /// It is not the same as the timeout parameter to<see cref= "LdClient.Init(Configuration, Context, TimeSpan)" />,
         /// which limits the time for initializing the SDK regardless of how many individual HTTP
         /// requests are done in that time.
         /// </para>
@@ -181,5 +181,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             }
             return ret;
         }
+
+        internal static HttpConfiguration Default() =>
+            new HttpConfiguration(HttpProperties.Default, null, HttpConfigurationBuilder.DefaultResponseStartTimeout, false);
     }
 }

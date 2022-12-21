@@ -39,8 +39,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// </summary>
         /// <remarks>
         /// <para>
-        /// When you first start the client, once <see cref="LdClient.Init(Configuration, User, TimeSpan)"/> or
-        /// <see cref="LdClient.InitAsync(Configuration, User)"/> has returned, <see cref="Initialized"/> should be
+        /// When you first start the client, once <see cref="LdClient.Init(Configuration, Context, TimeSpan)"/> or
+        /// <see cref="LdClient.InitAsync(Configuration, Context)"/> has returned, <see cref="Initialized"/> should be
         /// <see langword="true"/> if and only if either 1. it connected to LaunchDarkly and successfully retrieved
         /// flags, or 2. it started in offline mode so there's no need to connect to LaunchDarkly. If the client
         /// timed out trying to connect to LD, then <see cref="Initialized"/> is <see langword="false"/> (even if we
@@ -48,8 +48,8 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <see langword="false"/>. This serves the purpose of letting the app know that there was a problem of some kind.
         /// </para>
         /// <para>
-        /// If you call <see cref="Identify(User, TimeSpan)"/> or <see cref="IdentifyAsync(User)"/>, <see cref="Initialized"/>
-        /// will become <see langword="false"/> until the SDK receives the new user's flags.
+        /// If you call <see cref="Identify(Context, TimeSpan)"/> or <see cref="IdentifyAsync(Context)"/>,
+        /// <see cref="Initialized"/> will become <see langword="false"/> until the SDK receives the new context's flags.
         /// </para>
         /// </remarks>
         bool Initialized { get; }
@@ -304,36 +304,39 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         IDictionary<string, LdValue> AllFlags();
 
         /// <summary>
-        /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
-        /// an analytics event to tell LaunchDarkly about the user.
+        /// Changes the current evaluation context, requests flags for that context from LaunchDarkly if we are online,
+        /// and generates an analytics event to tell LaunchDarkly about the context.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This is equivalent to <see cref="IdentifyAsync(User)"/>, but as a synchronous method.
+        /// This is equivalent to <see cref="IdentifyAsync(Context)"/>, but as a synchronous method.
         /// </para>
         /// <para>
-        /// If the SDK is online, <see cref="Identify"/> waits to receive feature flag values for the new user from
+        /// If the SDK is online, <see cref="Identify"/> waits to receive feature flag values for the new context from
         /// LaunchDarkly. If it receives the new flag values before <c>maxWaitTime</c> has elapsed, it returns
         /// <see langword="true"/>. If the timeout elapses, it returns <see langword="false"/> (although the SDK might
         /// still receive the flag values later). If we do not need to request flags from LaunchDarkly because we are
         /// in offline mode, it returns <see langword="true"/>.
         /// </para>
         /// <para>
-        /// If you do not want to wait, you can either set <c>maxWaitTime</c> to zero or call <see cref="IdentifyAsync(User)"/>.
+        /// If you do not want to wait, you can either set <c>maxWaitTime</c> to zero or call <see cref="IdentifyAsync(Context)"/>.
         /// </para>
         /// </remarks>
-        /// <param name="user">the new user</param>
+        /// <param name="context">the new evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum time to wait for the new flag values</param>
         /// <returns>true if new flag values were obtained</returns>
-        bool Identify(User user, TimeSpan maxWaitTime);
+        /// <seealso cref="IdentifyAsync(Context)"/>
+        /// <seealso cref="ILdClientExtensions.Identify(ILdClient, User, TimeSpan)"/>
+        bool Identify(Context context, TimeSpan maxWaitTime);
 
         /// <summary>
-        /// Changes the current user, requests flags for that user from LaunchDarkly if we are online, and generates
-        /// an analytics event to tell LaunchDarkly about the user.
+        /// Changes the current evaluation context, requests flags for that context from LaunchDarkly if we are online,
+        /// and generates an analytics event to tell LaunchDarkly about the context.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// This is equivalent to <see cref="Identify(User, TimeSpan)"/>, but as an asynchronous method.
+        /// This is equivalent to <see cref="Identify(Context, TimeSpan)"/>, but as an asynchronous method.
         /// </para>
         /// <para>
         /// If the SDK is online, the returned task is completed once the SDK has received feature flag values for the
@@ -342,40 +345,85 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// and yields <see langword="true"/>.
         /// </para>
         /// </remarks>
-        /// <param name="user">the new user</param>
+        /// <param name="context">the new evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a task that yields true if new flag values were obtained</returns>
-        Task<bool> IdentifyAsync(User user);
+        /// <seealso cref="Identify(Context, TimeSpan)"/>
+        /// <seealso cref="ILdClientExtensions.IdentifyAsync(ILdClient, User)"/>
+        Task<bool> IdentifyAsync(Context context);
 
         /// <summary>
-        /// Associates two users for analytics purposes.
-        /// </summary>
-        /// <remarks>
-        /// This can be helpful in the situation where a person is represented by multiple
-        /// LaunchDarkly users. This may happen, for example, when a person initially logs into
-        /// an application-- the person might be represented by an anonymous user prior to logging
-        /// in and a different user after logging in, as denoted by a different user key.
-        /// </remarks>
-        /// <param name="user">the newly identified user</param>
-        /// <param name="previousUser">the previously identified user</param>
-        void Alias(User user, User previousUser);
-
-        /// <summary>
-        /// Tells the client that all pending analytics events should be delivered as soon as possible.
+        /// Tells the client that all pending analytics events (if any) should be delivered as soon
+        /// as possible. 
         /// </summary>
         /// <remarks>
         /// <para>
-        /// When the LaunchDarkly client generates analytics events (from flag evaluations, or from
-        /// <see cref="Identify(User, TimeSpan)"/> or <see cref="Track(string)"/>), they are queued on a worker thread.
-        /// The event thread normally sends all queued events to LaunchDarkly at regular intervals, controlled by the
-        /// <see cref="EventProcessorBuilder.FlushInterval"/> option. Calling <see cref="Flush"/> triggers a send
-        /// without waiting for the next interval.
+        /// This flush is asynchronous, so this method will return before it is complete. To wait for
+        /// the flush to complete, use <see cref="FlushAndWait(TimeSpan)"/> instead (or, if you are done
+        /// with the SDK, <see cref="LdClient.Dispose()"/>).
         /// </para>
         /// <para>
-        /// Flushing is asynchronous, so this method will return before it is complete. However, if you
-        /// shut down the client with <see cref="IDisposable.Dispose()"/>, events are guaranteed to be
-        /// sent before that method returns.
+        /// For more information, see: <a href="https://docs.launchdarkly.com/sdk/features/flush#net-client-side">
+        /// Flushing Events</a>.
         /// </para>
         /// </remarks>
+        /// <seealso cref="FlushAndWait(TimeSpan)"/>
+        /// <seealso cref="FlushAndWaitAsync(TimeSpan)"/>
         void Flush();
+
+        /// <summary>
+        /// Tells the client to deliver any pending analytics events synchronously now.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Unlike <see cref="Flush"/>, this method waits for event delivery to finish. The timeout parameter, if
+        /// greater than zero, specifies the maximum amount of time to wait. If the timeout elapses before
+        /// delivery is finished, the method returns early and returns false; in this case, the SDK may still
+        /// continue trying to deliver the events in the background.
+        /// </para>
+        /// <para>
+        /// If the timeout parameter is zero or negative, the method waits as long as necessary to deliver the
+        /// events. However, the SDK does not retry event delivery indefinitely; currently, any network error
+        /// or server error will cause the SDK to wait one second and retry one time, after which the events
+        /// will be discarded so that the SDK will not keep consuming more memory for events indefinitely.
+        /// </para>
+        /// <para>
+        /// The method returns true if event delivery either succeeded, or definitively failed, before the
+        /// timeout elapsed. It returns false if the timeout elapsed.
+        /// </para>
+        /// <para>
+        /// This method is also implicitly called if you call <see cref="LdClient.Dispose()"/>. The difference is
+        /// that FlushAndWait does not shut down the SDK client.
+        /// </para>
+        /// <para>
+        /// For more information, see: <a href="https://docs.launchdarkly.com/sdk/features/flush#net-server-side">
+        /// Flushing Events</a>.
+        /// </para>
+        /// </remarks>
+        /// <param name="timeout">the maximum time to wait</param>
+        /// <returns>true if completed, false if timed out</returns>
+        /// <seealso cref="Flush"/>
+        /// <seealso cref="FlushAndWaitAsync(TimeSpan)"/>
+        bool FlushAndWait(TimeSpan timeout);
+
+        /// <summary>
+        /// Tells the client to deliver any pending analytics events now, returning a Task that can be awaited.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is equivalent to <see cref="FlushAndWait(TimeSpan)"/>, but with asynchronous semantics so it
+        /// does not block the calling thread. The difference between this and <see cref="Flush"/> is that you
+        /// can await the task to simulate blocking behavior.
+        /// </para>
+        /// <para>
+        /// For more information, see: <a href="https://docs.launchdarkly.com/sdk/features/flush#net-server-side">
+        /// Flushing Events</a>.
+        /// </para>
+        /// </remarks>
+        /// <param name="timeout">the maximum time to wait</param>
+        /// <returns>a Task that resolves to true if completed, false if timed out</returns>
+        /// <seealso cref="Flush"/>
+        /// <seealso cref="FlushAndWait(TimeSpan)"/>
+        Task<bool> FlushAndWaitAsync(TimeSpan timeout);
     }
 }

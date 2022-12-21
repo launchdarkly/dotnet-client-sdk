@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.Subsystems;
 
 using static LaunchDarkly.Sdk.Client.DataModel;
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
@@ -44,7 +45,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     ///         .VariationForUser("some-user-key", false));
     /// </code>
     /// </example>
-    public sealed class TestData : IDataSourceFactory
+    public sealed class TestData : IComponentConfigurer<IDataSource>
     {
         #region Private fields
 
@@ -84,7 +85,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </para>
         /// <para>
         /// Otherwise, it starts with a new default configuration in which the flag has <c>true</c>
-        /// and <c>false</c> variations, and is <c>true</c> by default for all users. You can change
+        /// and <c>false</c> variations, and is <c>true</c> by default for all contexts. You can change
         /// any of those properties, and provide more complex behavior, using the
         /// <see cref="FlagBuilder"/> methods.
         /// </para>
@@ -163,7 +164,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             foreach (var instance in instances)
             {
-                instance.DoUpdate(key, builder.CreateFlag(newVersion, instance.User));
+                instance.DoUpdate(key, builder.CreateFlag(newVersion, instance.Context));
             }
         }
 
@@ -195,18 +196,13 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         }
 
         /// <inheritdoc/>
-        public IDataSource CreateDataSource(
-            LdClientContext context,
-            IDataSourceUpdateSink updateSink,
-            User currentUser,
-            bool inBackground
-            )
+        public IDataSource Build(LdClientContext clientContext)
         {
             var instance = new DataSourceImpl(
                 this,
-                updateSink,
-                currentUser,
-                context.BaseLogger.SubLogger("DataSource.TestData")
+                clientContext.DataSourceUpdateSink,
+                clientContext.CurrentContext,
+                clientContext.BaseLogger.SubLogger("DataSource.TestData")
                 );
             lock (_lock)
             {
@@ -215,7 +211,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             return instance;
         }
 
-        internal FullDataSet MakeInitData(User user)
+        internal FullDataSet MakeInitData(Context context)
         {
             lock (_lock)
             {
@@ -228,7 +224,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                         _currentFlagVersions[fb.Key] = version;
                     }
                     b.Add(new KeyValuePair<string, ItemDescriptor>(fb.Key,
-                        fb.Value.CreateFlag(version, user)));
+                        fb.Value.CreateFlag(version, context)));
                 }
                 return new FullDataSet(b.ToImmutable());
             }
@@ -261,8 +257,9 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             internal readonly string _key;
             private List<LdValue> _variations;
             private int _defaultVariation;
-            private Dictionary<string, int> _variationByUserKey;
-            private Func<User, int?> _variationFunc;
+            Dictionary<ContextKind, Dictionary<string, int>> _variationByContextKey =
+                new Dictionary<ContextKind, Dictionary<string, int>>();
+            private Func<Context, int?> _variationFunc;
             private FeatureFlag _preconfiguredFlag;
 
             #endregion
@@ -274,7 +271,6 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 _key = key;
                 _variations = new List<LdValue>();
                 _defaultVariation = 0;
-                _variationByUserKey = new Dictionary<string, int>();
             }
 
             internal FlagBuilder(FlagBuilder from)
@@ -283,7 +279,10 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 _variations = new List<LdValue>(from._variations);
                 _defaultVariation = from._defaultVariation;
                 _variationFunc = from._variationFunc;
-                _variationByUserKey = new Dictionary<string, int>(from._variationByUserKey);
+                foreach (var kv in from._variationByContextKey)
+                {
+                    _variationByContextKey[kv.Key] = new Dictionary<string, int>(kv.Value);
+                }
                 _preconfiguredFlag = from._preconfiguredFlag;
             }
 
@@ -306,7 +305,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 IsBooleanFlag ? this : Variations(LdValue.Of(true), LdValue.Of(false));
 
             /// <summary>
-            /// Sets the flag to return the specified boolean variation for all users by default.
+            /// Sets the flag to return the specified boolean variation for all contexts by default.
             /// </summary>
             /// <remarks>
             /// The flag's variations are set to <c>true</c> and <c>false</c> if they are not already
@@ -318,7 +317,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 BooleanFlag().Variation(VariationForBoolean(variation));
 
             /// <summary>
-            /// Sets the flag to return the specified variation for all users by default.
+            /// Sets the flag to return the specified variation for all contexts by default.
             /// </summary>
             /// <remarks>
             /// The variation is specified by number, out of whatever variation values have already been
@@ -333,7 +332,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             }
 
             /// <summary>
-            /// Sets the flag to return the specified variation value for all users by default.
+            /// Sets the flag to return the specified variation value for all contexts by default.
             /// </summary>
             /// <remarks>
             /// The value may be of any JSON type, as defined by <see cref="LdValue"/>. If the value
@@ -359,11 +358,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             /// The flag's variations are set to <c>true</c> and <c>false</c> if they are not already
             /// (equivalent to calling <see cref="BooleanFlag"/>).
             /// </remarks>
-            /// <param name="userKey">a user key</param>
+            /// <param name="userKey">the user key</param>
             /// <param name="variation">the desired true/false variation to be returned for this user</param>
             /// <returns>the builder</returns>
+            /// <seealso cref="VariationForKey(ContextKind, string, bool)"/>
+            /// <seealso cref="VariationForUser(string, int)"/>
+            /// <seealso cref="VariationForUser(string, LdValue)"/>
             public FlagBuilder VariationForUser(string userKey, bool variation) =>
-                BooleanFlag().VariationForUser(userKey, VariationForBoolean(variation));
+                VariationForKey(ContextKind.Default, userKey, variation);
 
             /// <summary>
             /// Sets the flag to return the specified variation for a specific user key, overriding
@@ -373,15 +375,15 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             /// The variation is specified by number, out of whatever variation values have already been
             /// defined.
             /// </remarks>
-            /// <param name="userKey">a user key</param>
+            /// <param name="userKey">the user key</param>
             /// <param name="variationIndex">the desired variation to be returned for this user when
             /// targeting is on: 0 for the first, 1 for the second, etc.</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationForUser(string userKey, int variationIndex)
-            {
-                _variationByUserKey[userKey] = variationIndex;
-                return this;
-            }
+            /// <seealso cref="VariationForKey(ContextKind, string, int)"/>
+            /// <seealso cref="VariationForUser(string, bool)"/>
+            /// <seealso cref="VariationForUser(string, LdValue)"/>
+            public FlagBuilder VariationForUser(string userKey, int variationIndex) =>
+                VariationForKey(ContextKind.Default, userKey, variationIndex);
 
             /// <summary>
             /// Sets the flag to return the specified variation value for a specific user key, overriding
@@ -396,59 +398,123 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             /// <param name="userKey">a user key</param>
             /// <param name="value">the desired value to be returned for this user</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationForUser(string userKey, LdValue value)
+            /// <seealso cref="VariationForKey(ContextKind, string, LdValue)"/>
+            /// <seealso cref="VariationForUser(string, bool)"/>
+            /// <seealso cref="VariationForUser(string, int)"/>
+            public FlagBuilder VariationForUser(string userKey, LdValue value) =>
+                VariationForKey(ContextKind.Default, userKey, value);
+
+            /// <summary>
+            /// Sets the flag to return the specified boolean variation for a specific context by kind
+            /// and key, overriding any other defaults.
+            /// </summary>
+            /// <remarks>
+            /// The flag's variations are set to <c>true</c> and <c>false</c> if they are not already
+            /// (equivalent to calling <see cref="BooleanFlag"/>).
+            /// </remarks>
+            /// <param name="contextKind">the context kind</param>
+            /// <param name="contextKey">the context key</param>
+            /// <param name="variation">the desired true/false variation to be returned for this context</param>
+            /// <returns>the builder</returns>
+            /// <seealso cref="VariationForUser(string, bool)"/>
+            /// <seealso cref="VariationForKey(ContextKind, string, int)"/>
+            /// <seealso cref="VariationForKey(ContextKind, string, LdValue)"/>
+            public FlagBuilder VariationForKey(ContextKind contextKind, string contextKey, bool variation) =>
+                BooleanFlag().VariationForKey(contextKind, contextKey, VariationForBoolean(variation));
+
+            /// <summary>
+            /// Sets the flag to return the specified variation for a specific context by kind and key,
+            /// overriding any other defaults.
+            /// </summary>
+            /// <remarks>
+            /// The variation is specified by number, out of whatever variation values have already been
+            /// defined.
+            /// </remarks>
+            /// <param name="contextKind">the context kind</param>
+            /// <param name="contextKey">the context key</param>
+            /// <param name="variationIndex">the desired variation to be returned for this context when
+            /// targeting is on: 0 for the first, 1 for the second, etc.</param>
+            /// <returns>the builder</returns>
+            /// <seealso cref="VariationForUser(string, int)"/>
+            /// <seealso cref="VariationForKey(ContextKind, string, bool)"/>
+            /// <seealso cref="VariationForKey(ContextKind, string, LdValue)"/>
+            public FlagBuilder VariationForKey(ContextKind contextKind, string contextKey, int variationIndex)
             {
-                AddVariationIfNotDefined(value);
-                _variationByUserKey[userKey] = _variations.IndexOf(value);
+                if (!_variationByContextKey.TryGetValue(contextKind, out var keys))
+                {
+                    keys = new Dictionary<string, int>();
+                    _variationByContextKey[contextKind] = keys;
+                }
+                keys[contextKey] = variationIndex;
                 return this;
             }
 
             /// <summary>
+            /// Sets the flag to return the specified variation value for a specific context by kind and
+            /// key, overriding any other defaults.
+            /// </summary>
+            /// <remarks>
+            /// The value may be of any JSON type, as defined by <see cref="LdValue"/>. If the value
+            /// matches one of the values previously specified with <see cref="Variations(LdValue[])"/>,
+            /// then the variation index is set to the index of that value. Otherwise, the value is
+            /// added to the variation list.
+            /// </remarks>
+            /// <param name="contextKind">the context kind</param>
+            /// <param name="contextKey">the context key</param>
+            /// <param name="value">the desired value to be returned for this context</param>
+            /// <returns>the builder</returns>
+            /// <seealso cref="VariationForUser(string, LdValue)"/>
+            /// <seealso cref="VariationForKey(ContextKind, string, bool)"/>
+            /// <seealso cref="VariationForKey(ContextKind, string, int)"/>
+            public FlagBuilder VariationForKey(ContextKind contextKind, string contextKey, LdValue value) =>
+                VariationForKey(contextKind, contextKey, AddVariationIfNotDefined(value));
+
+            /// <summary>
             /// Sets the flag to use a function to determine whether to return true or false for
-            /// any given user.
+            /// any given context.
             /// </summary>
             /// <remarks>
             /// <para>
-            /// The function takes a user and returns <see langword="true"/>, <see langword="false"/>,
+            /// The function takes an evaluation context and returns <see langword="true"/>, <see langword="false"/>,
             /// or <see langword="null"/>. A <see langword="null"/> result means that the flag will
-            /// fall back to its default variation for all users.
+            /// fall back to its default variation for all contexts.
             /// </para>
             /// <para>
             /// The flag's variations are set to <c>true</c> and <c>false</c> if they are not already
             /// (equivalent to calling <see cref="BooleanFlag"/>).
             /// </para>
             /// <para>
-            /// The function is only called for users who were not already specified by
-            /// <see cref="VariationForUser(string, bool)"/>.
+            /// This function is called only if the context was not specifically targeted with
+            /// <see cref="VariationForUser(string, bool)"/> or <see cref="VariationForKey(ContextKind, string, bool)"/>.
             /// </para>
             /// </remarks>
             /// <param name="variationFunc">a function to determine the variation</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationFunc(Func<User, bool?> variationFunc) =>
-                BooleanFlag().VariationFunc(user =>
+            public FlagBuilder VariationFunc(Func<Context, bool?> variationFunc) =>
+                BooleanFlag().VariationFunc(context =>
                     {
-                        var b = variationFunc(user);
+                        var b = variationFunc(context);
                         return b.HasValue ? VariationForBoolean(b.Value) : (int?)null;
                     });
 
             /// <summary>
             /// Sets the flag to use a function to determine the variation index to return for
-            /// any given user.
+            /// any given context.
             /// </summary>
             /// <remarks>
             /// <para>
-            /// The function takes a user and returns an integer variation index or <see langword="null"/>.
+            /// The function takes an evaluation context and returns an integer variation index or <see langword="null"/>.
             /// A <see langword="null"/> result means that the flag will fall back to its default
-            /// variation for all users.
+            /// variation for all contexts.
             /// </para>
             /// <para>
-            /// The function is only called for users who were not already specified by
-            /// <see cref="VariationForUser(string, int)"/>.
+            /// This function is called only if the context was not specifically targeted with
+            /// <see cref="VariationForUser(string, int)"/> or <see cref="VariationForKey(ContextKind, string, int)"/>.
             /// </para>
             /// </remarks>
             /// <param name="variationFunc">a function to determine the variation</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationFunc(Func<User, int?> variationFunc)
+            public FlagBuilder VariationFunc(Func<Context, int?> variationFunc)
             {
                 _variationFunc = variationFunc;
                 return this;
@@ -456,29 +522,29 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             /// <summary>
             /// Sets the flag to use a function to determine the variation value to return for
-            /// any given user.
+            /// any given context.
             /// </summary>
             /// <remarks>
             /// <para>
-            /// The function takes a user and returns an <see cref="LdValue"/> or <see langword="null"/>.
+            /// The function takes an evaluation context and returns an <see cref="LdValue"/> or <see langword="null"/>.
             /// A <see langword="null"/> result means that the flag will fall back to its default
-            /// variation for all users.
+            /// variation for all contexts.
             /// </para>
             /// <para>
             /// The value returned by the function must be one of the values previously specified
             /// with <see cref="Variations(LdValue[])"/>; otherwise it will be ignored.
             /// </para>
             /// <para>
-            /// The function is only called for users who were not already specified by
-            /// <see cref="VariationForUser(string, LdValue)"/>.
+            /// This function is called only if the context was not specifically targeted with
+            /// <see cref="VariationForUser(string, LdValue)"/> or <see cref="VariationForKey(ContextKind, string, LdValue)"/>.
             /// </para>
             /// </remarks>
             /// <param name="variationFunc">a function to determine the variation</param>
             /// <returns>the builder</returns>
-            public FlagBuilder VariationFunc(Func<User, LdValue?> variationFunc) =>
-                VariationFunc(user =>
+            public FlagBuilder VariationFunc(Func<Context, LdValue?> variationFunc) =>
+                VariationFunc(context =>
                     {
-                        var v = variationFunc(user);
+                        var v = variationFunc(context);
                         if (!v.HasValue || !_variations.Contains(v.Value))
                         {
                             return null;
@@ -514,7 +580,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
             #region Internal methods
 
-            internal ItemDescriptor CreateFlag(int version, User user)
+            internal ItemDescriptor CreateFlag(int version, Context context)
             {
                 if (_preconfiguredFlag != null)
                 {
@@ -529,9 +595,10 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                         _preconfiguredFlag.DebugEventsUntilDate));
                 }
                 int variation;
-                if (!_variationByUserKey.TryGetValue(user.Key, out variation))
+                if (!_variationByContextKey.TryGetValue(context.Kind, out var keys) ||
+                    !keys.TryGetValue(context.Key, out variation))
                 {
-                    variation = _variationFunc?.Invoke(user) ?? _defaultVariation;
+                    variation = _variationFunc?.Invoke(context) ?? _defaultVariation;
                 }
                 var value = (variation < 0 || variation >= _variations.Count) ? LdValue.Null :
                     _variations[variation];
@@ -555,12 +622,15 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                     _variations[TrueVariationForBoolean] == LdValue.Of(true) &&
                     _variations[FalseVariationForBoolean] == LdValue.Of(false);
 
-            internal void AddVariationIfNotDefined(LdValue value)
+            internal int AddVariationIfNotDefined(LdValue value)
             {
-                if (!_variations.Contains(value))
+                int i = _variations.IndexOf(value);
+                if (i >= 0)
                 {
-                    _variations.Add(value);
+                    return i;
                 }
+                _variations.Add(value);
+                return _variations.Count - 1;
             }
 
             internal static int VariationForBoolean(bool value) =>
@@ -579,19 +649,19 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             private readonly IDataSourceUpdateSink _updateSink;
             private readonly Logger _log;
 
-            internal readonly User User;
+            internal readonly Context Context;
 
-            internal DataSourceImpl(TestData parent, IDataSourceUpdateSink updateSink, User user, Logger log)
+            internal DataSourceImpl(TestData parent, IDataSourceUpdateSink updateSink, Context context, Logger log)
             {
                 _parent = parent;
                 _updateSink = updateSink;
-                User = user;
+                Context = context;
                 _log = log;
             }
 
             public Task<bool> Start()
             {
-                _updateSink.Init(User, _parent.MakeInitData(User));
+                _updateSink.Init(Context, _parent.MakeInitData(Context));
                 return Task.FromResult(true);
             }
 
@@ -604,7 +674,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             {
                 _log.Debug("updating \"{0}\" to {1}", key, LogValues.Defer(() =>
                     item.Item is null ? "<null>" : DataModelSerialization.SerializeFlag(item.Item)));
-                _updateSink.Upsert(User, key, item);
+                _updateSink.Upsert(Context, key, item);
             }
 
             internal void DoUpdateStatus(DataSourceState newState, DataSourceStatus.ErrorInfo? newError)

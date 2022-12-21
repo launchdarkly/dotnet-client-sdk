@@ -3,7 +3,7 @@ using LaunchDarkly.Sdk.Json;
 using Xunit;
 using Xunit.Sdk;
 
-using static LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes;
+using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 using static LaunchDarkly.TestHelpers.JsonAssertions;
 
 namespace LaunchDarkly.Sdk.Client
@@ -20,22 +20,9 @@ namespace LaunchDarkly.Sdk.Client
             Assert.Equal(expected.Version, actual.Version);
         }
 
-        public static void UsersEqual(User expected, User actual) =>
+        public static void ContextsEqual(Context expected, Context actual) =>
             AssertJsonEqual(LdJsonSerialization.SerializeObject(expected),
                 LdJsonSerialization.SerializeObject(actual));
-
-        public static void UsersEqualExcludingAutoProperties(User expected, User actual)
-        {
-            var builder = User.Builder(expected);
-            foreach (var autoProp in new string[] { "device", "os" })
-            {
-                if (!actual.GetAttribute(UserAttribute.ForName(autoProp)).IsNull)
-                {
-                    builder.Custom(autoProp, actual.GetAttribute(UserAttribute.ForName(autoProp)));
-                }
-            }
-            UsersEqual(builder.Build(), actual);
-        }
 
         public static void LogMessageRegex(LogCapture logCapture, bool shouldHave, LogLevel level, string pattern)
         {

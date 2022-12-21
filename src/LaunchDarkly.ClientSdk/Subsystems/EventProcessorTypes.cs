@@ -1,5 +1,5 @@
 ﻿
-namespace LaunchDarkly.Sdk.Client.Interfaces
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     /// <summary>
     /// Parameter types for use by <see cref="IEventProcessor"/> implementations.
@@ -12,7 +12,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
     public static class EventProcessorTypes
     {
         /// <summary>
-        /// Parameters for <see cref="IEventProcessor.RecordEvaluationEvent(EvaluationEvent)"/>.
+        /// Parameters for <see cref="IEventProcessor.RecordEvaluationEvent(in EvaluationEvent)"/>.
         /// </summary>
         public struct EvaluationEvent
         {
@@ -22,10 +22,10 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             public UnixMillisecondTime Timestamp { get; set; }
 
             /// <summary>
-            /// Attributes of the user who generated the event. Some attributes may not be sent
-            /// to LaunchDarkly if they are private.
+            /// The context for the evaluation. Some attributes may not be sent  to LaunchDarkly if they
+            /// are private.
             /// </summary>
-            public User User { get; set; }
+            public Context Context { get; set; }
 
             /// <summary>
             /// The unique key of the feature flag involved in the event.
@@ -74,7 +74,7 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         }
 
         /// <summary>
-        /// Parameters for <see cref="IEventProcessor.RecordIdentifyEvent(IdentifyEvent)"/>.
+        /// Parameters for <see cref="IEventProcessor.RecordIdentifyEvent(in IdentifyEvent)"/>.
         /// </summary>
         public struct IdentifyEvent
         {
@@ -84,14 +84,14 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             public UnixMillisecondTime Timestamp { get; set; }
 
             /// <summary>
-            /// Attributes of the user being identified. Some attributes may not be sent
+            /// The evaluation context associated with the event. Some attributes may not be sent
             /// to LaunchDarkly if they are private.
             /// </summary>
-            public User User { get; set; }
+            public Context Context { get; set; }
         }
 
         /// <summary>
-        /// Parameters for <see cref="IEventProcessor.RecordCustomEvent(CustomEvent)"/>.
+        /// Parameters for <see cref="IEventProcessor.RecordCustomEvent(in CustomEvent)"/>.
         /// </summary>
         public struct CustomEvent
         {
@@ -100,10 +100,10 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             /// </summary>
             public UnixMillisecondTime Timestamp { get; set; }
             /// <summary>
-            /// Attributes of the user who generated the event. Some attributes may not be sent
+            /// The evaluation context associated with the event. Some attributes may not be sent
             /// to LaunchDarkly if they are private.
             /// </summary>
-            public User User { get; set; }
+            public Context Context { get; set; }
 
             /// <summary>
             /// The event key.
@@ -120,28 +120,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
             /// An optional numeric value that can be used in analytics.
             /// </summary>
             public double? MetricValue { get; set; }
-        }
-
-        /// <summary>
-        /// Parameters for <see cref="IEventProcessor.RecordAliasEvent(AliasEvent)"/>.
-        /// </summary>
-        public struct AliasEvent
-        {
-            /// <summary>
-            /// Date/timestamp of the event.
-            /// </summary>
-            public UnixMillisecondTime Timestamp { get; set; }
-
-            /// <summary>
-            /// Attributes of the user who generated the event. Some attributes may not be sent
-            /// to LaunchDarkly if they are private.
-            /// </summary>
-            public User User { get; set; }
-
-            /// <summary>
-            /// Attributes of the previous user that should be considered equivalent to this user.
-            /// </summary>
-            public User PreviousUser { get; set; }
         }
     }
 }
