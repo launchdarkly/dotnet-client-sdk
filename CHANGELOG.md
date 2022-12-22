@@ -3,6 +3,44 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [3.0.0] - 2022-12-21
+## [3.0.0] - 2022-12-21
+The latest version of this SDK supports LaunchDarkly's new custom contexts feature. Contexts are an evolution of a previously-existing concept, "users." Contexts let you create targeting rules for feature flags based on a variety of different information, including attributes pertaining to users, organizations, devices, and more. You can even combine contexts to create "multi-contexts." 
+
+This feature is only available to members of LaunchDarkly's Early Access Program (EAP). If you're in the EAP, you can use contexts by updating your SDK to the latest version and, if applicable, updating your Relay Proxy. Outdated SDK versions do not support contexts, and will cause unpredictable flag evaluation behavior.
+
+If you are not in the EAP, only use single contexts of kind "user", or continue to use the user type if available. If you try to create contexts, the context will be sent to LaunchDarkly, but any data not related to the user object will be ignored.
+
+For detailed information about this version, please refer to the list below. For information on how to upgrade from the previous version, please read the [migration guide](https://docs.launchdarkly.com/sdk/client-side/dotnet/migration-2-to-3).
+
+### Added:
+- In `LaunchDarkly.Sdk`, the types `Context` and `ContextKind` define the new context model.
+- For all SDK methods that took a `User` parameter, there is now a method that takes a `Context`. The corresponding `User` methods are defined as extension methods. The SDK still supports `User` for now, but `Context` is the preferred model and `User` may be removed in a future version.
+- `ConfigurationBuilder.GenerateAnonymousKeys` is the new way of enabling the "generate a key for anonymous users" behavior that was previously enabled by setting the user key to null. If you set `GenerateAnonymousKeys` to `true`, all anonymous contexts will have their keys replaced by generated keys; if you do not set it, anonymous contexts will keep whatever placeholder keys you gave them.
+- The `TestData` flag builder methods have been extended to support now context-related options, such as matching a key for a specific context type other than "user".
+- `LdClient.FlushAndWait()` and `FlushAndWaitAsync()` are equivalent to `Flush()` but will wait for the events to actually be delivered.
+
+### Changed _(breaking changes from 2.x)_:
+- It was previously allowable to set a user key to an empty string. In the new context model, the key is not allowed to be empty. Trying to use an empty key will cause evaluations to fail and return the default value.
+- There is no longer such a thing as a `Secondary` meta-attribute that affects percentage rollouts. If you set an attribute with that name in a `Context`, it will simply be a custom attribute like any other.
+- The `Anonymous` attribute in `User` is now a simple boolean, with no distinction between a false state and a null state.
+- Types such as `IPersistentDataStore`, which define the low-level interfaces of LaunchDarkly SDK components and allow implementation of custom components, have been moved out of the `Interfaces` namespace into a new `Subsystems` namespace. Application code normally does not refer to these types except possibly to hold a value for a configuration property such as `ConfigurationBuilder.DataStore`, so this change is likely to only affect configuration-related logic.
+
+### Changed (behavioral changes):
+- Analytics event data now uses a new JSON schema due to differences between the context model and the old user model.
+- The SDK no longer adds `device` and `os` values to the user attributes. Applications that wish to use device/OS information in feature flag rules must explicitly add such information.
+
+### Changed (requirements/dependencies/build):
+- There is no longer a dependency on `LaunchDarkly.JsonStream`. This package existed because some platforms did not support the `System.Text.Json` API, but that is no longer the case and the SDK now uses `System.Text.Json` directly for all of its JSON operations.
+- If you are using the package `LaunchDarkly.CommonSdk.JsonNet` for interoperability with the Json.NET library, you must update this to the latest major version.
+
+### Removed:
+- Removed all types, fields, and methods that were deprecated as of the most recent 2.x release.
+- Removed the `Secondary` meta-attribute in `User` and `UserBuilder`.
+- The `Alias` method no longer exists because alias events are not needed in the new context model.
+- The `AutoAliasingOptOut` and `InlineUsersInEvents` options no longer exist because they are not relevant in the new context model.
+- `LaunchDarkly.Sdk.Json.JsonException`: this type is no longer necessary because the SDK now always uses `System.Text.Json`, so any error when deserializing an object from JSON will throw a `System.Text.Json.JsonException`.
+
 ## [2.0.2] - 2022-11-28
 ### Fixed:
 - One of the SDK's dependencies, `LaunchDarkly.Logging`, had an Authenticode signature without a timestamp. The dependency has been updated to a new version with a valid signature. There are no other changes.
