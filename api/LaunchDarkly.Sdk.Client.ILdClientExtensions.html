@@ -88,9 +88,26 @@
     <pre><code class="lang-csharp hljs">public static class ILdClientExtensions : Object</code></pre>
   </div>
   <h5 id="LaunchDarkly_Sdk_Client_ILdClientExtensions_remarks"><strong>Remarks</strong></h5>
-  <div class="markdown level0 remarks"><p>These are implemented outside of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html">ILdClient</a> and <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> because they do not
+  <div class="markdown level0 remarks"><p>
+These allow you to do the following:
+</p>
+<ul><li>
+    Treat a string-valued flag as if it referenced values of an <code>enum</code> type.
+</li><li>
+    Call <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html">ILdClient</a> methods with the <a class="xref" href="LaunchDarkly.Sdk.User.html">User</a> type instead of
+<a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>. The SDK&apos;s preferred type for identifying an evaluation context,
+is <a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>; older versions of the SDK used only the simpler <a class="xref" href="LaunchDarkly.Sdk.User.html">User</a>
+model. These extension methods provide backward compatibility with application code that
+used the <a class="xref" href="LaunchDarkly.Sdk.User.html">User</a> type. Each of them simply converts the User to a Context with
+<a class="xref" href="LaunchDarkly.Sdk.Context.html#LaunchDarkly_Sdk_Context_FromUser_LaunchDarkly_Sdk_User_">FromUser(User)</a> and calls the equivalent ILdClient method.
+For instance, <code>client.Identify(user)</code> is exactly equivalent to
+<code>client.Identify(Context.FromUser(user))</code>.
+</li></ul>
+<p>
+These are implemented outside of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html">ILdClient</a> and <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> because they do not
 rely on any implementation details of <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a>; they are decorators that would work equally
-well with a stub or test implementation of the interface.</p>
+well with a stub or test implementation of the interface.
+</p>
 </div>
   <h3 id="methods">Methods
   </h3>
@@ -253,6 +270,130 @@ If the flag has a value that is not one of the allowed enum value names, or is n
 <code>defaultValue</code> is returned.
 </p>
 </div>
+  <a id="LaunchDarkly_Sdk_Client_ILdClientExtensions_Identify_" data-uid="LaunchDarkly.Sdk.Client.ILdClientExtensions.Identify*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_ILdClientExtensions_Identify_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_LaunchDarkly_Sdk_User_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.ILdClientExtensions.Identify(LaunchDarkly.Sdk.Client.Interfaces.ILdClient,LaunchDarkly.Sdk.User,System.TimeSpan)">Identify(ILdClient, User, TimeSpan)</h4>
+  <div class="markdown level1 summary"><p>Changes the current user, requests flags for that user from LaunchDarkly if we are online,
+and generates an analytics event to tell LaunchDarkly about the user.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool Identify(this ILdClient client, User user, TimeSpan maxWaitTime)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html">ILdClient</a></td>
+        <td><span class="parametername">client</span></td>
+        <td><p>the client instance</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
+        <td><span class="parametername">user</span></td>
+        <td><p>the user; should not be null (a null reference will cause an error
+to be logged and no event will be sent</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.TimeSpan</span></td>
+        <td><span class="parametername">maxWaitTime</span></td>
+        <td><p>the maximum time to wait for the new flag values</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><p>true if new flag values were obtained</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_ILdClientExtensions_Identify_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_LaunchDarkly_Sdk_User_System_TimeSpan__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_Context_System_TimeSpan_">Identify(Context, TimeSpan)</a>, but using the
+<a class="xref" href="LaunchDarkly.Sdk.User.html">User</a> type instead of <a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>.</p>
+</div>
+  <h5 id="LaunchDarkly_Sdk_Client_ILdClientExtensions_Identify_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_LaunchDarkly_Sdk_User_System_TimeSpan__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_Context_System_TimeSpan_">Identify</a>(<a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>, <span class="xref">System.TimeSpan</span>)</div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_ILdClientExtensions_IdentifyAsync_" data-uid="LaunchDarkly.Sdk.Client.ILdClientExtensions.IdentifyAsync*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_ILdClientExtensions_IdentifyAsync_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_LaunchDarkly_Sdk_User_" data-uid="LaunchDarkly.Sdk.Client.ILdClientExtensions.IdentifyAsync(LaunchDarkly.Sdk.Client.Interfaces.ILdClient,LaunchDarkly.Sdk.User)">IdentifyAsync(ILdClient, User)</h4>
+  <div class="markdown level1 summary"><p>Changes the current user, requests flags for that user from LaunchDarkly if we are online,
+and generates an analytics event to tell LaunchDarkly about the user.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Task&lt;bool&gt; IdentifyAsync(this ILdClient client, User user)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html">ILdClient</a></td>
+        <td><span class="parametername">client</span></td>
+        <td><p>the client instance</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
+        <td><span class="parametername">user</span></td>
+        <td><p>the user; should not be null (a null reference will cause an error
+to be logged and no event will be sent</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><p>a task that yields true if new flag values were obtained</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_ILdClientExtensions_IdentifyAsync_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_LaunchDarkly_Sdk_User__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_IdentifyAsync_LaunchDarkly_Sdk_Context_">IdentifyAsync(Context)</a>, but using the
+<a class="xref" href="LaunchDarkly.Sdk.User.html">User</a> type instead of <a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>.</p>
+</div>
+  <h5 id="LaunchDarkly_Sdk_Client_ILdClientExtensions_IdentifyAsync_LaunchDarkly_Sdk_Client_Interfaces_ILdClient_LaunchDarkly_Sdk_User__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Identify_LaunchDarkly_Sdk_Context_System_TimeSpan_">Identify</a>(<a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>, <span class="xref">System.TimeSpan</span>)</div>
+  </div>
 </article>
           </div>
           

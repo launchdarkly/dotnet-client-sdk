@@ -68,30 +68,30 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSource">
+            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSource">
   
   
-  <h1 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSource" class="text-break">Interface IDataSource
+  <h1 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSource" class="text-break">Interface IDataSource
   </h1>
   <div class="markdown level0 summary"><p>Interface for an object that receives updates to feature flags from LaunchDarkly.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.html">LaunchDarkly.Sdk.Client.Interfaces</a></h6>
+  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.html">LaunchDarkly.Sdk.Client.Subsystems</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource_syntax">Syntax</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public interface IDataSource : IDisposable</code></pre>
   </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource_remarks"><strong>Remarks</strong></h5>
-  <div class="markdown level0 remarks"><p>This component uses a push model. When it is created (via <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceFactory.html">IDataSourceFactory</a>) it is
-given a reference to an <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.html">IDataSourceUpdateSink</a> component, which is a write-only abstraction of
-the data store. The SDK never requests feature flag data from the <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.html">IDataSource</a>, it
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource_remarks"><strong>Remarks</strong></h5>
+  <div class="markdown level0 remarks"><p>This component uses a push model. When it is created, the SDK will provide a reference to an
+<a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.html">IDataSourceUpdateSink</a> component, which is a write-only abstraction of
+the data store. The SDK never requests feature flag data from the <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.html">IDataSource</a>, it
 only looks at the last known data that was previously put into the store.</p>
 </div>
   <h3 id="properties">Properties
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource_Initialized_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.Initialized*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource_Initialized" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.Initialized">Initialized</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource_Initialized_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.Initialized*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource_Initialized" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.Initialized">Initialized</h4>
   <div class="markdown level1 summary"><p>Checks whether the data source has finished initializing.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -115,14 +115,14 @@ only looks at the last known data that was previously put into the store.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource_Initialized_remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource_Initialized_remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>This is true if it has received at least one full set of feature flag data from LaunchDarkly,
 or if it is never going to do so because we are deliberately offline.</p>
 </div>
   <h3 id="methods">Methods
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource_Start_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.Start*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSource_Start" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.Start">Start()</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource_Start_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.Start*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSource_Start" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.Start">Start()</h4>
   <div class="markdown level1 summary"><p>Initializes the data source. This is called once from the <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> constructor.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -146,10 +146,6 @@ or if it is never going to do so because we are deliberately offline.</p>
       </tr>
     </tbody>
   </table>
-  <h3 id="seealso">See Also</h3>
-  <div class="seealso">
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceFactory.html">IDataSourceFactory</a></div>
-  </div>
 </article>
           </div>
           

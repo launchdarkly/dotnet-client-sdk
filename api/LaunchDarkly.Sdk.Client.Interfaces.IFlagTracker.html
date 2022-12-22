@@ -121,7 +121,7 @@ SDK has just received its very first set of flag values.
 </p>
 <p>
 Currently this event will not fire in a scenario where 1. the client is offline, 2.
-<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan_">Identify(User, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_IdentifyAsync_LaunchDarkly_Sdk_User_">IdentifyAsync(User)</a>
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Identify_LaunchDarkly_Sdk_Context_System_TimeSpan_">Identify(Context, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_IdentifyAsync_LaunchDarkly_Sdk_Context_">IdentifyAsync(Context)</a>
 has been called to change the current user, and 3. the SDK had previously stored flag data
 for that user (see <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html">PersistenceConfigurationBuilder</a>) and has
 now loaded those flags. The event will only fire if the SDK has received new flag data

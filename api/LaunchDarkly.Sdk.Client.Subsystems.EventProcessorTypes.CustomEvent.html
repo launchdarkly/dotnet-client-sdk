@@ -68,12 +68,12 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent">
+            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent">
   
   
-  <h1 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent" class="text-break">Class EventProcessorTypes.CustomEvent
+  <h1 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent" class="text-break">Class EventProcessorTypes.CustomEvent
   </h1>
-  <div class="markdown level0 summary"><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html#LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordCustomEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_">RecordCustomEvent(EventProcessorTypes.CustomEvent)</a>.</p>
+  <div class="markdown level0 summary"><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html#LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordCustomEvent_LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent__">RecordCustomEvent(EventProcessorTypes.CustomEvent)</a>.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
@@ -81,16 +81,41 @@
     <div class="level0"><span class="xref">System.Object</span></div>
     <div class="level1"><span class="xref">EventProcessorTypes.CustomEvent</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.html">LaunchDarkly.Sdk.Client.Interfaces</a></h6>
+  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.html">LaunchDarkly.Sdk.Client.Subsystems</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_syntax">Syntax</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public sealed class CustomEvent : ValueType</code></pre>
   </div>
   <h3 id="properties">Properties
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_Data_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.Data*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_Data" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.Data">Data</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_Context_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.Context*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_Context" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.Context">Context</h4>
+  <div class="markdown level1 summary"><p>The evaluation context associated with the event. Some attributes may not be sent
+to LaunchDarkly if they are private.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Context Context { get; set; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_Data_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.Data*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_Data" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.Data">Data</h4>
   <div class="markdown level1 summary"><p>Custom data provided for the event.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -113,8 +138,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_EventKey_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.EventKey*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_EventKey" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.EventKey">EventKey</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_EventKey_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.EventKey*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_EventKey" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.EventKey">EventKey</h4>
   <div class="markdown level1 summary"><p>The event key.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -137,8 +162,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_MetricValue_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.MetricValue*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_MetricValue" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.MetricValue">MetricValue</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_MetricValue_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.MetricValue*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_MetricValue" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.MetricValue">MetricValue</h4>
   <div class="markdown level1 summary"><p>An optional numeric value that can be used in analytics.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -161,8 +186,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_Timestamp_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.Timestamp*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_Timestamp" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.Timestamp">Timestamp</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_Timestamp_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.Timestamp*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent_Timestamp" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.Timestamp">Timestamp</h4>
   <div class="markdown level1 summary"><p>Date/timestamp of the event.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -181,31 +206,6 @@
     <tbody>
       <tr>
         <td><a class="xref" href="LaunchDarkly.Sdk.UnixMillisecondTime.html">UnixMillisecondTime</a></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_User_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.User*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_User" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.User">User</h4>
-  <div class="markdown level1 summary"><p>Attributes of the user who generated the event. Some attributes may not be sent
-to LaunchDarkly if they are private.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public User User { get; set; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
         <td></td>
       </tr>
     </tbody>

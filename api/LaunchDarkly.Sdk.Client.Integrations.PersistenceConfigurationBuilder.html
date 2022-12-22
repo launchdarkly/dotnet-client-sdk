@@ -94,7 +94,7 @@ for the user, if any, if it was started offline or has not yet received data fro
 </p>
 <p>
 By default, the SDK uses a persistence mechanism that is specific to each platform, as
-described in <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_Storage_LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStoreFactory_">Storage(IPersistentDataStoreFactory)</a>. To use a custom persistence
+described in <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_Storage_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore__">Storage(IComponentConfigurer&lt;IPersistentDataStore&gt;)</a>. To use a custom persistence
 implementation, or to customize related properties defined in this class, create a builder with
 <a class="xref" href="LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_Persistence">Persistence()</a>, change its properties with the methods of this class, and
 pass it to <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Persistence_LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_">Persistence(PersistenceConfigurationBuilder)</a>.
@@ -109,13 +109,13 @@ pass it to <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.ht
 
   <h3 id="fields">Fields
   </h3>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_DefaultMaxCachedUsers" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.DefaultMaxCachedUsers">DefaultMaxCachedUsers</h4>
-  <div class="markdown level1 summary"><p>Default value for <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedUsers_System_Int32_">MaxCachedUsers(Int32)</a>: 5.</p>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_DefaultMaxCachedContexts" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.DefaultMaxCachedContexts">DefaultMaxCachedContexts</h4>
+  <div class="markdown level1 summary"><p>Default value for <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedContexts_System_Int32_">MaxCachedContexts(Int32)</a>: 5.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public const int DefaultMaxCachedUsers = 5</code></pre>
+    <pre><code class="lang-csharp hljs">public const int DefaultMaxCachedContexts = 5</code></pre>
   </div>
   <h5 class="fieldValue">Field Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -132,14 +132,14 @@ pass it to <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.ht
       </tr>
     </tbody>
   </table>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_UnlimitedCachedUsers" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.UnlimitedCachedUsers">UnlimitedCachedUsers</h4>
-  <div class="markdown level1 summary"><p>Passing this value (or any negative number) to <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedUsers_System_Int32_">MaxCachedUsers(Int32)</a>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_UnlimitedCachedContexts" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.UnlimitedCachedContexts">UnlimitedCachedContexts</h4>
+  <div class="markdown level1 summary"><p>Passing this value (or any negative number) to <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedContexts_System_Int32_">MaxCachedContexts(Int32)</a>
 means there is no limit on cached user data.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public const int UnlimitedCachedUsers = -1</code></pre>
+    <pre><code class="lang-csharp hljs">public const int UnlimitedCachedContexts = -1</code></pre>
   </div>
   <h5 class="fieldValue">Field Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -158,14 +158,14 @@ means there is no limit on cached user data.</p>
   </table>
   <h3 id="methods">Methods
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedUsers_" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.MaxCachedUsers*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedUsers_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.MaxCachedUsers(System.Int32)">MaxCachedUsers(Int32)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedContexts_" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.MaxCachedContexts*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedContexts_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.MaxCachedContexts(System.Int32)">MaxCachedContexts(Int32)</h4>
   <div class="markdown level1 summary"><p>Sets the maximum number of users to store flag data for.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public PersistenceConfigurationBuilder MaxCachedUsers(int maxCachedUsers)</code></pre>
+    <pre><code class="lang-csharp hljs">public PersistenceConfigurationBuilder MaxCachedContexts(int maxCachedContexts)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -179,7 +179,7 @@ means there is no limit on cached user data.</p>
     <tbody>
       <tr>
         <td><span class="xref">System.Int32</span></td>
-        <td><span class="parametername">maxCachedUsers</span></td>
+        <td><span class="parametername">maxCachedContexts</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -199,7 +199,7 @@ means there is no limit on cached user data.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedUsers_System_Int32__remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_MaxCachedContexts_System_Int32__remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
 A value greater than zero means that the SDK will use persistent storage to remember the last
 known flag values for up to that number of unique user keys. If the limit is exceeded, the SDK
@@ -210,19 +210,19 @@ A value of zero means that the SDK will not use persistent storage; it will only
 flag data it has received since the current <code>LdClient</code> instance was started.
 </p>
 <p>
-A value of <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_UnlimitedCachedUsers">UnlimitedCachedUsers</a> or any other negative number means there is no
+A value of <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_UnlimitedCachedContexts">UnlimitedCachedContexts</a> or any other negative number means there is no
 limit. Use this mode with caution, as it could cause the size of mobile device preferences to
 grow indefinitely if your application uses many different user keys on the same device.
 </p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_Storage_" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.Storage*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_Storage_LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStoreFactory_" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.Storage(LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStoreFactory)">Storage(IPersistentDataStoreFactory)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_Storage_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore__" data-uid="LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.Storage(LaunchDarkly.Sdk.Client.Subsystems.IComponentConfigurer{LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore})">Storage(IComponentConfigurer&lt;IPersistentDataStore&gt;)</h4>
   <div class="markdown level1 summary"><p>Sets the storage implementation.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public PersistenceConfigurationBuilder Storage(IPersistentDataStoreFactory persistentDataStoreFactory)</code></pre>
+    <pre><code class="lang-csharp hljs">public PersistenceConfigurationBuilder Storage(IComponentConfigurer&lt;IPersistentDataStore&gt; persistentDataStoreFactory)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -235,7 +235,7 @@ grow indefinitely if your application uses many different user keys on the same 
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStoreFactory.html">IPersistentDataStoreFactory</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IComponentConfigurer-1.html">IComponentConfigurer</a>&lt;<a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore.html">IPersistentDataStore</a>&gt;</td>
         <td><span class="parametername">persistentDataStoreFactory</span></td>
         <td><p>a factory for the custom storage implementation, or
 <span class="xref">null</span> to use the default implementation</p>
@@ -259,7 +259,7 @@ grow indefinitely if your application uses many different user keys on the same 
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_Storage_LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStoreFactory__remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_Storage_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore___remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>By default, the SDK uses a persistence mechanism that is specific to each platform: on Android and
 iOS it is the native preferences store, and in the .NET Standard implementation for desktop apps
 it is the <code>System.IO.IsolatedStorage</code> API. You may use this method to specify a custom

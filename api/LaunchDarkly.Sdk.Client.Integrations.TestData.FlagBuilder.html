@@ -123,7 +123,7 @@ value is <code>false</code>.</p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variation_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.Variation*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variation_LaunchDarkly_Sdk_LdValue_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.Variation(LaunchDarkly.Sdk.LdValue)">Variation(LdValue)</h4>
-  <div class="markdown level1 summary"><p>Sets the flag to return the specified variation value for all users by default.</p>
+  <div class="markdown level1 summary"><p>Sets the flag to return the specified variation value for all contexts by default.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -172,7 +172,7 @@ added to the variation list.</p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variation_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.Variation*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variation_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.Variation(System.Boolean)">Variation(Boolean)</h4>
-  <div class="markdown level1 summary"><p>Sets the flag to return the specified boolean variation for all users by default.</p>
+  <div class="markdown level1 summary"><p>Sets the flag to return the specified boolean variation for all contexts by default.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -219,7 +219,7 @@ added to the variation list.</p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variation_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.Variation*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variation_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.Variation(System.Int32)">Variation(Int32)</h4>
-  <div class="markdown level1 summary"><p>Sets the flag to return the specified variation for all users by default.</p>
+  <div class="markdown level1 summary"><p>Sets the flag to return the specified variation for all contexts by default.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -264,6 +264,207 @@ added to the variation list.</p>
   <div class="markdown level1 remarks"><p>The variation is specified by number, out of whatever variation values have already been
 defined.</p>
 </div>
+  <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForKey*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_LaunchDarkly_Sdk_LdValue_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForKey(LaunchDarkly.Sdk.ContextKind,System.String,LaunchDarkly.Sdk.LdValue)">VariationForKey(ContextKind, String, LdValue)</h4>
+  <div class="markdown level1 summary"><p>Sets the flag to return the specified variation value for a specific context by kind and
+key, overriding any other defaults.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationForKey(ContextKind contextKind, string contextKey, LdValue value)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.ContextKind.html">ContextKind</a></td>
+        <td><span class="parametername">contextKind</span></td>
+        <td><p>the context kind</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">contextKey</span></td>
+        <td><p>the context key</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a></td>
+        <td><span class="parametername">value</span></td>
+        <td><p>the desired value to be returned for this context</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html">TestData.FlagBuilder</a></td>
+        <td><p>the builder</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_LaunchDarkly_Sdk_LdValue__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The value may be of any JSON type, as defined by <a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a>. If the value
+matches one of the values previously specified with <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variations_LaunchDarkly_Sdk_LdValue___">Variations(LdValue[])</a>,
+then the variation index is set to the index of that value. Otherwise, the value is
+added to the variation list.</p>
+</div>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_LaunchDarkly_Sdk_LdValue__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_LaunchDarkly_Sdk_LdValue_">VariationForUser(String, LdValue)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Boolean_">VariationForKey(ContextKind, String, Boolean)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Int32_">VariationForKey(ContextKind, String, Int32)</a></div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForKey*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForKey(LaunchDarkly.Sdk.ContextKind,System.String,System.Boolean)">VariationForKey(ContextKind, String, Boolean)</h4>
+  <div class="markdown level1 summary"><p>Sets the flag to return the specified boolean variation for a specific context by kind
+and key, overriding any other defaults.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationForKey(ContextKind contextKind, string contextKey, bool variation)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.ContextKind.html">ContextKind</a></td>
+        <td><span class="parametername">contextKind</span></td>
+        <td><p>the context kind</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">contextKey</span></td>
+        <td><p>the context key</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="parametername">variation</span></td>
+        <td><p>the desired true/false variation to be returned for this context</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html">TestData.FlagBuilder</a></td>
+        <td><p>the builder</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Boolean__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The flag&apos;s variations are set to <code>true</code> and <code>false</code> if they are not already
+(equivalent to calling <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_BooleanFlag">BooleanFlag()</a>).</p>
+</div>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Boolean__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Boolean_">VariationForUser(String, Boolean)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Int32_">VariationForKey(ContextKind, String, Int32)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_LaunchDarkly_Sdk_LdValue_">VariationForKey(ContextKind, String, LdValue)</a></div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForKey*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForKey(LaunchDarkly.Sdk.ContextKind,System.String,System.Int32)">VariationForKey(ContextKind, String, Int32)</h4>
+  <div class="markdown level1 summary"><p>Sets the flag to return the specified variation for a specific context by kind and key,
+overriding any other defaults.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationForKey(ContextKind contextKind, string contextKey, int variationIndex)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.ContextKind.html">ContextKind</a></td>
+        <td><span class="parametername">contextKind</span></td>
+        <td><p>the context kind</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">contextKey</span></td>
+        <td><p>the context key</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Int32</span></td>
+        <td><span class="parametername">variationIndex</span></td>
+        <td><p>the desired variation to be returned for this context when
+targeting is on: 0 for the first, 1 for the second, etc.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html">TestData.FlagBuilder</a></td>
+        <td><p>the builder</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Int32__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>The variation is specified by number, out of whatever variation values have already been
+defined.</p>
+</div>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Int32__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Int32_">VariationForUser(String, Int32)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Boolean_">VariationForKey(ContextKind, String, Boolean)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_LaunchDarkly_Sdk_LdValue_">VariationForKey(ContextKind, String, LdValue)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForUser*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_LaunchDarkly_Sdk_LdValue_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForUser(System.String,LaunchDarkly.Sdk.LdValue)">VariationForUser(String, LdValue)</h4>
   <div class="markdown level1 summary"><p>Sets the flag to return the specified variation value for a specific user key, overriding
@@ -320,6 +521,12 @@ matches one of the values previously specified with <a class="xref" href="Launch
 then the variation index is set to the index of that value. Otherwise, the value is
 added to the variation list.</p>
 </div>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_LaunchDarkly_Sdk_LdValue__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_LaunchDarkly_Sdk_LdValue_">VariationForKey(ContextKind, String, LdValue)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Boolean_">VariationForUser(String, Boolean)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Int32_">VariationForUser(String, Int32)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForUser*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForUser(System.String,System.Boolean)">VariationForUser(String, Boolean)</h4>
   <div class="markdown level1 summary"><p>Sets the flag to return the specified boolean variation for a specific user key,
@@ -343,7 +550,7 @@ overriding any other defaults.</p>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">userKey</span></td>
-        <td><p>a user key</p>
+        <td><p>the user key</p>
 </td>
       </tr>
       <tr>
@@ -374,6 +581,12 @@ overriding any other defaults.</p>
   <div class="markdown level1 remarks"><p>The flag&apos;s variations are set to <code>true</code> and <code>false</code> if they are not already
 (equivalent to calling <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_BooleanFlag">BooleanFlag()</a>).</p>
 </div>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Boolean__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Boolean_">VariationForKey(ContextKind, String, Boolean)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Int32_">VariationForUser(String, Int32)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_LaunchDarkly_Sdk_LdValue_">VariationForUser(String, LdValue)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForUser*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationForUser(System.String,System.Int32)">VariationForUser(String, Int32)</h4>
   <div class="markdown level1 summary"><p>Sets the flag to return the specified variation for a specific user key, overriding
@@ -397,7 +610,7 @@ any other defaults.</p>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">userKey</span></td>
-        <td><p>a user key</p>
+        <td><p>the user key</p>
 </td>
       </tr>
       <tr>
@@ -429,15 +642,21 @@ targeting is on: 0 for the first, 1 for the second, etc.</p>
   <div class="markdown level1 remarks"><p>The variation is specified by number, out of whatever variation values have already been
 defined.</p>
 </div>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Int32__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Int32_">VariationForKey(ContextKind, String, Int32)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Boolean_">VariationForUser(String, Boolean)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_LaunchDarkly_Sdk_LdValue_">VariationForUser(String, LdValue)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_User_System_Nullable_LaunchDarkly_Sdk_LdValue___" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc(System.Func{LaunchDarkly.Sdk.User,System.Nullable{LaunchDarkly.Sdk.LdValue}})">VariationFunc(Func&lt;User, Nullable&lt;LdValue&gt;&gt;)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_Context_System_Nullable_LaunchDarkly_Sdk_LdValue___" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc(System.Func{LaunchDarkly.Sdk.Context,System.Nullable{LaunchDarkly.Sdk.LdValue}})">VariationFunc(Func&lt;Context, Nullable&lt;LdValue&gt;&gt;)</h4>
   <div class="markdown level1 summary"><p>Sets the flag to use a function to determine the variation value to return for
-any given user.</p>
+any given context.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationFunc(Func&lt;User, Nullable&lt;LdValue&gt;&gt; variationFunc)</code></pre>
+    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationFunc(Func&lt;Context, Nullable&lt;LdValue&gt;&gt; variationFunc)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -450,7 +669,7 @@ any given user.</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Func</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.User.html">User</a>, <span class="xref">System.Nullable</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a>&gt;&gt;</td>
+        <td><span class="xref">System.Func</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>, <span class="xref">System.Nullable</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a>&gt;&gt;</td>
         <td><span class="parametername">variationFunc</span></td>
         <td><p>a function to determine the variation</p>
 </td>
@@ -473,30 +692,30 @@ any given user.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_User_System_Nullable_LaunchDarkly_Sdk_LdValue____remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_Context_System_Nullable_LaunchDarkly_Sdk_LdValue____remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
-The function takes a user and returns an <a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a> or <span class="xref">null</span>.
+The function takes an evaluation context and returns an <a class="xref" href="LaunchDarkly.Sdk.LdValue.html">LdValue</a> or <span class="xref">null</span>.
 A <span class="xref">null</span> result means that the flag will fall back to its default
-variation for all users.
+variation for all contexts.
 </p>
 <p>
 The value returned by the function must be one of the values previously specified
 with <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variations_LaunchDarkly_Sdk_LdValue___">Variations(LdValue[])</a>; otherwise it will be ignored.
 </p>
 <p>
-The function is only called for users who were not already specified by
-<a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_LaunchDarkly_Sdk_LdValue_">VariationForUser(String, LdValue)</a>.
+This function is called only if the context was not specifically targeted with
+<a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_LaunchDarkly_Sdk_LdValue_">VariationForUser(String, LdValue)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_LaunchDarkly_Sdk_LdValue_">VariationForKey(ContextKind, String, LdValue)</a>.
 </p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_User_System_Nullable_System_Boolean___" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc(System.Func{LaunchDarkly.Sdk.User,System.Nullable{System.Boolean}})">VariationFunc(Func&lt;User, Nullable&lt;Boolean&gt;&gt;)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_Context_System_Nullable_System_Boolean___" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc(System.Func{LaunchDarkly.Sdk.Context,System.Nullable{System.Boolean}})">VariationFunc(Func&lt;Context, Nullable&lt;Boolean&gt;&gt;)</h4>
   <div class="markdown level1 summary"><p>Sets the flag to use a function to determine whether to return true or false for
-any given user.</p>
+any given context.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationFunc(Func&lt;User, Nullable&lt;bool&gt;&gt; variationFunc)</code></pre>
+    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationFunc(Func&lt;Context, Nullable&lt;bool&gt;&gt; variationFunc)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -509,7 +728,7 @@ any given user.</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Func</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.User.html">User</a>, <span class="xref">System.Nullable</span>&lt;<span class="xref">System.Boolean</span>&gt;&gt;</td>
+        <td><span class="xref">System.Func</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>, <span class="xref">System.Nullable</span>&lt;<span class="xref">System.Boolean</span>&gt;&gt;</td>
         <td><span class="parametername">variationFunc</span></td>
         <td><p>a function to determine the variation</p>
 </td>
@@ -532,30 +751,30 @@ any given user.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_User_System_Nullable_System_Boolean____remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_Context_System_Nullable_System_Boolean____remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
-The function takes a user and returns <span class="xref">true</span>, <span class="xref">false</span>,
+The function takes an evaluation context and returns <span class="xref">true</span>, <span class="xref">false</span>,
 or <span class="xref">null</span>. A <span class="xref">null</span> result means that the flag will
-fall back to its default variation for all users.
+fall back to its default variation for all contexts.
 </p>
 <p>
 The flag&apos;s variations are set to <code>true</code> and <code>false</code> if they are not already
 (equivalent to calling <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_BooleanFlag">BooleanFlag()</a>).
 </p>
 <p>
-The function is only called for users who were not already specified by
-<a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Boolean_">VariationForUser(String, Boolean)</a>.
+This function is called only if the context was not specifically targeted with
+<a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Boolean_">VariationForUser(String, Boolean)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Boolean_">VariationForKey(ContextKind, String, Boolean)</a>.
 </p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_User_System_Nullable_System_Int32___" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc(System.Func{LaunchDarkly.Sdk.User,System.Nullable{System.Int32}})">VariationFunc(Func&lt;User, Nullable&lt;Int32&gt;&gt;)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_Context_System_Nullable_System_Int32___" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.VariationFunc(System.Func{LaunchDarkly.Sdk.Context,System.Nullable{System.Int32}})">VariationFunc(Func&lt;Context, Nullable&lt;Int32&gt;&gt;)</h4>
   <div class="markdown level1 summary"><p>Sets the flag to use a function to determine the variation index to return for
-any given user.</p>
+any given context.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationFunc(Func&lt;User, Nullable&lt;int&gt;&gt; variationFunc)</code></pre>
+    <pre><code class="lang-csharp hljs">public TestData.FlagBuilder VariationFunc(Func&lt;Context, Nullable&lt;int&gt;&gt; variationFunc)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -568,7 +787,7 @@ any given user.</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Func</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.User.html">User</a>, <span class="xref">System.Nullable</span>&lt;<span class="xref">System.Int32</span>&gt;&gt;</td>
+        <td><span class="xref">System.Func</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a>, <span class="xref">System.Nullable</span>&lt;<span class="xref">System.Int32</span>&gt;&gt;</td>
         <td><span class="parametername">variationFunc</span></td>
         <td><p>a function to determine the variation</p>
 </td>
@@ -591,15 +810,15 @@ any given user.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_User_System_Nullable_System_Int32____remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationFunc_System_Func_LaunchDarkly_Sdk_Context_System_Nullable_System_Int32____remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
-The function takes a user and returns an integer variation index or <span class="xref">null</span>.
+The function takes an evaluation context and returns an integer variation index or <span class="xref">null</span>.
 A <span class="xref">null</span> result means that the flag will fall back to its default
-variation for all users.
+variation for all contexts.
 </p>
 <p>
-The function is only called for users who were not already specified by
-<a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Int32_">VariationForUser(String, Int32)</a>.
+This function is called only if the context was not specifically targeted with
+<a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForUser_System_String_System_Int32_">VariationForUser(String, Int32)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.html#LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_VariationForKey_LaunchDarkly_Sdk_ContextKind_System_String_System_Int32_">VariationForKey(ContextKind, String, Int32)</a>.
 </p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_TestData_FlagBuilder_Variations_" data-uid="LaunchDarkly.Sdk.Client.Integrations.TestData.FlagBuilder.Variations*"></a>

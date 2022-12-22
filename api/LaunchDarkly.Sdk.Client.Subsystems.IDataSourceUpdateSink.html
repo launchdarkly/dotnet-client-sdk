@@ -68,34 +68,34 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink">
+            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink">
   
   
-  <h1 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink" class="text-break">Interface IDataSourceUpdateSink
+  <h1 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink" class="text-break">Interface IDataSourceUpdateSink
   </h1>
-  <div class="markdown level0 summary"><p>Interface that an implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.html">IDataSource</a> will use to push data into the SDK.</p>
+  <div class="markdown level0 summary"><p>Interface that an implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.html">IDataSource</a> will use to push data into the SDK.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.html">LaunchDarkly.Sdk.Client.Interfaces</a></h6>
+  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.html">LaunchDarkly.Sdk.Client.Subsystems</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_syntax">Syntax</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public interface IDataSourceUpdateSink</code></pre>
   </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_remarks"><strong>Remarks</strong></h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_remarks"><strong>Remarks</strong></h5>
   <div class="markdown level0 remarks"><p>The data source interacts with this object, rather than manipulating the data store directly, so
 that the SDK can perform any other necessary operations that must happen when data is updated.</p>
 </div>
   <h3 id="methods">Methods
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_Init_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.Init*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_Init_LaunchDarkly_Sdk_User_LaunchDarkly_Sdk_Client_Interfaces_DataStoreTypes_FullDataSet_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.Init(LaunchDarkly.Sdk.User,LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes.FullDataSet)">Init(User, DataStoreTypes.FullDataSet)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_Init_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.Init*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_Init_LaunchDarkly_Sdk_Context_LaunchDarkly_Sdk_Client_Subsystems_DataStoreTypes_FullDataSet_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.Init(LaunchDarkly.Sdk.Context,LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes.FullDataSet)">Init(Context, DataStoreTypes.FullDataSet)</h4>
   <div class="markdown level1 summary"><p>Completely overwrites the current contents of the data store with a set of items for each collection.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">void Init(User user, DataStoreTypes.FullDataSet data)</code></pre>
+    <pre><code class="lang-csharp hljs">void Init(Context context, DataStoreTypes.FullDataSet data)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -108,21 +108,21 @@ that the SDK can perform any other necessary operations that must happen when da
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
-        <td><span class="parametername">user</span></td>
-        <td><p>the current user</p>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a></td>
+        <td><span class="parametername">context</span></td>
+        <td><p>the current evaluation context</p>
 </td>
       </tr>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes.FullDataSet.html">DataStoreTypes.FullDataSet</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes.FullDataSet.html">DataStoreTypes.FullDataSet</a></td>
         <td><span class="parametername">data</span></td>
         <td><p>the data set</p>
 </td>
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_UpdateStatus_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.UpdateStatus*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_UpdateStatus_LaunchDarkly_Sdk_Client_Interfaces_DataSourceState_System_Nullable_LaunchDarkly_Sdk_Client_Interfaces_DataSourceStatus_ErrorInfo__" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.UpdateStatus(LaunchDarkly.Sdk.Client.Interfaces.DataSourceState,System.Nullable{LaunchDarkly.Sdk.Client.Interfaces.DataSourceStatus.ErrorInfo})">UpdateStatus(DataSourceState, Nullable&lt;DataSourceStatus.ErrorInfo&gt;)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_UpdateStatus_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.UpdateStatus*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_UpdateStatus_LaunchDarkly_Sdk_Client_Interfaces_DataSourceState_System_Nullable_LaunchDarkly_Sdk_Client_Interfaces_DataSourceStatus_ErrorInfo__" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.UpdateStatus(LaunchDarkly.Sdk.Client.Interfaces.DataSourceState,System.Nullable{LaunchDarkly.Sdk.Client.Interfaces.DataSourceStatus.ErrorInfo})">UpdateStatus(DataSourceState, Nullable&lt;DataSourceStatus.ErrorInfo&gt;)</h4>
   <div class="markdown level1 summary"><p>Informs the SDK of a change in the data source&apos;s status.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -154,7 +154,7 @@ that the SDK can perform any other necessary operations that must happen when da
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_UpdateStatus_LaunchDarkly_Sdk_Client_Interfaces_DataSourceState_System_Nullable_LaunchDarkly_Sdk_Client_Interfaces_DataSourceStatus_ErrorInfo___remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_UpdateStatus_LaunchDarkly_Sdk_Client_Interfaces_DataSourceState_System_Nullable_LaunchDarkly_Sdk_Client_Interfaces_DataSourceStatus_ErrorInfo___remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
 Data source implementations should use this method if they have any concept of being in a valid
 state, a temporarily disconnected state, or a permanently stopped state.
@@ -174,22 +174,22 @@ remain at <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataSourceSta
 <p>
 Data source implementations normally should not need to set the state to
 <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataSourceState.html#LaunchDarkly_Sdk_Client_Interfaces_DataSourceState_Valid">Valid</a>, because that will happen automatically if they call
-<a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.html#LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_Init_LaunchDarkly_Sdk_User_LaunchDarkly_Sdk_Client_Interfaces_DataStoreTypes_FullDataSet_">Init(User, DataStoreTypes.FullDataSet)</a>.
+<a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.html#LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_Init_LaunchDarkly_Sdk_Context_LaunchDarkly_Sdk_Client_Subsystems_DataStoreTypes_FullDataSet_">Init(Context, DataStoreTypes.FullDataSet)</a>.
 </p>
 </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_UpdateStatus_LaunchDarkly_Sdk_Client_Interfaces_DataSourceState_System_Nullable_LaunchDarkly_Sdk_Client_Interfaces_DataSourceStatus_ErrorInfo___seealso">See Also</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_UpdateStatus_LaunchDarkly_Sdk_Client_Interfaces_DataSourceState_System_Nullable_LaunchDarkly_Sdk_Client_Interfaces_DataSourceStatus_ErrorInfo___seealso">See Also</h5>
   <div class="seealso">
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceStatusProvider.html">IDataSourceStatusProvider</a></div>
   </div>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_Upsert_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.Upsert*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IDataSourceUpdateSink_Upsert_LaunchDarkly_Sdk_User_System_String_LaunchDarkly_Sdk_Client_Interfaces_DataStoreTypes_ItemDescriptor_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.Upsert(LaunchDarkly.Sdk.User,System.String,LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes.ItemDescriptor)">Upsert(User, String, DataStoreTypes.ItemDescriptor)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_Upsert_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.Upsert*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IDataSourceUpdateSink_Upsert_LaunchDarkly_Sdk_Context_System_String_LaunchDarkly_Sdk_Client_Subsystems_DataStoreTypes_ItemDescriptor_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IDataSourceUpdateSink.Upsert(LaunchDarkly.Sdk.Context,System.String,LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes.ItemDescriptor)">Upsert(Context, String, DataStoreTypes.ItemDescriptor)</h4>
   <div class="markdown level1 summary"><p>Updates or inserts an item. For updates, the object will only be updated if the existing
 version is less than the new version.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">void Upsert(User user, string key, DataStoreTypes.ItemDescriptor data)</code></pre>
+    <pre><code class="lang-csharp hljs">void Upsert(Context context, string key, DataStoreTypes.ItemDescriptor data)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -202,9 +202,9 @@ version is less than the new version.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
-        <td><span class="parametername">user</span></td>
-        <td><p>the current user</p>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a></td>
+        <td><span class="parametername">context</span></td>
+        <td><p>the current evaluation context</p>
 </td>
       </tr>
       <tr>
@@ -214,7 +214,7 @@ version is less than the new version.</p>
 </td>
       </tr>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes.ItemDescriptor.html">DataStoreTypes.ItemDescriptor</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes.ItemDescriptor.html">DataStoreTypes.ItemDescriptor</a></td>
         <td><span class="parametername">data</span></td>
         <td><p>the item data</p>
 </td>

@@ -68,23 +68,23 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor">
+            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor">
   
   
-  <h1 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor" class="text-break">Interface IEventProcessor
+  <h1 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor" class="text-break">Interface IEventProcessor
   </h1>
   <div class="markdown level0 summary"><p>Interface for an object that can send or store analytics events.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.html">LaunchDarkly.Sdk.Client.Interfaces</a></h6>
+  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.html">LaunchDarkly.Sdk.Client.Subsystems</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_syntax">Syntax</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public interface IEventProcessor : IDisposable</code></pre>
   </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_remarks"><strong>Remarks</strong></h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_remarks"><strong>Remarks</strong></h5>
   <div class="markdown level0 remarks"><p>
-Application code normally does not need to interact with <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html">IEventProcessor</a> or its
+Application code normally does not need to interact with <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html">IEventProcessor</a> or its
 related parameter types. They are provided to allow a custom implementation or test fixture to be
 substituted for the SDK&apos;s normal analytics event logic.
 </p>
@@ -95,29 +95,27 @@ delivered; event delivery is done asynchronously by a background task.
 </div>
   <h3 id="methods">Methods
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_Flush_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.Flush*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_Flush" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.Flush">Flush()</h4>
-  <div class="markdown level1 summary"><p>Specifies that any buffered events should be sent as soon as possible, rather than waiting
-for the next flush interval.</p>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_Flush_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.Flush*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_Flush" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.Flush">Flush()</h4>
+  <div class="markdown level1 summary"><p>Specifies that any buffered events should be sent as soon as possible.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">void Flush()</code></pre>
   </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_Flush_remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>This method triggers an asynchronous task, so events still may not be sent until a later
-until a later time. However, calling <span class="xref">System.IDisposable.Dispose</span> will synchronously
-deliver any events that were not yet delivered prior to shutting down.</p>
-</div>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordAliasEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordAliasEvent*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordAliasEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_AliasEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordAliasEvent(LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.AliasEvent)">RecordAliasEvent(EventProcessorTypes.AliasEvent)</h4>
-  <div class="markdown level1 summary"><p>Records an alias event.</p>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_Flush_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_Flush">Flush</a>()</div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_FlushAndWait_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.FlushAndWait*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_FlushAndWait_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.FlushAndWait(System.TimeSpan)">FlushAndWait(TimeSpan)</h4>
+  <div class="markdown level1 summary"><p>Delivers any pending analytics events synchronously now.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">void RecordAliasEvent(EventProcessorTypes.AliasEvent e)</code></pre>
+    <pre><code class="lang-csharp hljs">bool FlushAndWait(TimeSpan timeout)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -130,20 +128,88 @@ deliver any events that were not yet delivered prior to shutting down.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.AliasEvent.html">EventProcessorTypes.AliasEvent</a></td>
-        <td><span class="parametername">e</span></td>
-        <td></td>
+        <td><span class="xref">System.TimeSpan</span></td>
+        <td><span class="parametername">timeout</span></td>
+        <td><p>the maximum time to wait</p>
+</td>
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordCustomEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordCustomEvent*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordCustomEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordCustomEvent(LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent)">RecordCustomEvent(EventProcessorTypes.CustomEvent)</h4>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td><p>true if completed, false if timed out</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_FlushAndWait_System_TimeSpan__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FlushAndWait_System_TimeSpan_">FlushAndWait</a>(<span class="xref">System.TimeSpan</span>)</div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_FlushAndWaitAsync_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.FlushAndWaitAsync*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_FlushAndWaitAsync_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.FlushAndWaitAsync(System.TimeSpan)">FlushAndWaitAsync(TimeSpan)</h4>
+  <div class="markdown level1 summary"><p>Delivers any pending analytics events now, returning a Task that can be awaited.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; FlushAndWaitAsync(TimeSpan timeout)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.TimeSpan</span></td>
+        <td><span class="parametername">timeout</span></td>
+        <td><p>the maximum time to wait</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><p>a Task that resolves to true if completed, false if timed out</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_FlushAndWaitAsync_System_TimeSpan__seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FlushAndWaitAsync_System_TimeSpan_">FlushAndWaitAsync</a>(<span class="xref">System.TimeSpan</span>)</div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordCustomEvent_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.RecordCustomEvent*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordCustomEvent_LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_CustomEvent__" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.RecordCustomEvent(LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent@)">RecordCustomEvent(EventProcessorTypes.CustomEvent)</h4>
   <div class="markdown level1 summary"><p>Records a custom event.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">void RecordCustomEvent(EventProcessorTypes.CustomEvent e)</code></pre>
+    <pre><code class="lang-csharp hljs">void RecordCustomEvent(in EventProcessorTypes.CustomEvent e)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -156,21 +222,21 @@ deliver any events that were not yet delivered prior to shutting down.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.html">EventProcessorTypes.CustomEvent</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.CustomEvent.html">EventProcessorTypes.CustomEvent</a></td>
         <td><span class="parametername">e</span></td>
         <td><p>parameters for a custom event</p>
 </td>
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordEvaluationEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordEvaluationEvent*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordEvaluationEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordEvaluationEvent(LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent)">RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordEvaluationEvent_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.RecordEvaluationEvent*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordEvaluationEvent_LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent__" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.RecordEvaluationEvent(LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent@)">RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent)</h4>
   <div class="markdown level1 summary"><p>Records the action of evaluating a feature flag.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">void RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent e)</code></pre>
+    <pre><code class="lang-csharp hljs">void RecordEvaluationEvent(in EventProcessorTypes.EvaluationEvent e)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -183,25 +249,25 @@ deliver any events that were not yet delivered prior to shutting down.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.html">EventProcessorTypes.EvaluationEvent</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.html">EventProcessorTypes.EvaluationEvent</a></td>
         <td><span class="parametername">e</span></td>
         <td><p>parameters for an evaluation event</p>
 </td>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordEvaluationEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent__remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordEvaluationEvent_LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent___remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>Depending on the feature flag properties and event properties, this may be transmitted to the
 events service as an individual event, or may only be added into summary data.</p>
 </div>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordIdentifyEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordIdentifyEvent*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordIdentifyEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_IdentifyEvent_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.RecordIdentifyEvent(LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.IdentifyEvent)">RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordIdentifyEvent_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.RecordIdentifyEvent*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordIdentifyEvent_LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_IdentifyEvent__" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.RecordIdentifyEvent(LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.IdentifyEvent@)">RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent)</h4>
   <div class="markdown level1 summary"><p>Records a set of user properties.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">void RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent e)</code></pre>
+    <pre><code class="lang-csharp hljs">void RecordIdentifyEvent(in EventProcessorTypes.IdentifyEvent e)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -214,15 +280,15 @@ events service as an individual event, or may only be added into summary data.</
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.IdentifyEvent.html">EventProcessorTypes.IdentifyEvent</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.IdentifyEvent.html">EventProcessorTypes.IdentifyEvent</a></td>
         <td><span class="parametername">e</span></td>
         <td><p>parameters for an identify event</p>
 </td>
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_SetOffline_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.SetOffline*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_SetOffline_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.SetOffline(System.Boolean)">SetOffline(Boolean)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_SetOffline_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.SetOffline*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_SetOffline_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.SetOffline(System.Boolean)">SetOffline(Boolean)</h4>
   <div class="markdown level1 summary"><p>Puts the component into offline mode if appropriate.</p>
 </div>
   <div class="markdown level1 conceptual"></div>

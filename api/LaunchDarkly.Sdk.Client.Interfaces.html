@@ -72,17 +72,18 @@
   
   <h1 id="LaunchDarkly_Sdk_Client_Interfaces" data-uid="LaunchDarkly.Sdk.Client.Interfaces" class="text-break">Namespace LaunchDarkly.Sdk.Client.Interfaces
   </h1>
-  <div class="markdown level0 summary"><p>Interfaces that provide advanced SDK features or allow customization of LaunchDarkly components.</p>
+  <div class="markdown level0 summary"><p>Interfaces and types that are part of the public API, but not needed for basic use of the SDK.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
-  <div class="markdown level0 remarks"><p>Most applications will not need to refer to these types. You will use them if you are creating a plug-in component, such as a data store integration, or if you use advanced features such as <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_FlagTracker">FlagTracker</a>.</p>
-<p>The namespace also includes concrete types that are used as parameters within these interfaces.</p>
+  <div class="markdown level0 remarks"><p>Types in this namespace include:</p>
+<ul>
+<li><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html">ILdClient</a>, which allows the SDK client to be referenced via an interface rather than the concrete type <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> (if for instance you want to create a mock implementation for testing).</li>
+<li>Types like <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IFlagTracker.html">IFlagTracker</a> that provide a facade for some part of the SDK API; these are returned by properties like <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html#LaunchDarkly_Sdk_Client_Interfaces_ILdClient_FlagTracker">FlagTracker</a>.</li>
+<li>Concrete types that are used as parameters within these interfaces, like <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.FlagValueChangeEvent.html">FlagValueChangeEvent</a>.</li>
+</ul>
 </div>
     <h3 id="classes">Classes
   </h3>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.BasicConfiguration.html">BasicConfiguration</a></h4>
-      <section><p>The most basic properties of the SDK client that are available to all SDK components.</p>
-</section>
       <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataSourceState.html">DataSourceState</a></h4>
       <section><p>An enumeration of possible values for <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataSourceStatus.html#LaunchDarkly_Sdk_Client_Interfaces_DataSourceStatus_State">State</a>.</p>
 </section>
@@ -98,80 +99,22 @@
       <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataSourceStatusExtensions.html">DataSourceStatusExtensions</a></h4>
       <section><p>Extension helper methods for use with data source status types.</p>
 </section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes.html">DataStoreTypes</a></h4>
-      <section><p>Types that are used by the data store and related interfaces.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes.FullDataSet.html">DataStoreTypes.FullDataSet</a></h4>
-      <section><p>Represents a full set of feature flag data received from LaunchDarkly.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.DataStoreTypes.ItemDescriptor.html">DataStoreTypes.ItemDescriptor</a></h4>
-      <section><p>A versioned item (or placeholder) storeable in a data store.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.html">EventProcessorTypes</a></h4>
-      <section><p>Parameter types for use by <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html">IEventProcessor</a> implementations.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.AliasEvent.html">EventProcessorTypes.AliasEvent</a></h4>
-      <section><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html#LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordAliasEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_AliasEvent_">RecordAliasEvent(EventProcessorTypes.AliasEvent)</a>.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.CustomEvent.html">EventProcessorTypes.CustomEvent</a></h4>
-      <section><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html#LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordCustomEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_CustomEvent_">RecordCustomEvent(EventProcessorTypes.CustomEvent)</a>.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.html">EventProcessorTypes.EvaluationEvent</a></h4>
-      <section><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html#LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordEvaluationEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_">RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent)</a>.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.IdentifyEvent.html">EventProcessorTypes.IdentifyEvent</a></h4>
-      <section><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html#LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordIdentifyEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_IdentifyEvent_">RecordIdentifyEvent(EventProcessorTypes.IdentifyEvent)</a>.</p>
-</section>
       <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.FlagValueChangeEvent.html">FlagValueChangeEvent</a></h4>
       <section><p>A parameter class used with <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IFlagTracker.html#LaunchDarkly_Sdk_Client_Interfaces_IFlagTracker_FlagValueChanged">FlagValueChanged</a>.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.HttpConfiguration.html">HttpConfiguration</a></h4>
-      <section><p>Encapsulates top-level HTTP configuration that applies to all SDK components.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.LdClientContext.html">LdClientContext</a></h4>
-      <section><p>Encapsulates SDK client context when creating components.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.LoggingConfiguration.html">LoggingConfiguration</a></h4>
-      <section><p>Encapsulates the SDK&apos;s general logging configuration.</p>
 </section>
       <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ServiceEndpoints.html">ServiceEndpoints</a></h4>
       <section><p>Specifies the base service URIs used by SDK components.</p>
 </section>
     <h3 id="interfaces">Interfaces
   </h3>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.html">IDataSource</a></h4>
-      <section><p>Interface for an object that receives updates to feature flags from LaunchDarkly.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceFactory.html">IDataSourceFactory</a></h4>
-      <section><p>Interface for a factory that creates some implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.html">IDataSource</a>.</p>
-</section>
       <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceStatusProvider.html">IDataSourceStatusProvider</a></h4>
       <section><p>An interface for querying the status of the SDK&apos;s data source.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceUpdateSink.html">IDataSourceUpdateSink</a></h4>
-      <section><p>Interface that an implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.html">IDataSource</a> will use to push data into the SDK.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDiagnosticDescription.html">IDiagnosticDescription</a></h4>
-      <section><p>Optional interface for components to describe their own configuration.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html">IEventProcessor</a></h4>
-      <section><p>Interface for an object that can send or store analytics events.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessorFactory.html">IEventProcessorFactory</a></h4>
-      <section><p>Interface for a factory that creates some implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html">IEventProcessor</a>.</p>
 </section>
       <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IFlagTracker.html">IFlagTracker</a></h4>
       <section><p>An interface for tracking changes in feature flag configurations.</p>
 </section>
       <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.ILdClient.html">ILdClient</a></h4>
       <section><p>Interface for the standard SDK client methods and properties. The only implementation of this is <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a>.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore.html">IPersistentDataStore</a></h4>
-      <section><p>Interface for a data store that holds feature flag data and other SDK properties in a
-serialized form.</p>
-</section>
-      <h4><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStoreFactory.html">IPersistentDataStoreFactory</a></h4>
-      <section><p>Interface for a factory that creates some implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore.html">IPersistentDataStore</a>.</p>
 </section>
 </article>
           </div>

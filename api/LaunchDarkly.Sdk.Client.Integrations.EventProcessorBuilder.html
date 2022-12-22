@@ -83,19 +83,20 @@
   </div>
   <div classs="implements">
     <h5>Implements</h5>
-    <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessorFactory.html">IEventProcessorFactory</a></div>
-    <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDiagnosticDescription.html">IDiagnosticDescription</a></div>
+    <div><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IComponentConfigurer-1.html">IComponentConfigurer</a>&lt;<a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html">IEventProcessor</a>&gt;</div>
+    <div><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDiagnosticDescription.html">IDiagnosticDescription</a></div>
   </div>
   <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.html">LaunchDarkly.Sdk.Client.Integrations</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
   <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class EventProcessorBuilder : Object, IEventProcessorFactory, IDiagnosticDescription</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed class EventProcessorBuilder : Object, IComponentConfigurer&lt;IEventProcessor&gt;, IDiagnosticDescription</code></pre>
   </div>
   <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_remarks"><strong>Remarks</strong></h5>
   <div class="markdown level0 remarks"><p>The SDK normally buffers analytics events and sends them to LaunchDarkly at intervals. If you want
 to customize this behavior, create a builder with <a class="xref" href="LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_SendEvents">SendEvents()</a>, change its
-properties with the methods of this class, and pass it to <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Interfaces_IEventProcessorFactory_">Events(IEventProcessorFactory)</a>.</p>
+properties with the methods of this class, and pass it to
+<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor__">Events(IComponentConfigurer&lt;IEventProcessor&gt;)</a>.</p>
 </div>
   <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_examples"><strong>Examples</strong></h5>
   <pre><code>    var config = Configuration.Builder(sdkKey)
@@ -260,9 +261,54 @@ undesirable in a mobile application as opposed to a desktop application.</p>
   </table>
   <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_AllAttributesPrivate_System_Boolean__remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>If this is <span class="xref">true</span>, all user attribute values (other than the key) will be private, not just
-the attributes specified in <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_LaunchDarkly_Sdk_UserAttribute___">PrivateAttributes(UserAttribute[])</a> or on a per-user basis with
+the attributes specified in <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_System_String___">PrivateAttributes(String[])</a> or on a per-user basis with
 <span class="xref">LaunchDarkly.Sdk.UserBuilder</span> methods. By default, it is <span class="xref">false</span>.</p>
 </div>
+  <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_Build_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.Build*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_Build_LaunchDarkly_Sdk_Client_Subsystems_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.Build(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)">Build(LdClientContext)</h4>
+  <div class="markdown level1 summary"><p>Called internally by the SDK to create an implementation instance. Applications should not need
+to call this method.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IEventProcessor Build(LdClientContext context)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html">LdClientContext</a></td>
+        <td><span class="parametername">context</span></td>
+        <td><p>provides configuration properties and other components from the current
+SDK client instance</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html">IEventProcessor</a></td>
+        <td><p>a instance of the component type</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
   <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_Capacity_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.Capacity*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_Capacity_System_Int32_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.Capacity(System.Int32)">Capacity(Int32)</h4>
   <div class="markdown level1 summary"><p>Sets the capacity of the events buffer.</p>
@@ -316,52 +362,8 @@ capacity means that events are less likely to be discarded, at the cost of consu
 The default value is <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_DefaultCapacity">DefaultCapacity</a>. A zero or negative value will be changed to the default.
 </p>
 </div>
-  <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_CreateEventProcessor_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.CreateEventProcessor*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_CreateEventProcessor_LaunchDarkly_Sdk_Client_Interfaces_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.CreateEventProcessor(LaunchDarkly.Sdk.Client.Interfaces.LdClientContext)">CreateEventProcessor(LdClientContext)</h4>
-  <div class="markdown level1 summary"><p>Called internally by the SDK to create an implementation instance. Applications do not need
-to call this method.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IEventProcessor CreateEventProcessor(LdClientContext context)</code></pre>
-  </div>
-  <h5 class="parameters">Parameters</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Name</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.LdClientContext.html">LdClientContext</a></td>
-        <td><span class="parametername">context</span></td>
-        <td><p>configuration of the current client instance</p>
-</td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 class="returns">Returns</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html">IEventProcessor</a></td>
-        <td><p>an <code>IEventProcessor</code> instance</p>
-</td>
-      </tr>
-    </tbody>
-  </table>
   <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_DescribeConfiguration_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.DescribeConfiguration*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_DescribeConfiguration_LaunchDarkly_Sdk_Client_Interfaces_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.DescribeConfiguration(LaunchDarkly.Sdk.Client.Interfaces.LdClientContext)">DescribeConfiguration(LdClientContext)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_DescribeConfiguration_LaunchDarkly_Sdk_Client_Subsystems_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.DescribeConfiguration(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)">DescribeConfiguration(LdClientContext)</h4>
   <div class="markdown level1 summary"><p>Called internally by the SDK to inspect the configuration. Applications do not need to call
 this method.</p>
 </div>
@@ -381,7 +383,7 @@ this method.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.LdClientContext.html">LdClientContext</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html">LdClientContext</a></td>
         <td><span class="parametername">context</span></td>
         <td><p>the context object that may provide relevant configuration details</p>
 </td>
@@ -500,61 +502,14 @@ this method.</p>
 The default value is <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_DefaultFlushInterval">DefaultFlushInterval</a>. A zero or negative value will be changed to
 the default.</p>
 </div>
-  <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_InlineUsersInEvents_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.InlineUsersInEvents*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_InlineUsersInEvents_System_Boolean_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.InlineUsersInEvents(System.Boolean)">InlineUsersInEvents(Boolean)</h4>
-  <div class="markdown level1 summary"><p>Sets whether to include full user details in every analytics event.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public EventProcessorBuilder InlineUsersInEvents(bool inlineUsersInEvents)</code></pre>
-  </div>
-  <h5 class="parameters">Parameters</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Name</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">System.Boolean</span></td>
-        <td><span class="parametername">inlineUsersInEvents</span></td>
-        <td><p>true if you want full user details in each event</p>
-</td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 class="returns">Returns</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html">EventProcessorBuilder</a></td>
-        <td><p>the builder</p>
-</td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_InlineUsersInEvents_System_Boolean__remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>The default value is <span class="xref">false</span>: events will only include the user key, except for one
-&quot;identify&quot; event that provides the full details for the user.</p>
-</div>
-  <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributeNames_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.PrivateAttributeNames*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributeNames_System_String___" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.PrivateAttributeNames(System.String[])">PrivateAttributeNames(String[])</h4>
+  <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.PrivateAttributes*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_System_String___" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.PrivateAttributes(System.String[])">PrivateAttributes(String[])</h4>
   <div class="markdown level1 summary"><p>Marks a set of attribute names as private.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public EventProcessorBuilder PrivateAttributeNames(params string[] attributes)</code></pre>
+    <pre><code class="lang-csharp hljs">public EventProcessorBuilder PrivateAttributes(params string[] attributes)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -569,7 +524,7 @@ the default.</p>
       <tr>
         <td><span class="xref">System.String</span>[]</td>
         <td><span class="parametername">attributes</span></td>
-        <td><p>a set of names that will be removed from user data set to LaunchDarkly</p>
+        <td><p>a set of attributes that will be removed from context data set to LaunchDarkly</p>
 </td>
       </tr>
     </tbody>
@@ -590,79 +545,17 @@ the default.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributeNames_System_String____remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>
-Any users sent to LaunchDarkly with this configuration active will have attributes with these
+  <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_System_String____remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>Any contexts sent to LaunchDarkly with this configuration active will have attributes with these
 names removed. This is in addition to any attributes that were marked as private for an
-individual user with <span class="xref">LaunchDarkly.Sdk.UserBuilder</span> methods.
-</p>
-<p>
-Using <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_LaunchDarkly_Sdk_UserAttribute___">PrivateAttributes(UserAttribute[])</a> is preferable to avoid the possibility of
-misspelling a built-in attribute.
-</p>
+individual context with <a class="xref" href="LaunchDarkly.Sdk.ContextBuilder.html">ContextBuilder</a> methods.</p>
 </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributeNames_System_String____seealso">See Also</h5>
-  <div class="seealso">
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_LaunchDarkly_Sdk_UserAttribute___">PrivateAttributes(UserAttribute[])</a></div>
-  </div>
-  <a id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.PrivateAttributes*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_LaunchDarkly_Sdk_UserAttribute___" data-uid="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.PrivateAttributes(LaunchDarkly.Sdk.UserAttribute[])">PrivateAttributes(UserAttribute[])</h4>
-  <div class="markdown level1 summary"><p>Marks a set of attribute names as private.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public EventProcessorBuilder PrivateAttributes(params UserAttribute[] attributes)</code></pre>
-  </div>
-  <h5 class="parameters">Parameters</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Name</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.UserAttribute.html">UserAttribute</a>[]</td>
-        <td><span class="parametername">attributes</span></td>
-        <td><p>a set of attributes that will be removed from user data set to LaunchDarkly</p>
-</td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 class="returns">Returns</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html">EventProcessorBuilder</a></td>
-        <td><p>the builder</p>
-</td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_LaunchDarkly_Sdk_UserAttribute____remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>Any users sent to LaunchDarkly with this configuration active will have attributes with these
-names removed. This is in addition to any attributes that were marked as private for an
-individual user with <span class="xref">LaunchDarkly.Sdk.UserBuilder</span> methods.</p>
-</div>
-  <h5 id="LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributes_LaunchDarkly_Sdk_UserAttribute____seealso">See Also</h5>
-  <div class="seealso">
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html#LaunchDarkly_Sdk_Client_Integrations_EventProcessorBuilder_PrivateAttributeNames_System_String___">PrivateAttributeNames(String[])</a></div>
-  </div>
   <h3 id="implements">Implements</h3>
   <div>
-      <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessorFactory.html">IEventProcessorFactory</a>
+      <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IComponentConfigurer-1.html">IComponentConfigurer&lt;T&gt;</a>
   </div>
   <div>
-      <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDiagnosticDescription.html">IDiagnosticDescription</a>
+      <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDiagnosticDescription.html">IDiagnosticDescription</a>
   </div>
 </article>
           </div>

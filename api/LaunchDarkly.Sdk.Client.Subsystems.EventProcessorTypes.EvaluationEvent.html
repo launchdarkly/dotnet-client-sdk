@@ -68,12 +68,12 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent">
+            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent">
   
   
-  <h1 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent" class="text-break">Class EventProcessorTypes.EvaluationEvent
+  <h1 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent" class="text-break">Class EventProcessorTypes.EvaluationEvent
   </h1>
-  <div class="markdown level0 summary"><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html#LaunchDarkly_Sdk_Client_Interfaces_IEventProcessor_RecordEvaluationEvent_LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_">RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent)</a>.</p>
+  <div class="markdown level0 summary"><p>Parameters for <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html#LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor_RecordEvaluationEvent_LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent__">RecordEvaluationEvent(EventProcessorTypes.EvaluationEvent)</a>.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
@@ -81,16 +81,41 @@
     <div class="level0"><span class="xref">System.Object</span></div>
     <div class="level1"><span class="xref">EventProcessorTypes.EvaluationEvent</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.html">LaunchDarkly.Sdk.Client.Interfaces</a></h6>
+  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.html">LaunchDarkly.Sdk.Client.Subsystems</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_syntax">Syntax</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public sealed class EvaluationEvent : ValueType</code></pre>
   </div>
   <h3 id="properties">Properties
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_DebugEventsUntilDate_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.DebugEventsUntilDate*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_DebugEventsUntilDate" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.DebugEventsUntilDate">DebugEventsUntilDate</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Context_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Context*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Context" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Context">Context</h4>
+  <div class="markdown level1 summary"><p>The context for the evaluation. Some attributes may not be sent  to LaunchDarkly if they
+are private.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Context Context { get; set; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_DebugEventsUntilDate_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.DebugEventsUntilDate*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_DebugEventsUntilDate" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.DebugEventsUntilDate">DebugEventsUntilDate</h4>
   <div class="markdown level1 summary"><p>If set, debug events are being generated until this date/time.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -113,8 +138,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Default_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Default*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Default" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Default">Default</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Default_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Default*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Default" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Default">Default</h4>
   <div class="markdown level1 summary"><p>The default value of the flag.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -137,8 +162,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_FlagKey_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.FlagKey*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_FlagKey" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.FlagKey">FlagKey</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_FlagKey_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.FlagKey*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_FlagKey" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.FlagKey">FlagKey</h4>
   <div class="markdown level1 summary"><p>The unique key of the feature flag involved in the event.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -161,8 +186,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_FlagVersion_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.FlagVersion*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_FlagVersion" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.FlagVersion">FlagVersion</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_FlagVersion_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.FlagVersion*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_FlagVersion" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.FlagVersion">FlagVersion</h4>
   <div class="markdown level1 summary"><p>The version of the flag.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -185,8 +210,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_PrerequisiteOf_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.PrerequisiteOf*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_PrerequisiteOf" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.PrerequisiteOf">PrerequisiteOf</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_PrerequisiteOf_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.PrerequisiteOf*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_PrerequisiteOf" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.PrerequisiteOf">PrerequisiteOf</h4>
   <div class="markdown level1 summary"><p>The key of the flag that this flag is a prerequisite of, if any.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -209,8 +234,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Reason_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Reason*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Reason" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Reason">Reason</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Reason_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Reason*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Reason" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Reason">Reason</h4>
   <div class="markdown level1 summary"><p>An explanation of how the value was calculated, or null if the reason was not requested.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -233,8 +258,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Timestamp_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Timestamp*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Timestamp" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Timestamp">Timestamp</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Timestamp_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Timestamp*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Timestamp" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Timestamp">Timestamp</h4>
   <div class="markdown level1 summary"><p>Date/timestamp of the event.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -257,8 +282,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_TrackEvents_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.TrackEvents*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_TrackEvents" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.TrackEvents">TrackEvents</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_TrackEvents_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.TrackEvents*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_TrackEvents" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.TrackEvents">TrackEvents</h4>
   <div class="markdown level1 summary"><p>True if full-fidelity analytics events should be sent for this flag.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -281,33 +306,8 @@
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_User_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.User*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_User" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.User">User</h4>
-  <div class="markdown level1 summary"><p>Attributes of the user who generated the event. Some attributes may not be sent
-to LaunchDarkly if they are private.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public User User { get; set; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.User.html">User</a></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Value_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Value*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Value" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Value">Value</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Value_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Value*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Value" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Value">Value</h4>
   <div class="markdown level1 summary"><p>The computed value of the flag.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -330,8 +330,8 @@ to LaunchDarkly if they are private.</p>
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Variation_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Variation*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_EventProcessorTypes_EvaluationEvent_Variation" data-uid="LaunchDarkly.Sdk.Client.Interfaces.EventProcessorTypes.EvaluationEvent.Variation">Variation</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Variation_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Variation*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_EventProcessorTypes_EvaluationEvent_Variation" data-uid="LaunchDarkly.Sdk.Client.Subsystems.EventProcessorTypes.EvaluationEvent.Variation">Variation</h4>
   <div class="markdown level1 summary"><p>The variation index for the computed value of the flag.</p>
 </div>
   <div class="markdown level1 conceptual"></div>

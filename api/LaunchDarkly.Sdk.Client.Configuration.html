@@ -144,48 +144,15 @@ or <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly
   </table>
   <h3 id="properties">Properties
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Configuration_AutoAliasingOptOut_" data-uid="LaunchDarkly.Sdk.Client.Configuration.AutoAliasingOptOut*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Configuration_AutoAliasingOptOut" data-uid="LaunchDarkly.Sdk.Client.Configuration.AutoAliasingOptOut">AutoAliasingOptOut</h4>
-  <div class="markdown level1 summary"><p>Whether to disable the automatic sending of an alias event when the current user is changed
-to a non-anonymous user and the previous user was anonymous.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public bool AutoAliasingOptOut { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">System.Boolean</span></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Configuration_AutoAliasingOptOut_remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>By default, if you call <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Identify_LaunchDarkly_Sdk_User_System_TimeSpan_">Identify(User, TimeSpan)</a> or
-<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_IdentifyAsync_LaunchDarkly_Sdk_User_">IdentifyAsync(User)</a> with a non-anonymous user, and the current user
-(previously specified either with one of those methods or when creating the <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a>)
-was anonymous, the SDK assumes the two users should be correlated and sends an analytics
-event equivalent to calling <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Alias_LaunchDarkly_Sdk_User_LaunchDarkly_Sdk_User_">Alias(User, User)</a>. Setting
-AutoAliasingOptOut to <span class="xref">true</span> disables this behavior.</p>
-</div>
-  <a id="LaunchDarkly_Sdk_Client_Configuration_DataSourceFactory_" data-uid="LaunchDarkly.Sdk.Client.Configuration.DataSourceFactory*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Configuration_DataSourceFactory" data-uid="LaunchDarkly.Sdk.Client.Configuration.DataSourceFactory">DataSourceFactory</h4>
-  <div class="markdown level1 summary"><p>A factory object that creates an implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSource.html">IDataSource</a>, which will
+  <a id="LaunchDarkly_Sdk_Client_Configuration_DataSource_" data-uid="LaunchDarkly.Sdk.Client.Configuration.DataSource*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Configuration_DataSource" data-uid="LaunchDarkly.Sdk.Client.Configuration.DataSource">DataSource</h4>
+  <div class="markdown level1 summary"><p>A factory object that creates an implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.html">IDataSource</a>, which will
 receive feature flag data.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IDataSourceFactory DataSourceFactory { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public IComponentConfigurer&lt;IDataSource&gt; DataSource { get; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -197,11 +164,15 @@ receive feature flag data.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDataSourceFactory.html">IDataSourceFactory</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IComponentConfigurer-1.html">IComponentConfigurer</a>&lt;<a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDataSource.html">IDataSource</a>&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_DataSource_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DataSource_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IDataSource__">DataSource(IComponentConfigurer&lt;IDataSource&gt;)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_DiagnosticOptOut_" data-uid="LaunchDarkly.Sdk.Client.Configuration.DiagnosticOptOut*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_DiagnosticOptOut" data-uid="LaunchDarkly.Sdk.Client.Configuration.DiagnosticOptOut">DiagnosticOptOut</h4>
   <div class="markdown level1 summary"><p>True if diagnostic events have been disabled.</p>
@@ -226,6 +197,10 @@ receive feature flag data.</p>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_DiagnosticOptOut_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DiagnosticOptOut_System_Boolean_">DiagnosticOptOut(Boolean)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_EnableBackgroundUpdating_" data-uid="LaunchDarkly.Sdk.Client.Configuration.EnableBackgroundUpdating*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_EnableBackgroundUpdating" data-uid="LaunchDarkly.Sdk.Client.Configuration.EnableBackgroundUpdating">EnableBackgroundUpdating</h4>
   <div class="markdown level1 summary"><p>Whether to enable feature flag updates when the application is running in the background.</p>
@@ -253,6 +228,10 @@ receive feature flag data.</p>
   <h5 id="LaunchDarkly_Sdk_Client_Configuration_EnableBackgroundUpdating_remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>This is only relevant on mobile platforms.</p>
 </div>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_EnableBackgroundUpdating_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_EnableBackgroundUpdating_System_Boolean_">EnableBackgroundUpdating(Boolean)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_EvaluationReasons_" data-uid="LaunchDarkly.Sdk.Client.Configuration.EvaluationReasons*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_EvaluationReasons" data-uid="LaunchDarkly.Sdk.Client.Configuration.EvaluationReasons">EvaluationReasons</h4>
   <div class="markdown level1 summary"><p>True if LaunchDarkly should provide additional information about how flag values were
@@ -284,15 +263,19 @@ methods such as <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#Laun
 increases the size of network requests, such information is not sent unless you set this option
 to <span class="xref">true</span>.</p>
 </div>
-  <a id="LaunchDarkly_Sdk_Client_Configuration_EventProcessorFactory_" data-uid="LaunchDarkly.Sdk.Client.Configuration.EventProcessorFactory*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Configuration_EventProcessorFactory" data-uid="LaunchDarkly.Sdk.Client.Configuration.EventProcessorFactory">EventProcessorFactory</h4>
-  <div class="markdown level1 summary"><p>A factory object that creates an implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessor.html">IEventProcessor</a>, responsible
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_EvaluationReasons_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_EvaluationReasons_System_Boolean_">EvaluationReasons(Boolean)</a></div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_Configuration_Events_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Events*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Configuration_Events" data-uid="LaunchDarkly.Sdk.Client.Configuration.Events">Events</h4>
+  <div class="markdown level1 summary"><p>A factory object that creates an implementation of <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html">IEventProcessor</a>, responsible
 for sending analytics events.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IEventProcessorFactory EventProcessorFactory { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public IComponentConfigurer&lt;IEventProcessor&gt; Events { get; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -304,11 +287,43 @@ for sending analytics events.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessorFactory.html">IEventProcessorFactory</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IComponentConfigurer-1.html">IComponentConfigurer</a>&lt;<a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html">IEventProcessor</a>&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_Events_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor__">Events(IComponentConfigurer&lt;IEventProcessor&gt;)</a></div>
+  </div>
+  <a id="LaunchDarkly_Sdk_Client_Configuration_GenerateAnonymousKeys_" data-uid="LaunchDarkly.Sdk.Client.Configuration.GenerateAnonymousKeys*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Configuration_GenerateAnonymousKeys" data-uid="LaunchDarkly.Sdk.Client.Configuration.GenerateAnonymousKeys">GenerateAnonymousKeys</h4>
+  <div class="markdown level1 summary"><p>True if the SDK should provide unique keys for anonymous contexts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool GenerateAnonymousKeys { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_GenerateAnonymousKeys_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_GenerateAnonymousKeys_System_Boolean_">GenerateAnonymousKeys(Boolean)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_HttpConfigurationBuilder_" data-uid="LaunchDarkly.Sdk.Client.Configuration.HttpConfigurationBuilder*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_HttpConfigurationBuilder" data-uid="LaunchDarkly.Sdk.Client.Configuration.HttpConfigurationBuilder">HttpConfigurationBuilder</h4>
   <div class="markdown level1 summary"><p>HTTP configuration properties for the SDK.</p>
@@ -333,6 +348,10 @@ for sending analytics events.</p>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_HttpConfigurationBuilder_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Http_LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_">Http(HttpConfigurationBuilder)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_LoggingConfigurationBuilder_" data-uid="LaunchDarkly.Sdk.Client.Configuration.LoggingConfigurationBuilder*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_LoggingConfigurationBuilder" data-uid="LaunchDarkly.Sdk.Client.Configuration.LoggingConfigurationBuilder">LoggingConfigurationBuilder</h4>
   <div class="markdown level1 summary"><p>Logging configuration properties for the SDK.</p>
@@ -357,6 +376,10 @@ for sending analytics events.</p>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_LoggingConfigurationBuilder_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Logging_LaunchDarkly_Sdk_Client_Integrations_LoggingConfigurationBuilder_">Logging(LoggingConfigurationBuilder)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_MobileKey_" data-uid="LaunchDarkly.Sdk.Client.Configuration.MobileKey*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_MobileKey" data-uid="LaunchDarkly.Sdk.Client.Configuration.MobileKey">MobileKey</h4>
   <div class="markdown level1 summary"><p>The key for your LaunchDarkly environment.</p>
@@ -408,6 +431,10 @@ for sending analytics events.</p>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_Offline_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Offline_System_Boolean_">Offline(Boolean)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_PersistenceConfigurationBuilder_" data-uid="LaunchDarkly.Sdk.Client.Configuration.PersistenceConfigurationBuilder*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_PersistenceConfigurationBuilder" data-uid="LaunchDarkly.Sdk.Client.Configuration.PersistenceConfigurationBuilder">PersistenceConfigurationBuilder</h4>
   <div class="markdown level1 summary"><p>Persistent storage configuration properties for the SDK.</p>
@@ -432,6 +459,10 @@ for sending analytics events.</p>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_PersistenceConfigurationBuilder_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Persistence_LaunchDarkly_Sdk_Client_Integrations_PersistenceConfigurationBuilder_">Persistence(PersistenceConfigurationBuilder)</a></div>
+  </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_ServiceEndpoints_" data-uid="LaunchDarkly.Sdk.Client.Configuration.ServiceEndpoints*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_ServiceEndpoints" data-uid="LaunchDarkly.Sdk.Client.Configuration.ServiceEndpoints">ServiceEndpoints</h4>
   <div class="markdown level1 summary"><p>Defines the base service URIs used by SDK components.</p>
@@ -456,6 +487,10 @@ for sending analytics events.</p>
       </tr>
     </tbody>
   </table>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_ServiceEndpoints_seealso">See Also</h5>
+  <div class="seealso">
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_ServiceEndpoints_LaunchDarkly_Sdk_Client_Integrations_ServiceEndpointsBuilder_">ServiceEndpoints(ServiceEndpointsBuilder)</a></div>
+  </div>
   <h3 id="methods">Methods
   </h3>
   <a id="LaunchDarkly_Sdk_Client_Configuration_Builder_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Builder*"></a>

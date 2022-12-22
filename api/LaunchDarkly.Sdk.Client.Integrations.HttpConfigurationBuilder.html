@@ -83,7 +83,7 @@
   </div>
   <div classs="implements">
     <h5>Implements</h5>
-    <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDiagnosticDescription.html">IDiagnosticDescription</a></div>
+    <div><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDiagnosticDescription.html">IDiagnosticDescription</a></div>
   </div>
   <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.html">LaunchDarkly.Sdk.Client.Integrations</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
@@ -215,7 +215,7 @@ This is the time allowed for the underlying HTTP client to connect to the
 LaunchDarkly server, for any individual network connection.
 </p>
 <p>
-It is not the same as the timeout parameter to <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(Configuration, User, TimeSpan)</a>,
+It is not the same as the timeout parameter to <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a>,
 which limits the time for initializing the SDK regardless of how many individual HTTP requests
 are done in that time.
 </p>
@@ -236,14 +236,14 @@ the <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.HttpConfiguration
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_ResponseStartTimeout_System_TimeSpan_">ResponseStartTimeout(TimeSpan)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_LaunchDarkly_Sdk_Client_Interfaces_BasicConfiguration_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(LaunchDarkly.Sdk.Client.Interfaces.BasicConfiguration)">CreateHttpConfiguration(BasicConfiguration)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_LaunchDarkly_Sdk_Client_Subsystems_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)">CreateHttpConfiguration(LdClientContext)</h4>
   <div class="markdown level1 summary"><p>Called internally by the SDK to create an implementation instance. Applications do not need
 to call this method.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public HttpConfiguration CreateHttpConfiguration(BasicConfiguration basicConfiguration)</code></pre>
+    <pre><code class="lang-csharp hljs">public HttpConfiguration CreateHttpConfiguration(LdClientContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -256,9 +256,9 @@ to call this method.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.BasicConfiguration.html">BasicConfiguration</a></td>
-        <td><span class="parametername">basicConfiguration</span></td>
-        <td><p>provides the basic SDK configuration properties</p>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html">LdClientContext</a></td>
+        <td><span class="parametername">context</span></td>
+        <td><p>provides SDK configuration data</p>
 </td>
       </tr>
     </tbody>
@@ -273,8 +273,8 @@ to call this method.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.HttpConfiguration.html">HttpConfiguration</a></td>
-        <td><p>an <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.HttpConfiguration.html">HttpConfiguration</a></p>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.HttpConfiguration.html">HttpConfiguration</a></td>
+        <td><p>an <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.HttpConfiguration.html">HttpConfiguration</a></p>
 </td>
       </tr>
     </tbody>
@@ -333,7 +333,7 @@ to call this method.</p>
 requests. You may add any number of headers.</p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_DescribeConfiguration_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.DescribeConfiguration*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_DescribeConfiguration_LaunchDarkly_Sdk_Client_Interfaces_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.DescribeConfiguration(LaunchDarkly.Sdk.Client.Interfaces.LdClientContext)">DescribeConfiguration(LdClientContext)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_DescribeConfiguration_LaunchDarkly_Sdk_Client_Subsystems_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.DescribeConfiguration(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)">DescribeConfiguration(LdClientContext)</h4>
   <div class="markdown level1 summary"><p>Called internally by the SDK to inspect the configuration. Applications do not need to call
 this method.</p>
 </div>
@@ -353,7 +353,7 @@ this method.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.LdClientContext.html">LdClientContext</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html">LdClientContext</a></td>
         <td><span class="parametername">context</span></td>
         <td><p>the context object that may provide relevant configuration details</p>
 </td>
@@ -546,7 +546,7 @@ any data from the server. It is equivalent to the <code>Timeout</code> property 
 <code>HttpClient</code>.
 </p>
 <p>
-It is not the same as the timeout parameter to<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(Configuration, User, TimeSpan)</a>,
+It is not the same as the timeout parameter to<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a>,
 which limits the time for initializing the SDK regardless of how many individual HTTP requests
 are done in that time.
 </p>
@@ -666,7 +666,7 @@ metrics on the usage of these wrapper libraries.</p>
 </div>
   <h3 id="implements">Implements</h3>
   <div>
-      <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IDiagnosticDescription.html">IDiagnosticDescription</a>
+      <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IDiagnosticDescription.html">IDiagnosticDescription</a>
   </div>
 </article>
           </div>

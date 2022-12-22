@@ -68,22 +68,22 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore">
+            <article class="content wrap" id="_content" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore">
   
   
-  <h1 id="LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStore" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore" class="text-break">Interface IPersistentDataStore
+  <h1 id="LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore" class="text-break">Interface IPersistentDataStore
   </h1>
   <div class="markdown level0 summary"><p>Interface for a data store that holds feature flag data and other SDK properties in a
 serialized form.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.html">LaunchDarkly.Sdk.Client.Interfaces</a></h6>
+  <h6><strong>Namespace</strong>: <a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.html">LaunchDarkly.Sdk.Client.Subsystems</a></h6>
   <h6><strong>Assembly</strong>: LaunchDarkly.ClientSdk.dll</h6>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStore_syntax">Syntax</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public interface IPersistentDataStore : IDisposable</code></pre>
   </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStore_remarks"><strong>Remarks</strong></h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore_remarks"><strong>Remarks</strong></h5>
   <div class="markdown level0 remarks"><p>
 This interface should be used for platform-specific integrations that store data somewhere
 other than in memory. The SDK has a default implementation which uses the native preferences
@@ -121,8 +121,8 @@ of this. The SDK will decide whether to log the exception.
 </div>
   <h3 id="methods">Methods
   </h3>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStore_GetValue_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore.GetValue*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStore_GetValue_System_String_System_String_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore.GetValue(System.String,System.String)">GetValue(String, String)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore_GetValue_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore.GetValue*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore_GetValue_System_String_System_String_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore.GetValue(System.String,System.String)">GetValue(String, String)</h4>
   <div class="markdown level1 summary"><p>Attempts to retrieve a string value from the store.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -170,8 +170,8 @@ of this. The SDK will decide whether to log the exception.
       </tr>
     </tbody>
   </table>
-  <a id="LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStore_SetValue_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore.SetValue*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Interfaces_IPersistentDataStore_SetValue_System_String_System_String_System_String_" data-uid="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStore.SetValue(System.String,System.String,System.String)">SetValue(String, String, String)</h4>
+  <a id="LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore_SetValue_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore.SetValue*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_IPersistentDataStore_SetValue_System_String_System_String_System_String_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.IPersistentDataStore.SetValue(System.String,System.String,System.String)">SetValue(String, String, String)</h4>
   <div class="markdown level1 summary"><p>Attempts to update or remove a string value in the store.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -209,10 +209,6 @@ of this. The SDK will decide whether to log the exception.
       </tr>
     </tbody>
   </table>
-  <h3 id="seealso">See Also</h3>
-  <div class="seealso">
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IPersistentDataStoreFactory.html">IPersistentDataStoreFactory</a></div>
-  </div>
 </article>
           </div>
           

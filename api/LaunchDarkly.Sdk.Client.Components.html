@@ -95,7 +95,7 @@ is to call one of the static methods in <a class="xref" href="LaunchDarkly.Sdk.C
 apply any desired configuration change to the object that that method returns (such as
 <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.StreamingDataSourceBuilder.html#LaunchDarkly_Sdk_Client_Integrations_StreamingDataSourceBuilder_InitialReconnectDelay_System_TimeSpan_">InitialReconnectDelay(TimeSpan)</a>), and then use the
 corresponding method in <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html">ConfigurationBuilder</a> (such as
-<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DataSource_LaunchDarkly_Sdk_Client_Interfaces_IDataSourceFactory_">DataSource(IDataSourceFactory)</a>) to use that
+<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DataSource_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IDataSource__">DataSource(IComponentConfigurer&lt;IDataSource&gt;)</a>) to use that
 configured component in the SDK.</p>
 </div>
   <h3 id="properties">Properties
@@ -107,7 +107,7 @@ configured component in the SDK.</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static IEventProcessorFactory NoEvents { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public static IComponentConfigurer&lt;IEventProcessor&gt; NoEvents { get; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -119,13 +119,13 @@ configured component in the SDK.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Interfaces.IEventProcessorFactory.html">IEventProcessorFactory</a></td>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IComponentConfigurer-1.html">IComponentConfigurer</a>&lt;<a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.IEventProcessor.html">IEventProcessor</a>&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <h5 id="LaunchDarkly_Sdk_Client_Components_NoEvents_remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>Passing this to <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Interfaces_IEventProcessorFactory_">Events(IEventProcessorFactory)</a> causes
+  <div class="markdown level1 remarks"><p>Passing this to <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor__">Events(IComponentConfigurer&lt;IEventProcessor&gt;)</a> causes
 the SDK to discard all analytics events and not send them to LaunchDarkly, regardless of
 any other configuration.</p>
 </div>
@@ -136,7 +136,7 @@ any other configuration.</p>
 
   <h5 id="LaunchDarkly_Sdk_Client_Components_NoEvents_seealso">See Also</h5>
   <div class="seealso">
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Interfaces_IEventProcessorFactory_">Events(IEventProcessorFactory)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor__">Events(IComponentConfigurer&lt;IEventProcessor&gt;)</a></div>
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_SendEvents">SendEvents()</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_Components_NoLogging_" data-uid="LaunchDarkly.Sdk.Client.Components.NoLogging*"></a>
@@ -458,7 +458,7 @@ mode in order for that to happen.
 <p>
 To use only polling mode, call this method to obtain a builder, change its properties with the
 <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.PollingDataSourceBuilder.html">PollingDataSourceBuilder</a> methods, and pass it to
-<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DataSource_LaunchDarkly_Sdk_Client_Interfaces_IDataSourceFactory_">DataSource(IDataSourceFactory)</a>.
+<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DataSource_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IDataSource__">DataSource(IComponentConfigurer&lt;IDataSource&gt;)</a>.
 </p>
 <p>
 Setting <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Offline_System_Boolean_">Offline(Boolean)</a> to <span class="xref">true</span> will superseded this
@@ -501,7 +501,7 @@ setting and completely disable network requests.
 The default configuration has events enabled with default settings. If you want to
 customize this behavior, call this method to obtain a builder, change its properties
 with the <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.EventProcessorBuilder.html">EventProcessorBuilder</a> methods, and pass it to
-<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Interfaces_IEventProcessorFactory_">Events(IEventProcessorFactory)</a>.
+<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor__">Events(IComponentConfigurer&lt;IEventProcessor&gt;)</a>.
 </p>
 <p>
 To completely disable sending analytics events, use <a class="xref" href="LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_NoEvents">NoEvents</a> instead.
@@ -516,7 +516,7 @@ To completely disable sending analytics events, use <a class="xref" href="Launch
 
   <h5 id="LaunchDarkly_Sdk_Client_Components_SendEvents_seealso">See Also</h5>
   <div class="seealso">
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Interfaces_IEventProcessorFactory_">Events(IEventProcessorFactory)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Events_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IEventProcessor__">Events(IComponentConfigurer&lt;IEventProcessor&gt;)</a></div>
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_NoEvents">NoEvents</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_Components_ServiceEndpoints_" data-uid="LaunchDarkly.Sdk.Client.Components.ServiceEndpoints*"></a>
@@ -595,7 +595,7 @@ By default, the SDK uses a streaming connection to receive feature flag data fro
 the default behavior, you do not need to call this method. However, if you want to customize the behavior
 of the connection, call this method to obtain a builder, change its properties with the
 <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.StreamingDataSourceBuilder.html">StreamingDataSourceBuilder</a> methods, and pass it to
-<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DataSource_LaunchDarkly_Sdk_Client_Interfaces_IDataSourceFactory_">DataSource(IDataSourceFactory)</a>.
+<a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_DataSource_LaunchDarkly_Sdk_Client_Subsystems_IComponentConfigurer_LaunchDarkly_Sdk_Client_Subsystems_IDataSource__">DataSource(IComponentConfigurer&lt;IDataSource&gt;)</a>.
 </p>
 <p>
 The SDK may still use polling mode sometimes even when streaming mode is enabled, such as
