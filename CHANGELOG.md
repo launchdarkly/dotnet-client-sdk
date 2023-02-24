@@ -3,6 +3,10 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.0.3] - 2023-02-24
+### Changed:
+- Update to `LaunchDarkly.JsonStream` version `1.1.1`. This version includes a fix for parsing double values using the invariant culture.
+
 ## [2.0.2] - 2022-11-28
 ### Fixed:
 - One of the SDK's dependencies, `LaunchDarkly.Logging`, had an Authenticode signature without a timestamp. The dependency has been updated to a new version with a valid signature. There are no other changes.
