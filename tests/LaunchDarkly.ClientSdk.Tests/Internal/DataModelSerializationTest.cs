@@ -1,4 +1,6 @@
-﻿using LaunchDarkly.Sdk.Json;
+﻿using System.Globalization;
+using LaunchDarkly.Sdk.Client.Interfaces;
+using LaunchDarkly.Sdk.Json;
 using Xunit;
 
 using static LaunchDarkly.Sdk.Client.TestUtil;
@@ -92,6 +94,23 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
             var actualData2 = DataModelSerialization.DeserializeAll(serialized);
             Assert.Equal(expectedData, actualData2);
+        }
+
+        [Theory]
+        [InlineData("fr-FR")]
+        [InlineData("de")]
+        [InlineData("en-US")]
+        public void SerializationIsInvariantToCulture(string cultureName)
+        {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(cultureName);
+
+            var actualData1 = DataModelSerialization.DeserializeV1Schema(
+                "{\"JsonDouble\":{\"version\":1,\"flagVersion\":7,\"value\":{\"min\":0.5,\"max\":250}," +
+                "\"variation\":0,\"trackEvents\":false,\"reason\":{\"kind\":\"FALLTHROUGH\"}}}");
+            var item = actualData1.Items[0].Value;
+            var flagValue = item.Item.Value;
+            Assert.Equal(0.5, flagValue.Dictionary["min"].AsDouble);
         }
     }
 }
