@@ -1,7 +1,7 @@
 <Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <Version>2.0.3</Version>
+    <Version>2.0.4</Version>
     <!-- The BUILDFRAMEWORKS variable allows us to override the target frameworks in
          a situation where we need to build only the .NET Standard target and do not
          want to even mention the Android/iOS targets, because we're in an environment
