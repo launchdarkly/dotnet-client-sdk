@@ -3,6 +3,10 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [2.0.4] - 2023-02-27
+### Changed:
+- Update `LaunchDarkly.JsonStream` to version `1.1.2`. This version addresses an issue with serializing doubles to JSON values.
+
 ## [2.0.3] - 2023-02-24
 ### Changed:
 - Update to `LaunchDarkly.JsonStream` version `1.1.1`. This version includes a fix for parsing double values using the invariant culture.
