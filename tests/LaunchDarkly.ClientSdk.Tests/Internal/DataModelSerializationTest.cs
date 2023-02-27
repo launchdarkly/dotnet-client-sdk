@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Json;
 using Xunit;
@@ -17,6 +18,20 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 .FirstName("Lucy").LastName("Cat").Build();
             AssertJsonEqual(LdJsonSerialization.SerializeObject(user),
                 DataModelSerialization.SerializeUser(user));
+        }
+
+        [Theory]
+        [InlineData("fr-FR")]
+        [InlineData("de")]
+        [InlineData("en-US")]
+        public void SerializeUserIsInvariantToCulture(string cultureName)
+        {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(cultureName);
+            var user = User.Builder("user-key").Custom("doubleValue", 0.5).Build();
+            // Will serialize an LDValue. Which would also be the same type for flag values.
+            var serialized = LdJsonSerialization.SerializeObject(user);
+            Assert.Matches(new Regex(".*{\"doubleValue\":0\\.5}.*"), serialized);
         }
 
         [Fact]
@@ -100,7 +115,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [InlineData("fr-FR")]
         [InlineData("de")]
         [InlineData("en-US")]
-        public void SerializationIsInvariantToCulture(string cultureName)
+        public void DeserializationIsInvariantToCulture(string cultureName)
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
             System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(cultureName);
