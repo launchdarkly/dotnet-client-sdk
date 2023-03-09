@@ -21,9 +21,9 @@
 
 set -e
 
-# The .NET SDK 5.0 installer is pinned to a specific version
-# See: https://dotnet.microsoft.com/download/dotnet/5.0
-DOTNET_SDK_INSTALLER_URL=https://download.visualstudio.microsoft.com/download/pr/88bc1553-e90f-4a4f-9574-65d9a5065cd2/1d5646e1abb8b4d4a61ba0b0be976047/dotnet-sdk-5.0.402-osx-x64.pkg
+# The .NET SDK 6.0 installer is pinned to a specific version
+# See: https://dotnet.microsoft.com/download/dotnet/6.0
+DOTNET_SDK_INSTALLER_URL=https://download.visualstudio.microsoft.com/download/pr/85962c99-0139-47f0-aa4c-b566b809b6a1/2008bf2ed757e67f382fe92c0fcca583/dotnet-sdk-6.0.406-osx-x64.pkg
 
 # Currently we are also pinning the rest of the installers to specific version URLs.
 # Alternately, we could use the "latest stable" mode of boots:
