@@ -3,6 +3,12 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [3.0.2] - 2023-04-04
+When using multi-contexts, then this update can change the `FullyQualifiedKey` for a given context. This can cause a cache miss in the local cache for a given context, requiring a connection to LaunchDarkly to populate that cache for the new `FullyQualifiedKey`.
+
+### Fixed:
+- Fixed an issue with generating the FullyQualifiedKey. The key generation was not sorted by the kind, so the key was not stable depending on the order of the context construction. This affects how flags are locally cached, as they are cached by the FullyQualifiedKey.
+
 ## [3.0.1] - 2023-03-08
 ### Changed:
 - Update to `LaunchDarkly.InternalSdk` `3.1.1`
