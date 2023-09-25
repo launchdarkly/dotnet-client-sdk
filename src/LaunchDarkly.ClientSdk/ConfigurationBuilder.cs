@@ -39,6 +39,7 @@ namespace LaunchDarkly.Sdk.Client
         internal HttpConfigurationBuilder _httpConfigurationBuilder = null;
         internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
         internal string _mobileKey;
+        internal ApplicationInfoBuilder _applicationInfo;
         internal bool _offline = false;
         internal PersistenceConfigurationBuilder _persistenceConfigurationBuilder = null;
         internal ServiceEndpointsBuilder _serviceEndpointsBuilder = null;
@@ -65,6 +66,7 @@ namespace LaunchDarkly.Sdk.Client
             _offline = copyFrom.Offline;
             _persistenceConfigurationBuilder = copyFrom.PersistenceConfigurationBuilder;
             _serviceEndpointsBuilder = new ServiceEndpointsBuilder(copyFrom.ServiceEndpoints);
+            _applicationInfo = copyFrom.ApplicationInfo;
         }
 
         /// <summary>
@@ -313,6 +315,8 @@ namespace LaunchDarkly.Sdk.Client
             return this;
         }
 
+
+
         /// <summary>
         /// Sets whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
@@ -375,6 +379,17 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder ServiceEndpoints(ServiceEndpointsBuilder serviceEndpointsBuilder)
         {
             _serviceEndpointsBuilder = serviceEndpointsBuilder;
+            return this;
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="applicationInfo"></param>
+        /// <returns></returns>
+        public ConfigurationBuilder ApplicationInfo(ApplicationInfoBuilder applicationInfo)
+        {
+            _applicationInfo = applicationInfo;
             return this;
         }
 

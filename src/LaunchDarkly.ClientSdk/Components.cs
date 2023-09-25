@@ -283,6 +283,12 @@ namespace LaunchDarkly.Sdk.Client
         public static ServiceEndpointsBuilder ServiceEndpoints() => new ServiceEndpointsBuilder();
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static ApplicationInfoBuilder ApplicationInfo() => new ApplicationInfoBuilder();
+
+        /// <summary>
         /// Returns a configurable factory for using streaming mode to get feature flag data.
         /// </summary>
         /// <remarks>
