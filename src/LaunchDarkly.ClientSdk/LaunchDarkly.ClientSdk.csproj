@@ -32,7 +32,7 @@
     <!-- fail if XML comments are missing or invalid -->
     <WarningsAsErrors>1570,1571,1572,1573,1574,1580,1581,1584,1591,1710,1711,1712</WarningsAsErrors>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
@@ -43,7 +43,9 @@
     <PackageReference Include="LaunchDarkly.Logging" Version="2.0.0" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
-    <Folder Include="Subsystems\" />
+    <Compile Update="Subsystems\PlatformAttributes.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <!-- dependencies and source files for .NET Standard (all versions) -->

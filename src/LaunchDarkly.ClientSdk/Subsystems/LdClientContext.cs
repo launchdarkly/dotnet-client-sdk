@@ -2,6 +2,7 @@
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.Sdk.EnvReporting;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
@@ -169,6 +170,8 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 var applicationInfo = applicationInfoBuilder.Build();
                 builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
+
+            builder.SetPlatformLayer(PlatformAttributes.Layer);
 
             return builder.Build();
         }

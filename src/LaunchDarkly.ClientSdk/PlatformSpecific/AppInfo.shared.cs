@@ -41,9 +41,5 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
         public static Version Version => Utils.ParseVersion(VersionString);
 
         public static string BuildString => PlatformGetBuild();
-
-        // public static void ShowSettingsUI() => PlatformShowSettingsUI();
-        //
-        // public static AppTheme RequestedTheme => PlatformRequestedTheme();
     }
 }

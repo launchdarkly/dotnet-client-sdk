@@ -40,6 +40,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class AppInfo
     {
+        
         static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
 
         static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
