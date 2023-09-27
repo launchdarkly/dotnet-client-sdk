@@ -39,7 +39,7 @@
     <PackageReference Include="System.Text.Json" Version="6.0.0" />
     <ProjectReference Include="../../../dotnet-sdk-common-private/src/LaunchDarkly.CommonSdk/LaunchDarkly.CommonSdk.csproj" />
     <PackageReference Include="LaunchDarkly.EventSource" Version="5.0.1" />
-    <ProjectReference Include="/Users/tanderson/workspace/ld-repos/dotnet-sdk-internal-private/src/LaunchDarkly.InternalSdk/LaunchDarkly.InternalSdk.csproj" />
+    <ProjectReference Include="../../../dotnet-sdk-internal-private/src/LaunchDarkly.InternalSdk/LaunchDarkly.InternalSdk.csproj" />
     <PackageReference Include="LaunchDarkly.Logging" Version="2.0.0" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
@@ -65,7 +65,14 @@
 
   <!-- dependencies and source files for iOS (all versions) -->
   <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
-    <Compile Include="**\*.ios.cs" />
+    <Compile Include="PlatformSpecific\AppInfo.ios.tvos.watchos.macos.cs" />
+    <Compile Include="PlatformSpecific/AsyncScheduler.ios.cs" />
+    <Compile Include="PlatformSpecific/BackgroundDetection.ios.cs" />
+    <Compile Include="PlatformSpecific/Connectivity.ios.cs" />
+    <Compile Include="PlatformSpecific/Http.ios.cs" />
+    <Compile Include="PlatformSpecific/LocalStorage.ios.cs" />
+    <Compile Include="PlatformSpecific/Logging.ios.cs" />
+    <Compile Include="PlatformSpecific/UserMetadata.ios.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
