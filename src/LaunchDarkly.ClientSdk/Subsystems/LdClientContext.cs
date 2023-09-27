@@ -104,10 +104,10 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             configuration.EvaluationReasons,
             (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
             .CreateHttpConfiguration(configuration.MobileKey,
-                CreateEnvironmentReporter(configuration.ApplicationInfo).ApplicationInfo), // looks silly, but handles invalid info
+                MakeEnvironmentReporter(configuration.ApplicationInfo).ApplicationInfo), // looks silly, but handles invalid info
             false,
             configuration.ServiceEndpoints,
-            CreateEnvironmentReporter(configuration.ApplicationInfo),
+            MakeEnvironmentReporter(configuration.ApplicationInfo),
             null,
             null,
             new TaskExecutor(
@@ -161,7 +161,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             return logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
         }
 
-        internal static IEnvironmentReporter CreateEnvironmentReporter(ApplicationInfoBuilder applicationInfoBuilder)
+        internal static IEnvironmentReporter MakeEnvironmentReporter(ApplicationInfoBuilder applicationInfoBuilder)
         {
             var builder = new EnvironmentReporterBuilder();
             if (applicationInfoBuilder != null)
