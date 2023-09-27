@@ -166,7 +166,8 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             var builder = new EnvironmentReporterBuilder();
             if (applicationInfoBuilder != null)
             {
-                builder.SetApplicationInfo(applicationInfoBuilder.Build());
+                var applicationInfo = applicationInfoBuilder.Build();
+                builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
 
             return builder.Build();
