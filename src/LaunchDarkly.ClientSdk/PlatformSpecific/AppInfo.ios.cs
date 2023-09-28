@@ -40,6 +40,8 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class AppInfo
     {
+        static ApplicationInfo? PlatformGet() => new ApplicationInfo(PlatformGetAppId(), PlatformGetAppName(),
+            PlatformGetAppVersion(), PlatformGetAppVersionName());
         
         // The following methods are added by LaunchDarkly to align with the Application Info
         // required by the SDK.

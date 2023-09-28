@@ -3,33 +3,25 @@ using LaunchDarkly.Sdk.EnvReporting;
 
 namespace LaunchDarkly.Sdk.Client.Subsystems
 {
-    internal class ConcreteProp<T> : IProp<T>
+    internal class MaybeAppInfo: IProp<ApplicationInfo>
     {
-        private readonly T _value;
+        private readonly ApplicationInfo? _value;
 
-        public ConcreteProp(T value)
+        public MaybeAppInfo(ApplicationInfo? value)
         {
             _value = value;
         }
 
         public bool HasValue()
         {
-            return true;
+            return _value.HasValue;
         }
 
-        public T GetValue()
-        {
-            return _value;
-        }
+        public ApplicationInfo GetValue() => _value.Value;
     }
     
     internal static class PlatformAttributes
     {
-        internal static Layer Layer => new Layer { ApplicationInfo = new ConcreteProp<ApplicationInfo>(new ApplicationInfo(
-            AppInfo.Id,
-            AppInfo.Name,
-            AppInfo.Version,
-            AppInfo.VersionName
-        ))};
+        internal static Layer Layer => new Layer { ApplicationInfo = new MaybeAppInfo(AppInfo.Get()) };
     }
 }
