@@ -95,13 +95,16 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 
     internal static partial class AppInfo
     {
-        static string PlatformGetPackageName() => throw ExceptionUtils.NotSupportedOrImplementedException;
+        // The following methods are added by LaunchDarkly to align with the Application Info
+        // required by the SDK.
+        static string PlatformGetAppId() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string PlatformGetName() => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static string PlatformGetAppName() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string PlatformGetVersionString() => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static string PlatformGetAppVersion() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static string PlatformGetBuild() => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static string PlatformGetAppVersionName() => throw ExceptionUtils.NotSupportedOrImplementedException;
+        // End LaunchDarkly additions.
 
     }
 }

@@ -1,6 +1,7 @@
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.Sdk.EnvReporting;
 
-namespace LaunchDarkly.Sdk.Client.PlatformSpecific
+namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     internal class ConcreteProp<T> : IProp<T>
     {
@@ -22,13 +23,13 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
         }
     }
     
-    internal static partial class PlatformAttributes
+    internal static class PlatformAttributes
     {
         internal static Layer Layer => new Layer { ApplicationInfo = new ConcreteProp<ApplicationInfo>(new ApplicationInfo(
-            "",
+            AppInfo.Id,
             AppInfo.Name,
-            AppInfo.Version.ToString(),
-            ""
+            AppInfo.Version,
+            AppInfo.VersionName
         ))};
     }
 }

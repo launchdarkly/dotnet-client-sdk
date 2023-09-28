@@ -32,7 +32,7 @@ using System.Threading.Tasks;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
-    internal class Utils
+    internal static class Utils
     {
         internal static Version ParseVersion(string version)
         {

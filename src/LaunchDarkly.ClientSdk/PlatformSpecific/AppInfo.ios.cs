@@ -41,13 +41,14 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     internal static partial class AppInfo
     {
         
-        static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
+        // The following methods are added by LaunchDarkly to align with the Application Info
+        // required by the SDK.
+        static string PlatformGetAppId() => GetBundleValue("CFBundleIdentifier");
+        static string PlatformGetAppName() => GetBundleValue("CFBundleName");
+        static string PlatformGetAppVersion() => GetBundleValue("CFBundleVersion");
+        static string PlatformGetAppVersionName() => GetBundleValue("CFBundleShortString");
         
-        static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
-        
-        static string PlatformGetVersionString() => GetBundleValue("CFBundleShortVersionString");
-        
-        static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
+        // End LaunchDarkly additions.
 
         static string GetBundleValue(string key)
            => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();

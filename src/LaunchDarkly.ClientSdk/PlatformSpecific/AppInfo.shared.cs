@@ -34,14 +34,14 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     
     internal static partial class AppInfo
     {
-        public static string PackageName => PlatformGetPackageName();
-
-        public static string Name => PlatformGetName();
-
-        public static string VersionString => PlatformGetVersionString();
-
-        public static Version Version => Utils.ParseVersion(VersionString);
-
-        public static string BuildString => PlatformGetBuild();
+        
+        // The following methods are added by LaunchDarkly to align with the Application Info
+        // required by the SDK.
+        internal static string Id => PlatformGetAppId();
+        internal static string Name => PlatformGetAppName();
+        internal static string Version => PlatformGetAppVersion();
+        internal static string VersionName => PlatformGetAppVersionName();
+        
+        // End LaunchDarkly additions.
     }
 }
