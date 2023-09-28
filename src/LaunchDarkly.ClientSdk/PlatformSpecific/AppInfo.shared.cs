@@ -27,9 +27,11 @@ SOFTWARE.
  */
 
 using System;
+using LaunchDarkly.Sdk.Client.Internal;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
+    
     internal static partial class AppInfo
     {
         public static string PackageName => PlatformGetPackageName();

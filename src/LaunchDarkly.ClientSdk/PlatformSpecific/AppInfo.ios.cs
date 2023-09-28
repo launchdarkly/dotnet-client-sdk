@@ -42,11 +42,11 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     {
         
         static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
-
+        
         static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
-
+        
         static string PlatformGetVersionString() => GetBundleValue("CFBundleShortVersionString");
-
+        
         static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
 
         static string GetBundleValue(string key)
