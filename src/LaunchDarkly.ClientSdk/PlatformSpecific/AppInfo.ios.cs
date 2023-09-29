@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using LaunchDarkly.Sdk.EnvReporting;
 #if __IOS__ || __TVOS__
 using UIKit;
 #elif __MACOS__
@@ -40,8 +41,9 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class AppInfo
     {
-        static ApplicationInfo? PlatformGet() => new ApplicationInfo(PlatformGetAppId(), PlatformGetAppName(),
-            PlatformGetAppVersion(), PlatformGetAppVersionName());
+        static IProp<ApplicationInfo> PlatformGetApplicationInfo() => new Props.Concrete<ApplicationInfo>(
+            new ApplicationInfo(PlatformGetAppId(), PlatformGetAppName(),
+                PlatformGetAppVersion(), PlatformGetAppVersionName()));
         
         // The following methods are added by LaunchDarkly to align with the Application Info
         // required by the SDK.

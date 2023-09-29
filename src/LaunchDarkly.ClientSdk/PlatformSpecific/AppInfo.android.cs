@@ -31,6 +31,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.Provider;
+using LaunchDarkly.Sdk.EnvReporting;
 #if __ANDROID_29__
 using AndroidX.Core.Content.PM;
 #else
@@ -41,8 +42,9 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class AppInfo
     {
-        static ApplicationInfo? PlatformGet() => new ApplicationInfo(PlatformGetAppId(), PlatformGetAppName(),
-            PlatformGetAppVersion(), PlatformGetAppVersionName());
+        static IProp<ApplicationInfo> PlatformGetApplicationInfo() => new Props.Concrete<ApplicationInfo>(new ApplicationInfo(
+            PlatformGetAppId(), PlatformGetAppName(),
+            PlatformGetAppVersion(), PlatformGetAppVersionName()));
         
         // The following methods are added by LaunchDarkly to align with the Application Info
         // required by the SDK.
