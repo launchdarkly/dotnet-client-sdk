@@ -68,6 +68,8 @@
   <!-- dependencies and source files for iOS (all versions) -->
   <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
     <Compile Include="PlatformSpecific/AppInfo.ios.cs" />
+    <Compile Include="PlatformSpecific/DeviceInfo.ios.cs" />
+    <Compile Include="PlatformSpecific/Platform.ios.cs" />
     <Compile Include="PlatformSpecific/AsyncScheduler.ios.cs" />
     <Compile Include="PlatformSpecific/BackgroundDetection.ios.cs" />
     <Compile Include="PlatformSpecific/Connectivity.ios.cs" />

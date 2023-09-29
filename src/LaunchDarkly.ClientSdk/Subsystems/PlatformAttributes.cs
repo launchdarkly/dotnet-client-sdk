@@ -5,6 +5,11 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     internal static class PlatformAttributes
     {
-        internal static Layer Layer => new Layer { ApplicationInfo = AppInfo.GetProperty()};
+        internal static Layer Layer => new Layer
+        {
+            ApplicationInfo = AppInfo.GetAppInfo(), 
+            OsInfo = DeviceInfo.GetOsInfo(), 
+            DeviceInfo = DeviceInfo.GetDeviceInfo()
+        };
     }
 }
