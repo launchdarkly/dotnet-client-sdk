@@ -6,6 +6,6 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class AppInfo
     {
-        internal static IOptionalProp<ApplicationInfo> GetAppInfo() => PlatformGetApplicationInfo();
+        internal static ApplicationInfo? GetAppInfo() => PlatformGetApplicationInfo();
     }
 }

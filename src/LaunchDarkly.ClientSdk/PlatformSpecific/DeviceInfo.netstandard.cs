@@ -6,7 +6,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class DeviceInfo
     {
-        private static IOptionalProp<OsInfo> PlatformGetOsInfo()
+        private static OsInfo? PlatformGetOsInfo()
         {
             var osName = "unknown";
             var osFamily = "unknown";
@@ -23,10 +23,9 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
                 osName = OSPlatform.OSX.ToString();
             }
 
-            return new Props.Some<OsInfo>(new OsInfo(osFamily, osName, osVersion));
+            return new OsInfo(osFamily, osName, osVersion);
         }
 
-        private static IOptionalProp<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo> PlatformGetDeviceInfo() =>
-            new Props.None<EnvReporting.LayerModels.DeviceInfo>();
+        private static LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo? PlatformGetDeviceInfo() => null;
     }
 }

@@ -42,19 +42,21 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class AppInfo
     {
-        static IOptionalProp<ApplicationInfo> PlatformGetApplicationInfo() => new Props.Some<ApplicationInfo>(new ApplicationInfo(
-            PlatformGetAppId(), PlatformGetAppName(),
-            PlatformGetAppVersion(), PlatformGetAppVersionName()));
-        
+        static ApplicationInfo? PlatformGetApplicationInfo() => new ApplicationInfo(
+            PlatformGetAppId(),
+            PlatformGetAppName(),
+            PlatformGetAppVersion(),
+            PlatformGetAppVersionName());
+
         // The following methods are added by LaunchDarkly to align with the Application Info
         // required by the SDK.
         static string PlatformGetAppId() => Platform.AppContext.PackageName;
         static string PlatformGetAppName() => PlatformGetName();
         static string PlatformGetAppVersion() => PlatformGetBuild();
         static string PlatformGetAppVersionName() => PlatformGetVersionString();
-        
+
         // End LaunchDarkly additions.
-        
+
         static string PlatformGetPackageName() => Platform.AppContext.PackageName;
 
         static string PlatformGetName()

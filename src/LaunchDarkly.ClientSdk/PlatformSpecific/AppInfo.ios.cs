@@ -33,6 +33,7 @@ using Foundation;
 using LaunchDarkly.Sdk.EnvReporting;
 #if __IOS__ || __TVOS__
 using UIKit;
+
 #elif __MACOS__
 using AppKit;
 #endif
@@ -41,21 +42,23 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class AppInfo
     {
-        static IOptionalProp<ApplicationInfo> PlatformGetApplicationInfo() => new Props.Some<ApplicationInfo>(
-            new ApplicationInfo(PlatformGetAppId(), PlatformGetAppName(),
-                PlatformGetAppVersion(), PlatformGetAppVersionName()));
-        
+        static ApplicationInfo? PlatformGetApplicationInfo() => new ApplicationInfo(
+            PlatformGetAppId(),
+            PlatformGetAppName(),
+            PlatformGetAppVersion(),
+            PlatformGetAppVersionName());
+
         // The following methods are added by LaunchDarkly to align with the Application Info
         // required by the SDK.
         static string PlatformGetAppId() => GetBundleValue("CFBundleIdentifier");
         static string PlatformGetAppName() => GetBundleValue("CFBundleName");
         static string PlatformGetAppVersion() => GetBundleValue("CFBundleVersion");
         static string PlatformGetAppVersionName() => GetBundleValue("CFBundleShortString");
-        
+
         // End LaunchDarkly additions.
 
         static string GetBundleValue(string key)
-           => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
+            => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 // #if __IOS__ || __TVOS__
 //         static async void PlatformShowSettingsUI()
