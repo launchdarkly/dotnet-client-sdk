@@ -31,6 +31,7 @@ namespace TestService
         public SdkConfigEventParams Events { get; set; }
         public SdkConfigServiceEndpointsParams ServiceEndpoints { get; set; }
         public SdkClientSideParams ClientSide { get; set; }
+        public SdkConfigTagsParams Tags { get; set; }
     }
 
     public class SdkConfigStreamParams
@@ -60,6 +61,14 @@ namespace TestService
         public Uri Streaming { get; set; }
         public Uri Polling { get; set; }
         public Uri Events { get; set; }
+    }
+
+    public class SdkConfigTagsParams
+    {
+        public string ApplicationId { get; set; }
+        public string ApplicationName { get; set; }
+        public string ApplicationVersion { get; set; }
+        public string ApplicationVersionName { get; set; }
     }
 
     public class SdkClientSideParams

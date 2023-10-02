@@ -233,11 +233,12 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// Called internally by the SDK to create an implementation instance. Applications do not need
         /// to call this method.
         /// </summary>
-        /// <param name="context">provides SDK configuration data</param>
+        /// <param name="authKey">Key for authenticating with LD service</param>
+        /// <param name="applicationInfo">Application Info for this application environment</param>
         /// <returns>an <see cref="HttpConfiguration"/></returns>
-        public HttpConfiguration CreateHttpConfiguration(LdClientContext context) =>
+        public HttpConfiguration CreateHttpConfiguration(string authKey, ApplicationInfo applicationInfo) =>
             new HttpConfiguration(
-                MakeHttpProperties(context),
+                MakeHttpProperties(authKey, applicationInfo),
                 _messageHandler,
                 _responseStartTimeout,
                 _useReport
@@ -246,14 +247,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <inheritdoc/>
         public LdValue DescribeConfiguration(LdClientContext context) =>
             LdValue.BuildObject()
-                .WithHttpProperties(MakeHttpProperties(context))
+                .WithHttpProperties(MakeHttpProperties(context.MobileKey, context.EnvironmentReporter.ApplicationInfo))
                 .Add("useReport", _useReport)
                 .Set("socketTimeoutMillis", _responseStartTimeout.TotalMilliseconds)
-                    // WithHttpProperties normally sets socketTimeoutMillis to the ReadTimeout value,
-                    // which is more correct, but we can't really set ReadTimeout in this SDK
+                // WithHttpProperties normally sets socketTimeoutMillis to the ReadTimeout value,
+                // which is more correct, but we can't really set ReadTimeout in this SDK
                 .Build();
 
-        private HttpProperties MakeHttpProperties(LdClientContext context)
+        private HttpProperties MakeHttpProperties(string authToken, ApplicationInfo applicationInfo)
         {
             Func<HttpProperties, HttpMessageHandler> handlerFn;
             if (_messageHandler is null)
@@ -266,11 +267,12 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             }
 
             var httpProperties = HttpProperties.Default
-                .WithAuthorizationKey(context.MobileKey)
+                .WithAuthorizationKey(authToken)
                 .WithConnectTimeout(_connectTimeout)
                 .WithHttpMessageHandlerFactory(handlerFn)
                 .WithProxy(_proxy)
                 .WithUserAgent("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)))
+                .WithApplicationTags(applicationInfo)
                 .WithWrapper(_wrapperName, _wrapperVersion);
 
             foreach (var kv in _customHeaders)

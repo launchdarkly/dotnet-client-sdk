@@ -1,6 +1,8 @@
 ﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
+using LaunchDarkly.Sdk.EnvReporting;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
 
@@ -69,6 +71,11 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         /// </summary>
         public ServiceEndpoints ServiceEndpoints { get; }
 
+        /// <summary>
+        /// The environment reporter.
+        /// </summary>
+        internal IEnvironmentReporter EnvironmentReporter { get; }
+
         internal IDiagnosticDisabler DiagnosticDisabler { get; }
 
         internal IDiagnosticStore DiagnosticStore { get; }
@@ -85,6 +92,28 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             Context currentContext
             ) : this(configuration, currentContext, null) { }
 
+        internal LdClientContext(Configuration configuration, Context currentContext, object eventSender) : this(
+            configuration.MobileKey,
+            MakeLogger(configuration),
+            currentContext,
+            null,
+            configuration.EnableBackgroundUpdating,
+            configuration.EvaluationReasons,
+            (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
+            .CreateHttpConfiguration(configuration.MobileKey,
+                MakeEnvironmentReporter(configuration.ApplicationInfo).ApplicationInfo),
+            false,
+            configuration.ServiceEndpoints,
+            MakeEnvironmentReporter(configuration.ApplicationInfo),
+            null,
+            null,
+            new TaskExecutor(
+                eventSender,
+                AsyncScheduler.ScheduleAction,
+                MakeLogger(configuration)
+            )
+        ) { }
+
         internal LdClientContext(
             string mobileKey,
             Logger baseLogger,
@@ -95,6 +124,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             HttpConfiguration http,
             bool inBackground,
             ServiceEndpoints serviceEndpoints,
+            IEnvironmentReporter environmentReporter,
             IDiagnosticDisabler diagnosticDisabler,
             IDiagnosticStore diagnosticStore,
             TaskExecutor taskExecutor
@@ -109,38 +139,14 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             Http = http;
             InBackground = inBackground;
             ServiceEndpoints = serviceEndpoints ?? Components.ServiceEndpoints().Build();
+            EnvironmentReporter = environmentReporter;
             DiagnosticDisabler = diagnosticDisabler;
             DiagnosticStore = diagnosticStore;
             TaskExecutor = taskExecutor ?? new TaskExecutor(null,
-                PlatformSpecific.AsyncScheduler.ScheduleAction,
+                AsyncScheduler.ScheduleAction,
                 baseLogger
                 );
         }
-
-        internal LdClientContext(
-            Configuration configuration,
-            Context currentContext,
-            object eventSender
-            ) :
-            this(
-                configuration.MobileKey,
-                MakeLogger(configuration),
-                currentContext,
-                null,
-                configuration.EnableBackgroundUpdating,
-                configuration.EvaluationReasons,
-                (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
-                    .CreateHttpConfiguration(MakeMinimalContext(configuration.MobileKey)),
-                false,
-                configuration.ServiceEndpoints,
-                null,
-                null,
-                new TaskExecutor(
-                    eventSender,
-                    PlatformSpecific.AsyncScheduler.ScheduleAction,
-                    MakeLogger(configuration)
-                )
-            ) { }
 
         internal static Logger MakeLogger(Configuration configuration)
         {
@@ -150,28 +156,22 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             return logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
         }
 
-        internal static LdClientContext MakeMinimalContext(
-            string mobileKey
-            ) =>
-            new LdClientContext(
-                mobileKey,
-                Logs.None.Logger(""),
-                new Context(),
-                null,
-                false,
-                false,
-                HttpConfiguration.Default(),
-                false,
-                null,
-                null,
-                null,
-                null
-            );
+        internal static IEnvironmentReporter MakeEnvironmentReporter(ApplicationInfoBuilder applicationInfoBuilder)
+        {
+            var builder = new EnvironmentReporterBuilder();
+            if (applicationInfoBuilder != null)
+            {
+                var applicationInfo = applicationInfoBuilder.Build();
+                builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
+            }
+
+            return builder.Build();
+        }
 
         internal LdClientContext WithContextAndBackgroundState(
             Context newCurrentContext,
             bool newInBackground
-            ) =>
+        ) =>
             new LdClientContext(
                 MobileKey,
                 BaseLogger,
@@ -182,13 +182,14 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 Http,
                 newInBackground,
                 ServiceEndpoints,
+                EnvironmentReporter,
                 DiagnosticDisabler,
                 DiagnosticStore,
                 TaskExecutor);
 
         internal LdClientContext WithDataSourceUpdateSink(
             IDataSourceUpdateSink newDataSourceUpdateSink
-            ) =>
+        ) =>
             new LdClientContext(
                 MobileKey,
                 BaseLogger,
@@ -199,6 +200,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 Http,
                 InBackground,
                 ServiceEndpoints,
+                EnvironmentReporter,
                 DiagnosticDisabler,
                 DiagnosticStore,
                 TaskExecutor);
@@ -206,7 +208,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         internal LdClientContext WithDiagnostics(
             IDiagnosticDisabler newDiagnosticDisabler,
             IDiagnosticStore newDiagnosticStore
-            ) =>
+        ) =>
             new LdClientContext(
                 MobileKey,
                 BaseLogger,
@@ -217,6 +219,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 Http,
                 InBackground,
                 ServiceEndpoints,
+                EnvironmentReporter,
                 newDiagnosticDisabler,
                 newDiagnosticStore,
                 TaskExecutor);
