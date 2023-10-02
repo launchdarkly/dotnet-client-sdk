@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 using LaunchDarkly.Sdk.Client.Subsystems;
@@ -136,14 +137,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <example>
         /// <code>
         ///     // Example of using an HTTP proxy with basic authentication
-        ///     
+        ///
         ///     var proxyUri = new Uri("http://my-proxy-host:8080");
         ///     var proxy = new System.Net.WebProxy(proxyUri);
         ///     var credentials = new System.Net.CredentialCache();
         ///     credentials.Add(proxyUri, "Basic",
         ///         new System.Net.NetworkCredential("username", "password"));
         ///     proxy.Credentials = credentials;
-        ///     
+        ///
         ///     var config = Configuration.Builder("my-sdk-key")
         ///         .Http(
         ///             Components.HttpConfiguration().Proxy(proxy)
@@ -271,7 +272,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 .WithConnectTimeout(_connectTimeout)
                 .WithHttpMessageHandlerFactory(handlerFn)
                 .WithProxy(_proxy)
-                .WithUserAgent("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)))
+                .WithUserAgent(SdkPackage.UserAgent)
                 .WithApplicationTags(applicationInfo)
                 .WithWrapper(_wrapperName, _wrapperVersion);
 

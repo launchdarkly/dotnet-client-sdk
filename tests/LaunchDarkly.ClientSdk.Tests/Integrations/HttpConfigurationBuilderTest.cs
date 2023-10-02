@@ -13,7 +13,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
     public class HttpConfigurationBuilderTest
     {
         private static string mobileKey = "mobile-key";
-        private static ApplicationInfo applicationInfo => new ApplicationInfo("mockId", "mockName", "blah", "blah");
+        private static ApplicationInfo applicationInfo => new ApplicationInfo("mockId", "mockName", "mockVersion", "mockVersionName");
 
         private readonly BuilderBehavior.BuildTester<HttpConfigurationBuilder, HttpConfiguration> _tester =
             BuilderBehavior.For(() => Components.HttpConfiguration(),
@@ -106,6 +106,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             var config = Components.HttpConfiguration().Wrapper("w", "1.0")
                 .CreateHttpConfiguration(mobileKey, applicationInfo);
             Assert.Equal("w/1.0", HeadersAsMap(config.DefaultHeaders)["x-launchdarkly-wrapper"]);
+        }
+
+        [Fact]
+        public void ApplicationTagsHeader()
+        {
+            var config = Components.HttpConfiguration().CreateHttpConfiguration(mobileKey, applicationInfo);
+            Assert.Equal("application-id/mockId application-name/mockName application-version/mockVersion application-version-name/mockVersionName",
+                HeadersAsMap(config.DefaultHeaders)["x-launchdarkly-tags"]);
         }
 
         private static Dictionary<string, string> HeadersAsMap(IEnumerable<KeyValuePair<string, string>> headers)

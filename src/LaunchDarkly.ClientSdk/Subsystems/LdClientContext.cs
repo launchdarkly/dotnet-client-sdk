@@ -165,6 +165,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
 
+            builder.SetSdkLayer(SdkAttributes.Layer);
             return builder.Build();
         }
 
