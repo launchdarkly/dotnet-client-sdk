@@ -7,8 +7,8 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class DeviceInfo
     {
-        internal static IProp<OsInfo> GetOsInfo() => PlatformGetOsInfo();
+        internal static IOptionalProp<OsInfo> GetOsInfo() => PlatformGetOsInfo();
 
-        internal static IProp<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo> GetDeviceInfo() => PlatformGetDeviceInfo();
+        internal static IOptionalProp<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo> GetDeviceInfo() => PlatformGetDeviceInfo();
     }
 }

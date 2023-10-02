@@ -44,11 +44,11 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
     internal static partial class DeviceInfo
     {
 
-        private static IProp<OsInfo> PlatformGetOsInfo() =>
-            new Props.Concrete<OsInfo>(new OsInfo(GetManufacturer(), GetPlatform().ToString(), GetVersionString()));
+        private static IOptionalProp<OsInfo> PlatformGetOsInfo() =>
+            new Props.Some<OsInfo>(new OsInfo(GetManufacturer(), GetPlatform().ToString(), GetVersionString()));
 
-        private static IProp<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo> PlatformGetDeviceInfo() =>
-            new Props.Concrete<EnvReporting.LayerModels.DeviceInfo>(new EnvReporting.LayerModels.DeviceInfo(
+        private static IOptionalProp<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo> PlatformGetDeviceInfo() =>
+            new Props.Some<EnvReporting.LayerModels.DeviceInfo>(new EnvReporting.LayerModels.DeviceInfo(
                 GetManufacturer(), GetModel()));
         static string GetModel()
         {
