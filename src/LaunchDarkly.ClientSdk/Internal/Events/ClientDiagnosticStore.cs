@@ -15,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         private readonly TimeSpan _startWaitTime;
 
         protected override string SdkKeyOrMobileKey => _context.MobileKey;
-        protected override string SdkName => "dotnet-client-sdk";
+        protected override string SdkName => SdkPackage.Name;
         protected override IEnumerable<LdValue> ConfigProperties => GetConfigProperties();
         protected override string DotNetTargetFramework => GetDotNetTargetFramework();
         protected override HttpProperties HttpProperties => _context.Http.HttpProperties;

@@ -8,6 +8,7 @@ using LaunchDarkly.Sdk.Client.Subsystems;
 
 using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
 using LaunchDarkly.Logging;
+using LaunchDarkly.Sdk.Client.Internal;
 
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
@@ -273,7 +274,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 .WithConnectTimeout(_connectTimeout)
                 .WithHttpMessageHandlerFactory(handlerFn)
                 .WithProxy(_proxy)
-                .WithUserAgent("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)))
+                .WithUserAgent(SdkPackage.UserAgent)
                 .WithApplicationTags(applicationInfo)
                 .WithWrapper(_wrapperName, _wrapperVersion);
 

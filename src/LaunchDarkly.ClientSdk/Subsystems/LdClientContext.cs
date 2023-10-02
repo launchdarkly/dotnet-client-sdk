@@ -168,14 +168,19 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             if (applicationInfoBuilder != null)
             {
                 var applicationInfo = applicationInfoBuilder.Build();
+                
+                // If AppInfo is provided by the user, then the Config layer has first priority in the environment reporter.
                 builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
 
+            // The platform layer has second priority if properties aren't set by the Config layer.
             builder.SetPlatformLayer(PlatformAttributes.Layer);
+            
+            // The SDK layer has third priority if properties aren't set by the Platform layer.
+            builder.SetSdkLayer(SdkAttributes.Layer);
 
             return builder.Build();
         }
-
 
         internal LdClientContext WithContextAndBackgroundState(
             Context newCurrentContext,
