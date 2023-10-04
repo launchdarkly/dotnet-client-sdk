@@ -281,11 +281,26 @@ namespace LaunchDarkly.Sdk.Client
         /// <returns>a configuration builder</returns>
         /// <seealso cref="ConfigurationBuilder.ServiceEndpoints(ServiceEndpointsBuilder)" />
         public static ServiceEndpointsBuilder ServiceEndpoints() => new ServiceEndpointsBuilder();
-
+        
         /// <summary>
-        /// 
+        /// Returns a configurable builder for the SDK's application metadata.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// <para>
+        /// Passing this to <see cref="ConfigurationBuilder.ApplicationInfo"/> after setting any desired properties on the builder,
+        /// applies this configuration to the SDK.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        ///     var config = Configuration.Builder(mobileKey)
+        ///         .ApplicationInfo(
+        ///             Components.ApplicationInfo().ApplicationID("MyApplication").ApplicationVersion("version123abc")
+        ///         )
+        ///         .Build();
+        /// </code>
+        /// </example>
+        /// <returns>a configuration builder</returns>
         public static ApplicationInfoBuilder ApplicationInfo() => new ApplicationInfoBuilder();
 
         /// <summary>

@@ -2,7 +2,6 @@ using LaunchDarkly.Sdk.Internal;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
-    
     /// <summary>
     /// Defines common information about the SDK itself for usage
     /// in various components.
@@ -16,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         /// <summary>
         /// The prefix for the User-Agent header, omitting the version string. This may be different than the Name
-        /// due to historical reasons. 
+        /// due to historical reasons.
         /// </summary>
         private const string UserAgentPrefix = "XamarinClient";
 
@@ -24,11 +23,11 @@ namespace LaunchDarkly.Sdk.Client.Internal
         /// Version of the SDK.
         /// </summary>
         internal static string Version => AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient));
-        
+
         /// <summary>
-        /// User-Agent suitable for usage in HTTP requests. 
+        /// User-Agent suitable for usage in HTTP requests.
         /// </summary>
         internal static string UserAgent => $"{UserAgentPrefix}/{Version}";
-        
+
     }
 }

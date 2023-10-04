@@ -32,7 +32,7 @@
     <!-- fail if XML comments are missing or invalid -->
     <WarningsAsErrors>1570,1571,1572,1573,1574,1580,1581,1584,1591,1710,1711,1712</WarningsAsErrors>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
@@ -43,9 +43,7 @@
     <PackageReference Include="LaunchDarkly.Logging" Version="2.0.0" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
-    <Compile Update="Subsystems\PlatformAttributes.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Folder Include="Subsystems\" />
   </ItemGroup>
 
   <!-- dependencies and source files for .NET Standard (all versions) -->
@@ -67,16 +65,7 @@
 
   <!-- dependencies and source files for iOS (all versions) -->
   <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
-    <Compile Include="PlatformSpecific/AppInfo.ios.cs" />
-    <Compile Include="PlatformSpecific/DeviceInfo.ios.cs" />
-    <Compile Include="PlatformSpecific/Platform.ios.cs" />
-    <Compile Include="PlatformSpecific/AsyncScheduler.ios.cs" />
-    <Compile Include="PlatformSpecific/BackgroundDetection.ios.cs" />
-    <Compile Include="PlatformSpecific/Connectivity.ios.cs" />
-    <Compile Include="PlatformSpecific/Http.ios.cs" />
-    <Compile Include="PlatformSpecific/LocalStorage.ios.cs" />
-    <Compile Include="PlatformSpecific/Logging.ios.cs" />
-    <Compile Include="PlatformSpecific/UserMetadata.ios.cs" />
+    <Compile Include="**\*.ios.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>

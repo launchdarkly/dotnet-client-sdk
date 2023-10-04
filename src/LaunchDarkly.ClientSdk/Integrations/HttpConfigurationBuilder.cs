@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Http;
 using LaunchDarkly.Sdk.Client.Subsystems;
 
 using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
-using LaunchDarkly.Logging;
-using LaunchDarkly.Sdk.Client.Internal;
 
 namespace LaunchDarkly.Sdk.Client.Integrations
 {
@@ -38,7 +37,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// The default value for <see cref="ConnectTimeout(TimeSpan)"/>: 10 seconds.
         /// </summary>
         public static readonly TimeSpan DefaultConnectTimeout = TimeSpan.FromSeconds(10);
-        // deliberately longer than the server-side SDK's default connection timeout
+            // deliberately longer than the server-side SDK's default connection timeout
 
         /// <summary>
         /// The default value for <see cref="ResponseStartTimeout(TimeSpan)"/>: 10 seconds.
@@ -138,14 +137,14 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <example>
         /// <code>
         ///     // Example of using an HTTP proxy with basic authentication
-        ///     
+        ///
         ///     var proxyUri = new Uri("http://my-proxy-host:8080");
         ///     var proxy = new System.Net.WebProxy(proxyUri);
         ///     var credentials = new System.Net.CredentialCache();
         ///     credentials.Add(proxyUri, "Basic",
         ///         new System.Net.NetworkCredential("username", "password"));
         ///     proxy.Credentials = credentials;
-        ///     
+        ///
         ///     var config = Configuration.Builder("my-sdk-key")
         ///         .Http(
         ///             Components.HttpConfiguration().Proxy(proxy)
@@ -235,9 +234,8 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// Called internally by the SDK to create an implementation instance. Applications do not need
         /// to call this method.
         /// </summary>
-        /// TODO
-        /// <param name="authKey"></param>
-        /// <param name="applicationInfo"></param>
+        /// <param name="authKey">Key for authenticating with LD service</param>
+        /// <param name="applicationInfo">Application Info for this application environment</param>
         /// <returns>an <see cref="HttpConfiguration"/></returns>
         public HttpConfiguration CreateHttpConfiguration(string authKey, ApplicationInfo applicationInfo) =>
             new HttpConfiguration(

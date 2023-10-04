@@ -291,7 +291,7 @@ namespace TestService
             if (sdkParams.Tags != null)
             {
                 var applicationInfo = Components.ApplicationInfo();
-                applicationInfo.ApplicationID(sdkParams.Tags.ApplicationId);
+                applicationInfo.ApplicationId(sdkParams.Tags.ApplicationId);
                 applicationInfo.ApplicationName(sdkParams.Tags.ApplicationName);
                 applicationInfo.ApplicationVersion(sdkParams.Tags.ApplicationVersion);
                 applicationInfo.ApplicationVersionName(sdkParams.Tags.ApplicationVersionName);

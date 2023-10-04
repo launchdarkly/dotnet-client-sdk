@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Client.Subsystems;
-
-using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
 
 namespace LaunchDarkly.Sdk.Client.Internal.Events
 {

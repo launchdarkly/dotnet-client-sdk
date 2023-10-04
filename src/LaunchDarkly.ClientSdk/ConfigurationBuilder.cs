@@ -30,6 +30,7 @@ namespace LaunchDarkly.Sdk.Client
         // will replace it with a platform-specific implementation.
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
+        internal ApplicationInfoBuilder _applicationInfo;
         internal IComponentConfigurer<IDataSource> _dataSource = null;
         internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
@@ -39,7 +40,6 @@ namespace LaunchDarkly.Sdk.Client
         internal HttpConfigurationBuilder _httpConfigurationBuilder = null;
         internal LoggingConfigurationBuilder _loggingConfigurationBuilder = null;
         internal string _mobileKey;
-        internal ApplicationInfoBuilder _applicationInfo;
         internal bool _offline = false;
         internal PersistenceConfigurationBuilder _persistenceConfigurationBuilder = null;
         internal ServiceEndpointsBuilder _serviceEndpointsBuilder = null;
@@ -77,6 +77,19 @@ namespace LaunchDarkly.Sdk.Client
         public Configuration Build()
         {
             return new Configuration(this);
+        }
+        
+        /// <summary>
+        /// Sets the SDK's application metadata, which may be used in the LaunchDarkly analytics or other product
+        /// features.  This object is normally a configuration builder obtained from <see cref="Components.ApplicationInfo"/>,
+        /// which has methods for setting individual metadata properties.
+        /// </summary>
+        /// <param name="applicationInfo">builder for <see cref="ApplicationInfo"/></param>
+        /// <returns>the same builder</returns>
+        public ConfigurationBuilder ApplicationInfo(ApplicationInfoBuilder applicationInfo)
+        {
+            _applicationInfo = applicationInfo;
+            return this;
         }
 
         /// <summary>
@@ -315,8 +328,6 @@ namespace LaunchDarkly.Sdk.Client
             return this;
         }
 
-
-
         /// <summary>
         /// Sets whether or not this client is offline. If <see langword="true"/>, no calls to LaunchDarkly will be made.
         /// </summary>
@@ -379,17 +390,6 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder ServiceEndpoints(ServiceEndpointsBuilder serviceEndpointsBuilder)
         {
             _serviceEndpointsBuilder = serviceEndpointsBuilder;
-            return this;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <param name="applicationInfo"></param>
-        /// <returns></returns>
-        public ConfigurationBuilder ApplicationInfo(ApplicationInfoBuilder applicationInfo)
-        {
-            _applicationInfo = applicationInfo;
             return this;
         }
 
