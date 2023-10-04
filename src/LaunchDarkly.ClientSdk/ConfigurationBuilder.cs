@@ -31,6 +31,7 @@ namespace LaunchDarkly.Sdk.Client
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
         internal ApplicationInfoBuilder _applicationInfo;
+        internal bool _autoEnvAttributes = false;
         internal IComponentConfigurer<IDataSource> _dataSource = null;
         internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
@@ -48,13 +49,16 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
 
-        internal ConfigurationBuilder(string mobileKey)
+        internal ConfigurationBuilder(string mobileKey, bool autoEnvAttributes)
         {
             _mobileKey = mobileKey;
+            _autoEnvAttributes = autoEnvAttributes;
         }
 
         internal ConfigurationBuilder(Configuration copyFrom)
         {
+            _applicationInfo = copyFrom.ApplicationInfo;
+            _autoEnvAttributes = copyFrom.AutoEnvAttributes;
             _dataSource = copyFrom.DataSource;
             _diagnosticOptOut = copyFrom.DiagnosticOptOut;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
@@ -66,7 +70,6 @@ namespace LaunchDarkly.Sdk.Client
             _offline = copyFrom.Offline;
             _persistenceConfigurationBuilder = copyFrom.PersistenceConfigurationBuilder;
             _serviceEndpointsBuilder = new ServiceEndpointsBuilder(copyFrom.ServiceEndpoints);
-            _applicationInfo = copyFrom.ApplicationInfo;
         }
 
         /// <summary>
@@ -78,7 +81,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             return new Configuration(this);
         }
-        
+
         /// <summary>
         /// Sets the SDK's application metadata, which may be used in the LaunchDarkly analytics or other product
         /// features.  This object is normally a configuration builder obtained from <see cref="Components.ApplicationInfo"/>,

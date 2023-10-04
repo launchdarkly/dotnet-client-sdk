@@ -5,7 +5,7 @@ using Xunit;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
-    public class ContextDecoratorTest : BaseTest
+    public class AnonymousKeyContextDecoratorTest : BaseTest
     {
         private static readonly ContextKind Kind1 = ContextKind.Of("kind1");
         private static readonly ContextKind Kind2 = ContextKind.Of("kind2");
@@ -162,10 +162,10 @@ namespace LaunchDarkly.Sdk.Client.Internal
             Assert.NotEqual(c2TransformedA.Key, c2TransformedB.Key);
         }
 
-        private ContextDecorator MakeDecoratorWithPersistence(IPersistentDataStore store, bool generateAnonymousKeys = false) =>
-            new ContextDecorator(new PersistentDataStoreWrapper(store, BasicMobileKey, testLogger), generateAnonymousKeys);
+        private AnonymousKeyContextDecorator MakeDecoratorWithPersistence(IPersistentDataStore store, bool generateAnonymousKeys = false) =>
+            new AnonymousKeyContextDecorator(new PersistentDataStoreWrapper(store, BasicMobileKey, testLogger), generateAnonymousKeys);
 
-        private ContextDecorator MakeDecoratorWithoutPersistence(bool generateAnonymousKeys = false) =>
+        private AnonymousKeyContextDecorator MakeDecoratorWithoutPersistence(bool generateAnonymousKeys = false) =>
             MakeDecoratorWithPersistence(new NullPersistentDataStore(), generateAnonymousKeys);
 
         private void AssertContextHasBeenTransformedWithNewKey(Context original, Context transformed)

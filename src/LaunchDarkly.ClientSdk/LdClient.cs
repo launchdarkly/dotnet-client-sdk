@@ -59,7 +59,8 @@ namespace LaunchDarkly.Sdk.Client
         readonly IEventProcessor _eventProcessor;
         readonly IFlagTracker _flagTracker;
         readonly TaskExecutor _taskExecutor;
-        readonly ContextDecorator _contextDecorator;
+        readonly AnonymousKeyContextDecorator _anonymousKeyAnonymousKeyContextDecorator;
+        private readonly AnonymousKeyContextDecorator _autoEnvContextDecorator;
 
         private readonly Logger _log;
 
@@ -161,8 +162,8 @@ namespace LaunchDarkly.Sdk.Client
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
 
-            _contextDecorator = new ContextDecorator(_dataStore.PersistentStore, configuration.GenerateAnonymousKeys);
-            _context = _contextDecorator.DecorateContext(initialContext);
+            _anonymousKeyAnonymousKeyContextDecorator = new AnonymousKeyContextDecorator(_dataStore.PersistentStore, configuration.GenerateAnonymousKeys);
+            _context = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(initialContext);
 
             // If we had cached data for the new context, set the current in-memory flag data state to use
             // that data, so that any Variation calls made before Identify has completed will use the
@@ -218,7 +219,7 @@ namespace LaunchDarkly.Sdk.Client
                 _log.Debug("Setting online to {0} due to a connectivity change event", networkAvailable);
                 _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
             };
-            
+
             // Send an initial identify event, but only if we weren't explicitly set to be offline
 
             if (!configuration.Offline)
@@ -270,6 +271,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </para>
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">TODOo</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
@@ -277,9 +279,9 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
         /// <seealso cref="Init(string, User, TimeSpan)"/>
         /// <seealso cref="InitAsync(string, Context)"/>
-        public static LdClient Init(string mobileKey, Context initialContext, TimeSpan maxWaitTime)
+        public static LdClient Init(string mobileKey, bool autoEnvAttributes, Context initialContext, TimeSpan maxWaitTime)
         {
-            var config = Configuration.Default(mobileKey);
+            var config = Configuration.Default(mobileKey, autoEnvAttributes);
 
             return Init(config, initialContext, maxWaitTime);
         }
@@ -292,6 +294,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">TODOo</param>
         /// <param name="initialUser">the initial user attributes; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
@@ -299,8 +302,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
         /// <seealso cref="Init(string, Context, TimeSpan)"/>
         /// <seealso cref="InitAsync(string, User)"/>
-        public static LdClient Init(string mobileKey, User initialUser, TimeSpan maxWaitTime) =>
-            Init(mobileKey, Context.FromUser(initialUser), maxWaitTime);
+        public static LdClient Init(string mobileKey, bool autoEnvAttributes, User initialUser, TimeSpan maxWaitTime) =>
+            Init(mobileKey, autoEnvAttributes, Context.FromUser(initialUser), maxWaitTime);
 
         /// <summary>
         /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
@@ -322,12 +325,13 @@ namespace LaunchDarkly.Sdk.Client
         /// </para>
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">TODOo</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        public static async Task<LdClient> InitAsync(string mobileKey, Context initialContext)
+        public static async Task<LdClient> InitAsync(string mobileKey, bool autoEnvAttributes, Context initialContext)
         {
-            var config = Configuration.Default(mobileKey);
+            var config = Configuration.Default(mobileKey, autoEnvAttributes);
 
             return await InitAsync(config, initialContext);
         }
@@ -341,13 +345,14 @@ namespace LaunchDarkly.Sdk.Client
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">TODOo</param>
         /// <param name="initialUser">the initial user attributes</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        public static Task<LdClient> InitAsync(string mobileKey, User initialUser) =>
-            InitAsync(mobileKey, Context.FromUser(initialUser));
+        public static Task<LdClient> InitAsync(string mobileKey, bool autoEnvAttributes, User initialUser) =>
+            InitAsync(mobileKey, autoEnvAttributes, Context.FromUser(initialUser));
 
         /// <summary>
-        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for
         /// fetching Feature Flags.
         /// </summary>
         /// <remarks>
@@ -390,7 +395,7 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for
         /// fetching Feature Flags.
         /// </summary>
         /// <remarks>
@@ -685,7 +690,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public async Task<bool> IdentifyAsync(Context context)
         {
-            Context newContext = _contextDecorator.DecorateContext(context);
+            Context newContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(context);
             Context oldContext = newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>

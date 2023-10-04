@@ -7,7 +7,7 @@ using LaunchDarkly.Sdk.Client.Subsystems;
 namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
-    /// Configuration options for <see cref="LdClient"/>. 
+    /// Configuration options for <see cref="LdClient"/>.
     /// </summary>
     /// <remarks>
     /// Instances of <see cref="Configuration"/> are immutable once created. They can be created with the factory method
@@ -16,6 +16,16 @@ namespace LaunchDarkly.Sdk.Client
     /// </remarks>
     public sealed class Configuration
     {
+        /// <summary>
+        /// ApplicationInfo configuration which contains info about the application the SDK is running in.
+        /// </summary>
+        public ApplicationInfoBuilder ApplicationInfo { get; }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        public bool AutoEnvAttributes { get; }
+
         /// <summary>
         /// Default value for <see cref="PollingDataSourceBuilder.BackgroundPollInterval"/> and
         /// <see cref="StreamingDataSourceBuilder.BackgroundPollInterval"/>.
@@ -119,18 +129,14 @@ namespace LaunchDarkly.Sdk.Client
         public ServiceEndpoints ServiceEndpoints { get; }
 
         /// <summary>
-        /// ApplicationInfo configuration which contains info about the application the SDK is running in.
-        /// </summary>
-        public ApplicationInfoBuilder ApplicationInfo { get; }
-
-        /// <summary>
         /// Creates a configuration with all parameters set to the default.
         /// </summary>
         /// <param name="mobileKey">the SDK key for your LaunchDarkly environment</param>
+        /// <param name="autoEnvAttributes">TODOo</param>
         /// <returns>a <see cref="Configuration"/> instance</returns>
-        public static Configuration Default(string mobileKey)
+        public static Configuration Default(string mobileKey, bool autoEnvAttributes)
         {
-            return Builder(mobileKey).Build();
+            return Builder(mobileKey, autoEnvAttributes).Build();
         }
 
         /// <summary>
@@ -151,14 +157,15 @@ namespace LaunchDarkly.Sdk.Client
         /// </code>
         /// </example>
         /// <param name="mobileKey">the mobile SDK key for your LaunchDarkly environment</param>
+        /// <param name="autoEnvAttributes">TODOo</param>
         /// <returns>a builder object</returns>
-        public static ConfigurationBuilder Builder(string mobileKey)
+        public static ConfigurationBuilder Builder(string mobileKey, bool autoEnvAttributes)
         {
             if (String.IsNullOrEmpty(mobileKey))
             {
                 throw new ArgumentOutOfRangeException(nameof(mobileKey), "key is required");
             }
-            return new ConfigurationBuilder(mobileKey);
+            return new ConfigurationBuilder(mobileKey, autoEnvAttributes);
         }
 
         /// <summary>
@@ -173,6 +180,8 @@ namespace LaunchDarkly.Sdk.Client
 
         internal Configuration(ConfigurationBuilder builder)
         {
+            ApplicationInfo = builder._applicationInfo;
+            AutoEnvAttributes = builder._autoEnvAttributes;
             DataSource = builder._dataSource;
             DiagnosticOptOut = builder._diagnosticOptOut;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
@@ -185,7 +194,6 @@ namespace LaunchDarkly.Sdk.Client
             Offline = builder._offline;
             PersistenceConfigurationBuilder = builder._persistenceConfigurationBuilder;
             ServiceEndpoints = (builder._serviceEndpointsBuilder ?? Components.ServiceEndpoints()).Build();
-            ApplicationInfo = builder._applicationInfo;
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
         }

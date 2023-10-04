@@ -96,6 +96,9 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         {
             var logger = MakeLogger(configuration);
             var environmentReporter = MakeEnvironmentReporter(configuration.ApplicationInfo);
+
+
+
             MobileKey = configuration.MobileKey;
             BaseLogger = logger;
             CurrentContext = currentContext;
@@ -236,6 +239,9 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 var applicationInfo = applicationInfoBuilder.Build();
                 builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
+
+            // The platform layer has second priority if properties aren't set by the Config layer.
+            builder.SetPlatformLayer(PlatformAttributes.Layer);
 
             builder.SetSdkLayer(SdkAttributes.Layer);
             return builder.Build();

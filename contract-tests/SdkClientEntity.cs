@@ -266,7 +266,7 @@ namespace TestService
 
         private static Configuration BuildSdkConfig(SdkConfigParams sdkParams, ILogAdapter logAdapter, string tag)
         {
-            var builder = Configuration.Builder(sdkParams.Credential);
+            var builder = Configuration.Builder(sdkParams.Credential, true);
 
             builder.Logging(Components.Logging(logAdapter).BaseLoggerName(tag + ".SDK"));
 
