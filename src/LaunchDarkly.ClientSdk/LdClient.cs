@@ -60,7 +60,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly IFlagTracker _flagTracker;
         readonly TaskExecutor _taskExecutor;
         readonly AnonymousKeyContextDecorator _anonymousKeyAnonymousKeyContextDecorator;
-        private readonly AnonymousKeyContextDecorator _autoEnvContextDecorator;
+        private readonly AutoEnvContextDecorator _autoEnvContextDecorator;
 
         private readonly Logger _log;
 
@@ -163,7 +163,10 @@ namespace LaunchDarkly.Sdk.Client
                 );
 
             _anonymousKeyAnonymousKeyContextDecorator = new AnonymousKeyContextDecorator(_dataStore.PersistentStore, configuration.GenerateAnonymousKeys);
-            _context = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(initialContext);
+            var decoratedContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(initialContext);
+
+            _autoEnvContextDecorator = new AutoEnvContextDecorator(_dataStore.PersistentStore, _clientContext.EnvironmentReporter, _log);
+            _context = _autoEnvContextDecorator.DecorateContext(decoratedContext);
 
             // If we had cached data for the new context, set the current in-memory flag data state to use
             // that data, so that any Variation calls made before Identify has completed will use the

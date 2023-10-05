@@ -97,8 +97,6 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             var logger = MakeLogger(configuration);
             var environmentReporter = MakeEnvironmentReporter(configuration.ApplicationInfo);
 
-
-
             MobileKey = configuration.MobileKey;
             BaseLogger = logger;
             CurrentContext = currentContext;

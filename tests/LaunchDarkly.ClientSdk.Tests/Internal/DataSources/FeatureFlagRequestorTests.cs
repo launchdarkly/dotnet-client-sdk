@@ -46,7 +46,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 var baseUri = new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath);
 
-                var config = Configuration.Default(_mobileKey);
+                var config = Configuration.Default(_mobileKey, true);
 
                 using (var requestor = new FeatureFlagRequestor(
                     baseUri,
@@ -89,7 +89,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             {
                 var baseUri = new Uri(server.Uri.ToString().TrimEnd('/') + baseUriExtraPath);
 
-                var config = Configuration.Builder(_mobileKey)
+                var config = Configuration.Builder(_mobileKey, true)
                     .Http(Components.HttpConfiguration().UseReport(true))
                     .Build();
 

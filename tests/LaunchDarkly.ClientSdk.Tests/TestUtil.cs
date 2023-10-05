@@ -20,7 +20,7 @@ namespace LaunchDarkly.Sdk.Client
 
         private static ThreadLocal<bool> InClientLock = new ThreadLocal<bool>();
 
-        public static LdClientContext SimpleContext => new LdClientContext(Configuration.Default("key"), Context.New("userkey"));
+        public static LdClientContext SimpleContext => new LdClientContext(Configuration.Default("key", true), Context.New("userkey"));
 
         public static Context Base64ContextFromUrlPath(string path, string pathPrefix)
         {

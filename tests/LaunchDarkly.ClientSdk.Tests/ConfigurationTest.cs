@@ -10,7 +10,7 @@ namespace LaunchDarkly.Sdk.Client
     public class ConfigurationTest : BaseTest
     {
         private readonly BuilderBehavior.BuildTester<ConfigurationBuilder, Configuration> _tester =
-            BuilderBehavior.For(() => Configuration.Builder(mobileKey), b => b.Build())
+            BuilderBehavior.For(() => Configuration.Builder(mobileKey, true), b => b.Build())
                 .WithCopyConstructor(c => Configuration.Builder(c));
 
         const string mobileKey = "any-key";
@@ -20,14 +20,14 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void DefaultSetsKey()
         {
-            var config = Configuration.Default(mobileKey);
+            var config = Configuration.Default(mobileKey, true);
             Assert.Equal(mobileKey, config.MobileKey);
         }
 
         [Fact]
         public void BuilderSetsKey()
         {
-            var config = Configuration.Builder(mobileKey).Build();
+            var config = Configuration.Builder(mobileKey, true).Build();
             Assert.Equal(mobileKey, config.MobileKey);
         }
 
@@ -99,7 +99,7 @@ namespace LaunchDarkly.Sdk.Client
         public void LoggingAdapterShortcut()
         {
             var adapter = Logs.ToWriter(Console.Out);
-            var config = Configuration.Builder("key").Logging(adapter).Build();
+            var config = Configuration.Builder("key", true).Logging(adapter).Build();
             var logConfig = config.LoggingConfigurationBuilder.CreateLoggingConfiguration();
             Assert.Same(adapter, logConfig.LogAdapter);
         }
@@ -130,13 +130,13 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void MobileKeyCannotBeNull()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(null, true));
         }
 
         [Fact]
         public void MobileKeyCannotBeEmpty()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(""));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default("", true));
         }
     }
 }

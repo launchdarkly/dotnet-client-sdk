@@ -9,7 +9,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
     /// <summary>
     /// TODO
     /// </summary>
-    internal class AutoEnvContextModifier
+    internal class AutoEnvContextDecorator
     {
         private const string LD_APPLICATION_KIND = "ld_application";
         private const string LD_DEVICE_KIND = "ld_device";
@@ -25,9 +25,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
         private const string ENV_ATTRIBUTES_VERSION = "envAttributesVersion";
         private const string SPEC_VERSION = "1.0";
 
-        private readonly PersistentDataStoreWrapper persistentData;
-        private readonly IEnvironmentReporter environmentReporter;
-        private readonly Logger logger;
+        private readonly PersistentDataStoreWrapper _persistentData;
+        private readonly IEnvironmentReporter _environmentReporter;
+        private readonly Logger _logger;
 
         /// <summary>
         /// TODO
@@ -35,14 +35,14 @@ namespace LaunchDarkly.Sdk.Client.Internal
         /// <param name="persistentData"></param>
         /// <param name="environmentReporter"></param>
         /// <param name="logger"></param>
-        public AutoEnvContextModifier(
+        public AutoEnvContextDecorator(
             PersistentDataStoreWrapper persistentData,
             IEnvironmentReporter environmentReporter,
             Logger logger)
         {
-            this.persistentData = persistentData;
-            this.environmentReporter = environmentReporter;
-            this.logger = logger;
+            _persistentData = persistentData;
+            _environmentReporter = environmentReporter;
+            _logger = logger;
         }
 
         public Context DecorateContext(Context context)
@@ -59,7 +59,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 }
                 else
                 {
-                    logger.Warn("Unable to automatically add environment attributes for kind:{0}. {1} already exists.",
+                    _logger.Warn("Unable to automatically add environment attributes for kind:{0}. {1} already exists.",
                         recipe.Kind, recipe.Kind);
                 }
             }
@@ -99,10 +99,10 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var applicationCallables = new Dictionary<string, Func<LdValue>>
             {
                 { ENV_ATTRIBUTES_VERSION, () => LdValue.Of(SPEC_VERSION) },
-                { ATTR_ID, () => LdValue.Of(environmentReporter.ApplicationInfo.ApplicationId) },
-                { ATTR_NAME, () => LdValue.Of(environmentReporter.ApplicationInfo.ApplicationName) },
-                { ATTR_VERSION, () => LdValue.Of(environmentReporter.ApplicationInfo.ApplicationVersion) },
-                { ATTR_VERSION_NAME, () => LdValue.Of(environmentReporter.ApplicationInfo.ApplicationVersionName) }
+                { ATTR_ID, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationId) },
+                { ATTR_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationName) },
+                { ATTR_VERSION, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersion) },
+                { ATTR_VERSION_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersionName) }
             };
 
             // TODO: missing locale in environment reporter implementation
@@ -112,14 +112,14 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var deviceCallables = new Dictionary<string, Func<LdValue>>
             {
                 { ENV_ATTRIBUTES_VERSION, () => LdValue.Of(SPEC_VERSION) },
-                { ATTR_MANUFACTURER, () => LdValue.Of(environmentReporter.DeviceInfo.Manufacturer) },
-                { ATTR_MODEL, () => LdValue.Of(environmentReporter.DeviceInfo.Model) },
+                { ATTR_MANUFACTURER, () => LdValue.Of(_environmentReporter.DeviceInfo.Manufacturer) },
+                { ATTR_MODEL, () => LdValue.Of(_environmentReporter.DeviceInfo.Model) },
                 {
                     ATTR_OS, () =>
                         LdValue.BuildObject()
-                            .Add(ATTR_FAMILY, environmentReporter.OsInfo.Family)
-                            .Add(ATTR_NAME, environmentReporter.OsInfo.Name)
-                            .Add(ATTR_VERSION, environmentReporter.OsInfo.Version)
+                            .Add(ATTR_FAMILY, _environmentReporter.OsInfo.Family)
+                            .Add(ATTR_NAME, _environmentReporter.OsInfo.Name)
+                            .Add(ATTR_VERSION, _environmentReporter.OsInfo.Version)
                             .Build()
                 }
             };
@@ -129,16 +129,28 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 new ContextRecipe(
                     ldApplicationKind,
                     () => Base64.UrlSafeSha256Hash(
-                        environmentReporter.ApplicationInfo.ApplicationId ?? ""
+                        _environmentReporter.ApplicationInfo.ApplicationId ?? ""
                     ),
                     applicationCallables
                 ),
                 new ContextRecipe(
                     ldDeviceKind,
-                    () => persistentData.GetGeneratedContextKey(ldDeviceKind),
+                    () => GetOrCreateAutoContextKey(_persistentData, ldDeviceKind),
                     deviceCallables
                 )
             };
+        }
+
+        // TODO: commonize this with duplicate implementation in AnonymousKeyContextDecorator
+        private string GetOrCreateAutoContextKey(PersistentDataStoreWrapper store, ContextKind contextKind)
+        {
+            var uniqueId = store.GetGeneratedContextKey(contextKind);
+            if (uniqueId is null)
+            {
+                uniqueId = Guid.NewGuid().ToString();
+                store.SetGeneratedContextKey(contextKind, uniqueId);
+            }
+            return uniqueId;
         }
     }
 }
