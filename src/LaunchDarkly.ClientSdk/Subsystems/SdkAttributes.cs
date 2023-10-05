@@ -5,13 +5,11 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
 {
     internal static class SdkAttributes
     {
-        internal static Layer Layer => new Layer
-        {
-            ApplicationInfo = new Props.Concrete<ApplicationInfo>(new ApplicationInfo(
+        internal static Layer Layer => new Layer(new ApplicationInfo(
                 SdkPackage.Name,
                 SdkPackage.Name,
                 SdkPackage.Version,
-                SdkPackage.Version))
-        };
+                SdkPackage.Version),
+            null, null);
     }
 }
