@@ -37,7 +37,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
         private static OsInfo? PlatformGetOsInfo() =>
             new OsInfo(
                 GetPlatform().ToString(),
-                GetPlatform().ToString(),
+                GetPlatform().ToString()+Build.VERSION.SdkInt,
                 GetVersionString()
             );
 
