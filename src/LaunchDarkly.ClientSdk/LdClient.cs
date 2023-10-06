@@ -165,8 +165,13 @@ namespace LaunchDarkly.Sdk.Client
             _anonymousKeyAnonymousKeyContextDecorator = new AnonymousKeyContextDecorator(_dataStore.PersistentStore, configuration.GenerateAnonymousKeys);
             var decoratedContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(initialContext);
 
-            _autoEnvContextDecorator = new AutoEnvContextDecorator(_dataStore.PersistentStore, _clientContext.EnvironmentReporter, _log);
-            _context = _autoEnvContextDecorator.DecorateContext(decoratedContext);
+            if (configuration.AutoEnvAttributes)
+            {
+                _autoEnvContextDecorator = new AutoEnvContextDecorator(_dataStore.PersistentStore, _clientContext.EnvironmentReporter, _log);
+                decoratedContext = _autoEnvContextDecorator.DecorateContext(decoratedContext);
+            }
+
+            _context = decoratedContext;
 
             // If we had cached data for the new context, set the current in-memory flag data state to use
             // that data, so that any Variation calls made before Identify has completed will use the

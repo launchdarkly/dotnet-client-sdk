@@ -238,6 +238,9 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
 
+            // TODO: this platform layer being set needs to depend on the configuration so that when the
+            // customer opts out of auto env attributes, we do not report it through the env reporter
+
             // The platform layer has second priority if properties aren't set by the Config layer.
             builder.SetPlatformLayer(PlatformAttributes.Layer);
 
