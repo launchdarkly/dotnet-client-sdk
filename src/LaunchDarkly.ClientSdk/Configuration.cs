@@ -119,6 +119,11 @@ namespace LaunchDarkly.Sdk.Client
         public ServiceEndpoints ServiceEndpoints { get; }
 
         /// <summary>
+        /// ApplicationInfo configuration which contains info about the application the SDK is running in.
+        /// </summary>
+        public ApplicationInfoBuilder ApplicationInfo { get; }
+
+        /// <summary>
         /// Creates a configuration with all parameters set to the default.
         /// </summary>
         /// <param name="mobileKey">the SDK key for your LaunchDarkly environment</param>
@@ -180,7 +185,7 @@ namespace LaunchDarkly.Sdk.Client
             Offline = builder._offline;
             PersistenceConfigurationBuilder = builder._persistenceConfigurationBuilder;
             ServiceEndpoints = (builder._serviceEndpointsBuilder ?? Components.ServiceEndpoints()).Build();
-
+            ApplicationInfo = builder._applicationInfo;
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
         }

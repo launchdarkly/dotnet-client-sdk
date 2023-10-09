@@ -30,6 +30,7 @@ namespace LaunchDarkly.Sdk.Client
         // will replace it with a platform-specific implementation.
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
+        internal ApplicationInfoBuilder _applicationInfo;
         internal IComponentConfigurer<IDataSource> _dataSource = null;
         internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
@@ -65,6 +66,7 @@ namespace LaunchDarkly.Sdk.Client
             _offline = copyFrom.Offline;
             _persistenceConfigurationBuilder = copyFrom.PersistenceConfigurationBuilder;
             _serviceEndpointsBuilder = new ServiceEndpointsBuilder(copyFrom.ServiceEndpoints);
+            _applicationInfo = copyFrom.ApplicationInfo;
         }
 
         /// <summary>
@@ -75,6 +77,19 @@ namespace LaunchDarkly.Sdk.Client
         public Configuration Build()
         {
             return new Configuration(this);
+        }
+        
+        /// <summary>
+        /// Sets the SDK's application metadata, which may be used in the LaunchDarkly analytics or other product
+        /// features.  This object is normally a configuration builder obtained from <see cref="Components.ApplicationInfo"/>,
+        /// which has methods for setting individual metadata properties.
+        /// </summary>
+        /// <param name="applicationInfo">builder for <see cref="ApplicationInfo"/></param>
+        /// <returns>the same builder</returns>
+        public ConfigurationBuilder ApplicationInfo(ApplicationInfoBuilder applicationInfo)
+        {
+            _applicationInfo = applicationInfo;
+            return this;
         }
 
         /// <summary>

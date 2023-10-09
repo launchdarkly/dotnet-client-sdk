@@ -36,7 +36,8 @@ namespace TestService
             "service-endpoints",
             "singleton",
             "strongly-typed",
-            "user-type"
+            "user-type",
+            "tags"
         };
 
         public readonly Handler Handler;

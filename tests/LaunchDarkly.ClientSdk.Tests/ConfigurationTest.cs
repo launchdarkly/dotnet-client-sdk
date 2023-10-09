@@ -32,6 +32,14 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
+        public void ApplicationInfo()
+        {
+            var prop = _tester.Property(c => c.ApplicationInfo, (b, v) => b.ApplicationInfo(v));
+            prop.AssertDefault(null);
+            prop.AssertCanSet(new ApplicationInfoBuilder());
+        }
+
+        [Fact]
         public void DataSource()
         {
             var prop = _tester.Property(c => c.DataSource, (b, v) => b.DataSource(v));
