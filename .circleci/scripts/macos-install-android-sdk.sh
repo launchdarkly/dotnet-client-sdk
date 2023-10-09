@@ -58,7 +58,6 @@ unzip android-sdk.zip
 mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
 
 sdkmanager_args="platform-tools emulator"
-sdkmanager_args="$sdkmanager_args extras;intel;Hardware_Accelerated_Execution_Manager"
 sdkmanager_args="$sdkmanager_args build-tools;$ANDROID_BUILD_TOOLS_VERSION"
 for apiver in "$@"; do
   sdkmanager_args="$sdkmanager_args platforms;android-$apiver"
