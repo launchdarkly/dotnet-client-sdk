@@ -1,3 +1,4 @@
+using System.Globalization;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.EnvReporting;
@@ -28,9 +29,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 .Set(AutoEnvContextDecorator.ATTR_NAME, SdkPackage.Name)
                 .Set(AutoEnvContextDecorator.ATTR_VERSION, SdkPackage.Version)
                 .Set(AutoEnvContextDecorator.ATTR_VERSION_NAME, SdkPackage.Version)
+                .Set(AutoEnvContextDecorator.ATTR_LOCALE, "unknown")
                 .Build();
-
-            //TODO: Set Locale - .Set(AutoEnvContextDecorator.ATTR_LOCALE, "unknown")
 
             var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LD_DEVICE_KIND);
             var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
@@ -48,6 +48,25 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 .Build();
 
             Assert.Equal(expectedOutput, output);
+        }
+
+        [Fact]
+        public void CustomCultureInPlatformLayerIsPropagated()
+        {
+            var platform = new Layer(null, null, null, "en-GB");
+
+            var envReporter = new EnvironmentReporterBuilder().SetPlatformLayer(platform).Build();
+            var store = MakeMockDataStoreWrapper();
+            var decoratorUnderTest = MakeDecoratorWithPersistence(store, envReporter);
+
+            var input = Context.Builder("aKey").Kind(ContextKind.Of("aKind")).Build();
+            var output = decoratorUnderTest.DecorateContext(input);
+
+
+            Context outContext;
+            Assert.True(output.TryGetContextByKind(new ContextKind(AutoEnvContextDecorator.LD_APPLICATION_KIND), out outContext));
+
+            Assert.Equal("en-GB", outContext.GetValue("locale").AsString);
         }
 
         [Fact]

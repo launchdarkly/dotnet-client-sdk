@@ -102,11 +102,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 { ATTR_ID, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationId) },
                 { ATTR_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationName) },
                 { ATTR_VERSION, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersion) },
-                { ATTR_VERSION_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersionName) }
+                { ATTR_VERSION_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersionName) },
+                { ATTR_LOCALE, () => LdValue.Of(_environmentReporter.Locale) }
             };
-
-            // TODO: missing locale in environment reporter implementation
-            // applicationCallables.Add(ATTR_LOCALE, () => LDValue.Of(environmentReporter.GetLocale()));
 
             var ldDeviceKind = ContextKind.Of(LD_DEVICE_KIND);
             var deviceCallables = new Dictionary<string, Func<LdValue>>
