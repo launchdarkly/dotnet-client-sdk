@@ -136,17 +136,19 @@ namespace LaunchDarkly.Sdk.Client
 
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
-        LdClient() { }
+        LdClient()
+        {
+        }
 
         LdClient(Configuration configuration, Context initialContext, TimeSpan startWaitTime)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
             var baseContext = new LdClientContext(_config, initialContext, this);
 
-            var diagnosticStore = _config.DiagnosticOptOut ? null :
-                new ClientDiagnosticStore(baseContext, _config, startWaitTime);
-            var diagnosticDisabler = _config.DiagnosticOptOut ? null :
-                new DiagnosticDisablerImpl();
+            var diagnosticStore = _config.DiagnosticOptOut
+                ? null
+                : new ClientDiagnosticStore(baseContext, _config, startWaitTime);
+            var diagnosticDisabler = _config.DiagnosticOptOut ? null : new DiagnosticDisablerImpl();
             _clientContext = baseContext.WithDiagnostics(diagnosticDisabler, diagnosticStore);
 
             _log = _clientContext.BaseLogger;
@@ -160,14 +162,16 @@ namespace LaunchDarkly.Sdk.Client
                 _config.MobileKey,
                 persistenceConfiguration,
                 _log.SubLogger(LogNames.DataStoreSubLog)
-                );
+            );
 
-            _anonymousKeyAnonymousKeyContextDecorator = new AnonymousKeyContextDecorator(_dataStore.PersistentStore, _config.GenerateAnonymousKeys);
+            _anonymousKeyAnonymousKeyContextDecorator =
+                new AnonymousKeyContextDecorator(_dataStore.PersistentStore, _config.GenerateAnonymousKeys);
             var decoratedContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(initialContext);
 
             if (_config.AutoEnvAttributes)
             {
-                _autoEnvContextDecorator = new AutoEnvContextDecorator(_dataStore.PersistentStore, _clientContext.EnvironmentReporter, _log);
+                _autoEnvContextDecorator = new AutoEnvContextDecorator(_dataStore.PersistentStore,
+                    _clientContext.EnvironmentReporter, _log);
                 decoratedContext = _autoEnvContextDecorator.DecorateContext(decoratedContext);
             }
 
@@ -180,7 +184,8 @@ namespace LaunchDarkly.Sdk.Client
             if (cachedData != null)
             {
                 _log.Debug("Cached flag data is available for this context");
-                _dataStore.Init(_context, cachedData.Value, false); // false means "don't rewrite the flags to persistent storage"
+                _dataStore.Init(_context, cachedData.Value,
+                    false); // false means "don't rewrite the flags to persistent storage"
             }
 
             var dataSourceUpdateSink = new DataSourceUpdateSinkImpl(
@@ -188,7 +193,7 @@ namespace LaunchDarkly.Sdk.Client
                 _config.Offline,
                 _taskExecutor,
                 _log.SubLogger(LogNames.DataSourceSubLog)
-                );
+            );
             _dataSourceUpdateSink = dataSourceUpdateSink;
 
             _dataSourceStatusProvider = new DataSourceStatusProviderImpl(dataSourceUpdateSink);
@@ -214,7 +219,7 @@ namespace LaunchDarkly.Sdk.Client
                 _config.EnableBackgroundUpdating,
                 _context,
                 _log
-                );
+            );
             _connectionManager.SetForceOffline(_config.Offline);
             _connectionManager.SetNetworkEnabled(isConnected);
             if (_config.Offline)
@@ -225,7 +230,7 @@ namespace LaunchDarkly.Sdk.Client
             _connectivityStateManager.ConnectionChanged += networkAvailable =>
             {
                 _log.Debug("Setting online to {0} due to a connectivity change event", networkAvailable);
-                _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
+                _ = _connectionManager.SetNetworkEnabled(networkAvailable); // do not await the result
             };
 
             // Send an initial identify event, but only if we weren't explicitly set to be offline
@@ -287,7 +292,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
         /// <seealso cref="Init(string, User, TimeSpan)"/>
         /// <seealso cref="InitAsync(string, Context)"/>
-        public static LdClient Init(string mobileKey, bool autoEnvAttributes, Context initialContext, TimeSpan maxWaitTime)
+        public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes,
+            Context initialContext, TimeSpan maxWaitTime)
         {
             var config = Configuration.Default(mobileKey, autoEnvAttributes);
 
@@ -310,7 +316,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
         /// <seealso cref="Init(string, Context, TimeSpan)"/>
         /// <seealso cref="InitAsync(string, User)"/>
-        public static LdClient Init(string mobileKey, bool autoEnvAttributes, User initialUser, TimeSpan maxWaitTime) =>
+        public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes,
+            User initialUser, TimeSpan maxWaitTime) =>
             Init(mobileKey, autoEnvAttributes, Context.FromUser(initialUser), maxWaitTime);
 
         /// <summary>
@@ -337,7 +344,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        public static async Task<LdClient> InitAsync(string mobileKey, bool autoEnvAttributes, Context initialContext)
+        public static async Task<LdClient> InitAsync(string mobileKey,
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext)
         {
             var config = Configuration.Default(mobileKey, autoEnvAttributes);
 
@@ -356,7 +364,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <param name="autoEnvAttributes">TODOo</param>
         /// <param name="initialUser">the initial user attributes</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        public static Task<LdClient> InitAsync(string mobileKey, bool autoEnvAttributes, User initialUser) =>
+        public static Task<LdClient> InitAsync(string mobileKey,
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, User initialUser) =>
             InitAsync(mobileKey, autoEnvAttributes, Context.FromUser(initialUser));
 
         /// <summary>
@@ -503,61 +512,71 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true, _eventFactoryDefault).Value;
+            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true, _eventFactoryWithReasons);
+            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public string StringVariation(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true, _eventFactoryDefault).Value;
+            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true, _eventFactoryWithReasons);
+            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true, _eventFactoryDefault).Value;
+            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true, _eventFactoryWithReasons);
+            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public double DoubleVariation(string key, double defaultValue = 0)
         {
-            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true, _eventFactoryDefault).Value;
+            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<double> DoubleVariationDetail(string key, double defaultValue = 0)
         {
-            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true, _eventFactoryWithReasons);
+            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public int IntVariation(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryDefault).Value;
+            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryDefault)
+                .Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryWithReasons);
+            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
@@ -572,7 +591,8 @@ namespace LaunchDarkly.Sdk.Client
             return VariationInternal(key, defaultValue, LdValue.Convert.Json, false, _eventFactoryWithReasons);
         }
 
-        EvaluationDetail<T> VariationInternal<T>(string featureKey, LdValue defaultJson, LdValue.Converter<T> converter, bool checkType, EventFactory eventFactory)
+        EvaluationDetail<T> VariationInternal<T>(string featureKey, LdValue defaultJson, LdValue.Converter<T> converter,
+            bool checkType, EventFactory eventFactory)
         {
             T defaultValue = converter.ToType(defaultJson);
 
@@ -585,14 +605,16 @@ namespace LaunchDarkly.Sdk.Client
                 if (!Initialized)
                 {
                     _log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
-                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context, defaultJson,
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context,
+                        defaultJson,
                         EvaluationErrorKind.ClientNotReady));
                     return errorResult(EvaluationErrorKind.ClientNotReady);
                 }
                 else
                 {
                     _log.Info("Unknown feature flag {0}; returning default value", featureKey);
-                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context, defaultJson,
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context,
+                        defaultJson,
                         EvaluationErrorKind.FlagNotFound));
                     return errorResult(EvaluationErrorKind.FlagNotFound);
                 }
@@ -610,23 +632,28 @@ namespace LaunchDarkly.Sdk.Client
             if (flag.Value.IsNull)
             {
                 valueJson = defaultJson;
-                result = new EvaluationDetail<T>(defaultValue, flag.Variation, flag.Reason ?? EvaluationReason.OffReason);
+                result = new EvaluationDetail<T>(defaultValue, flag.Variation,
+                    flag.Reason ?? EvaluationReason.OffReason);
             }
             else
             {
                 if (checkType && !defaultJson.IsNull && flag.Value.Type != defaultJson.Type)
                 {
                     valueJson = defaultJson;
-                    result = new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
+                    result = new EvaluationDetail<T>(defaultValue, null,
+                        EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
                 }
                 else
                 {
                     valueJson = flag.Value;
-                    result = new EvaluationDetail<T>(converter.ToType(flag.Value), flag.Variation, flag.Reason ?? EvaluationReason.OffReason);
+                    result = new EvaluationDetail<T>(converter.ToType(flag.Value), flag.Variation,
+                        flag.Reason ?? EvaluationReason.OffReason);
                 }
             }
+
             var featureEvent = eventFactory.NewEvaluationEvent(featureKey, flag, Context,
-                new EvaluationDetail<LdValue>(valueJson, flag.Variation, flag.Reason ?? EvaluationReason.OffReason), defaultJson);
+                new EvaluationDetail<LdValue>(valueJson, flag.Variation, flag.Reason ?? EvaluationReason.OffReason),
+                defaultJson);
             SendEvaluationEventIfOnline(featureEvent);
             return result;
         }
@@ -644,6 +671,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 return ImmutableDictionary<string, LdValue>.Empty;
             }
+
             return data.Value.Items.Where(entry => entry.Value.Item != null)
                 .ToDictionary(p => p.Key, p => p.Value.Item.Value);
         }
@@ -703,7 +731,10 @@ namespace LaunchDarkly.Sdk.Client
             {
                 newContext = _autoEnvContextDecorator.DecorateContext(newContext);
             }
-            Context oldContext = newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
+
+            Context
+                oldContext =
+                    newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>
             {
@@ -723,11 +754,12 @@ namespace LaunchDarkly.Sdk.Client
             {
                 _log.Debug("Identify found cached flag data for the new context");
             }
+
             _dataStore.Init(
                 newContext,
                 cachedData ?? new DataStoreTypes.FullDataSet(null),
                 false // false means "don't rewrite the flags to persistent storage"
-                );
+            );
 
             EventProcessorIfEnabled().RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
             {

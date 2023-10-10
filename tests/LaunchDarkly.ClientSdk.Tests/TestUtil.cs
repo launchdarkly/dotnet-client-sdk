@@ -6,7 +6,6 @@ using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Json;
 using Xunit;
-
 using static LaunchDarkly.Sdk.Client.DataModel;
 using static LaunchDarkly.Sdk.Client.Subsystems.DataStoreTypes;
 
@@ -20,7 +19,8 @@ namespace LaunchDarkly.Sdk.Client
 
         private static ThreadLocal<bool> InClientLock = new ThreadLocal<bool>();
 
-        public static LdClientContext SimpleContext => new LdClientContext(Configuration.Default("key", true), Context.New("userkey"));
+        public static LdClientContext SimpleContext => new LdClientContext(
+            Configuration.Default("key", ConfigurationBuilder.AutoEnvAttributes.Enabled), Context.New("userkey"));
 
         public static Context Base64ContextFromUrlPath(string path, string pathPrefix)
         {
@@ -42,6 +42,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 return f.Invoke();
             }
+
             ClientInstanceLock.Wait();
             try
             {
@@ -62,6 +63,7 @@ namespace LaunchDarkly.Sdk.Client
                 a.Invoke();
                 return;
             }
+
             ClientInstanceLock.Wait();
             try
             {
@@ -81,6 +83,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 return await f.Invoke();
             }
+
             await ClientInstanceLock.WaitAsync();
             try
             {
@@ -124,10 +127,7 @@ namespace LaunchDarkly.Sdk.Client
 
         public static void ClearClient()
         {
-            WithClientLock(() =>
-            {
-                LdClient.Instance?.Dispose();
-            });
+            WithClientLock(() => { LdClient.Instance?.Dispose(); });
         }
 
         internal static string MakeJsonData(FullDataSet data)
@@ -143,6 +143,7 @@ namespace LaunchDarkly.Sdk.Client
                         FeatureFlagJsonConverter.WriteJsonValue(item.Value.Item, w);
                     }
                 }
+
                 w.WriteEndObject();
             });
         }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Immutable;
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client
@@ -11,8 +13,8 @@ namespace LaunchDarkly.Sdk.Client
     /// </summary>
     /// <remarks>
     /// Instances of <see cref="Configuration"/> are immutable once created. They can be created with the factory method
-    /// <see cref="Configuration.Default(string)"/>, or using a builder pattern with <see cref="Configuration.Builder(string)"/>
-    /// or <see cref="Configuration.Builder(Configuration)"/>.
+    /// <see cref="Configuration.Default(string,ConfigurationBuilder.AutoEnvAttributes)"/>, or using a builder pattern
+    /// with <see cref="ImmutableArray{T}.Builder"/> or <see cref="Configuration.Builder(Configuration)"/>.
     /// </remarks>
     public sealed class Configuration
     {
@@ -93,13 +95,13 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// HTTP configuration properties for the SDK.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.Http(HttpConfigurationBuilder)"/>
+        /// <seealso cref="ConfigurationBuilder.Http(Integrations.HttpConfigurationBuilder)"/>
         public HttpConfigurationBuilder HttpConfigurationBuilder { get; }
 
         /// <summary>
         /// Logging configuration properties for the SDK.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)"/>
+        /// <seealso cref="Logging"/>
         public LoggingConfigurationBuilder LoggingConfigurationBuilder { get; }
 
         /// <summary>
@@ -119,7 +121,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// Persistent storage configuration properties for the SDK.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
+        /// <seealso cref="ConfigurationBuilder.Persistence(Integrations.PersistenceConfigurationBuilder)"/>
         public PersistenceConfigurationBuilder PersistenceConfigurationBuilder { get; }
 
         /// <summary>
@@ -134,7 +136,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <param name="mobileKey">the SDK key for your LaunchDarkly environment</param>
         /// <param name="autoEnvAttributes">TODOo</param>
         /// <returns>a <see cref="Configuration"/> instance</returns>
-        public static Configuration Default(string mobileKey, bool autoEnvAttributes)
+        public static Configuration Default(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)
         {
             return Builder(mobileKey, autoEnvAttributes).Build();
         }
@@ -159,12 +161,14 @@ namespace LaunchDarkly.Sdk.Client
         /// <param name="mobileKey">the mobile SDK key for your LaunchDarkly environment</param>
         /// <param name="autoEnvAttributes">TODOo</param>
         /// <returns>a builder object</returns>
-        public static ConfigurationBuilder Builder(string mobileKey, bool autoEnvAttributes)
+        public static ConfigurationBuilder Builder(string mobileKey,
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)
         {
             if (String.IsNullOrEmpty(mobileKey))
             {
                 throw new ArgumentOutOfRangeException(nameof(mobileKey), "key is required");
             }
+
             return new ConfigurationBuilder(mobileKey, autoEnvAttributes);
         }
 

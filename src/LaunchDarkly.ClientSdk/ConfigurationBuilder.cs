@@ -25,6 +25,31 @@ namespace LaunchDarkly.Sdk.Client
     /// </example>
     public sealed class ConfigurationBuilder
     {
+        /// <summary>
+        /// Enable / disable options for Auto Environment Attributes functionality.  When enabled, the SDK will automatically
+        /// provide data about the mobile environment where the application is running. This data makes it simpler to target
+        /// your mobile customers based on application name or version, or on device characteristics including manufacturer,
+        /// model, operating system, locale, and so on. We recommend enabling this when you configure the SDK.  See TKTK
+        /// for more documentation.
+        /// For example, consider a “dark mode” feature being added to an app. Versions 10 through 14 contain early,
+        /// incomplete versions of the feature. These versions are available to all customers, but the “dark mode” feature is only
+        /// enabled for testers.  With version 15, the feature is considered complete. With Auto Environment Attributes enabled,
+        /// you can use targeting rules to enable "dark mode" for all customers who are using version 15 or greater, and ensure
+        /// that customers on previous versions don't use the earlier, unfinished version of the feature.
+        /// </summary>
+        public enum AutoEnvAttributes
+        {
+            /// <summary>
+            /// Enables the Auto EnvironmentAttributes functionality.
+            /// </summary>
+            Enabled,
+
+            /// <summary>
+            /// Disables the Auto EnvironmentAttributes functionality.
+            /// </summary>
+            Disabled
+        }
+
         // This exists so that we can distinguish between leaving the HttpMessageHandler property unchanged
         // and explicitly setting it to null. If the property value is the exact same instance as this, we
         // will replace it with a platform-specific implementation.
@@ -49,10 +74,10 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
 
-        internal ConfigurationBuilder(string mobileKey, bool autoEnvAttributes)
+        internal ConfigurationBuilder(string mobileKey, AutoEnvAttributes autoEnvAttributes)
         {
             _mobileKey = mobileKey;
-            _autoEnvAttributes = autoEnvAttributes;
+            _autoEnvAttributes = autoEnvAttributes == AutoEnvAttributes.Enabled; // map enum to boolean
         }
 
         internal ConfigurationBuilder(Configuration copyFrom)
