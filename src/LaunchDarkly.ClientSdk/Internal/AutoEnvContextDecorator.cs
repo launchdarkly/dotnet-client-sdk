@@ -11,19 +11,19 @@ namespace LaunchDarkly.Sdk.Client.Internal
     /// </summary>
     internal class AutoEnvContextDecorator
     {
-        private const string LD_APPLICATION_KIND = "ld_application";
-        private const string LD_DEVICE_KIND = "ld_device";
-        private const string ATTR_ID = "id";
-        private const string ATTR_NAME = "name";
-        private const string ATTR_VERSION = "version";
-        private const string ATTR_VERSION_NAME = "versionName";
-        private const string ATTR_MANUFACTURER = "manufacturer";
-        private const string ATTR_MODEL = "model";
-        private const string ATTR_LOCALE = "locale";
-        private const string ATTR_OS = "os";
-        private const string ATTR_FAMILY = "family";
-        private const string ENV_ATTRIBUTES_VERSION = "envAttributesVersion";
-        private const string SPEC_VERSION = "1.0";
+        internal const string LD_APPLICATION_KIND = "ld_application";
+        internal const string LD_DEVICE_KIND = "ld_device";
+        internal const string ATTR_ID = "id";
+        internal const string ATTR_NAME = "name";
+        internal const string ATTR_VERSION = "version";
+        internal const string ATTR_VERSION_NAME = "versionName";
+        internal const string ATTR_MANUFACTURER = "manufacturer";
+        internal const string ATTR_MODEL = "model";
+        internal const string ATTR_LOCALE = "locale";
+        internal const string ATTR_OS = "os";
+        internal const string ATTR_FAMILY = "family";
+        internal const string ENV_ATTRIBUTES_VERSION = "envAttributesVersion";
+        internal const string SPEC_VERSION = "1.0";
 
         private readonly PersistentDataStoreWrapper _persistentData;
         private readonly IEnvironmentReporter _environmentReporter;

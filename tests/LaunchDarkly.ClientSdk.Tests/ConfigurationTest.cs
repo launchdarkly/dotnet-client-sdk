@@ -10,7 +10,7 @@ namespace LaunchDarkly.Sdk.Client
     public class ConfigurationTest : BaseTest
     {
         private readonly BuilderBehavior.BuildTester<ConfigurationBuilder, Configuration> _tester =
-            BuilderBehavior.For(() => Configuration.Builder(mobileKey, true), b => b.Build())
+            BuilderBehavior.For(() => Configuration.Builder(mobileKey, false), b => b.Build())
                 .WithCopyConstructor(c => Configuration.Builder(c));
 
         const string mobileKey = "any-key";
@@ -27,7 +27,7 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void BuilderSetsKey()
         {
-            var config = Configuration.Builder(mobileKey, true).Build();
+            var config = Configuration.Builder(mobileKey, false).Build();
             Assert.Equal(mobileKey, config.MobileKey);
         }
 
@@ -99,7 +99,7 @@ namespace LaunchDarkly.Sdk.Client
         public void LoggingAdapterShortcut()
         {
             var adapter = Logs.ToWriter(Console.Out);
-            var config = Configuration.Builder("key", true).Logging(adapter).Build();
+            var config = Configuration.Builder("key", false).Logging(adapter).Build();
             var logConfig = config.LoggingConfigurationBuilder.CreateLoggingConfiguration();
             Assert.Same(adapter, logConfig.LogAdapter);
         }

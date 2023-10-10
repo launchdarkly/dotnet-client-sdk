@@ -141,7 +141,7 @@ namespace LaunchDarkly.Sdk.Client
         LdClient(Configuration configuration, Context initialContext, TimeSpan startWaitTime)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            var baseContext = new LdClientContext(configuration, initialContext, this);
+            var baseContext = new LdClientContext(_config, initialContext, this);
 
             var diagnosticStore = _config.DiagnosticOptOut ? null :
                 new ClientDiagnosticStore(baseContext, _config, startWaitTime);
@@ -154,18 +154,18 @@ namespace LaunchDarkly.Sdk.Client
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
-            var persistenceConfiguration = (configuration.PersistenceConfigurationBuilder ?? Components.Persistence())
+            var persistenceConfiguration = (_config.PersistenceConfigurationBuilder ?? Components.Persistence())
                 .Build(_clientContext);
             _dataStore = new FlagDataManager(
-                configuration.MobileKey,
+                _config.MobileKey,
                 persistenceConfiguration,
                 _log.SubLogger(LogNames.DataStoreSubLog)
                 );
 
-            _anonymousKeyAnonymousKeyContextDecorator = new AnonymousKeyContextDecorator(_dataStore.PersistentStore, configuration.GenerateAnonymousKeys);
+            _anonymousKeyAnonymousKeyContextDecorator = new AnonymousKeyContextDecorator(_dataStore.PersistentStore, _config.GenerateAnonymousKeys);
             var decoratedContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(initialContext);
 
-            if (configuration.AutoEnvAttributes)
+            if (_config.AutoEnvAttributes)
             {
                 _autoEnvContextDecorator = new AutoEnvContextDecorator(_dataStore.PersistentStore, _clientContext.EnvironmentReporter, _log);
                 decoratedContext = _autoEnvContextDecorator.DecorateContext(decoratedContext);
@@ -185,7 +185,7 @@ namespace LaunchDarkly.Sdk.Client
 
             var dataSourceUpdateSink = new DataSourceUpdateSinkImpl(
                 _dataStore,
-                configuration.Offline,
+                _config.Offline,
                 _taskExecutor,
                 _log.SubLogger(LogNames.DataSourceSubLog)
                 );
@@ -194,16 +194,16 @@ namespace LaunchDarkly.Sdk.Client
             _dataSourceStatusProvider = new DataSourceStatusProviderImpl(dataSourceUpdateSink);
             _flagTracker = new FlagTrackerImpl(dataSourceUpdateSink);
 
-            var dataSourceFactory = configuration.DataSource ?? Components.StreamingDataSource();
+            var dataSourceFactory = _config.DataSource ?? Components.StreamingDataSource();
 
-            _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
+            _connectivityStateManager = Factory.CreateConnectivityStateManager(_config);
             var isConnected = _connectivityStateManager.IsConnected;
 
-            diagnosticDisabler?.SetDisabled(!isConnected || configuration.Offline);
+            diagnosticDisabler?.SetDisabled(!isConnected || _config.Offline);
 
-            _eventProcessor = (configuration.Events ?? Components.SendEvents())
+            _eventProcessor = (_config.Events ?? Components.SendEvents())
                 .Build(_clientContext);
-            _eventProcessor.SetOffline(configuration.Offline || !isConnected);
+            _eventProcessor.SetOffline(_config.Offline || !isConnected);
 
             _connectionManager = new ConnectionManager(
                 _clientContext,
@@ -211,13 +211,13 @@ namespace LaunchDarkly.Sdk.Client
                 _dataSourceUpdateSink,
                 _eventProcessor,
                 diagnosticDisabler,
-                configuration.EnableBackgroundUpdating,
+                _config.EnableBackgroundUpdating,
                 _context,
                 _log
                 );
-            _connectionManager.SetForceOffline(configuration.Offline);
+            _connectionManager.SetForceOffline(_config.Offline);
             _connectionManager.SetNetworkEnabled(isConnected);
-            if (configuration.Offline)
+            if (_config.Offline)
             {
                 _log.Info("Starting LaunchDarkly client in offline mode");
             }
@@ -230,7 +230,7 @@ namespace LaunchDarkly.Sdk.Client
 
             // Send an initial identify event, but only if we weren't explicitly set to be offline
 
-            if (!configuration.Offline)
+            if (!_config.Offline)
             {
                 _eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
                 {
@@ -699,6 +699,10 @@ namespace LaunchDarkly.Sdk.Client
         public async Task<bool> IdentifyAsync(Context context)
         {
             Context newContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(context);
+            if (_config.AutoEnvAttributes)
+            {
+                newContext = _autoEnvContextDecorator.DecorateContext(newContext);
+            }
             Context oldContext = newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>

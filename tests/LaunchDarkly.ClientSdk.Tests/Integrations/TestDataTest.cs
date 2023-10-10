@@ -21,7 +21,8 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
         public TestDataTest(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _context = new LdClientContext(Configuration.Builder("key", true).Logging(testLogging).Build(), _initialUser);
+            _context = new LdClientContext(Configuration.Builder("key", false)
+                .Logging(testLogging).Build(), _initialUser);
         }
 
         [Fact]

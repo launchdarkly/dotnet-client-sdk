@@ -14,29 +14,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void TestUrlSafeSha256Hash()
         {
-            Assert.Equal("something", Base64.UrlSafeSha256Hash("OhYeah?HashThis!!!"));
+            var input = "OhYeah?HashThis!!!"; // hash is KzDwVRpvTuf//jfMK27M4OMpIRTecNcJoaffvAEi+as= and it has a + and a /
+            var expectedOutput = "KzDwVRpvTuf__jfMK27M4OMpIRTecNcJoaffvAEi-as=";
+            Assert.Equal(expectedOutput, Base64.UrlSafeSha256Hash(input));
         }
-
-        // func testSha256base64() throws {
-        //     let input = "hashThis!"
-        //     let expectedOutput = "sfXg3HewbCAVNQLJzPZhnFKntWYvN0nAYyUWFGy24dQ="
-        //     let output = Util.sha256base64(input)
-        //     XCTAssertEqual(output, expectedOutput)
-        // }
-        //
-        // func testSha256base64UrlEncoding() throws {
-        //     let input = "OhYeah?HashThis!!!" // hash is KzDwVRpvTuf//jfMK27M4OMpIRTecNcJoaffvAEi+as= and it has a + and a /
-        //     let expectedOutput = "KzDwVRpvTuf__jfMK27M4OMpIRTecNcJoaffvAEi-as="
-        //     let output = Util.sha256(input).base64UrlEncodedString
-        //     XCTAssertEqual(output, expectedOutput)
-        // }
-        //
-        // @Test
-        // public void testUrlSafeBase64Hash() {
-        //     String input = "hashThis!";
-        //     String expectedOutput = "sfXg3HewbCAVNQLJzPZhnFKntWYvN0nAYyUWFGy24dQ=";
-        //     String output = LDUtil.urlSafeBase64Hash(input);
-        //     Assert.assertEquals(expectedOutput, output);
-        // }
     }
 }
