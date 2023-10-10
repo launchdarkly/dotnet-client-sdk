@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Client.Subsystems;
+using LaunchDarkly.Logging;
 using LaunchDarkly.TestHelpers;
 using Xunit;
 
@@ -11,11 +12,12 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 {
     public class HttpConfigurationBuilderTest
     {
-        private static readonly LdClientContext basicContext = LdClientContext.MakeMinimalContext("mobile-key");
+        private static string mobileKey = "mobile-key";
+        private static ApplicationInfo applicationInfo => new ApplicationInfo("mockId", "mockName", "mockVersion", "mockVersionName");
 
         private readonly BuilderBehavior.BuildTester<HttpConfigurationBuilder, HttpConfiguration> _tester =
             BuilderBehavior.For(() => Components.HttpConfiguration(),
-                b => b.CreateHttpConfiguration(basicContext));
+                b => b.CreateHttpConfiguration(mobileKey, applicationInfo));
 
         [Fact]
         public void ConnectTimeout()
@@ -31,7 +33,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             var config = Components.HttpConfiguration()
                 .CustomHeader("header1", "value1")
                 .CustomHeader("header2", "value2")
-                .CreateHttpConfiguration(basicContext);
+                .CreateHttpConfiguration(mobileKey, applicationInfo);
             Assert.Equal("value1", HeadersAsMap(config.DefaultHeaders)["header1"]);
             Assert.Equal("value2", HeadersAsMap(config.DefaultHeaders)["header2"]);
         }
@@ -47,8 +49,8 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         [Fact]
         public void MobileKeyHeader()
         {
-            var config = Components.HttpConfiguration().CreateHttpConfiguration(basicContext);
-            Assert.Equal(basicContext.MobileKey, HeadersAsMap(config.DefaultHeaders)["authorization"]);
+            var config = Components.HttpConfiguration().CreateHttpConfiguration(mobileKey, applicationInfo);
+            Assert.Equal(mobileKey, HeadersAsMap(config.DefaultHeaders)["authorization"]);
         }
 
         [Fact]
@@ -60,7 +62,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
             prop.AssertCanSet(value);
 
             var config = Components.HttpConfiguration().ResponseStartTimeout(value)
-                .CreateHttpConfiguration(basicContext);
+                .CreateHttpConfiguration(mobileKey, applicationInfo);
             using (var client = config.NewHttpClient())
             {
                 Assert.Equal(value, client.Timeout);
@@ -78,7 +80,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         [Fact]
         public void UserAgentHeader()
         {
-            var config = Components.HttpConfiguration().CreateHttpConfiguration(basicContext);
+            var config = Components.HttpConfiguration().CreateHttpConfiguration(mobileKey, applicationInfo);
             Assert.Equal("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)),
                 HeadersAsMap(config.DefaultHeaders)["user-agent"]); // not configurable
         }
@@ -86,7 +88,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         [Fact]
         public void WrapperDefaultNone()
         {
-            var config = Components.HttpConfiguration().CreateHttpConfiguration(basicContext);
+            var config = Components.HttpConfiguration().CreateHttpConfiguration(mobileKey, applicationInfo);
             Assert.False(HeadersAsMap(config.DefaultHeaders).ContainsKey("x-launchdarkly-wrapper"));
         }
 
@@ -94,7 +96,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public void WrapperNameOnly()
         {
             var config = Components.HttpConfiguration().Wrapper("w", null)
-                .CreateHttpConfiguration(basicContext);
+                .CreateHttpConfiguration(mobileKey, applicationInfo);
             Assert.Equal("w", HeadersAsMap(config.DefaultHeaders)["x-launchdarkly-wrapper"]);
         }
 
@@ -102,8 +104,16 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public void WrapperNameAndVersion()
         {
             var config = Components.HttpConfiguration().Wrapper("w", "1.0")
-                .CreateHttpConfiguration(basicContext);
+                .CreateHttpConfiguration(mobileKey, applicationInfo);
             Assert.Equal("w/1.0", HeadersAsMap(config.DefaultHeaders)["x-launchdarkly-wrapper"]);
+        }
+
+        [Fact]
+        public void ApplicationTagsHeader()
+        {
+            var config = Components.HttpConfiguration().CreateHttpConfiguration(mobileKey, applicationInfo);
+            Assert.Equal("application-id/mockId application-name/mockName application-version/mockVersion application-version-name/mockVersionName",
+                HeadersAsMap(config.DefaultHeaders)["x-launchdarkly-tags"]);
         }
 
         private static Dictionary<string, string> HeadersAsMap(IEnumerable<KeyValuePair<string, string>> headers)

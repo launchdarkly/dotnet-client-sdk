@@ -37,6 +37,7 @@ Thumbs.db
 # resharper
 *_Resharper.*
 *.Resharper
+.idea
 
 # dotCover
 *.dotCover

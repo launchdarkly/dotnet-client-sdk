@@ -52,7 +52,7 @@ namespace TestService
                 throw new Exception("Client initialization failed");
             }
         }
-        
+
         public void Close()
         {
             _client.Dispose();
@@ -286,6 +286,16 @@ namespace TestService
                 {
                     endpoints.Events(sdkParams.ServiceEndpoints.Events);
                 }
+            }
+
+            if (sdkParams.Tags != null)
+            {
+                var applicationInfo = Components.ApplicationInfo();
+                applicationInfo.ApplicationId(sdkParams.Tags.ApplicationId);
+                applicationInfo.ApplicationName(sdkParams.Tags.ApplicationName);
+                applicationInfo.ApplicationVersion(sdkParams.Tags.ApplicationVersion);
+                applicationInfo.ApplicationVersionName(sdkParams.Tags.ApplicationVersionName);
+                builder.ApplicationInfo(applicationInfo);
             }
 
             var streamingParams = sdkParams.Streaming;

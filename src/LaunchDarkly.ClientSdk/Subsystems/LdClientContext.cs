@@ -1,6 +1,8 @@
 ﻿using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
+using LaunchDarkly.Sdk.EnvReporting;
 using LaunchDarkly.Sdk.Internal;
 using LaunchDarkly.Sdk.Internal.Events;
 
@@ -22,17 +24,17 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         /// <summary>
         /// The configured mobile key.
         /// </summary>
-        public string MobileKey { get; }
+        public string MobileKey { get; private set; }
 
         /// <summary>
         /// The configured logger for the SDK.
         /// </summary>
-        public Logger BaseLogger { get; }
+        public Logger BaseLogger { get; private set; }
 
         /// <summary>
         /// The current evaluation context.
         /// </summary>
-        public Context CurrentContext { get; }
+        public Context CurrentContext { get; private set; }
 
         /// <summary>
         /// A component that <see cref="IDataSource"/> implementations use to deliver status updates to
@@ -42,105 +44,181 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         /// This property is only set when the SDK is calling an <see cref="IDataSource"/> factory.
         /// Otherwise it is null.
         /// </remarks>
-        public IDataSourceUpdateSink DataSourceUpdateSink { get; }
+        public IDataSourceUpdateSink DataSourceUpdateSink { get; private set; }
 
         /// <summary>
         /// Whether to enable feature flag updates when the application is running in the background.
         /// </summary>
-        public bool EnableBackgroundUpdating { get; }
+        public bool EnableBackgroundUpdating { get; private set; }
 
         /// <summary>
         /// True if evaluation reasons are enabled.
         /// </summary>
-        public bool EvaluationReasons { get; }
+        public bool EvaluationReasons { get; private set; }
 
         /// <summary>
         /// The HTTP configuration properties.
         /// </summary>
-        public HttpConfiguration Http { get; }
+        public HttpConfiguration Http { get; private set; }
 
         /// <summary>
         /// True if the application is currently in a background state.
         /// </summary>
-        public bool InBackground { get; }
+        public bool InBackground { get; private set; }
 
         /// <summary>
         /// The configured service base URIs.
         /// </summary>
-        public ServiceEndpoints ServiceEndpoints { get; }
+        public ServiceEndpoints ServiceEndpoints { get; private set; }
 
-        internal IDiagnosticDisabler DiagnosticDisabler { get; }
+        /// <summary>
+        /// The environment reporter.
+        /// </summary>
+        internal IEnvironmentReporter EnvironmentReporter { get; private set; }
 
-        internal IDiagnosticStore DiagnosticStore { get; }
+        internal IDiagnosticDisabler DiagnosticDisabler { get; private set; }
 
-        internal TaskExecutor TaskExecutor { get; }
+        internal IDiagnosticStore DiagnosticStore { get; private set; }
+
+        internal TaskExecutor TaskExecutor { get; private set; }
 
         /// <summary>
         /// Creates an instance.
         /// </summary>
         /// <param name="configuration">the SDK configuration</param>
         /// <param name="currentContext">the current evaluation context</param>
+        /// <param name="eventSender"></param>
         public LdClientContext(
             Configuration configuration,
-            Context currentContext
-            ) : this(configuration, currentContext, null) { }
-
-        internal LdClientContext(
-            string mobileKey,
-            Logger baseLogger,
             Context currentContext,
-            IDataSourceUpdateSink dataSourceUpdateSink,
-            bool enableBackgroundUpdating,
-            bool evaluationReasons,
-            HttpConfiguration http,
-            bool inBackground,
-            ServiceEndpoints serviceEndpoints,
-            IDiagnosticDisabler diagnosticDisabler,
-            IDiagnosticStore diagnosticStore,
-            TaskExecutor taskExecutor
-            )
+            object eventSender = null
+        )
         {
-            MobileKey = mobileKey;
-            BaseLogger = baseLogger;
+            var logger = MakeLogger(configuration);
+            var environmentReporter = MakeEnvironmentReporter(configuration.ApplicationInfo);
+            MobileKey = configuration.MobileKey;
+            BaseLogger = logger;
             CurrentContext = currentContext;
-            DataSourceUpdateSink = dataSourceUpdateSink;
-            EnableBackgroundUpdating = enableBackgroundUpdating;
-            EvaluationReasons = evaluationReasons;
-            Http = http;
-            InBackground = inBackground;
-            ServiceEndpoints = serviceEndpoints ?? Components.ServiceEndpoints().Build();
-            DiagnosticDisabler = diagnosticDisabler;
-            DiagnosticStore = diagnosticStore;
-            TaskExecutor = taskExecutor ?? new TaskExecutor(null,
-                PlatformSpecific.AsyncScheduler.ScheduleAction,
-                baseLogger
-                );
+            DataSourceUpdateSink = null;
+            EnableBackgroundUpdating = configuration.EnableBackgroundUpdating;
+            EvaluationReasons = configuration.EvaluationReasons;
+            Http = (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
+                .CreateHttpConfiguration(configuration.MobileKey, environmentReporter.ApplicationInfo);
+            InBackground = false;
+            ServiceEndpoints = configuration.ServiceEndpoints;
+            EnvironmentReporter = environmentReporter;
+            DiagnosticDisabler = null;
+            DiagnosticStore = null;
+            TaskExecutor = new TaskExecutor(
+                eventSender,
+                AsyncScheduler.ScheduleAction,
+                MakeLogger(configuration)
+            );
         }
 
-        internal LdClientContext(
-            Configuration configuration,
-            Context currentContext,
-            object eventSender
-            ) :
-            this(
-                configuration.MobileKey,
-                MakeLogger(configuration),
-                currentContext,
-                null,
-                configuration.EnableBackgroundUpdating,
-                configuration.EvaluationReasons,
-                (configuration.HttpConfigurationBuilder ?? Components.HttpConfiguration())
-                    .CreateHttpConfiguration(MakeMinimalContext(configuration.MobileKey)),
-                false,
-                configuration.ServiceEndpoints,
-                null,
-                null,
-                new TaskExecutor(
-                    eventSender,
-                    PlatformSpecific.AsyncScheduler.ScheduleAction,
-                    MakeLogger(configuration)
-                )
-            ) { }
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="toCopy">to use as reference for copying</param>
+        private LdClientContext(LdClientContext toCopy)
+        {
+            MobileKey = toCopy.MobileKey;
+            BaseLogger = toCopy.BaseLogger;
+            CurrentContext = toCopy.CurrentContext;
+            DataSourceUpdateSink = toCopy.DataSourceUpdateSink;
+            EnableBackgroundUpdating = toCopy.EnableBackgroundUpdating;
+            EvaluationReasons = toCopy.EvaluationReasons;
+            Http = toCopy.Http;
+            InBackground = toCopy.InBackground;
+            ServiceEndpoints = toCopy.ServiceEndpoints;
+            EnvironmentReporter = toCopy.EnvironmentReporter;
+            DiagnosticDisabler = toCopy.DiagnosticDisabler;
+            DiagnosticStore = toCopy.DiagnosticStore;
+            TaskExecutor = toCopy.TaskExecutor;
+        }
+
+        internal LdClientContext WithLogger(Logger logger) =>
+            new LdClientContext(this)
+            {
+                BaseLogger = logger,
+            };
+
+        internal LdClientContext WithContext(Context context) =>
+            new LdClientContext(this)
+            {
+                CurrentContext = context,
+            };
+
+        internal LdClientContext WithBackgroundUpdatingEnabled(bool enabled) =>
+            new LdClientContext(this)
+            {
+                EnableBackgroundUpdating = enabled,
+            };
+
+        internal LdClientContext WithEvaluationReasons(bool enabled) =>
+            new LdClientContext(this)
+            {
+                EvaluationReasons = enabled,
+            };
+
+        internal LdClientContext WithHttpConfiguration(HttpConfiguration configuration) =>
+            new LdClientContext(this)
+            {
+                Http = configuration,
+            };
+
+        internal LdClientContext WithInBackground(bool inBackground) =>
+            new LdClientContext(this)
+            {
+                InBackground = inBackground,
+            };
+
+        internal LdClientContext WithServiceEndpoints(ServiceEndpoints endpoints) =>
+            new LdClientContext(this)
+            {
+                ServiceEndpoints = endpoints,
+            };
+
+        internal LdClientContext WithEnvironmentReporter(IEnvironmentReporter reporter) =>
+            new LdClientContext(this)
+            {
+                EnvironmentReporter = reporter,
+            };
+
+        internal LdClientContext WithTaskExecutor(TaskExecutor executor) =>
+            new LdClientContext(this)
+            {
+                TaskExecutor = executor,
+            };
+
+        internal LdClientContext WithMobileKey(string mobileKey) =>
+            new LdClientContext(this)
+            {
+                MobileKey = mobileKey,
+            };
+
+        internal LdClientContext WithContextAndBackgroundState(Context newCurrentContext, bool newInBackground) =>
+            new LdClientContext(this)
+            {
+                CurrentContext = newCurrentContext,
+                InBackground = newInBackground
+            };
+
+        internal LdClientContext WithDataSourceUpdateSink(IDataSourceUpdateSink newDataSourceUpdateSink) =>
+            new LdClientContext(this)
+            {
+                DataSourceUpdateSink = newDataSourceUpdateSink
+            };
+
+        internal LdClientContext WithDiagnostics(
+            IDiagnosticDisabler newDiagnosticDisabler,
+            IDiagnosticStore newDiagnosticStore
+        ) =>
+            new LdClientContext(this)
+            {
+                DiagnosticDisabler = newDiagnosticDisabler,
+                DiagnosticStore = newDiagnosticStore
+            };
 
         internal static Logger MakeLogger(Configuration configuration)
         {
@@ -150,75 +228,17 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             return logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
         }
 
-        internal static LdClientContext MakeMinimalContext(
-            string mobileKey
-            ) =>
-            new LdClientContext(
-                mobileKey,
-                Logs.None.Logger(""),
-                new Context(),
-                null,
-                false,
-                false,
-                HttpConfiguration.Default(),
-                false,
-                null,
-                null,
-                null,
-                null
-            );
+        internal static IEnvironmentReporter MakeEnvironmentReporter(ApplicationInfoBuilder applicationInfoBuilder)
+        {
+            var builder = new EnvironmentReporterBuilder();
+            if (applicationInfoBuilder != null)
+            {
+                var applicationInfo = applicationInfoBuilder.Build();
+                builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
+            }
 
-        internal LdClientContext WithContextAndBackgroundState(
-            Context newCurrentContext,
-            bool newInBackground
-            ) =>
-            new LdClientContext(
-                MobileKey,
-                BaseLogger,
-                newCurrentContext,
-                DataSourceUpdateSink,
-                EnableBackgroundUpdating,
-                EvaluationReasons,
-                Http,
-                newInBackground,
-                ServiceEndpoints,
-                DiagnosticDisabler,
-                DiagnosticStore,
-                TaskExecutor);
-
-        internal LdClientContext WithDataSourceUpdateSink(
-            IDataSourceUpdateSink newDataSourceUpdateSink
-            ) =>
-            new LdClientContext(
-                MobileKey,
-                BaseLogger,
-                CurrentContext,
-                newDataSourceUpdateSink,
-                EnableBackgroundUpdating,
-                EvaluationReasons,
-                Http,
-                InBackground,
-                ServiceEndpoints,
-                DiagnosticDisabler,
-                DiagnosticStore,
-                TaskExecutor);
-
-        internal LdClientContext WithDiagnostics(
-            IDiagnosticDisabler newDiagnosticDisabler,
-            IDiagnosticStore newDiagnosticStore
-            ) =>
-            new LdClientContext(
-                MobileKey,
-                BaseLogger,
-                CurrentContext,
-                DataSourceUpdateSink,
-                EnableBackgroundUpdating,
-                EvaluationReasons,
-                Http,
-                InBackground,
-                ServiceEndpoints,
-                newDiagnosticDisabler,
-                newDiagnosticStore,
-                TaskExecutor);
+            builder.SetSdkLayer(SdkAttributes.Layer);
+            return builder.Build();
+        }
     }
 }

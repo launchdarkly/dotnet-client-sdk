@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.Internal.Events;
 using LaunchDarkly.Sdk.Internal.Http;
-using LaunchDarkly.Sdk.Client.Subsystems;
-
-using static LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties;
 
 namespace LaunchDarkly.Sdk.Client.Internal.Events
 {
@@ -15,7 +13,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         private readonly TimeSpan _startWaitTime;
 
         protected override string SdkKeyOrMobileKey => _context.MobileKey;
-        protected override string SdkName => "dotnet-client-sdk";
+        protected override string SdkName => SdkPackage.Name;
         protected override IEnumerable<LdValue> ConfigProperties => GetConfigProperties();
         protected override string DotNetTargetFramework => GetDotNetTargetFramework();
         protected override HttpProperties HttpProperties => _context.Http.HttpProperties;
