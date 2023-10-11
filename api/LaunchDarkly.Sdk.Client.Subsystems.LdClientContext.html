@@ -98,13 +98,13 @@ component types and are not accessible to custom components.
   <h3 id="constructors">Constructors
   </h3>
   <a id="LaunchDarkly_Sdk_Client_Subsystems_LdClientContext__ctor_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_LdClientContext__ctor_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context)">LdClientContext(Configuration, Context)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Subsystems_LdClientContext__ctor_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_Object_" data-uid="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context,System.Object)">LdClientContext(Configuration, Context, Object)</h4>
   <div class="markdown level1 summary"><p>Creates an instance.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public LdClientContext(Configuration configuration, Context currentContext)</code></pre>
+    <pre><code class="lang-csharp hljs">public LdClientContext(Configuration configuration, Context currentContext, object eventSender = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -127,6 +127,11 @@ component types and are not accessible to custom components.
         <td><span class="parametername">currentContext</span></td>
         <td><p>the current evaluation context</p>
 </td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Object</span></td>
+        <td><span class="parametername">eventSender</span></td>
+        <td></td>
       </tr>
     </tbody>
   </table>

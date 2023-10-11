@@ -236,14 +236,14 @@ the <a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.HttpConfiguration
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_ResponseStartTimeout_System_TimeSpan_">ResponseStartTimeout(TimeSpan)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_LaunchDarkly_Sdk_Client_Subsystems_LdClientContext_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)">CreateHttpConfiguration(LdClientContext)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_System_String_LaunchDarkly_Sdk_ApplicationInfo_" data-uid="LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String,LaunchDarkly.Sdk.ApplicationInfo)">CreateHttpConfiguration(String, ApplicationInfo)</h4>
   <div class="markdown level1 summary"><p>Called internally by the SDK to create an implementation instance. Applications do not need
 to call this method.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public HttpConfiguration CreateHttpConfiguration(LdClientContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">public HttpConfiguration CreateHttpConfiguration(string authKey, ApplicationInfo applicationInfo)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -256,9 +256,15 @@ to call this method.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html">LdClientContext</a></td>
-        <td><span class="parametername">context</span></td>
-        <td><p>provides SDK configuration data</p>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">authKey</span></td>
+        <td><p>Key for authenticating with LD service</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.ApplicationInfo.html">ApplicationInfo</a></td>
+        <td><span class="parametername">applicationInfo</span></td>
+        <td><p>Application Info for this application environment</p>
 </td>
       </tr>
     </tbody>

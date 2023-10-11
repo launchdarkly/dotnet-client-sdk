@@ -5,6 +5,30 @@
   "files": [
     {
       "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.ApplicationInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.ApplicationInfo.html",
+          "hash": "A2vMLWkt7908OOLGQW/V5DYvmu6bW4PV6ZD+0YkMFP0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.ApplicationInfoBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html",
+          "hash": "YF0j6AsajleZWVYxtydZrLyeZ8yR1jJv8oa/fuYKAGI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "build/api/LaunchDarkly.Sdk.AttributeRef.yml",
       "output": {
         ".html": {
@@ -33,7 +57,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.Components.html",
-          "hash": "gNYxF5R9NT00+p3ThqcbJXLH3e9xlLQ0XSxnlVXh9rc="
+          "hash": "naiUF7uouW7u3piMlXingz7jTipGKPqo5c3SojqSbwE="
         }
       },
       "is_incremental": false,
@@ -45,7 +69,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.Configuration.html",
-          "hash": "NH/UyP6iajEzW8qnLhKyxLFIZs56oXOWHnQ6Z3u2o3w="
+          "hash": "0CVQFx87wXv7cA0EO4LjvkfO6hYVw7mSvPo+liavJ/A="
         }
       },
       "is_incremental": false,
@@ -57,7 +81,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html",
-          "hash": "602URfbx7pLIxc6sQNocp3kSeAfe5X5eBtkrqXi7rpo="
+          "hash": "HSn3AxeANCrxrzIQSKjerZcpKfpAxvGkLfhs46IrWPA="
         }
       },
       "is_incremental": false,
@@ -117,7 +141,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html",
-          "hash": "0DjPjNKyo5u0+G//wXyJ2yl2af/Fwmj8ro1N9Kf8NJ4="
+          "hash": "i/Lx7IqFUQWhN7XlZ6GuI39k6CqHnCY646Ai0wGiKXI="
         }
       },
       "is_incremental": false,
@@ -549,7 +573,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html",
-          "hash": "NUD4+btzl9KkLCRB+zVgHHALD0X0XDATF/S0z9uuLbo="
+          "hash": "feLnhqDKhWM1paImurKj0COUFJ0jyHaHN75cusKcUQc="
         }
       },
       "is_incremental": false,
@@ -641,6 +665,102 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html",
+          "hash": "55cTILmB1MvWI/3tYJk7PNqKLB0FgpKBWQDN/ifR9Lc="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html",
+          "hash": "lzWyEihdcJkFtDzRXBGvn03TPdLQpf/CDowwsEHSRtI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html",
+          "hash": "pkZZkM3Ei4vSyFt7qCjb4rp3IXZqiqcO+6wKWFv/b6s="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.Layer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.Layer.html",
+          "hash": "oKjC9LbxcOYJJ4K6Mrdj2NeqGlL0bB58FPR255Ttmv8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html",
+          "hash": "6gwvw/JhHJg1IqPocvHRD7XeQl56NMxvEquGZpYzlV4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html",
+          "hash": "lrIHQ0rt6z8iMOYBHeiSa16FHsFS5v1GvQbkYhVb8uk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.LayerModels.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.LayerModels.html",
+          "hash": "ce1xJkuKAYkLRZAz00aN06KvxnAacnjGyOnRYGJQA2Q="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.EnvReporting.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.html",
+          "hash": "R4pyNSgIcpGR6sSUGBpJUqaYgCJPoF5i3qFwdLbqrn8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "build/api/LaunchDarkly.Sdk.EvaluationDetail-1.yml",
       "output": {
         ".html": {
@@ -682,6 +802,30 @@
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.EvaluationReasonKind.html",
           "hash": "koaYSHprguD/ceZewODnrQaLLVs8mXQ9xn3JNw7wHSA="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.Helpers.ValidationUtils.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.Helpers.ValidationUtils.html",
+          "hash": "o8LI/Dc2/K4Dl8wnlpAWIgwD2w/xWZ3fk+blU5WKLiQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.Helpers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.Helpers.html",
+          "hash": "DNHxb9JfxDY7IOjZPHnK/5AlNVgNLV4Ebo1GFqFnvWU="
         }
       },
       "is_incremental": false,
@@ -981,7 +1125,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.html",
-          "hash": "fzG4CpvaRQApzS3W5a8YFIF7M3Zc4g0cwi7a3OWYk3U="
+          "hash": "+Cl89uEbGE0y6rA7NYIksAjmYZFPRAVXrWBal27Hrho="
         }
       },
       "is_incremental": false,
@@ -993,7 +1137,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "9g/5q/o3J8NPxxMzK6zhml+N2pYhb/gAaDvt4Lqxgq8="
+          "hash": "mwNMIAty5/+Y6ku7uz2eH5YfOwPrO/6PUNHjkMF8ync="
         }
       },
       "is_incremental": false,
@@ -1005,7 +1149,7 @@
       "output": {
         ".html": {
           "relative_path": "index.html",
-          "hash": "xUA0eQWSBene5SEtsMrQg9b9lOb1L1fnEr5NOtNEU7U="
+          "hash": "dh9odxzu1GCcEDrU6ETGbfURFop6ltzV3Ts8jMD64jc="
         }
       },
       "is_incremental": false,
@@ -1044,7 +1188,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 83,
+          "total_file_count": 95,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

@@ -7,6 +7,150 @@ references:
   commentId: N:LaunchDarkly.Sdk
   fullName: LaunchDarkly.Sdk
   nameWithType: LaunchDarkly.Sdk
+- uid: LaunchDarkly.Sdk.ApplicationInfo
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html
+  commentId: T:LaunchDarkly.Sdk.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.ApplicationInfo
+  nameWithType: ApplicationInfo
+- uid: LaunchDarkly.Sdk.ApplicationInfo.#ctor(System.String,System.String,System.String,System.String)
+  name: ApplicationInfo(String, String, String, String)
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo__ctor_System_String_System_String_System_String_System_String_
+  commentId: M:LaunchDarkly.Sdk.ApplicationInfo.#ctor(System.String,System.String,System.String,System.String)
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationInfo(System.String, System.String, System.String, System.String)
+  nameWithType: ApplicationInfo.ApplicationInfo(String, String, String, String)
+- uid: LaunchDarkly.Sdk.ApplicationInfo.#ctor*
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo__ctor_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfo.#ctor
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationInfo
+  nameWithType: ApplicationInfo.ApplicationInfo
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationId
+  name: ApplicationId
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationId
+  commentId: P:LaunchDarkly.Sdk.ApplicationInfo.ApplicationId
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationId
+  nameWithType: ApplicationInfo.ApplicationId
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationId*
+  name: ApplicationId
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationId_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfo.ApplicationId
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationId
+  nameWithType: ApplicationInfo.ApplicationId
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationName
+  name: ApplicationName
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationName
+  commentId: P:LaunchDarkly.Sdk.ApplicationInfo.ApplicationName
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationName
+  nameWithType: ApplicationInfo.ApplicationName
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationName*
+  name: ApplicationName
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationName_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfo.ApplicationName
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationName
+  nameWithType: ApplicationInfo.ApplicationName
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersion
+  name: ApplicationVersion
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationVersion
+  commentId: P:LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersion
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersion
+  nameWithType: ApplicationInfo.ApplicationVersion
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersion*
+  name: ApplicationVersion
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationVersion_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersion
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersion
+  nameWithType: ApplicationInfo.ApplicationVersion
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersionName
+  name: ApplicationVersionName
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationVersionName
+  commentId: P:LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersionName
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersionName
+  nameWithType: ApplicationInfo.ApplicationVersionName
+- uid: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersionName*
+  name: ApplicationVersionName
+  href: api/LaunchDarkly.Sdk.ApplicationInfo.html#LaunchDarkly_Sdk_ApplicationInfo_ApplicationVersionName_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersionName
+  fullName: LaunchDarkly.Sdk.ApplicationInfo.ApplicationVersionName
+  nameWithType: ApplicationInfo.ApplicationVersionName
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder
+  name: ApplicationInfoBuilder
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html
+  commentId: T:LaunchDarkly.Sdk.ApplicationInfoBuilder
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder
+  nameWithType: ApplicationInfoBuilder
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.#ctor
+  name: ApplicationInfoBuilder()
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder__ctor
+  commentId: M:LaunchDarkly.Sdk.ApplicationInfoBuilder.#ctor
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationInfoBuilder()
+  nameWithType: ApplicationInfoBuilder.ApplicationInfoBuilder()
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.#ctor*
+  name: ApplicationInfoBuilder
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder__ctor_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfoBuilder.#ctor
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationInfoBuilder
+  nameWithType: ApplicationInfoBuilder.ApplicationInfoBuilder
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationId(System.String)
+  name: ApplicationId(String)
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationId_System_String_
+  commentId: M:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationId(System.String)
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationId(System.String)
+  nameWithType: ApplicationInfoBuilder.ApplicationId(String)
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationId*
+  name: ApplicationId
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationId_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationId
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationId
+  nameWithType: ApplicationInfoBuilder.ApplicationId
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationName(System.String)
+  name: ApplicationName(String)
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationName_System_String_
+  commentId: M:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationName(System.String)
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationName(System.String)
+  nameWithType: ApplicationInfoBuilder.ApplicationName(String)
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationName*
+  name: ApplicationName
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationName_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationName
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationName
+  nameWithType: ApplicationInfoBuilder.ApplicationName
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersion(System.String)
+  name: ApplicationVersion(String)
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationVersion_System_String_
+  commentId: M:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersion(System.String)
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersion(System.String)
+  nameWithType: ApplicationInfoBuilder.ApplicationVersion(String)
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersion*
+  name: ApplicationVersion
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationVersion_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersion
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersion
+  nameWithType: ApplicationInfoBuilder.ApplicationVersion
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersionName(System.String)
+  name: ApplicationVersionName(String)
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationVersionName_System_String_
+  commentId: M:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersionName(System.String)
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersionName(System.String)
+  nameWithType: ApplicationInfoBuilder.ApplicationVersionName(String)
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersionName*
+  name: ApplicationVersionName
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_ApplicationVersionName_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersionName
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.ApplicationVersionName
+  nameWithType: ApplicationInfoBuilder.ApplicationVersionName
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.Build
+  name: Build()
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_Build
+  commentId: M:LaunchDarkly.Sdk.ApplicationInfoBuilder.Build
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.Build()
+  nameWithType: ApplicationInfoBuilder.Build()
+- uid: LaunchDarkly.Sdk.ApplicationInfoBuilder.Build*
+  name: Build
+  href: api/LaunchDarkly.Sdk.ApplicationInfoBuilder.html#LaunchDarkly_Sdk_ApplicationInfoBuilder_Build_
+  commentId: Overload:LaunchDarkly.Sdk.ApplicationInfoBuilder.Build
+  fullName: LaunchDarkly.Sdk.ApplicationInfoBuilder.Build
+  nameWithType: ApplicationInfoBuilder.Build
 - uid: LaunchDarkly.Sdk.AttributeRef
   name: AttributeRef
   href: api/LaunchDarkly.Sdk.AttributeRef.html
@@ -187,6 +331,18 @@ references:
   commentId: T:LaunchDarkly.Sdk.Client.Components
   fullName: LaunchDarkly.Sdk.Client.Components
   nameWithType: Components
+- uid: LaunchDarkly.Sdk.Client.Components.ApplicationInfo
+  name: ApplicationInfo()
+  href: api/LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_ApplicationInfo
+  commentId: M:LaunchDarkly.Sdk.Client.Components.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.Client.Components.ApplicationInfo()
+  nameWithType: Components.ApplicationInfo()
+- uid: LaunchDarkly.Sdk.Client.Components.ApplicationInfo*
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_ApplicationInfo_
+  commentId: Overload:LaunchDarkly.Sdk.Client.Components.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.Client.Components.ApplicationInfo
+  nameWithType: Components.ApplicationInfo
 - uid: LaunchDarkly.Sdk.Client.Components.HttpConfiguration
   name: HttpConfiguration()
   href: api/LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_HttpConfiguration
@@ -319,6 +475,18 @@ references:
   commentId: T:LaunchDarkly.Sdk.Client.Configuration
   fullName: LaunchDarkly.Sdk.Client.Configuration
   nameWithType: Configuration
+- uid: LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_ApplicationInfo
+  commentId: P:LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo
+  nameWithType: Configuration.ApplicationInfo
+- uid: LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo*
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_ApplicationInfo_
+  commentId: Overload:LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo
+  nameWithType: Configuration.ApplicationInfo
 - uid: LaunchDarkly.Sdk.Client.Configuration.Builder(LaunchDarkly.Sdk.Client.Configuration)
   name: Builder(Configuration)
   href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_LaunchDarkly_Sdk_Client_Configuration_
@@ -511,6 +679,18 @@ references:
   commentId: T:LaunchDarkly.Sdk.Client.ConfigurationBuilder
   fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder
   nameWithType: ConfigurationBuilder
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo(LaunchDarkly.Sdk.ApplicationInfoBuilder)
+  name: ApplicationInfo(ApplicationInfoBuilder)
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_ApplicationInfo_LaunchDarkly_Sdk_ApplicationInfoBuilder_
+  commentId: M:LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo(LaunchDarkly.Sdk.ApplicationInfoBuilder)
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo(LaunchDarkly.Sdk.ApplicationInfoBuilder)
+  nameWithType: ConfigurationBuilder.ApplicationInfo(ApplicationInfoBuilder)
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo*
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_ApplicationInfo_
+  commentId: Overload:LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo
+  nameWithType: ConfigurationBuilder.ApplicationInfo
 - uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.Build
   name: Build()
   href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Build
@@ -958,12 +1138,12 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.ConnectTimeout
   fullName: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.ConnectTimeout
   nameWithType: HttpConfigurationBuilder.ConnectTimeout
-- uid: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)
-  name: CreateHttpConfiguration(LdClientContext)
-  href: api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_LaunchDarkly_Sdk_Client_Subsystems_LdClientContext_
-  commentId: M:LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)
-  fullName: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(LaunchDarkly.Sdk.Client.Subsystems.LdClientContext)
-  nameWithType: HttpConfigurationBuilder.CreateHttpConfiguration(LdClientContext)
+- uid: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String,LaunchDarkly.Sdk.ApplicationInfo)
+  name: CreateHttpConfiguration(String, ApplicationInfo)
+  href: api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_System_String_LaunchDarkly_Sdk_ApplicationInfo_
+  commentId: M:LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String,LaunchDarkly.Sdk.ApplicationInfo)
+  fullName: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String, LaunchDarkly.Sdk.ApplicationInfo)
+  nameWithType: HttpConfigurationBuilder.CreateHttpConfiguration(String, ApplicationInfo)
 - uid: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration*
   name: CreateHttpConfiguration
   href: api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_
@@ -3563,12 +3743,12 @@ references:
   commentId: T:LaunchDarkly.Sdk.Client.Subsystems.LdClientContext
   fullName: LaunchDarkly.Sdk.Client.Subsystems.LdClientContext
   nameWithType: LdClientContext
-- uid: LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context)
-  name: LdClientContext(Configuration, Context)
-  href: api/LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html#LaunchDarkly_Sdk_Client_Subsystems_LdClientContext__ctor_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_
-  commentId: M:LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context)
-  fullName: LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.LdClientContext(LaunchDarkly.Sdk.Client.Configuration, LaunchDarkly.Sdk.Context)
-  nameWithType: LdClientContext.LdClientContext(Configuration, Context)
+- uid: LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context,System.Object)
+  name: LdClientContext(Configuration, Context, Object)
+  href: api/LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html#LaunchDarkly_Sdk_Client_Subsystems_LdClientContext__ctor_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_Object_
+  commentId: M:LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context,System.Object)
+  fullName: LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.LdClientContext(LaunchDarkly.Sdk.Client.Configuration, LaunchDarkly.Sdk.Context, System.Object)
+  nameWithType: LdClientContext.LdClientContext(Configuration, Context, Object)
 - uid: LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.#ctor*
   name: LdClientContext
   href: api/LaunchDarkly.Sdk.Client.Subsystems.LdClientContext.html#LaunchDarkly_Sdk_Client_Subsystems_LdClientContext__ctor_
@@ -4376,6 +4556,321 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.ContextMultiBuilder.Build
   fullName: LaunchDarkly.Sdk.ContextMultiBuilder.Build
   nameWithType: ContextMultiBuilder.Build
+- uid: LaunchDarkly.Sdk.EnvReporting
+  name: LaunchDarkly.Sdk.EnvReporting
+  href: api/LaunchDarkly.Sdk.EnvReporting.html
+  commentId: N:LaunchDarkly.Sdk.EnvReporting
+  fullName: LaunchDarkly.Sdk.EnvReporting
+  nameWithType: LaunchDarkly.Sdk.EnvReporting
+- uid: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder
+  name: ConfigLayerBuilder
+  href: api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html
+  commentId: T:LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder
+  fullName: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder
+  nameWithType: ConfigLayerBuilder
+- uid: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.#ctor
+  name: ConfigLayerBuilder()
+  href: api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html#LaunchDarkly_Sdk_EnvReporting_ConfigLayerBuilder__ctor
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.#ctor
+  fullName: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.ConfigLayerBuilder()
+  nameWithType: ConfigLayerBuilder.ConfigLayerBuilder()
+- uid: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.#ctor*
+  name: ConfigLayerBuilder
+  href: api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html#LaunchDarkly_Sdk_EnvReporting_ConfigLayerBuilder__ctor_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.#ctor
+  fullName: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.ConfigLayerBuilder
+  nameWithType: ConfigLayerBuilder.ConfigLayerBuilder
+- uid: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.Build
+  name: Build()
+  href: api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html#LaunchDarkly_Sdk_EnvReporting_ConfigLayerBuilder_Build
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.Build
+  fullName: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.Build()
+  nameWithType: ConfigLayerBuilder.Build()
+- uid: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.Build*
+  name: Build
+  href: api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html#LaunchDarkly_Sdk_EnvReporting_ConfigLayerBuilder_Build_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.Build
+  fullName: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.Build
+  nameWithType: ConfigLayerBuilder.Build
+- uid: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.SetAppInfo(LaunchDarkly.Sdk.ApplicationInfo)
+  name: SetAppInfo(ApplicationInfo)
+  href: api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html#LaunchDarkly_Sdk_EnvReporting_ConfigLayerBuilder_SetAppInfo_LaunchDarkly_Sdk_ApplicationInfo_
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.SetAppInfo(LaunchDarkly.Sdk.ApplicationInfo)
+  fullName: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.SetAppInfo(LaunchDarkly.Sdk.ApplicationInfo)
+  nameWithType: ConfigLayerBuilder.SetAppInfo(ApplicationInfo)
+- uid: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.SetAppInfo*
+  name: SetAppInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.html#LaunchDarkly_Sdk_EnvReporting_ConfigLayerBuilder_SetAppInfo_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.SetAppInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.ConfigLayerBuilder.SetAppInfo
+  nameWithType: ConfigLayerBuilder.SetAppInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder
+  name: EnvironmentReporterBuilder
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html
+  commentId: T:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder
+  nameWithType: EnvironmentReporterBuilder
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.#ctor
+  name: EnvironmentReporterBuilder()
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder__ctor
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.#ctor
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.EnvironmentReporterBuilder()
+  nameWithType: EnvironmentReporterBuilder.EnvironmentReporterBuilder()
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.#ctor*
+  name: EnvironmentReporterBuilder
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder__ctor_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.#ctor
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.EnvironmentReporterBuilder
+  nameWithType: EnvironmentReporterBuilder.EnvironmentReporterBuilder
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.Build
+  name: Build()
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_Build
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.Build
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.Build()
+  nameWithType: EnvironmentReporterBuilder.Build()
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.Build*
+  name: Build
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_Build_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.Build
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.Build
+  nameWithType: EnvironmentReporterBuilder.Build
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetConfigLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  name: SetConfigLayer(Layer)
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_SetConfigLayer_LaunchDarkly_Sdk_EnvReporting_Layer_
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetConfigLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetConfigLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  nameWithType: EnvironmentReporterBuilder.SetConfigLayer(Layer)
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetConfigLayer*
+  name: SetConfigLayer
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_SetConfigLayer_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetConfigLayer
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetConfigLayer
+  nameWithType: EnvironmentReporterBuilder.SetConfigLayer
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetPlatformLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  name: SetPlatformLayer(Layer)
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_SetPlatformLayer_LaunchDarkly_Sdk_EnvReporting_Layer_
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetPlatformLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetPlatformLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  nameWithType: EnvironmentReporterBuilder.SetPlatformLayer(Layer)
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetPlatformLayer*
+  name: SetPlatformLayer
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_SetPlatformLayer_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetPlatformLayer
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetPlatformLayer
+  nameWithType: EnvironmentReporterBuilder.SetPlatformLayer
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetSdkLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  name: SetSdkLayer(Layer)
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_SetSdkLayer_LaunchDarkly_Sdk_EnvReporting_Layer_
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetSdkLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetSdkLayer(LaunchDarkly.Sdk.EnvReporting.Layer)
+  nameWithType: EnvironmentReporterBuilder.SetSdkLayer(Layer)
+- uid: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetSdkLayer*
+  name: SetSdkLayer
+  href: api/LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.html#LaunchDarkly_Sdk_EnvReporting_EnvironmentReporterBuilder_SetSdkLayer_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetSdkLayer
+  fullName: LaunchDarkly.Sdk.EnvReporting.EnvironmentReporterBuilder.SetSdkLayer
+  nameWithType: EnvironmentReporterBuilder.SetSdkLayer
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter
+  name: IEnvironmentReporter
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html
+  commentId: T:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter
+  nameWithType: IEnvironmentReporter
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.ApplicationInfo
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_ApplicationInfo
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.ApplicationInfo
+  nameWithType: IEnvironmentReporter.ApplicationInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.ApplicationInfo*
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_ApplicationInfo_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.ApplicationInfo
+  nameWithType: IEnvironmentReporter.ApplicationInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo
+  name: DeviceInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_DeviceInfo
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo
+  nameWithType: IEnvironmentReporter.DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo*
+  name: DeviceInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_DeviceInfo_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo
+  nameWithType: IEnvironmentReporter.DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.OsInfo
+  name: OsInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_OsInfo
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.OsInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.OsInfo
+  nameWithType: IEnvironmentReporter.OsInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.OsInfo*
+  name: OsInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_OsInfo_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.OsInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.OsInfo
+  nameWithType: IEnvironmentReporter.OsInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer
+  name: Layer
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html
+  commentId: T:LaunchDarkly.Sdk.EnvReporting.Layer
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer
+  nameWithType: Layer
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo})
+  name: Layer(Nullable<ApplicationInfo>, Nullable<OsInfo>, Nullable<DeviceInfo>)
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer__ctor_System_Nullable_LaunchDarkly_Sdk_ApplicationInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo__
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo})
+  name.vb: Layer(Nullable(Of ApplicationInfo), Nullable(Of OsInfo), Nullable(Of DeviceInfo))
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.Layer(System.Nullable<LaunchDarkly.Sdk.ApplicationInfo>, System.Nullable<LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo>, System.Nullable<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo>)
+  fullName.vb: LaunchDarkly.Sdk.EnvReporting.Layer.Layer(System.Nullable(Of LaunchDarkly.Sdk.ApplicationInfo), System.Nullable(Of LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo), System.Nullable(Of LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo))
+  nameWithType: Layer.Layer(Nullable<ApplicationInfo>, Nullable<OsInfo>, Nullable<DeviceInfo>)
+  nameWithType.vb: Layer.Layer(Nullable(Of ApplicationInfo), Nullable(Of OsInfo), Nullable(Of DeviceInfo))
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.#ctor*
+  name: Layer
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer__ctor_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.Layer.#ctor
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.Layer
+  nameWithType: Layer.Layer
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.ApplicationInfo
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_ApplicationInfo
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.Layer.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.ApplicationInfo
+  nameWithType: Layer.ApplicationInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.ApplicationInfo*
+  name: ApplicationInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_ApplicationInfo_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.Layer.ApplicationInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.ApplicationInfo
+  nameWithType: Layer.ApplicationInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo
+  name: DeviceInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_DeviceInfo
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo
+  nameWithType: Layer.DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo*
+  name: DeviceInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_DeviceInfo_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo
+  nameWithType: Layer.DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.OsInfo
+  name: OsInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_OsInfo
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.Layer.OsInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.OsInfo
+  nameWithType: Layer.OsInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.OsInfo*
+  name: OsInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_OsInfo_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.Layer.OsInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.OsInfo
+  nameWithType: Layer.OsInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels
+  name: LaunchDarkly.Sdk.EnvReporting.LayerModels
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.html
+  commentId: N:LaunchDarkly.Sdk.EnvReporting.LayerModels
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels
+  nameWithType: LaunchDarkly.Sdk.EnvReporting.LayerModels
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo
+  name: DeviceInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html
+  commentId: T:LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo
+  nameWithType: DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.#ctor(System.String,System.String)
+  name: DeviceInfo(String, String)
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo__ctor_System_String_System_String_
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.#ctor(System.String,System.String)
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.DeviceInfo(System.String, System.String)
+  nameWithType: DeviceInfo.DeviceInfo(String, String)
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.#ctor*
+  name: DeviceInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo__ctor_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.#ctor
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.DeviceInfo
+  nameWithType: DeviceInfo.DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Manufacturer
+  name: Manufacturer
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo_Manufacturer
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Manufacturer
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Manufacturer
+  nameWithType: DeviceInfo.Manufacturer
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Manufacturer*
+  name: Manufacturer
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo_Manufacturer_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Manufacturer
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Manufacturer
+  nameWithType: DeviceInfo.Manufacturer
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Model
+  name: Model
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo_Model
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Model
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Model
+  nameWithType: DeviceInfo.Model
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Model*
+  name: Model
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo_Model_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Model
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.Model
+  nameWithType: DeviceInfo.Model
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo
+  name: OsInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html
+  commentId: T:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo
+  nameWithType: OsInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.#ctor(System.String,System.String,System.String)
+  name: OsInfo(String, String, String)
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo__ctor_System_String_System_String_System_String_
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.#ctor(System.String,System.String,System.String)
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.OsInfo(System.String, System.String, System.String)
+  nameWithType: OsInfo.OsInfo(String, String, String)
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.#ctor*
+  name: OsInfo
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo__ctor_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.#ctor
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.OsInfo
+  nameWithType: OsInfo.OsInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Family
+  name: Family
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo_Family
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Family
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Family
+  nameWithType: OsInfo.Family
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Family*
+  name: Family
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo_Family_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Family
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Family
+  nameWithType: OsInfo.Family
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Name
+  name: Name
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo_Name
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Name
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Name
+  nameWithType: OsInfo.Name
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Name*
+  name: Name
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo_Name_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Name
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Name
+  nameWithType: OsInfo.Name
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Version
+  name: Version
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo_Version
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Version
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Version
+  nameWithType: OsInfo.Version
+- uid: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Version*
+  name: Version
+  href: api/LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.html#LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo_Version_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Version
+  fullName: LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo.Version
+  nameWithType: OsInfo.Version
 - uid: LaunchDarkly.Sdk.EvaluationDetail`1
   name: EvaluationDetail<T>
   href: api/LaunchDarkly.Sdk.EvaluationDetail-1.html
@@ -4819,6 +5314,42 @@ references:
   commentId: F:LaunchDarkly.Sdk.EvaluationReasonKind.value__
   fullName: LaunchDarkly.Sdk.EvaluationReasonKind.value__
   nameWithType: EvaluationReasonKind.value__
+- uid: LaunchDarkly.Sdk.Helpers
+  name: LaunchDarkly.Sdk.Helpers
+  href: api/LaunchDarkly.Sdk.Helpers.html
+  commentId: N:LaunchDarkly.Sdk.Helpers
+  fullName: LaunchDarkly.Sdk.Helpers
+  nameWithType: LaunchDarkly.Sdk.Helpers
+- uid: LaunchDarkly.Sdk.Helpers.ValidationUtils
+  name: ValidationUtils
+  href: api/LaunchDarkly.Sdk.Helpers.ValidationUtils.html
+  commentId: T:LaunchDarkly.Sdk.Helpers.ValidationUtils
+  fullName: LaunchDarkly.Sdk.Helpers.ValidationUtils
+  nameWithType: ValidationUtils
+- uid: LaunchDarkly.Sdk.Helpers.ValidationUtils.SanitizeSpaces(System.String)
+  name: SanitizeSpaces(String)
+  href: api/LaunchDarkly.Sdk.Helpers.ValidationUtils.html#LaunchDarkly_Sdk_Helpers_ValidationUtils_SanitizeSpaces_System_String_
+  commentId: M:LaunchDarkly.Sdk.Helpers.ValidationUtils.SanitizeSpaces(System.String)
+  fullName: LaunchDarkly.Sdk.Helpers.ValidationUtils.SanitizeSpaces(System.String)
+  nameWithType: ValidationUtils.SanitizeSpaces(String)
+- uid: LaunchDarkly.Sdk.Helpers.ValidationUtils.SanitizeSpaces*
+  name: SanitizeSpaces
+  href: api/LaunchDarkly.Sdk.Helpers.ValidationUtils.html#LaunchDarkly_Sdk_Helpers_ValidationUtils_SanitizeSpaces_
+  commentId: Overload:LaunchDarkly.Sdk.Helpers.ValidationUtils.SanitizeSpaces
+  fullName: LaunchDarkly.Sdk.Helpers.ValidationUtils.SanitizeSpaces
+  nameWithType: ValidationUtils.SanitizeSpaces
+- uid: LaunchDarkly.Sdk.Helpers.ValidationUtils.ValidateStringValue(System.String)
+  name: ValidateStringValue(String)
+  href: api/LaunchDarkly.Sdk.Helpers.ValidationUtils.html#LaunchDarkly_Sdk_Helpers_ValidationUtils_ValidateStringValue_System_String_
+  commentId: M:LaunchDarkly.Sdk.Helpers.ValidationUtils.ValidateStringValue(System.String)
+  fullName: LaunchDarkly.Sdk.Helpers.ValidationUtils.ValidateStringValue(System.String)
+  nameWithType: ValidationUtils.ValidateStringValue(String)
+- uid: LaunchDarkly.Sdk.Helpers.ValidationUtils.ValidateStringValue*
+  name: ValidateStringValue
+  href: api/LaunchDarkly.Sdk.Helpers.ValidationUtils.html#LaunchDarkly_Sdk_Helpers_ValidationUtils_ValidateStringValue_
+  commentId: Overload:LaunchDarkly.Sdk.Helpers.ValidationUtils.ValidateStringValue
+  fullName: LaunchDarkly.Sdk.Helpers.ValidationUtils.ValidateStringValue
+  nameWithType: ValidationUtils.ValidateStringValue
 - uid: LaunchDarkly.Sdk.IUserBuilder
   name: IUserBuilder
   href: api/LaunchDarkly.Sdk.IUserBuilder.html

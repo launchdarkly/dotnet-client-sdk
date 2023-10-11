@@ -101,6 +101,51 @@ chained together.
 
   <h3 id="methods">Methods
   </h3>
+  <a id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_ApplicationInfo_" data-uid="LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_ApplicationInfo_LaunchDarkly_Sdk_ApplicationInfoBuilder_" data-uid="LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo(LaunchDarkly.Sdk.ApplicationInfoBuilder)">ApplicationInfo(ApplicationInfoBuilder)</h4>
+  <div class="markdown level1 summary"><p>Sets the SDK&apos;s application metadata, which may be used in the LaunchDarkly analytics or other product
+features.  This object is normally a configuration builder obtained from <a class="xref" href="LaunchDarkly.Sdk.Client.Components.html#LaunchDarkly_Sdk_Client_Components_ApplicationInfo">ApplicationInfo()</a>,
+which has methods for setting individual metadata properties.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ConfigurationBuilder ApplicationInfo(ApplicationInfoBuilder applicationInfo)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.ApplicationInfoBuilder.html">ApplicationInfoBuilder</a></td>
+        <td><span class="parametername">applicationInfo</span></td>
+        <td><p>builder for <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_ApplicationInfo_LaunchDarkly_Sdk_ApplicationInfoBuilder_">ApplicationInfo(ApplicationInfoBuilder)</a></p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html">ConfigurationBuilder</a></td>
+        <td><p>the same builder</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
   <a id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_Build_" data-uid="LaunchDarkly.Sdk.Client.ConfigurationBuilder.Build*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_Build" data-uid="LaunchDarkly.Sdk.Client.ConfigurationBuilder.Build">Build()</h4>
   <div class="markdown level1 summary"><p>Creates a <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html">Configuration</a> based on the properties that have been set on the builder.
