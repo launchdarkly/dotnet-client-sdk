@@ -24,7 +24,8 @@ namespace LaunchDarkly.Sdk.Client
         public ApplicationInfoBuilder ApplicationInfo { get; }
 
         /// <summary>
-        /// TODO
+        /// True if Auto Environment Attributes functionality is enabled.  When enabled, the SDK will automatically
+        /// provide data about the environment where the application is running.
         /// </summary>
         public bool AutoEnvAttributes { get; }
 
@@ -134,7 +135,13 @@ namespace LaunchDarkly.Sdk.Client
         /// Creates a configuration with all parameters set to the default.
         /// </summary>
         /// <param name="mobileKey">the SDK key for your LaunchDarkly environment</param>
-        /// <param name="autoEnvAttributes">TODOo</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <returns>a <see cref="Configuration"/> instance</returns>
         public static Configuration Default(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)
         {
@@ -159,7 +166,13 @@ namespace LaunchDarkly.Sdk.Client
         /// </code>
         /// </example>
         /// <param name="mobileKey">the mobile SDK key for your LaunchDarkly environment</param>
-        /// <param name="autoEnvAttributes">TODOo</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <returns>a builder object</returns>
         public static ConfigurationBuilder Builder(string mobileKey,
             ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)

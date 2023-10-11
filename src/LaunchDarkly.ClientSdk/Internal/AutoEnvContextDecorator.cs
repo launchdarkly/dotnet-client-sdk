@@ -7,7 +7,8 @@ using LaunchDarkly.Sdk.Client.Internal.DataStores;
 namespace LaunchDarkly.Sdk.Client.Internal
 {
     /// <summary>
-    /// TODO
+    /// This class can decorate a context by adding additional contexts to it using auto environment attributes
+    /// gotten via the provided <see cref="IEnvironmentReporter"/>.
     /// </summary>
     internal class AutoEnvContextDecorator
     {
@@ -30,11 +31,13 @@ namespace LaunchDarkly.Sdk.Client.Internal
         private readonly Logger _logger;
 
         /// <summary>
-        /// TODO
+        /// Creates a <see cref="AutoEnvContextDecorator"/>.
         /// </summary>
-        /// <param name="persistentData"></param>
-        /// <param name="environmentReporter"></param>
-        /// <param name="logger"></param>
+        /// <param name="persistentData">the data source that will be used for retrieving/saving information related
+        /// to the generated contexts.  Example data includes the stable key of the ld_device context kind.</param>
+        /// <param name="environmentReporter">the environment reporter that will be used to source the
+        /// environment attributes</param>
+        /// <param name="logger">the humble logger</param>
         public AutoEnvContextDecorator(
             PersistentDataStoreWrapper persistentData,
             IEnvironmentReporter environmentReporter,
@@ -45,6 +48,11 @@ namespace LaunchDarkly.Sdk.Client.Internal
             _logger = logger;
         }
 
+        /// <summary>
+        /// Decorates the provided context with additional contexts containing environment attributes.
+        /// </summary>
+        /// <param name="context">the context to be decorated</param>
+        /// <returns>the decorated context</returns>
         public Context DecorateContext(Context context)
         {
             var builder = Context.MultiBuilder();
@@ -139,7 +147,6 @@ namespace LaunchDarkly.Sdk.Client.Internal
             };
         }
 
-        // TODO: commonize this with duplicate implementation in AnonymousKeyContextDecorator
         private string GetOrCreateAutoContextKey(PersistentDataStoreWrapper store, ContextKind contextKind)
         {
             var uniqueId = store.GetGeneratedContextKey(contextKind);
