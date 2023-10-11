@@ -69,16 +69,7 @@
 
   <!-- dependencies and source files for iOS (all versions) -->
   <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
-    <Compile Include="PlatformSpecific/AppInfo.ios.cs" />
-    <Compile Include="PlatformSpecific/DeviceInfo.ios.cs" />
-    <Compile Include="PlatformSpecific/Platform.ios.cs" />
-    <Compile Include="PlatformSpecific/AsyncScheduler.ios.cs" />
-    <Compile Include="PlatformSpecific/BackgroundDetection.ios.cs" />
-    <Compile Include="PlatformSpecific/Connectivity.ios.cs" />
-    <Compile Include="PlatformSpecific/Http.ios.cs" />
-    <Compile Include="PlatformSpecific/LocalStorage.ios.cs" />
-    <Compile Include="PlatformSpecific/Logging.ios.cs" />
-    <Compile Include="PlatformSpecific/UserMetadata.ios.cs" />
+    <Compile Include="**\*.ios.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
