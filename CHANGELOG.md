@@ -3,6 +3,10 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [3.1.0] - 2023-10-11
+### Added:
+- `Configuration.Builder("myKey").ApplicationInfo()`, for configuration of application metadata that may be used in LaunchDarkly analytics or other product features.
+
 ## [3.0.2] - 2023-04-04
 When using multi-contexts, then this update can change the `FullyQualifiedKey` for a given context. This can cause a cache miss in the local cache for a given context, requiring a connection to LaunchDarkly to populate that cache for the new `FullyQualifiedKey`.
 
