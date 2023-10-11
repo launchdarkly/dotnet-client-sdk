@@ -129,7 +129,7 @@ namespace LaunchDarkly.Sdk.Client
                     client.Context);
             }
         }
-        
+
         [Fact]
         public async void InitWithAnonUserPassesGeneratedUserToDataSource()
         {
@@ -137,6 +137,47 @@ namespace LaunchDarkly.Sdk.Client
 
             var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
             var config = BasicConfig()
+                .DataSource(dataSourceConfig)
+                .GenerateAnonymousKeys(true)
+                .Build();
+
+            using (var client = await LdClient.InitAsync(config, AnonUser))
+            {
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.NotEqual(AnonUser, receivedContext);
+                Assert.Equal(client.Context, receivedContext);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(receivedContext.Key).Build(),
+                    receivedContext);
+            }
+        }
+
+        [Fact]
+        public async void InitWithAutoEnvAttributesEnabledAddsContexts()
+        {
+            MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
+            var config = BasicConfig()
+                .AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes.Enabled)
+                .DataSource(dataSourceConfig)
+                .GenerateAnonymousKeys(true)
+                .Build();
+
+            using (var client = await LdClient.InitAsync(config, AnonUser))
+            {
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_application"), out _));
+                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
+            }
+        }
+
+        [Fact]
+        public async void InitWithAutoEnvAttributesDisabledNoAddedContexts()
+        {
+            MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
+            var config = BasicConfig()
+                .AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes.Disabled)
                 .DataSource(dataSourceConfig)
                 .GenerateAnonymousKeys(true)
                 .Build();

@@ -96,7 +96,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         )
         {
             var logger = MakeLogger(configuration);
-            var environmentReporter = MakeEnvironmentReporter(configuration.ApplicationInfo);
+            var environmentReporter = MakeEnvironmentReporter(configuration);
 
             MobileKey = configuration.MobileKey;
             BaseLogger = logger;
@@ -230,23 +230,26 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             return logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
         }
 
-        internal static IEnvironmentReporter MakeEnvironmentReporter(ApplicationInfoBuilder applicationInfoBuilder)
+        internal static IEnvironmentReporter MakeEnvironmentReporter(Configuration configuration)
         {
+            var applicationInfoBuilder = configuration.ApplicationInfo;
+
             var builder = new EnvironmentReporterBuilder();
             if (applicationInfoBuilder != null)
             {
                 var applicationInfo = applicationInfoBuilder.Build();
-                
+
                 // If AppInfo is provided by the user, then the Config layer has first priority in the environment reporter.
                 builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
 
-            // TODO: this platform layer being set needs to depend on the configuration so that when the
-            // customer opts out of auto env attributes, we do not report it through the env reporter
+            // Enable the platform layer if auto env attributes is opted in.
+            if (configuration.AutoEnvAttributes)
+            {
+                // The platform layer has second priority if properties aren't set by the Config layer.
+                builder.SetPlatformLayer(PlatformAttributes.Layer);
+            }
 
-            // The platform layer has second priority if properties aren't set by the Config layer.
-            builder.SetPlatformLayer(PlatformAttributes.Layer);
-            
             // The SDK layer has third priority if properties aren't set by the Platform layer.
             builder.SetSdkLayer(SdkAttributes.Layer);
 

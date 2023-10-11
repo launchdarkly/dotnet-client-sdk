@@ -121,6 +121,17 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="autoEnvAttributes"></param>
+        /// <returns></returns>
+        public ConfigurationBuilder AutoEnvironmentAttributes(AutoEnvAttributes autoEnvAttributes)
+        {
+            _autoEnvAttributes = autoEnvAttributes == AutoEnvAttributes.Enabled; // map enum to boolean
+            return this;
+        }
+
+        /// <summary>
         /// Sets the implementation of the component that receives feature flag data from LaunchDarkly,
         /// using a factory object.
         /// </summary>
