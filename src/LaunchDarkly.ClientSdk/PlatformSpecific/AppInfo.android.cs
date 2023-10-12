@@ -57,8 +57,6 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 
         // End LaunchDarkly additions.
 
-        static string PlatformGetPackageName() => Platform.AppContext.PackageName;
-
         static string PlatformGetName()
         {
             var applicationInfo = Platform.AppContext.ApplicationInfo;
@@ -95,31 +93,5 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 #endif
             }
         }
-
-        // static void PlatformShowSettingsUI()
-        // {
-        //     var context = Platform.GetCurrentActivity(false) ?? Platform.AppContext;
-        //
-        //     var settingsIntent = new Intent();
-        //     settingsIntent.SetAction(global::Android.Provider.Settings.ActionApplicationDetailsSettings);
-        //     settingsIntent.AddCategory(Intent.CategoryDefault);
-        //     settingsIntent.SetData(global::Android.Net.Uri.Parse("package:" + PlatformGetPackageName()));
-        //
-        //     var flags = ActivityFlags.NewTask | ActivityFlags.NoHistory | ActivityFlags.ExcludeFromRecents;
-        //
-        //     settingsIntent.SetFlags(flags);
-        //
-        //     context.StartActivity(settingsIntent);
-        // }
-
-        // static AppTheme PlatformRequestedTheme()
-        // {
-        //     return (Platform.AppContext.Resources.Configuration.UiMode & UiMode.NightMask) switch
-        //     {
-        //         UiMode.NightYes => AppTheme.Dark,
-        //         UiMode.NightNo => AppTheme.Light,
-        //         _ => AppTheme.Unspecified
-        //     };
-        // }
     }
 }

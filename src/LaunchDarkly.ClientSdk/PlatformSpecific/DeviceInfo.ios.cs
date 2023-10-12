@@ -1,6 +1,3 @@
-using System;
-using System.Diagnostics;
-using LaunchDarkly.Sdk.EnvReporting;
 using LaunchDarkly.Sdk.EnvReporting.LayerModels;
 #if __WATCHOS__
 using WatchKit;
@@ -9,26 +6,17 @@ using UIDevice = WatchKit.WKInterfaceDevice;
 using UIKit;
 #endif
 
-using ObjCRuntime;
-
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 {
     internal static partial class DeviceInfo
     {
 
         private static OsInfo? PlatformGetOsInfo() =>
-            new OsInfo(GetManufacturer(), GetPlatform().ToString(), GetVersionString());
+            new OsInfo("Apple", GetPlatform().ToString(), UIDevice.CurrentDevice.SystemVersion);
 
         private static LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo? PlatformGetDeviceInfo() =>
             new EnvReporting.LayerModels.DeviceInfo(
-                GetManufacturer(), GetModel());
-
-        static string GetModel() => UIDevice.CurrentDevice.Model;
-
-        static string GetManufacturer() => "Apple";
-        
-        static string GetVersionString() => UIDevice.CurrentDevice.SystemVersion;
-
+                "Apple", UIDevice.CurrentDevice.Model);
         static DevicePlatform GetPlatform() =>
 #if __IOS__
             DevicePlatform.iOS;
