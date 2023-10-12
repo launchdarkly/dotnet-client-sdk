@@ -12,19 +12,19 @@ namespace LaunchDarkly.Sdk.Client.Internal
     /// </summary>
     internal class AutoEnvContextDecorator
     {
-        internal const string LD_APPLICATION_KIND = "ld_application";
-        internal const string LD_DEVICE_KIND = "ld_device";
-        internal const string ATTR_ID = "id";
-        internal const string ATTR_NAME = "name";
-        internal const string ATTR_VERSION = "version";
-        internal const string ATTR_VERSION_NAME = "versionName";
-        internal const string ATTR_MANUFACTURER = "manufacturer";
-        internal const string ATTR_MODEL = "model";
-        internal const string ATTR_LOCALE = "locale";
-        internal const string ATTR_OS = "os";
-        internal const string ATTR_FAMILY = "family";
-        internal const string ENV_ATTRIBUTES_VERSION = "envAttributesVersion";
-        internal const string SPEC_VERSION = "1.0";
+        internal const string LdApplicationKind = "ld_application";
+        internal const string LdDeviceKind = "ld_device";
+        internal const string AttrId = "id";
+        internal const string AttrName = "name";
+        internal const string AttrVersion = "version";
+        internal const string AttrVersionName = "versionName";
+        internal const string AttrManufacturer = "manufacturer";
+        internal const string AttrModel = "model";
+        internal const string AttrLocale = "locale";
+        internal const string AttrOs = "os";
+        internal const string AttrFamily = "family";
+        internal const string EnvAttributesVersion = "envAttributesVersion";
+        internal const string SpecVersion = "1.0";
 
         private readonly PersistentDataStoreWrapper _persistentData;
         private readonly IEnvironmentReporter _environmentReporter;
@@ -103,29 +103,29 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         private List<ContextRecipe> MakeRecipeList()
         {
-            var ldApplicationKind = ContextKind.Of(LD_APPLICATION_KIND);
+            var ldApplicationKind = ContextKind.Of(LdApplicationKind);
             var applicationCallables = new Dictionary<string, Func<LdValue>>
             {
-                { ENV_ATTRIBUTES_VERSION, () => LdValue.Of(SPEC_VERSION) },
-                { ATTR_ID, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationId) },
-                { ATTR_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationName) },
-                { ATTR_VERSION, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersion) },
-                { ATTR_VERSION_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersionName) },
-                { ATTR_LOCALE, () => LdValue.Of(_environmentReporter.Locale) }
+                { EnvAttributesVersion, () => LdValue.Of(SpecVersion) },
+                { AttrId, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationId) },
+                { AttrName, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationName) },
+                { AttrVersion, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersion) },
+                { AttrVersionName, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersionName) },
+                { AttrLocale, () => LdValue.Of(_environmentReporter.Locale) }
             };
 
-            var ldDeviceKind = ContextKind.Of(LD_DEVICE_KIND);
+            var ldDeviceKind = ContextKind.Of(LdDeviceKind);
             var deviceCallables = new Dictionary<string, Func<LdValue>>
             {
-                { ENV_ATTRIBUTES_VERSION, () => LdValue.Of(SPEC_VERSION) },
-                { ATTR_MANUFACTURER, () => LdValue.Of(_environmentReporter.DeviceInfo.Manufacturer) },
-                { ATTR_MODEL, () => LdValue.Of(_environmentReporter.DeviceInfo.Model) },
+                { EnvAttributesVersion, () => LdValue.Of(SpecVersion) },
+                { AttrManufacturer, () => LdValue.Of(_environmentReporter.DeviceInfo.Manufacturer) },
+                { AttrModel, () => LdValue.Of(_environmentReporter.DeviceInfo.Model) },
                 {
-                    ATTR_OS, () =>
+                    AttrOs, () =>
                         LdValue.BuildObject()
-                            .Add(ATTR_FAMILY, _environmentReporter.OsInfo.Family)
-                            .Add(ATTR_NAME, _environmentReporter.OsInfo.Name)
-                            .Add(ATTR_VERSION, _environmentReporter.OsInfo.Version)
+                            .Add(AttrFamily, _environmentReporter.OsInfo.Family)
+                            .Add(AttrName, _environmentReporter.OsInfo.Name)
+                            .Add(AttrVersion, _environmentReporter.OsInfo.Version)
                             .Build()
                 }
             };
