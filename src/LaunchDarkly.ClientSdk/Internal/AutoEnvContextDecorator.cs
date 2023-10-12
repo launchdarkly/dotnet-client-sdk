@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.EnvReporting;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
+using LaunchDarkly.Sdk.EnvReporting.LayerModels;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
@@ -95,7 +96,10 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var builder = Context.Builder(recipe.Kind, recipe.KeyCallable.Invoke());
             foreach (var entry in recipe.AttributeCallables)
             {
-                builder.Set(entry.Key, entry.Value.Invoke());
+                var value = entry.Value.Invoke();
+                if (!value.IsNull) {
+                    builder.Set(entry.Key, value);
+                }
             }
 
             return builder.Build();
@@ -107,10 +111,10 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var applicationCallables = new Dictionary<string, Func<LdValue>>
             {
                 { ENV_ATTRIBUTES_VERSION, () => LdValue.Of(SPEC_VERSION) },
-                { ATTR_ID, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationId) },
-                { ATTR_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationName) },
-                { ATTR_VERSION, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersion) },
-                { ATTR_VERSION_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersionName) },
+                { ATTR_ID, () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationId) },
+                { ATTR_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationName) },
+                { ATTR_VERSION, () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersion) },
+                { ATTR_VERSION_NAME, () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersionName) },
                 { ATTR_LOCALE, () => LdValue.Of(_environmentReporter.Locale) }
             };
 
@@ -118,15 +122,18 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var deviceCallables = new Dictionary<string, Func<LdValue>>
             {
                 { ENV_ATTRIBUTES_VERSION, () => LdValue.Of(SPEC_VERSION) },
-                { ATTR_MANUFACTURER, () => LdValue.Of(_environmentReporter.DeviceInfo.Manufacturer) },
-                { ATTR_MODEL, () => LdValue.Of(_environmentReporter.DeviceInfo.Model) },
+                { ATTR_MANUFACTURER, () => LdValue.Of(_environmentReporter.DeviceInfo?.Manufacturer) },
+                { ATTR_MODEL, () => LdValue.Of(_environmentReporter.DeviceInfo?.Model) },
                 {
                     ATTR_OS, () =>
-                        LdValue.BuildObject()
-                            .Add(ATTR_FAMILY, _environmentReporter.OsInfo.Family)
-                            .Add(ATTR_NAME, _environmentReporter.OsInfo.Name)
-                            .Add(ATTR_VERSION, _environmentReporter.OsInfo.Version)
-                            .Build()
+                        _environmentReporter.OsInfo == null ||
+                        _environmentReporter.OsInfo.Equals(new OsInfo(null, null, null))
+                            ? LdValue.Null
+                            : LdValue.BuildObject()
+                                .Add(ATTR_FAMILY, _environmentReporter.OsInfo?.Family)
+                                .Add(ATTR_NAME, _environmentReporter.OsInfo?.Name)
+                                .Add(ATTR_VERSION, _environmentReporter.OsInfo?.Version)
+                                .Build()
                 }
             };
 
@@ -135,7 +142,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 new ContextRecipe(
                     ldApplicationKind,
                     () => Base64.UrlSafeSha256Hash(
-                        _environmentReporter.ApplicationInfo.ApplicationId ?? ""
+                        _environmentReporter.ApplicationInfo?.ApplicationId ?? ""
                     ),
                     applicationCallables
                 ),

@@ -22,26 +22,18 @@ namespace LaunchDarkly.Sdk.Client.Internal
             // Create the expected context after the code runs
             // because there will be persistence side effects
             var applicationKind = ContextKind.Of(AutoEnvContextDecorator.LD_APPLICATION_KIND);
-            var expectedApplicationKey = Base64.UrlSafeSha256Hash(envReporter.ApplicationInfo.ApplicationId);
+            var expectedApplicationKey = Base64.UrlSafeSha256Hash(envReporter.ApplicationInfo?.ApplicationId ?? "");
             var expectedAppContext = Context.Builder(applicationKind, expectedApplicationKey)
                 .Set(AutoEnvContextDecorator.ENV_ATTRIBUTES_VERSION, AutoEnvContextDecorator.SPEC_VERSION)
                 .Set(AutoEnvContextDecorator.ATTR_ID, SdkPackage.Name)
                 .Set(AutoEnvContextDecorator.ATTR_NAME, SdkPackage.Name)
                 .Set(AutoEnvContextDecorator.ATTR_VERSION, SdkPackage.Version)
                 .Set(AutoEnvContextDecorator.ATTR_VERSION_NAME, SdkPackage.Version)
-                .Set(AutoEnvContextDecorator.ATTR_LOCALE, "unknown")
                 .Build();
 
             var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LD_DEVICE_KIND);
             var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
                 .Set(AutoEnvContextDecorator.ENV_ATTRIBUTES_VERSION, AutoEnvContextDecorator.SPEC_VERSION)
-                .Set(AutoEnvContextDecorator.ATTR_MANUFACTURER, "unknown")
-                .Set(AutoEnvContextDecorator.ATTR_MODEL, "unknown")
-                .Set(AutoEnvContextDecorator.ATTR_OS, LdValue.BuildObject()
-                    .Add(AutoEnvContextDecorator.ATTR_FAMILY, "unknown")
-                    .Add(AutoEnvContextDecorator.ATTR_NAME, "unknown")
-                    .Add(AutoEnvContextDecorator.ATTR_VERSION, "unknown")
-                    .Build())
                 .Build();
 
             var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedAppContext).Add(expectedDeviceContext)
@@ -84,13 +76,6 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LD_DEVICE_KIND);
             var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
                 .Set(AutoEnvContextDecorator.ENV_ATTRIBUTES_VERSION, AutoEnvContextDecorator.SPEC_VERSION)
-                .Set(AutoEnvContextDecorator.ATTR_MANUFACTURER, "unknown")
-                .Set(AutoEnvContextDecorator.ATTR_MODEL, "unknown")
-                .Set(AutoEnvContextDecorator.ATTR_OS, LdValue.BuildObject()
-                    .Add(AutoEnvContextDecorator.ATTR_FAMILY, "unknown")
-                    .Add(AutoEnvContextDecorator.ATTR_NAME, "unknown")
-                    .Add(AutoEnvContextDecorator.ATTR_VERSION, "unknown")
-                    .Build())
                 .Build();
 
             var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedDeviceContext).Build();
