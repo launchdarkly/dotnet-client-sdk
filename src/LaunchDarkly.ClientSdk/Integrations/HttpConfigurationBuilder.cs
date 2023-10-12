@@ -237,7 +237,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <param name="authKey">Key for authenticating with LD service</param>
         /// <param name="applicationInfo">Application Info for this application environment</param>
         /// <returns>an <see cref="HttpConfiguration"/></returns>
-        public HttpConfiguration CreateHttpConfiguration(string authKey, ApplicationInfo applicationInfo) =>
+        public HttpConfiguration CreateHttpConfiguration(string authKey, ApplicationInfo? applicationInfo) =>
             new HttpConfiguration(
                 MakeHttpProperties(authKey, applicationInfo),
                 _messageHandler,
@@ -255,7 +255,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 // which is more correct, but we can't really set ReadTimeout in this SDK
                 .Build();
 
-        private HttpProperties MakeHttpProperties(string authToken, ApplicationInfo applicationInfo)
+        private HttpProperties MakeHttpProperties(string authToken, ApplicationInfo? applicationInfo)
         {
             Func<HttpProperties, HttpMessageHandler> handlerFn;
             if (_messageHandler is null)
@@ -273,8 +273,12 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 .WithHttpMessageHandlerFactory(handlerFn)
                 .WithProxy(_proxy)
                 .WithUserAgent(SdkPackage.UserAgent)
-                .WithApplicationTags(applicationInfo)
                 .WithWrapper(_wrapperName, _wrapperVersion);
+
+            if (applicationInfo.HasValue)
+            {
+                httpProperties = httpProperties.WithApplicationTags(applicationInfo.Value);
+            }
 
             foreach (var kv in _customHeaders)
             {
