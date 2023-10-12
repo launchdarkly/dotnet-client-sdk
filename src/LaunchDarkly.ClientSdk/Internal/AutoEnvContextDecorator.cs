@@ -8,7 +8,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
 {
     /// <summary>
     /// This class can decorate a context by adding additional contexts to it using auto environment attributes
-    /// gotten via the provided <see cref="IEnvironmentReporter"/>.
+    /// provided by <see cref="IEnvironmentReporter"/>.
     /// </summary>
     internal class AutoEnvContextDecorator
     {
@@ -37,7 +37,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         /// to the generated contexts.  Example data includes the stable key of the ld_device context kind.</param>
         /// <param name="environmentReporter">the environment reporter that will be used to source the
         /// environment attributes</param>
-        /// <param name="logger">the humble logger</param>
+        /// <param name="logger">the logger</param>
         public AutoEnvContextDecorator(
             PersistentDataStoreWrapper persistentData,
             IEnvironmentReporter environmentReporter,
@@ -77,16 +77,16 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         private class ContextRecipe
         {
-            public ContextKind Kind;
-            public Func<string> KeyCallable;
-            public Dictionary<string, Func<LdValue>> AttributeCallables;
+            public ContextKind Kind { get; }
+            public Func<string> KeyCallable { get; }
+            public Dictionary<string, Func<LdValue>> AttributeCallables { get; }
 
             public ContextRecipe(ContextKind kind, Func<string> keyCallable,
                 Dictionary<string, Func<LdValue>> attributeCallables)
             {
-                this.Kind = kind;
-                this.KeyCallable = keyCallable;
-                this.AttributeCallables = attributeCallables;
+                Kind = kind;
+                KeyCallable = keyCallable;
+                AttributeCallables = attributeCallables;
             }
         }
 

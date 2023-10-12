@@ -411,6 +411,51 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
+        public async void IdentifyWithAutoEnvAttributesEnabledAddsContexts()
+        {
+            var stub = new MockPollingProcessor(DataSetBuilder.Empty);
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
+            var config = BasicConfig()
+                .AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes.Enabled)
+                .DataSource(dataSourceConfig)
+                .GenerateAnonymousKeys(true)
+                .Build();
+
+            using (var client = await LdClient.InitAsync(config, BasicUser))
+            {
+                await client.IdentifyAsync(AnonUser);
+
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_application"), out _));
+                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
+            }
+        }
+
+        [Fact]
+        public async void IdentifyWithAutoEnvAttributesDisabledNoAddedContexts()
+        {
+            var stub = new MockPollingProcessor(DataSetBuilder.Empty);
+            var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
+            var config = BasicConfig()
+                .AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes.Disabled)
+                .DataSource(dataSourceConfig)
+                .GenerateAnonymousKeys(true)
+                .Build();
+
+            using (var client = await LdClient.InitAsync(config, BasicUser))
+            {
+                await client.IdentifyAsync(AnonUser);
+
+                var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
+                Assert.NotEqual(AnonUser, receivedContext);
+                Assert.Equal(client.Context, receivedContext);
+                AssertHelpers.ContextsEqual(
+                    Context.BuilderFromContext(AnonUser).Key(receivedContext.Key).Build(),
+                    receivedContext);
+            }
+        }
+
+        [Fact]
         public void SharedClientIsTheOnlyClientAvailable()
         {
             TestUtil.WithClientLock(() =>

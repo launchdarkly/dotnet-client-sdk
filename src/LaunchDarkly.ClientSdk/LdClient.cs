@@ -25,8 +25,8 @@ namespace LaunchDarkly.Sdk.Client
     /// <remarks>
     /// <para>
     /// Like all client-side LaunchDarkly SDKs, the <c>LdClient</c> always has a single current <see cref="Context"/>.
-    /// You specify this context at initialization time, and you can change it later with <see cref="Identify(Context, TimeSpan)"/>
-    /// or <see cref="IdentifyAsync(Context)"/>. All subsequent calls to evaluation methods like
+    /// You specify this context at initialization time, and you can change it later with <see cref="Identify(Sdk.Context,TimeSpan)"/>
+    /// or <see cref="IdentifyAsync(Sdk.Context)"/>. All subsequent calls to evaluation methods like
     /// <see cref="BoolVariation(string, bool)"/> refer to the flag values for the current context.
     /// </para>
     /// <para>
@@ -59,7 +59,7 @@ namespace LaunchDarkly.Sdk.Client
         readonly IEventProcessor _eventProcessor;
         readonly IFlagTracker _flagTracker;
         readonly TaskExecutor _taskExecutor;
-        readonly AnonymousKeyContextDecorator _anonymousKeyAnonymousKeyContextDecorator;
+        readonly AnonymousKeyContextDecorator _anonymousKeyContextDecorator;
         private readonly AutoEnvContextDecorator _autoEnvContextDecorator;
 
         private readonly Logger _log;
@@ -73,8 +73,8 @@ namespace LaunchDarkly.Sdk.Client
         /// create a new client instance unless you first call <see cref="Dispose()"/> on this one.
         /// </summary>
         /// <remarks>
-        /// Use the static factory methods <see cref="Init(Configuration, Context, TimeSpan)"/> or
-        /// <see cref="InitAsync(Configuration, Context)"/> to set this <see cref="LdClient"/> instance.
+        /// Use the static factory methods <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, Sdk.Context)"/> to set this <see cref="LdClient"/> instance.
         /// </remarks>
         public static LdClient Instance => _instance;
 
@@ -92,9 +92,9 @@ namespace LaunchDarkly.Sdk.Client
         /// The current evaluation context for all SDK operations.
         /// </summary>
         /// <remarks>
-        /// This is initially the context specified for <see cref="Init(Configuration, Context, TimeSpan)"/> or
-        /// <see cref="InitAsync(Configuration, Context)"/>, but can be changed later with
-        /// <see cref="Identify(Context, TimeSpan)"/> or <see cref="IdentifyAsync(Context)"/>.
+        /// This is initially the context specified for <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, Sdk.Context)"/>, but can be changed later with
+        /// <see cref="Identify(Sdk.Context,TimeSpan)"/> or <see cref="IdentifyAsync(Sdk.Context)"/>.
         /// </remarks>
         public Context Context => LockUtils.WithReadLock(_stateLock, () => _context);
 
@@ -164,9 +164,9 @@ namespace LaunchDarkly.Sdk.Client
                 _log.SubLogger(LogNames.DataStoreSubLog)
             );
 
-            _anonymousKeyAnonymousKeyContextDecorator =
+            _anonymousKeyContextDecorator =
                 new AnonymousKeyContextDecorator(_dataStore.PersistentStore, _config.GenerateAnonymousKeys);
-            var decoratedContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(initialContext);
+            var decoratedContext = _anonymousKeyContextDecorator.DecorateContext(initialContext);
 
             if (_config.AutoEnvAttributes)
             {
@@ -274,9 +274,10 @@ namespace LaunchDarkly.Sdk.Client
         /// an <see cref="Initialized"/> property of <see langword="false"/>.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use <see cref="InitAsync(string, Context)"/>. To
+        /// If you would rather this happen asynchronously, use
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>. To
         /// specify additional configuration options rather than just the mobile key, use
-        /// <see cref="Init(Configuration, Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Context)"/>.
+        /// <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -284,14 +285,20 @@ namespace LaunchDarkly.Sdk.Client
         /// </para>
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="autoEnvAttributes">TODOo</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
-        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
-        /// <seealso cref="Init(string, User, TimeSpan)"/>
-        /// <seealso cref="InitAsync(string, Context)"/>
+        /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
         public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes,
             Context initialContext, TimeSpan maxWaitTime)
         {
@@ -304,18 +311,25 @@ namespace LaunchDarkly.Sdk.Client
         /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="Init(string, Context, TimeSpan)"/>, but using the
+        /// This is equivalent to
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="autoEnvAttributes">TODOo</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialUser">the initial user attributes; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
-        /// <seealso cref="Init(string, Context, TimeSpan)"/>
-        /// <seealso cref="InitAsync(string, User)"/>
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
         public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes,
             User initialUser, TimeSpan maxWaitTime) =>
             Init(mobileKey, autoEnvAttributes, Context.FromUser(initialUser), maxWaitTime);
@@ -330,9 +344,10 @@ namespace LaunchDarkly.Sdk.Client
         /// the LaunchDarkly service is returned (or immediately if it is in offline mode).
         /// </para>
         /// <para>
-        /// If you would rather this happen synchronously, use <see cref="Init(string, Context, TimeSpan)"/>. To
+        /// If you would rather this happen synchronously, use
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/>. To
         /// specify additional configuration options rather than just the mobile key, you can use
-        /// <see cref="Init(Configuration, Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Context)"/>.
+        /// <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -340,7 +355,13 @@ namespace LaunchDarkly.Sdk.Client
         /// </para>
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="autoEnvAttributes">TODOo</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
@@ -357,11 +378,18 @@ namespace LaunchDarkly.Sdk.Client
         /// asynchronously.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="InitAsync(string, Context)"/>, but using the
+        /// This is equivalent to
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
-        /// <param name="autoEnvAttributes">TODOo</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialUser">the initial user attributes</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
         public static Task<LdClient> InitAsync(string mobileKey,
@@ -380,9 +408,10 @@ namespace LaunchDarkly.Sdk.Client
         /// an <see cref="Initialized"/> property of <see langword="false"/>.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use <see cref="InitAsync(Configuration, Context)"/>.
+        /// If you would rather this happen asynchronously, use <see cref="InitAsync(Configuration, Sdk.Context)"/>.
         /// If you do not need to specify configuration options other than the mobile key, you can use
-        /// <see cref="Init(string, Context, TimeSpan)"/> or <see cref="InitAsync(string, Context)"/>.
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -397,8 +426,8 @@ namespace LaunchDarkly.Sdk.Client
         /// an uninitialized state</param>
         /// <returns>the singleton LdClient instance</returns>
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
-        /// <seealso cref="Init(string, Context, TimeSpan)"/>
-        /// <seealso cref="InitAsync(Configuration, Context)"/>
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
         public static LdClient Init(Configuration config, Context initialContext, TimeSpan maxWaitTime)
         {
             if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
@@ -416,7 +445,7 @@ namespace LaunchDarkly.Sdk.Client
         /// fetching Feature Flags.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="Init(Configuration, Context, TimeSpan)"/>, but using the
+        /// This is equivalent to <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="config">the client configuration</param>
@@ -425,8 +454,8 @@ namespace LaunchDarkly.Sdk.Client
         /// if this time elapses, the method will not throw an exception but will return the client in
         /// an uninitialized state</param>
         /// <returns>the singleton LdClient instance</returns>
-        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
-        /// <seealso cref="Init(string, User, TimeSpan)"/>
+        /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
         /// <seealso cref="InitAsync(Configuration, User)"/>
         public static LdClient Init(Configuration config, User initialUser, TimeSpan maxWaitTime) =>
             Init(config, Context.FromUser(initialUser), maxWaitTime);
@@ -441,9 +470,10 @@ namespace LaunchDarkly.Sdk.Client
         /// the LaunchDarkly service is returned (or immediately if it is in offline mode).
         /// </para>
         /// <para>
-        /// If you would rather this happen synchronously, use <see cref="Init(Configuration, Context, TimeSpan)"/>.
+        /// If you would rather this happen synchronously, use <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/>.
         /// If you do not need to specify configuration options other than the mobile key, you can use
-        /// <see cref="Init(string, Context, TimeSpan)"/> or <see cref="InitAsync(string, Context)"/>.
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -455,8 +485,8 @@ namespace LaunchDarkly.Sdk.Client
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
         /// <seealso cref="InitAsync(Configuration, User)"/>
-        /// <seealso cref="InitAsync(string, Context)"/>
-        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
+        /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
         public static async Task<LdClient> InitAsync(Configuration config, Context initialContext)
         {
             var c = CreateInstance(config, initialContext, TimeSpan.Zero);
@@ -469,14 +499,14 @@ namespace LaunchDarkly.Sdk.Client
         /// asynchronously.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="InitAsync(Configuration, Context)"/>, but using the
+        /// This is equivalent to <see cref="InitAsync(Configuration, Sdk.Context)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="config">the client configuration</param>
         /// <param name="initialUser">the initial user attributes</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        /// <seealso cref="InitAsync(Configuration, Context)"/>
-        /// <seealso cref="InitAsync(string, User)"/>
+        /// <seealso cref="InitAsync(Configuration, Sdk.Context)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, User)"/>
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
         public static Task<LdClient> InitAsync(Configuration config, User initialUser) =>
             InitAsync(config, Context.FromUser(initialUser));
@@ -726,7 +756,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public async Task<bool> IdentifyAsync(Context context)
         {
-            Context newContext = _anonymousKeyAnonymousKeyContextDecorator.DecorateContext(context);
+            Context newContext = _anonymousKeyContextDecorator.DecorateContext(context);
             if (_config.AutoEnvAttributes)
             {
                 newContext = _autoEnvContextDecorator.DecorateContext(newContext);

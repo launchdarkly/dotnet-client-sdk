@@ -43,9 +43,6 @@
     <PackageReference Include="LaunchDarkly.Logging" Version="2.0.0" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
-    <Compile Update="Subsystems\PlatformAttributes.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 
   <!-- dependencies and source files for .NET Standard (all versions) -->
