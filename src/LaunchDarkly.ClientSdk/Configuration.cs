@@ -1,21 +1,34 @@
 ﻿using System;
+using System.Collections.Immutable;
 using LaunchDarkly.Sdk.Client.Integrations;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal.Interfaces;
+using LaunchDarkly.Sdk.Client.PlatformSpecific;
 using LaunchDarkly.Sdk.Client.Subsystems;
 
 namespace LaunchDarkly.Sdk.Client
 {
     /// <summary>
-    /// Configuration options for <see cref="LdClient"/>. 
+    /// Configuration options for <see cref="LdClient"/>.
     /// </summary>
     /// <remarks>
     /// Instances of <see cref="Configuration"/> are immutable once created. They can be created with the factory method
-    /// <see cref="Configuration.Default(string)"/>, or using a builder pattern with <see cref="Configuration.Builder(string)"/>
-    /// or <see cref="Configuration.Builder(Configuration)"/>.
+    /// <see cref="Configuration.Default(string,ConfigurationBuilder.AutoEnvAttributes)"/>, or using a builder pattern
+    /// with <see cref="ImmutableArray{T}.Builder"/> or <see cref="Configuration.Builder(Configuration)"/>.
     /// </remarks>
     public sealed class Configuration
     {
+        /// <summary>
+        /// ApplicationInfo configuration which contains info about the application the SDK is running in.
+        /// </summary>
+        public ApplicationInfoBuilder ApplicationInfo { get; }
+
+        /// <summary>
+        /// True if Auto Environment Attributes functionality is enabled.  When enabled, the SDK will automatically
+        /// provide data about the environment where the application is running.
+        /// </summary>
+        public bool AutoEnvAttributes { get; }
+
         /// <summary>
         /// Default value for <see cref="PollingDataSourceBuilder.BackgroundPollInterval"/> and
         /// <see cref="StreamingDataSourceBuilder.BackgroundPollInterval"/>.
@@ -83,13 +96,13 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// HTTP configuration properties for the SDK.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.Http(HttpConfigurationBuilder)"/>
+        /// <seealso cref="ConfigurationBuilder.Http(Integrations.HttpConfigurationBuilder)"/>
         public HttpConfigurationBuilder HttpConfigurationBuilder { get; }
 
         /// <summary>
         /// Logging configuration properties for the SDK.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.Logging(LoggingConfigurationBuilder)"/>
+        /// <seealso cref="Logging"/>
         public LoggingConfigurationBuilder LoggingConfigurationBuilder { get; }
 
         /// <summary>
@@ -109,7 +122,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <summary>
         /// Persistent storage configuration properties for the SDK.
         /// </summary>
-        /// <seealso cref="ConfigurationBuilder.Persistence(PersistenceConfigurationBuilder)"/>
+        /// <seealso cref="ConfigurationBuilder.Persistence(Integrations.PersistenceConfigurationBuilder)"/>
         public PersistenceConfigurationBuilder PersistenceConfigurationBuilder { get; }
 
         /// <summary>
@@ -119,18 +132,20 @@ namespace LaunchDarkly.Sdk.Client
         public ServiceEndpoints ServiceEndpoints { get; }
 
         /// <summary>
-        /// ApplicationInfo configuration which contains info about the application the SDK is running in.
-        /// </summary>
-        public ApplicationInfoBuilder ApplicationInfo { get; }
-
-        /// <summary>
         /// Creates a configuration with all parameters set to the default.
         /// </summary>
         /// <param name="mobileKey">the SDK key for your LaunchDarkly environment</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <returns>a <see cref="Configuration"/> instance</returns>
-        public static Configuration Default(string mobileKey)
+        public static Configuration Default(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)
         {
-            return Builder(mobileKey).Build();
+            return Builder(mobileKey, autoEnvAttributes).Build();
         }
 
         /// <summary>
@@ -151,14 +166,23 @@ namespace LaunchDarkly.Sdk.Client
         /// </code>
         /// </example>
         /// <param name="mobileKey">the mobile SDK key for your LaunchDarkly environment</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <returns>a builder object</returns>
-        public static ConfigurationBuilder Builder(string mobileKey)
+        public static ConfigurationBuilder Builder(string mobileKey,
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)
         {
             if (String.IsNullOrEmpty(mobileKey))
             {
                 throw new ArgumentOutOfRangeException(nameof(mobileKey), "key is required");
             }
-            return new ConfigurationBuilder(mobileKey);
+
+            return new ConfigurationBuilder(mobileKey, autoEnvAttributes);
         }
 
         /// <summary>
@@ -173,6 +197,8 @@ namespace LaunchDarkly.Sdk.Client
 
         internal Configuration(ConfigurationBuilder builder)
         {
+            ApplicationInfo = builder._applicationInfo;
+            AutoEnvAttributes = builder._autoEnvAttributes;
             DataSource = builder._dataSource;
             DiagnosticOptOut = builder._diagnosticOptOut;
             EnableBackgroundUpdating = builder._enableBackgroundUpdating;
@@ -185,7 +211,6 @@ namespace LaunchDarkly.Sdk.Client
             Offline = builder._offline;
             PersistenceConfigurationBuilder = builder._persistenceConfigurationBuilder;
             ServiceEndpoints = (builder._serviceEndpointsBuilder ?? Components.ServiceEndpoints()).Build();
-            ApplicationInfo = builder._applicationInfo;
             BackgroundModeManager = builder._backgroundModeManager;
             ConnectivityStateManager = builder._connectivityStateManager;
         }

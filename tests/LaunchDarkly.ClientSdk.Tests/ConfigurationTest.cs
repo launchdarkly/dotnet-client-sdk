@@ -10,24 +10,27 @@ namespace LaunchDarkly.Sdk.Client
     public class ConfigurationTest : BaseTest
     {
         private readonly BuilderBehavior.BuildTester<ConfigurationBuilder, Configuration> _tester =
-            BuilderBehavior.For(() => Configuration.Builder(mobileKey), b => b.Build())
+            BuilderBehavior.For(() => Configuration.Builder(mobileKey, ConfigurationBuilder.AutoEnvAttributes.Disabled),
+                    b => b.Build())
                 .WithCopyConstructor(c => Configuration.Builder(c));
 
         const string mobileKey = "any-key";
 
-        public ConfigurationTest(ITestOutputHelper testOutput) : base(testOutput) { }
+        public ConfigurationTest(ITestOutputHelper testOutput) : base(testOutput)
+        {
+        }
 
         [Fact]
         public void DefaultSetsKey()
         {
-            var config = Configuration.Default(mobileKey);
+            var config = Configuration.Default(mobileKey, ConfigurationBuilder.AutoEnvAttributes.Disabled);
             Assert.Equal(mobileKey, config.MobileKey);
         }
 
         [Fact]
         public void BuilderSetsKey()
         {
-            var config = Configuration.Builder(mobileKey).Build();
+            var config = Configuration.Builder(mobileKey, ConfigurationBuilder.AutoEnvAttributes.Disabled).Build();
             Assert.Equal(mobileKey, config.MobileKey);
         }
 
@@ -99,7 +102,8 @@ namespace LaunchDarkly.Sdk.Client
         public void LoggingAdapterShortcut()
         {
             var adapter = Logs.ToWriter(Console.Out);
-            var config = Configuration.Builder("key").Logging(adapter).Build();
+            var config = Configuration.Builder("key", ConfigurationBuilder.AutoEnvAttributes.Disabled).Logging(adapter)
+                .Build();
             var logConfig = config.LoggingConfigurationBuilder.CreateLoggingConfiguration();
             Assert.Same(adapter, logConfig.LogAdapter);
         }
@@ -130,13 +134,15 @@ namespace LaunchDarkly.Sdk.Client
         [Fact]
         public void MobileKeyCannotBeNull()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(null));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                Configuration.Default(null, ConfigurationBuilder.AutoEnvAttributes.Disabled));
         }
 
         [Fact]
         public void MobileKeyCannotBeEmpty()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => Configuration.Default(""));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                Configuration.Default("", ConfigurationBuilder.AutoEnvAttributes.Disabled));
         }
     }
 }

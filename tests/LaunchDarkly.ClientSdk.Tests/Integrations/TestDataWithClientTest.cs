@@ -12,7 +12,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
 
         public TestDataWithClientTest(ITestOutputHelper testOutput) : base(testOutput)
         {
-            _config = Configuration.Builder("mobile-key")
+            _config = Configuration.Builder("mobile-key", ConfigurationBuilder.AutoEnvAttributes.Disabled)
                 .DataSource(_td)
                 .Events(Components.NoEvents)
                 .Build();

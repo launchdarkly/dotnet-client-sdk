@@ -25,8 +25,8 @@ namespace LaunchDarkly.Sdk.Client
     /// <remarks>
     /// <para>
     /// Like all client-side LaunchDarkly SDKs, the <c>LdClient</c> always has a single current <see cref="Context"/>.
-    /// You specify this context at initialization time, and you can change it later with <see cref="Identify(Context, TimeSpan)"/>
-    /// or <see cref="IdentifyAsync(Context)"/>. All subsequent calls to evaluation methods like
+    /// You specify this context at initialization time, and you can change it later with <see cref="Identify(Sdk.Context,TimeSpan)"/>
+    /// or <see cref="IdentifyAsync(Sdk.Context)"/>. All subsequent calls to evaluation methods like
     /// <see cref="BoolVariation(string, bool)"/> refer to the flag values for the current context.
     /// </para>
     /// <para>
@@ -59,7 +59,8 @@ namespace LaunchDarkly.Sdk.Client
         readonly IEventProcessor _eventProcessor;
         readonly IFlagTracker _flagTracker;
         readonly TaskExecutor _taskExecutor;
-        readonly ContextDecorator _contextDecorator;
+        readonly AnonymousKeyContextDecorator _anonymousKeyContextDecorator;
+        private readonly AutoEnvContextDecorator _autoEnvContextDecorator;
 
         private readonly Logger _log;
 
@@ -72,8 +73,8 @@ namespace LaunchDarkly.Sdk.Client
         /// create a new client instance unless you first call <see cref="Dispose()"/> on this one.
         /// </summary>
         /// <remarks>
-        /// Use the static factory methods <see cref="Init(Configuration, Context, TimeSpan)"/> or
-        /// <see cref="InitAsync(Configuration, Context)"/> to set this <see cref="LdClient"/> instance.
+        /// Use the static factory methods <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, Sdk.Context)"/> to set this <see cref="LdClient"/> instance.
         /// </remarks>
         public static LdClient Instance => _instance;
 
@@ -91,9 +92,9 @@ namespace LaunchDarkly.Sdk.Client
         /// The current evaluation context for all SDK operations.
         /// </summary>
         /// <remarks>
-        /// This is initially the context specified for <see cref="Init(Configuration, Context, TimeSpan)"/> or
-        /// <see cref="InitAsync(Configuration, Context)"/>, but can be changed later with
-        /// <see cref="Identify(Context, TimeSpan)"/> or <see cref="IdentifyAsync(Context)"/>.
+        /// This is initially the context specified for <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(Configuration, Sdk.Context)"/>, but can be changed later with
+        /// <see cref="Identify(Sdk.Context,TimeSpan)"/> or <see cref="IdentifyAsync(Sdk.Context)"/>.
         /// </remarks>
         public Context Context => LockUtils.WithReadLock(_stateLock, () => _context);
 
@@ -135,17 +136,19 @@ namespace LaunchDarkly.Sdk.Client
 
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
-        LdClient() { }
+        LdClient()
+        {
+        }
 
         LdClient(Configuration configuration, Context initialContext, TimeSpan startWaitTime)
         {
             _config = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            var baseContext = new LdClientContext(configuration, initialContext, this);
+            var baseContext = new LdClientContext(_config, initialContext, this);
 
-            var diagnosticStore = _config.DiagnosticOptOut ? null :
-                new ClientDiagnosticStore(baseContext, _config, startWaitTime);
-            var diagnosticDisabler = _config.DiagnosticOptOut ? null :
-                new DiagnosticDisablerImpl();
+            var diagnosticStore = _config.DiagnosticOptOut
+                ? null
+                : new ClientDiagnosticStore(baseContext, _config, startWaitTime);
+            var diagnosticDisabler = _config.DiagnosticOptOut ? null : new DiagnosticDisablerImpl();
             _clientContext = baseContext.WithDiagnostics(diagnosticDisabler, diagnosticStore);
 
             _log = _clientContext.BaseLogger;
@@ -153,16 +156,26 @@ namespace LaunchDarkly.Sdk.Client
 
             _log.Info("Starting LaunchDarkly Client {0}", Version);
 
-            var persistenceConfiguration = (configuration.PersistenceConfigurationBuilder ?? Components.Persistence())
+            var persistenceConfiguration = (_config.PersistenceConfigurationBuilder ?? Components.Persistence())
                 .Build(_clientContext);
             _dataStore = new FlagDataManager(
-                configuration.MobileKey,
+                _config.MobileKey,
                 persistenceConfiguration,
                 _log.SubLogger(LogNames.DataStoreSubLog)
-                );
+            );
 
-            _contextDecorator = new ContextDecorator(_dataStore.PersistentStore, configuration.GenerateAnonymousKeys);
-            _context = _contextDecorator.DecorateContext(initialContext);
+            _anonymousKeyContextDecorator =
+                new AnonymousKeyContextDecorator(_dataStore.PersistentStore, _config.GenerateAnonymousKeys);
+            var decoratedContext = _anonymousKeyContextDecorator.DecorateContext(initialContext);
+
+            if (_config.AutoEnvAttributes)
+            {
+                _autoEnvContextDecorator = new AutoEnvContextDecorator(_dataStore.PersistentStore,
+                    _clientContext.EnvironmentReporter, _log);
+                decoratedContext = _autoEnvContextDecorator.DecorateContext(decoratedContext);
+            }
+
+            _context = decoratedContext;
 
             // If we had cached data for the new context, set the current in-memory flag data state to use
             // that data, so that any Variation calls made before Identify has completed will use the
@@ -171,30 +184,31 @@ namespace LaunchDarkly.Sdk.Client
             if (cachedData != null)
             {
                 _log.Debug("Cached flag data is available for this context");
-                _dataStore.Init(_context, cachedData.Value, false); // false means "don't rewrite the flags to persistent storage"
+                _dataStore.Init(_context, cachedData.Value,
+                    false); // false means "don't rewrite the flags to persistent storage"
             }
 
             var dataSourceUpdateSink = new DataSourceUpdateSinkImpl(
                 _dataStore,
-                configuration.Offline,
+                _config.Offline,
                 _taskExecutor,
                 _log.SubLogger(LogNames.DataSourceSubLog)
-                );
+            );
             _dataSourceUpdateSink = dataSourceUpdateSink;
 
             _dataSourceStatusProvider = new DataSourceStatusProviderImpl(dataSourceUpdateSink);
             _flagTracker = new FlagTrackerImpl(dataSourceUpdateSink);
 
-            var dataSourceFactory = configuration.DataSource ?? Components.StreamingDataSource();
+            var dataSourceFactory = _config.DataSource ?? Components.StreamingDataSource();
 
-            _connectivityStateManager = Factory.CreateConnectivityStateManager(configuration);
+            _connectivityStateManager = Factory.CreateConnectivityStateManager(_config);
             var isConnected = _connectivityStateManager.IsConnected;
 
-            diagnosticDisabler?.SetDisabled(!isConnected || configuration.Offline);
+            diagnosticDisabler?.SetDisabled(!isConnected || _config.Offline);
 
-            _eventProcessor = (configuration.Events ?? Components.SendEvents())
+            _eventProcessor = (_config.Events ?? Components.SendEvents())
                 .Build(_clientContext);
-            _eventProcessor.SetOffline(configuration.Offline || !isConnected);
+            _eventProcessor.SetOffline(_config.Offline || !isConnected);
 
             _connectionManager = new ConnectionManager(
                 _clientContext,
@@ -202,13 +216,13 @@ namespace LaunchDarkly.Sdk.Client
                 _dataSourceUpdateSink,
                 _eventProcessor,
                 diagnosticDisabler,
-                configuration.EnableBackgroundUpdating,
+                _config.EnableBackgroundUpdating,
                 _context,
                 _log
-                );
-            _connectionManager.SetForceOffline(configuration.Offline);
+            );
+            _connectionManager.SetForceOffline(_config.Offline);
             _connectionManager.SetNetworkEnabled(isConnected);
-            if (configuration.Offline)
+            if (_config.Offline)
             {
                 _log.Info("Starting LaunchDarkly client in offline mode");
             }
@@ -216,12 +230,12 @@ namespace LaunchDarkly.Sdk.Client
             _connectivityStateManager.ConnectionChanged += networkAvailable =>
             {
                 _log.Debug("Setting online to {0} due to a connectivity change event", networkAvailable);
-                _ = _connectionManager.SetNetworkEnabled(networkAvailable);  // do not await the result
+                _ = _connectionManager.SetNetworkEnabled(networkAvailable); // do not await the result
             };
-            
+
             // Send an initial identify event, but only if we weren't explicitly set to be offline
 
-            if (!configuration.Offline)
+            if (!_config.Offline)
             {
                 _eventProcessor.RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
                 {
@@ -260,9 +274,10 @@ namespace LaunchDarkly.Sdk.Client
         /// an <see cref="Initialized"/> property of <see langword="false"/>.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use <see cref="InitAsync(string, Context)"/>. To
+        /// If you would rather this happen asynchronously, use
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>. To
         /// specify additional configuration options rather than just the mobile key, use
-        /// <see cref="Init(Configuration, Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Context)"/>.
+        /// <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -270,16 +285,24 @@ namespace LaunchDarkly.Sdk.Client
         /// </para>
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
-        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
-        /// <seealso cref="Init(string, User, TimeSpan)"/>
-        /// <seealso cref="InitAsync(string, Context)"/>
-        public static LdClient Init(string mobileKey, Context initialContext, TimeSpan maxWaitTime)
+        /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
+        public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes,
+            Context initialContext, TimeSpan maxWaitTime)
         {
-            var config = Configuration.Default(mobileKey);
+            var config = Configuration.Default(mobileKey, autoEnvAttributes);
 
             return Init(config, initialContext, maxWaitTime);
         }
@@ -288,19 +311,28 @@ namespace LaunchDarkly.Sdk.Client
         /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="Init(string, Context, TimeSpan)"/>, but using the
+        /// This is equivalent to
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialUser">the initial user attributes; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
         /// <returns>the singleton <see cref="LdClient"/> instance</returns>
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
-        /// <seealso cref="Init(string, Context, TimeSpan)"/>
-        /// <seealso cref="InitAsync(string, User)"/>
-        public static LdClient Init(string mobileKey, User initialUser, TimeSpan maxWaitTime) =>
-            Init(mobileKey, Context.FromUser(initialUser), maxWaitTime);
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
+        public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes,
+            User initialUser, TimeSpan maxWaitTime) =>
+            Init(mobileKey, autoEnvAttributes, Context.FromUser(initialUser), maxWaitTime);
 
         /// <summary>
         /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
@@ -312,9 +344,10 @@ namespace LaunchDarkly.Sdk.Client
         /// the LaunchDarkly service is returned (or immediately if it is in offline mode).
         /// </para>
         /// <para>
-        /// If you would rather this happen synchronously, use <see cref="Init(string, Context, TimeSpan)"/>. To
+        /// If you would rather this happen synchronously, use
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/>. To
         /// specify additional configuration options rather than just the mobile key, you can use
-        /// <see cref="Init(Configuration, Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Context)"/>.
+        /// <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -322,12 +355,20 @@ namespace LaunchDarkly.Sdk.Client
         /// </para>
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        public static async Task<LdClient> InitAsync(string mobileKey, Context initialContext)
+        public static async Task<LdClient> InitAsync(string mobileKey,
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext)
         {
-            var config = Configuration.Default(mobileKey);
+            var config = Configuration.Default(mobileKey, autoEnvAttributes);
 
             return await InitAsync(config, initialContext);
         }
@@ -337,17 +378,26 @@ namespace LaunchDarkly.Sdk.Client
         /// asynchronously.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="InitAsync(string, Context)"/>, but using the
+        /// This is equivalent to
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
         /// <param name="initialUser">the initial user attributes</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        public static Task<LdClient> InitAsync(string mobileKey, User initialUser) =>
-            InitAsync(mobileKey, Context.FromUser(initialUser));
+        public static Task<LdClient> InitAsync(string mobileKey,
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, User initialUser) =>
+            InitAsync(mobileKey, autoEnvAttributes, Context.FromUser(initialUser));
 
         /// <summary>
-        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for
         /// fetching Feature Flags.
         /// </summary>
         /// <remarks>
@@ -358,9 +408,10 @@ namespace LaunchDarkly.Sdk.Client
         /// an <see cref="Initialized"/> property of <see langword="false"/>.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use <see cref="InitAsync(Configuration, Context)"/>.
+        /// If you would rather this happen asynchronously, use <see cref="InitAsync(Configuration, Sdk.Context)"/>.
         /// If you do not need to specify configuration options other than the mobile key, you can use
-        /// <see cref="Init(string, Context, TimeSpan)"/> or <see cref="InitAsync(string, Context)"/>.
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -375,8 +426,8 @@ namespace LaunchDarkly.Sdk.Client
         /// an uninitialized state</param>
         /// <returns>the singleton LdClient instance</returns>
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
-        /// <seealso cref="Init(string, Context, TimeSpan)"/>
-        /// <seealso cref="InitAsync(Configuration, Context)"/>
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
         public static LdClient Init(Configuration config, Context initialContext, TimeSpan maxWaitTime)
         {
             if (maxWaitTime.Ticks < 0 && maxWaitTime != Timeout.InfiniteTimeSpan)
@@ -390,11 +441,11 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         /// <summary>
-        /// Creates and returns a new LdClient singleton instance, then starts the workflow for 
+        /// Creates and returns a new LdClient singleton instance, then starts the workflow for
         /// fetching Feature Flags.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="Init(Configuration, Context, TimeSpan)"/>, but using the
+        /// This is equivalent to <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="config">the client configuration</param>
@@ -403,8 +454,8 @@ namespace LaunchDarkly.Sdk.Client
         /// if this time elapses, the method will not throw an exception but will return the client in
         /// an uninitialized state</param>
         /// <returns>the singleton LdClient instance</returns>
-        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
-        /// <seealso cref="Init(string, User, TimeSpan)"/>
+        /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
+        /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
         /// <seealso cref="InitAsync(Configuration, User)"/>
         public static LdClient Init(Configuration config, User initialUser, TimeSpan maxWaitTime) =>
             Init(config, Context.FromUser(initialUser), maxWaitTime);
@@ -419,9 +470,10 @@ namespace LaunchDarkly.Sdk.Client
         /// the LaunchDarkly service is returned (or immediately if it is in offline mode).
         /// </para>
         /// <para>
-        /// If you would rather this happen synchronously, use <see cref="Init(Configuration, Context, TimeSpan)"/>.
+        /// If you would rather this happen synchronously, use <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/>.
         /// If you do not need to specify configuration options other than the mobile key, you can use
-        /// <see cref="Init(string, Context, TimeSpan)"/> or <see cref="InitAsync(string, Context)"/>.
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/> or
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -433,8 +485,8 @@ namespace LaunchDarkly.Sdk.Client
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
         /// <seealso cref="InitAsync(Configuration, User)"/>
-        /// <seealso cref="InitAsync(string, Context)"/>
-        /// <seealso cref="Init(Configuration, Context, TimeSpan)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
+        /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
         public static async Task<LdClient> InitAsync(Configuration config, Context initialContext)
         {
             var c = CreateInstance(config, initialContext, TimeSpan.Zero);
@@ -447,14 +499,14 @@ namespace LaunchDarkly.Sdk.Client
         /// asynchronously.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="InitAsync(Configuration, Context)"/>, but using the
+        /// This is equivalent to <see cref="InitAsync(Configuration, Sdk.Context)"/>, but using the
         /// <see cref="User"/> type instead of <see cref="Context"/>.
         /// </remarks>
         /// <param name="config">the client configuration</param>
         /// <param name="initialUser">the initial user attributes</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        /// <seealso cref="InitAsync(Configuration, Context)"/>
-        /// <seealso cref="InitAsync(string, User)"/>
+        /// <seealso cref="InitAsync(Configuration, Sdk.Context)"/>
+        /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, User)"/>
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
         public static Task<LdClient> InitAsync(Configuration config, User initialUser) =>
             InitAsync(config, Context.FromUser(initialUser));
@@ -490,61 +542,71 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public bool BoolVariation(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true, _eventFactoryDefault).Value;
+            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<bool> BoolVariationDetail(string key, bool defaultValue = false)
         {
-            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true, _eventFactoryWithReasons);
+            return VariationInternal<bool>(key, LdValue.Of(defaultValue), LdValue.Convert.Bool, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public string StringVariation(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true, _eventFactoryDefault).Value;
+            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<string> StringVariationDetail(string key, string defaultValue)
         {
-            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true, _eventFactoryWithReasons);
+            return VariationInternal<string>(key, LdValue.Of(defaultValue), LdValue.Convert.String, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public float FloatVariation(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true, _eventFactoryDefault).Value;
+            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<float> FloatVariationDetail(string key, float defaultValue = 0)
         {
-            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true, _eventFactoryWithReasons);
+            return VariationInternal<float>(key, LdValue.Of(defaultValue), LdValue.Convert.Float, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public double DoubleVariation(string key, double defaultValue = 0)
         {
-            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true, _eventFactoryDefault).Value;
+            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true,
+                _eventFactoryDefault).Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<double> DoubleVariationDetail(string key, double defaultValue = 0)
         {
-            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true, _eventFactoryWithReasons);
+            return VariationInternal<double>(key, LdValue.Of(defaultValue), LdValue.Convert.Double, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
         public int IntVariation(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryDefault).Value;
+            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryDefault)
+                .Value;
         }
 
         /// <inheritdoc/>
         public EvaluationDetail<int> IntVariationDetail(string key, int defaultValue = 0)
         {
-            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true, _eventFactoryWithReasons);
+            return VariationInternal(key, LdValue.Of(defaultValue), LdValue.Convert.Int, true,
+                _eventFactoryWithReasons);
         }
 
         /// <inheritdoc/>
@@ -559,7 +621,8 @@ namespace LaunchDarkly.Sdk.Client
             return VariationInternal(key, defaultValue, LdValue.Convert.Json, false, _eventFactoryWithReasons);
         }
 
-        EvaluationDetail<T> VariationInternal<T>(string featureKey, LdValue defaultJson, LdValue.Converter<T> converter, bool checkType, EventFactory eventFactory)
+        EvaluationDetail<T> VariationInternal<T>(string featureKey, LdValue defaultJson, LdValue.Converter<T> converter,
+            bool checkType, EventFactory eventFactory)
         {
             T defaultValue = converter.ToType(defaultJson);
 
@@ -572,14 +635,16 @@ namespace LaunchDarkly.Sdk.Client
                 if (!Initialized)
                 {
                     _log.Warn("LaunchDarkly client has not yet been initialized. Returning default value");
-                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context, defaultJson,
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context,
+                        defaultJson,
                         EvaluationErrorKind.ClientNotReady));
                     return errorResult(EvaluationErrorKind.ClientNotReady);
                 }
                 else
                 {
                     _log.Info("Unknown feature flag {0}; returning default value", featureKey);
-                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context, defaultJson,
+                    SendEvaluationEventIfOnline(eventFactory.NewUnknownFlagEvaluationEvent(featureKey, Context,
+                        defaultJson,
                         EvaluationErrorKind.FlagNotFound));
                     return errorResult(EvaluationErrorKind.FlagNotFound);
                 }
@@ -597,23 +662,28 @@ namespace LaunchDarkly.Sdk.Client
             if (flag.Value.IsNull)
             {
                 valueJson = defaultJson;
-                result = new EvaluationDetail<T>(defaultValue, flag.Variation, flag.Reason ?? EvaluationReason.OffReason);
+                result = new EvaluationDetail<T>(defaultValue, flag.Variation,
+                    flag.Reason ?? EvaluationReason.OffReason);
             }
             else
             {
                 if (checkType && !defaultJson.IsNull && flag.Value.Type != defaultJson.Type)
                 {
                     valueJson = defaultJson;
-                    result = new EvaluationDetail<T>(defaultValue, null, EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
+                    result = new EvaluationDetail<T>(defaultValue, null,
+                        EvaluationReason.ErrorReason(EvaluationErrorKind.WrongType));
                 }
                 else
                 {
                     valueJson = flag.Value;
-                    result = new EvaluationDetail<T>(converter.ToType(flag.Value), flag.Variation, flag.Reason ?? EvaluationReason.OffReason);
+                    result = new EvaluationDetail<T>(converter.ToType(flag.Value), flag.Variation,
+                        flag.Reason ?? EvaluationReason.OffReason);
                 }
             }
+
             var featureEvent = eventFactory.NewEvaluationEvent(featureKey, flag, Context,
-                new EvaluationDetail<LdValue>(valueJson, flag.Variation, flag.Reason ?? EvaluationReason.OffReason), defaultJson);
+                new EvaluationDetail<LdValue>(valueJson, flag.Variation, flag.Reason ?? EvaluationReason.OffReason),
+                defaultJson);
             SendEvaluationEventIfOnline(featureEvent);
             return result;
         }
@@ -631,6 +701,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 return ImmutableDictionary<string, LdValue>.Empty;
             }
+
             return data.Value.Items.Where(entry => entry.Value.Item != null)
                 .ToDictionary(p => p.Key, p => p.Value.Item.Value);
         }
@@ -685,8 +756,15 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public async Task<bool> IdentifyAsync(Context context)
         {
-            Context newContext = _contextDecorator.DecorateContext(context);
-            Context oldContext = newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
+            Context newContext = _anonymousKeyContextDecorator.DecorateContext(context);
+            if (_config.AutoEnvAttributes)
+            {
+                newContext = _autoEnvContextDecorator.DecorateContext(newContext);
+            }
+
+            Context
+                oldContext =
+                    newContext; // this initialization is overwritten below, it's only here to satisfy the compiler
 
             LockUtils.WithWriteLock(_stateLock, () =>
             {
@@ -706,11 +784,12 @@ namespace LaunchDarkly.Sdk.Client
             {
                 _log.Debug("Identify found cached flag data for the new context");
             }
+
             _dataStore.Init(
                 newContext,
                 cachedData ?? new DataStoreTypes.FullDataSet(null),
                 false // false means "don't rewrite the flags to persistent storage"
-                );
+            );
 
             EventProcessorIfEnabled().RecordIdentifyEvent(new EventProcessorTypes.IdentifyEvent
             {

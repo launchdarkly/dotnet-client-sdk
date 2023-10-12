@@ -266,7 +266,11 @@ namespace TestService
 
         private static Configuration BuildSdkConfig(SdkConfigParams sdkParams, ILogAdapter logAdapter, string tag)
         {
-            var builder = Configuration.Builder(sdkParams.Credential);
+            var autoEnvAttributes = (sdkParams.ClientSide.IncludeEnvironmentAttributes ?? false)
+                ? ConfigurationBuilder.AutoEnvAttributes.Enabled
+                : ConfigurationBuilder.AutoEnvAttributes.Disabled;
+
+            var builder = Configuration.Builder(sdkParams.Credential, autoEnvAttributes);
 
             builder.Logging(Components.Logging(logAdapter).BaseLoggerName(tag + ".SDK"));
 
