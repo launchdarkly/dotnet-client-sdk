@@ -58,7 +58,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var builder = Context.MultiBuilder();
             builder.Add(context);
 
-            foreach (ContextRecipe recipe in MakeRecipeList())
+            foreach (var recipe in MakeRecipeList())
             {
                 if (!context.TryGetContextByKind(recipe.Kind, out _))
                 {
@@ -75,7 +75,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
             return builder.Build();
         }
 
-        private class ContextRecipe
+        private readonly struct ContextRecipe
         {
             public ContextKind Kind { get; }
             public Func<string> KeyCallable { get; }
