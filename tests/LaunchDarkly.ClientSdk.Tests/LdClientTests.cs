@@ -153,7 +153,7 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public async void InitWithAutoEnvAttributesEnabledAddsContexts()
+        public async void InitWithAutoEnvAttributesEnabledAddAppInfoContext()
         {
             MockPollingProcessor stub = new MockPollingProcessor(DataSetBuilder.Empty);
             var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
@@ -167,7 +167,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
                 Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_application"), out _));
-                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
+                Assert.False(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
             }
         }
 
@@ -411,7 +411,7 @@ namespace LaunchDarkly.Sdk.Client
         }
 
         [Fact]
-        public async void IdentifyWithAutoEnvAttributesEnabledAddsContexts()
+        public async void IdentifyWithAutoEnvAttributesEnabledAddsAppInfoContext()
         {
             var stub = new MockPollingProcessor(DataSetBuilder.Empty);
             var dataSourceConfig = new CapturingComponentConfigurer<IDataSource>(stub.AsSingletonFactory<IDataSource>());
@@ -427,7 +427,7 @@ namespace LaunchDarkly.Sdk.Client
 
                 var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
                 Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_application"), out _));
-                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
+                Assert.False(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
             }
         }
 

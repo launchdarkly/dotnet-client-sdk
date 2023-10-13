@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.EnvReporting;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
@@ -78,10 +79,10 @@ namespace LaunchDarkly.Sdk.Client.Internal
         private readonly struct ContextRecipe
         {
             public ContextKind Kind { get; }
-            public Func<string> KeyCallable { get; }
-            public List<IRecipeNode> RecipeNodes { get; }
+            private Func<string> KeyCallable { get; }
+            private List<Node> RecipeNodes { get; }
 
-            public ContextRecipe(ContextKind kind, Func<string> keyCallable, List<IRecipeNode> recipeNodes)
+            public ContextRecipe(ContextKind kind, Func<string> keyCallable, List<Node> recipeNodes)
             {
                 Kind = kind;
                 KeyCallable = keyCallable;
@@ -92,9 +93,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
             {
                 var contextBuilder = Context.Builder(Kind, KeyCallable.Invoke());
                 var adaptedBuilder = new ContextBuilderAdapter(contextBuilder);
-                var wrote = false;
-                RecipeNodes.ForEach(it => { wrote |= it.TryWrite(adaptedBuilder); });
-                if (wrote)
+                if (RecipeNodes.Aggregate(false, (wrote, node) => wrote | node.TryWrite(adaptedBuilder)))
                 {
                     contextBuilder.Set(EnvAttributesVersion, SpecVersion);
                     multiBuilder.Add(contextBuilder.Build());
@@ -105,29 +104,29 @@ namespace LaunchDarkly.Sdk.Client.Internal
         private List<ContextRecipe> MakeRecipeList()
         {
             var ldApplicationKind = ContextKind.Of(LdApplicationKind);
-            var applicationNodes = new List<IRecipeNode>
+            var applicationNodes = new List<Node>
             {
-                new ConcreteRecipeNode(AttrId, () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationId)),
-                new ConcreteRecipeNode(AttrName,
-                    () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationName)),
-                new ConcreteRecipeNode(AttrVersion,
-                    () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersion)),
-                new ConcreteRecipeNode(AttrVersionName,
-                    () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersionName)),
-                new ConcreteRecipeNode(AttrLocale, () => LdValue.Of(_environmentReporter.Locale)),
+                new Node(AttrId, LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationId)),
+                new Node(AttrName,
+                    LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationName)),
+                new Node(AttrVersion,
+                    LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersion)),
+                new Node(AttrVersionName,
+                     LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersionName)),
+                new Node(AttrLocale, LdValue.Of(_environmentReporter.Locale)),
             };
 
             var ldDeviceKind = ContextKind.Of(LdDeviceKind);
-            var deviceNodes = new List<IRecipeNode>
+            var deviceNodes = new List<Node>
             {
-                new ConcreteRecipeNode(AttrManufacturer,
-                    () => LdValue.Of(_environmentReporter.DeviceInfo?.Manufacturer)),
-                new ConcreteRecipeNode(AttrModel, () => LdValue.Of(_environmentReporter.DeviceInfo?.Model)),
-                new CompositeRecipeNode(AttrOs, new List<IRecipeNode>
+                new Node(AttrManufacturer,
+                    LdValue.Of(_environmentReporter.DeviceInfo?.Manufacturer)),
+                new Node(AttrModel,  LdValue.Of(_environmentReporter.DeviceInfo?.Model)),
+                new Node(AttrOs, new List<Node>
                 {
-                    new ConcreteRecipeNode(AttrFamily, () => LdValue.Of(_environmentReporter.OsInfo?.Family)),
-                    new ConcreteRecipeNode(AttrName, () => LdValue.Of(_environmentReporter.OsInfo?.Name)),
-                    new ConcreteRecipeNode(AttrVersion, () => LdValue.Of(_environmentReporter.OsInfo?.Version)),
+                    new Node(AttrFamily,  LdValue.Of(_environmentReporter.OsInfo?.Family)),
+                    new Node(AttrName,  LdValue.Of(_environmentReporter.OsInfo?.Name)),
+                    new Node(AttrVersion,  LdValue.Of(_environmentReporter.OsInfo?.Version)),
                 })
             };
 
@@ -164,56 +163,44 @@ namespace LaunchDarkly.Sdk.Client.Internal
             void Set(string attributeName, LdValue value);
         }
 
-        private interface IRecipeNode
+        private class Node
         {
-            bool TryWrite(ISettableMap settableMap);
-        }
+            private readonly string _key;
+            private readonly LdValue? _value;
+            private readonly List<Node> _children;
 
-        private class CompositeRecipeNode : IRecipeNode
-        {
-            private readonly string _name;
-            private readonly List<IRecipeNode> _nodes;
-
-            public CompositeRecipeNode(string name, List<IRecipeNode> nodes)
+            public Node(string key, List<Node> children)
             {
-                _name = name;
-                _nodes = nodes;
+                _key = key;
+                _children = children;
             }
 
-            public bool TryWrite(ISettableMap map)
+            public Node(string key, LdValue value)
             {
-                var wrote = false;
-                var ldValueBuilder = LdValue.BuildObject();
-                var adaptedBuilder = new ObjectBuilderAdapter(ldValueBuilder);
-                _nodes.ForEach(it => { wrote |= it.TryWrite(adaptedBuilder); });
-                if (wrote)
+                _key = key;
+                _value = value;
+            }
+
+            public bool TryWrite(ISettableMap settableMap)
+            {
+                if (_value.HasValue && !_value.Value.IsNull)
                 {
-                    map.Set(_name, ldValueBuilder.Build());
+                    settableMap.Set(_key, _value.Value);
+                    return true;
                 }
 
-                return wrote;
-            }
-        }
+                if (_children == null) return false;
 
-        private class ConcreteRecipeNode : IRecipeNode
-        {
-            private readonly string _name;
-            private readonly Func<LdValue?> _valueFunc;
+                var objBuilder = LdValue.BuildObject();
+                var adaptedBuilder = new ObjectBuilderAdapter(objBuilder);
 
-            public ConcreteRecipeNode(string name, Func<LdValue?> valueFunc)
-            {
-                _name = name;
-                _valueFunc = valueFunc;
-            }
+                if (!_children.Aggregate(false, (wrote, node) => wrote | node.TryWrite(adaptedBuilder))) return false;
 
-            public bool TryWrite(ISettableMap map)
-            {
-                var result = _valueFunc.Invoke();
-                if (!result.HasValue || result.Value == LdValue.Null) return false;
-                map.Set(_name, result.Value);
+                settableMap.Set(_key, objBuilder.Build());
                 return true;
             }
         }
+
 
         private class ObjectBuilderAdapter : ISettableMap
         {
