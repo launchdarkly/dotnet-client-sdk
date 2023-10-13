@@ -12,19 +12,19 @@ namespace LaunchDarkly.Sdk.Client.Internal
     /// </summary>
     internal class AutoEnvContextDecorator
     {
-        internal const string LD_APPLICATION_KIND = "ld_application";
-        internal const string LD_DEVICE_KIND = "ld_device";
-        internal const string ATTR_ID = "id";
-        internal const string ATTR_NAME = "name";
-        internal const string ATTR_VERSION = "version";
-        internal const string ATTR_VERSION_NAME = "versionName";
-        internal const string ATTR_MANUFACTURER = "manufacturer";
-        internal const string ATTR_MODEL = "model";
-        internal const string ATTR_LOCALE = "locale";
-        internal const string ATTR_OS = "os";
-        internal const string ATTR_FAMILY = "family";
-        internal const string ENV_ATTRIBUTES_VERSION = "envAttributesVersion";
-        internal const string SPEC_VERSION = "1.0";
+        internal const string LdApplicationKind = "ld_application";
+        internal const string LdDeviceKind = "ld_device";
+        internal const string AttrId = "id";
+        internal const string AttrName = "name";
+        internal const string AttrVersion = "version";
+        internal const string AttrVersionName = "versionName";
+        internal const string AttrManufacturer = "manufacturer";
+        internal const string AttrModel = "model";
+        internal const string AttrLocale = "locale";
+        internal const string AttrOs = "os";
+        internal const string AttrFamily = "family";
+        internal const string EnvAttributesVersion = "envAttributesVersion";
+        internal const string SpecVersion = "1.0";
 
         private readonly PersistentDataStoreWrapper _persistentData;
         private readonly IEnvironmentReporter _environmentReporter;
@@ -75,7 +75,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
             return builder.Build();
         }
 
-        private class ContextRecipe
+        private readonly struct ContextRecipe
         {
             public ContextKind Kind { get; }
             public Func<string> KeyCallable { get; }
@@ -96,7 +96,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 RecipeNodes.ForEach(it => { wrote |= it.TryWrite(adaptedBuilder); });
                 if (wrote)
                 {
-                    contextBuilder.Set(ENV_ATTRIBUTES_VERSION, SPEC_VERSION);
+                    contextBuilder.Set(EnvAttributesVersion, SpecVersion);
                     multiBuilder.Add(contextBuilder.Build());
                 }
             }
@@ -104,30 +104,30 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
         private List<ContextRecipe> MakeRecipeList()
         {
-            var ldApplicationKind = ContextKind.Of(LD_APPLICATION_KIND);
+            var ldApplicationKind = ContextKind.Of(LdApplicationKind);
             var applicationNodes = new List<IRecipeNode>
             {
-                new ConcreteRecipeNode(ATTR_ID, () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationId)),
-                new ConcreteRecipeNode(ATTR_NAME,
+                new ConcreteRecipeNode(AttrId, () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationId)),
+                new ConcreteRecipeNode(AttrName,
                     () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationName)),
-                new ConcreteRecipeNode(ATTR_VERSION,
+                new ConcreteRecipeNode(AttrVersion,
                     () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersion)),
-                new ConcreteRecipeNode(ATTR_VERSION_NAME,
+                new ConcreteRecipeNode(AttrVersionName,
                     () => LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersionName)),
-                new ConcreteRecipeNode(ATTR_LOCALE, () => LdValue.Of(_environmentReporter.Locale)),
+                new ConcreteRecipeNode(AttrLocale, () => LdValue.Of(_environmentReporter.Locale)),
             };
 
-            var ldDeviceKind = ContextKind.Of(LD_DEVICE_KIND);
+            var ldDeviceKind = ContextKind.Of(LdDeviceKind);
             var deviceNodes = new List<IRecipeNode>
             {
-                new ConcreteRecipeNode(ATTR_MANUFACTURER,
+                new ConcreteRecipeNode(AttrManufacturer,
                     () => LdValue.Of(_environmentReporter.DeviceInfo?.Manufacturer)),
-                new ConcreteRecipeNode(ATTR_MODEL, () => LdValue.Of(_environmentReporter.DeviceInfo?.Model)),
-                new CompositeRecipeNode(ATTR_OS, new List<IRecipeNode>
+                new ConcreteRecipeNode(AttrModel, () => LdValue.Of(_environmentReporter.DeviceInfo?.Model)),
+                new CompositeRecipeNode(AttrOs, new List<IRecipeNode>
                 {
-                    new ConcreteRecipeNode(ATTR_FAMILY, () => LdValue.Of(_environmentReporter.OsInfo?.Family)),
-                    new ConcreteRecipeNode(ATTR_NAME, () => LdValue.Of(_environmentReporter.OsInfo?.Name)),
-                    new ConcreteRecipeNode(ATTR_VERSION, () => LdValue.Of(_environmentReporter.OsInfo?.Version)),
+                    new ConcreteRecipeNode(AttrFamily, () => LdValue.Of(_environmentReporter.OsInfo?.Family)),
+                    new ConcreteRecipeNode(AttrName, () => LdValue.Of(_environmentReporter.OsInfo?.Name)),
+                    new ConcreteRecipeNode(AttrVersion, () => LdValue.Of(_environmentReporter.OsInfo?.Version)),
                 })
             };
 

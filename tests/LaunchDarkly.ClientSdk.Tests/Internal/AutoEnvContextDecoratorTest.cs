@@ -21,14 +21,14 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
             // Create the expected context after the code runs
             // because there will be persistence side effects
-            var applicationKind = ContextKind.Of(AutoEnvContextDecorator.LD_APPLICATION_KIND);
+            var applicationKind = ContextKind.Of(AutoEnvContextDecorator.LdApplicationKind);
             var expectedApplicationKey = Base64.UrlSafeSha256Hash(envReporter.ApplicationInfo?.ApplicationId ?? "");
             var expectedAppContext = Context.Builder(applicationKind, expectedApplicationKey)
-                .Set(AutoEnvContextDecorator.ENV_ATTRIBUTES_VERSION, AutoEnvContextDecorator.SPEC_VERSION)
-                .Set(AutoEnvContextDecorator.ATTR_ID, SdkPackage.Name)
-                .Set(AutoEnvContextDecorator.ATTR_NAME, SdkPackage.Name)
-                .Set(AutoEnvContextDecorator.ATTR_VERSION, SdkPackage.Version)
-                .Set(AutoEnvContextDecorator.ATTR_VERSION_NAME, SdkPackage.Version)
+                .Set(AutoEnvContextDecorator.EnvAttributesVersion, AutoEnvContextDecorator.SpecVersion)
+                .Set(AutoEnvContextDecorator.AttrId, SdkPackage.Name)
+                .Set(AutoEnvContextDecorator.AttrName, SdkPackage.Name)
+                .Set(AutoEnvContextDecorator.AttrVersion, SdkPackage.Version)
+                .Set(AutoEnvContextDecorator.AttrVersionName, SdkPackage.Version)
                 .Build();
 
             // TODO: We should include ld_device in these tests.  I think that may require a way to mock the platform
@@ -54,7 +54,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
 
             Context outContext;
-            Assert.True(output.TryGetContextByKind(new ContextKind(AutoEnvContextDecorator.LD_APPLICATION_KIND), out outContext));
+            Assert.True(output.TryGetContextByKind(new ContextKind(AutoEnvContextDecorator.LdApplicationKind), out outContext));
 
             Assert.Equal("en-GB", outContext.GetValue("locale").AsString);
         }

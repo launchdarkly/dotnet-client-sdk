@@ -131,7 +131,7 @@ namespace LaunchDarkly.Sdk.Client
         /// more details.
         /// </summary>
         /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.</param>
-        /// <returns></returns>
+        /// <returns>the same builder</returns>
         public ConfigurationBuilder AutoEnvironmentAttributes(AutoEnvAttributes autoEnvAttributes)
         {
             _autoEnvAttributes = autoEnvAttributes == AutoEnvAttributes.Enabled; // map enum to boolean
