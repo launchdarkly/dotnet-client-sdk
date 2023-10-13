@@ -31,12 +31,10 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 .Set(AutoEnvContextDecorator.ATTR_VERSION_NAME, SdkPackage.Version)
                 .Build();
 
-            var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LD_DEVICE_KIND);
-            var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
-                .Set(AutoEnvContextDecorator.ENV_ATTRIBUTES_VERSION, AutoEnvContextDecorator.SPEC_VERSION)
-                .Build();
+            // TODO: We should include ld_device in these tests.  I think that may require a way to mock the platform
+            // layer or run on an actual platform that supports getting device information such as Android.
 
-            var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedAppContext).Add(expectedDeviceContext)
+            var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedAppContext)
                 .Build();
 
             Assert.Equal(expectedOutput, output);
@@ -72,13 +70,10 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 .Set("dontOverwriteMeBro", "really bro").Build();
             var output = decoratorUnderTest.DecorateContext(input);
 
-            // Create the expected device context after the code runs because of persistence side effects
-            var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LD_DEVICE_KIND);
-            var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
-                .Set(AutoEnvContextDecorator.ENV_ATTRIBUTES_VERSION, AutoEnvContextDecorator.SPEC_VERSION)
-                .Build();
+            // TODO: We should include ld_device in these tests.  I think that may require a way to mock the platform
+            // layer or run on an actual platform that supports getting device information such as Android.
 
-            var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedDeviceContext).Build();
+            var expectedOutput = Context.MultiBuilder().Add(input).Build();
 
             Assert.Equal(expectedOutput, output);
         }
