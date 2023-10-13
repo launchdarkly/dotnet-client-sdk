@@ -80,12 +80,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var store = MakeMockDataStoreWrapper();
             var decoratorUnderTest = MakeDecoratorWithPersistence(store, envReporter);
 
-            var input = Context.Builder(ContextKind.Of("ld_application"), "aKey")
+            var input = Context.Builder(ContextKind.Of(AutoEnvContextDecorator.LdApplicationKind), "aKey")
                 .Set("dontOverwriteMeBro", "really bro").Build();
             var output = decoratorUnderTest.DecorateContext(input);
-
-            // TODO: We should include ld_device in these tests.  I think that may require a way to mock the platform
-            // layer or run on an actual platform that supports getting device information such as Android.
 
             var expectedOutput = Context.MultiBuilder().Add(input).Build();
 
@@ -99,9 +96,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var store = MakeMockDataStoreWrapper();
             var decoratorUnderTest = MakeDecoratorWithPersistence(store, envReporter);
 
-            var input1 = Context.Builder(ContextKind.Of("ld_application"), "aKey")
+            var input1 = Context.Builder(ContextKind.Of(AutoEnvContextDecorator.LdApplicationKind), "aKey")
                 .Set("dontOverwriteMeBro", "really bro").Build();
-            var input2 = Context.Builder(ContextKind.Of("ld_device"), "anotherKey")
+            var input2 = Context.Builder(ContextKind.Of(AutoEnvContextDecorator.LdDeviceKind), "anotherKey")
                 .Set("AndDontOverwriteThisEither", "bro").Build();
             var multiContextInput = Context.MultiBuilder().Add(input1).Add(input2).Build();
             var output = decoratorUnderTest.DecorateContext(multiContextInput);
