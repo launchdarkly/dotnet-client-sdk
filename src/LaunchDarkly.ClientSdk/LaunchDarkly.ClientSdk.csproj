@@ -37,9 +37,9 @@
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="System.Text.Json" Version="6.0.0" />
-    <ProjectReference Include="../../../dotnet-sdk-common-private/src/LaunchDarkly.CommonSdk/LaunchDarkly.CommonSdk.csproj" />
+    <PackageReference Include="LaunchDarkly.CommonSdk" Version="6.2.0" />
     <PackageReference Include="LaunchDarkly.EventSource" Version="5.0.1" />
-    <ProjectReference Include="../../../dotnet-sdk-internal-private/src/LaunchDarkly.InternalSdk/LaunchDarkly.InternalSdk.csproj" />
+    <PackageReference Include="LaunchDarkly.InternalSdk" Version="3.3.0" />
     <PackageReference Include="LaunchDarkly.Logging" Version="2.0.0" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
