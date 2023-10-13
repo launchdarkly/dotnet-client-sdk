@@ -2,6 +2,7 @@ using System.Globalization;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.EnvReporting;
+using LaunchDarkly.Sdk.EnvReporting.LayerModels;
 using Xunit;
 
 namespace LaunchDarkly.Sdk.Client.Internal
@@ -11,7 +12,13 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void AdheresToSchemaTest()
         {
-            var envReporter = new EnvironmentReporterBuilder().SetSdkLayer(SdkAttributes.Layer).Build();
+            const string osFamily = "family_foo";
+            const string osName = "name_bar";
+            const string osVersion = null;
+
+            var envReporter = new EnvironmentReporterBuilder().SetSdkLayer(SdkAttributes.Layer)
+                .SetPlatformLayer(new Layer(null, new OsInfo(osFamily, osName, osVersion), null, null)).Build();
+
             var store = MakeMockDataStoreWrapper();
             var decoratorUnderTest = MakeDecoratorWithPersistence(store, envReporter);
 
@@ -31,10 +38,16 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 .Set(AutoEnvContextDecorator.AttrVersionName, SdkPackage.Version)
                 .Build();
 
-            // TODO: We should include ld_device in these tests.  I think that may require a way to mock the platform
-            // layer or run on an actual platform that supports getting device information such as Android.
+            var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LdDeviceKind);
+            var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
+                .Set(AutoEnvContextDecorator.EnvAttributesVersion, AutoEnvContextDecorator.SpecVersion)
+                .Set(AutoEnvContextDecorator.AttrOs,
+                    LdValue.BuildObject().Set("family", osFamily).Set("name", osName).Build()).Build();
 
-            var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedAppContext)
+            var expectedOutput = Context.MultiBuilder()
+                .Add(input)
+                .Add(expectedAppContext)
+                .Add(expectedDeviceContext)
                 .Build();
 
             Assert.Equal(expectedOutput, output);
@@ -54,7 +67,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
 
             Context outContext;
-            Assert.True(output.TryGetContextByKind(new ContextKind(AutoEnvContextDecorator.LdApplicationKind), out outContext));
+            Assert.True(output.TryGetContextByKind(new ContextKind(AutoEnvContextDecorator.LdApplicationKind),
+                out outContext));
 
             Assert.Equal("en-GB", outContext.GetValue("locale").AsString);
         }
