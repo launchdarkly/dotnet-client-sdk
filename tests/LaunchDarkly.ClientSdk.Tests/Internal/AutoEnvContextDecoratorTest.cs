@@ -2,6 +2,7 @@ using System.Globalization;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
 using LaunchDarkly.Sdk.Client.Subsystems;
 using LaunchDarkly.Sdk.EnvReporting;
+using LaunchDarkly.Sdk.EnvReporting.LayerModels;
 using Xunit;
 
 namespace LaunchDarkly.Sdk.Client.Internal
@@ -11,7 +12,13 @@ namespace LaunchDarkly.Sdk.Client.Internal
         [Fact]
         public void AdheresToSchemaTest()
         {
-            var envReporter = new EnvironmentReporterBuilder().SetSdkLayer(SdkAttributes.Layer).Build();
+            const string osFamily = "family_foo";
+            const string osName = "name_bar";
+            const string osVersion = null;
+
+            var envReporter = new EnvironmentReporterBuilder().SetSdkLayer(SdkAttributes.Layer)
+                .SetPlatformLayer(new Layer(null, new OsInfo(osFamily, osName, osVersion), null, null)).Build();
+
             var store = MakeMockDataStoreWrapper();
             var decoratorUnderTest = MakeDecoratorWithPersistence(store, envReporter);
 
@@ -22,29 +29,25 @@ namespace LaunchDarkly.Sdk.Client.Internal
             // Create the expected context after the code runs
             // because there will be persistence side effects
             var applicationKind = ContextKind.Of(AutoEnvContextDecorator.LdApplicationKind);
-            var expectedApplicationKey = Base64.UrlSafeSha256Hash(envReporter.ApplicationInfo.ApplicationId);
+            var expectedApplicationKey = Base64.UrlSafeSha256Hash(envReporter.ApplicationInfo?.ApplicationId ?? "");
             var expectedAppContext = Context.Builder(applicationKind, expectedApplicationKey)
                 .Set(AutoEnvContextDecorator.EnvAttributesVersion, AutoEnvContextDecorator.SpecVersion)
                 .Set(AutoEnvContextDecorator.AttrId, SdkPackage.Name)
                 .Set(AutoEnvContextDecorator.AttrName, SdkPackage.Name)
                 .Set(AutoEnvContextDecorator.AttrVersion, SdkPackage.Version)
                 .Set(AutoEnvContextDecorator.AttrVersionName, SdkPackage.Version)
-                .Set(AutoEnvContextDecorator.AttrLocale, "unknown")
                 .Build();
 
             var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LdDeviceKind);
             var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
                 .Set(AutoEnvContextDecorator.EnvAttributesVersion, AutoEnvContextDecorator.SpecVersion)
-                .Set(AutoEnvContextDecorator.AttrManufacturer, "unknown")
-                .Set(AutoEnvContextDecorator.AttrModel, "unknown")
-                .Set(AutoEnvContextDecorator.AttrOs, LdValue.BuildObject()
-                    .Add(AutoEnvContextDecorator.AttrFamily, "unknown")
-                    .Add(AutoEnvContextDecorator.AttrName, "unknown")
-                    .Add(AutoEnvContextDecorator.AttrVersion, "unknown")
-                    .Build())
-                .Build();
+                .Set(AutoEnvContextDecorator.AttrOs,
+                    LdValue.BuildObject().Set("family", osFamily).Set("name", osName).Build()).Build();
 
-            var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedAppContext).Add(expectedDeviceContext)
+            var expectedOutput = Context.MultiBuilder()
+                .Add(input)
+                .Add(expectedAppContext)
+                .Add(expectedDeviceContext)
                 .Build();
 
             Assert.Equal(expectedOutput, output);
@@ -64,7 +67,8 @@ namespace LaunchDarkly.Sdk.Client.Internal
 
 
             Context outContext;
-            Assert.True(output.TryGetContextByKind(new ContextKind(AutoEnvContextDecorator.LdApplicationKind), out outContext));
+            Assert.True(output.TryGetContextByKind(new ContextKind(AutoEnvContextDecorator.LdApplicationKind),
+                out outContext));
 
             Assert.Equal("en-GB", outContext.GetValue("locale").AsString);
         }
@@ -76,24 +80,11 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var store = MakeMockDataStoreWrapper();
             var decoratorUnderTest = MakeDecoratorWithPersistence(store, envReporter);
 
-            var input = Context.Builder(ContextKind.Of("ld_application"), "aKey")
+            var input = Context.Builder(ContextKind.Of(AutoEnvContextDecorator.LdApplicationKind), "aKey")
                 .Set("dontOverwriteMeBro", "really bro").Build();
             var output = decoratorUnderTest.DecorateContext(input);
 
-            // Create the expected device context after the code runs because of persistence side effects
-            var deviceKind = ContextKind.Of(AutoEnvContextDecorator.LdDeviceKind);
-            var expectedDeviceContext = Context.Builder(deviceKind, store.GetGeneratedContextKey(deviceKind))
-                .Set(AutoEnvContextDecorator.EnvAttributesVersion, AutoEnvContextDecorator.SpecVersion)
-                .Set(AutoEnvContextDecorator.AttrManufacturer, "unknown")
-                .Set(AutoEnvContextDecorator.AttrModel, "unknown")
-                .Set(AutoEnvContextDecorator.AttrOs, LdValue.BuildObject()
-                    .Add(AutoEnvContextDecorator.AttrFamily, "unknown")
-                    .Add(AutoEnvContextDecorator.AttrName, "unknown")
-                    .Add(AutoEnvContextDecorator.AttrVersion, "unknown")
-                    .Build())
-                .Build();
-
-            var expectedOutput = Context.MultiBuilder().Add(input).Add(expectedDeviceContext).Build();
+            var expectedOutput = Context.MultiBuilder().Add(input).Build();
 
             Assert.Equal(expectedOutput, output);
         }
@@ -105,9 +96,9 @@ namespace LaunchDarkly.Sdk.Client.Internal
             var store = MakeMockDataStoreWrapper();
             var decoratorUnderTest = MakeDecoratorWithPersistence(store, envReporter);
 
-            var input1 = Context.Builder(ContextKind.Of("ld_application"), "aKey")
+            var input1 = Context.Builder(ContextKind.Of(AutoEnvContextDecorator.LdApplicationKind), "aKey")
                 .Set("dontOverwriteMeBro", "really bro").Build();
-            var input2 = Context.Builder(ContextKind.Of("ld_device"), "anotherKey")
+            var input2 = Context.Builder(ContextKind.Of(AutoEnvContextDecorator.LdDeviceKind), "anotherKey")
                 .Set("AndDontOverwriteThisEither", "bro").Build();
             var multiContextInput = Context.MultiBuilder().Add(input1).Add(input2).Build();
             var output = decoratorUnderTest.DecorateContext(multiContextInput);

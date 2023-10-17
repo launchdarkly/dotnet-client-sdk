@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.EnvReporting;
 using LaunchDarkly.Sdk.Client.Internal.DataStores;
@@ -63,7 +64,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 if (!context.TryGetContextByKind(recipe.Kind, out _))
                 {
                     // only add contexts for recipe Kinds not already in context to avoid overwriting data.
-                    builder.Add(MakeLdContextFromRecipe(recipe));
+                    recipe.TryWrite(builder);
                 }
                 else
                 {
@@ -78,56 +79,55 @@ namespace LaunchDarkly.Sdk.Client.Internal
         private readonly struct ContextRecipe
         {
             public ContextKind Kind { get; }
-            public Func<string> KeyCallable { get; }
-            public Dictionary<string, Func<LdValue>> AttributeCallables { get; }
+            private Func<string> KeyCallable { get; }
+            private List<Node> RecipeNodes { get; }
 
-            public ContextRecipe(ContextKind kind, Func<string> keyCallable,
-                Dictionary<string, Func<LdValue>> attributeCallables)
+            public ContextRecipe(ContextKind kind, Func<string> keyCallable, List<Node> recipeNodes)
             {
                 Kind = kind;
                 KeyCallable = keyCallable;
-                AttributeCallables = attributeCallables;
+                RecipeNodes = recipeNodes;
             }
-        }
 
-        private static Context MakeLdContextFromRecipe(ContextRecipe recipe)
-        {
-            var builder = Context.Builder(recipe.Kind, recipe.KeyCallable.Invoke());
-            foreach (var entry in recipe.AttributeCallables)
+            public void TryWrite(ContextMultiBuilder multiBuilder)
             {
-                builder.Set(entry.Key, entry.Value.Invoke());
+                var contextBuilder = Context.Builder(Kind, KeyCallable.Invoke());
+                var adaptedBuilder = new ContextBuilderAdapter(contextBuilder);
+                if (RecipeNodes.Aggregate(false, (wrote, node) => wrote | node.TryWrite(adaptedBuilder)))
+                {
+                    contextBuilder.Set(EnvAttributesVersion, SpecVersion);
+                    multiBuilder.Add(contextBuilder.Build());
+                }
             }
-
-            return builder.Build();
         }
 
         private List<ContextRecipe> MakeRecipeList()
         {
             var ldApplicationKind = ContextKind.Of(LdApplicationKind);
-            var applicationCallables = new Dictionary<string, Func<LdValue>>
+            var applicationNodes = new List<Node>
             {
-                { EnvAttributesVersion, () => LdValue.Of(SpecVersion) },
-                { AttrId, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationId) },
-                { AttrName, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationName) },
-                { AttrVersion, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersion) },
-                { AttrVersionName, () => LdValue.Of(_environmentReporter.ApplicationInfo.ApplicationVersionName) },
-                { AttrLocale, () => LdValue.Of(_environmentReporter.Locale) }
+                new Node(AttrId, LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationId)),
+                new Node(AttrName,
+                    LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationName)),
+                new Node(AttrVersion,
+                    LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersion)),
+                new Node(AttrVersionName,
+                     LdValue.Of(_environmentReporter.ApplicationInfo?.ApplicationVersionName)),
+                new Node(AttrLocale, LdValue.Of(_environmentReporter.Locale)),
             };
 
             var ldDeviceKind = ContextKind.Of(LdDeviceKind);
-            var deviceCallables = new Dictionary<string, Func<LdValue>>
+            var deviceNodes = new List<Node>
             {
-                { EnvAttributesVersion, () => LdValue.Of(SpecVersion) },
-                { AttrManufacturer, () => LdValue.Of(_environmentReporter.DeviceInfo.Manufacturer) },
-                { AttrModel, () => LdValue.Of(_environmentReporter.DeviceInfo.Model) },
+                new Node(AttrManufacturer,
+                    LdValue.Of(_environmentReporter.DeviceInfo?.Manufacturer)),
+                new Node(AttrModel,  LdValue.Of(_environmentReporter.DeviceInfo?.Model)),
+                new Node(AttrOs, new List<Node>
                 {
-                    AttrOs, () =>
-                        LdValue.BuildObject()
-                            .Add(AttrFamily, _environmentReporter.OsInfo.Family)
-                            .Add(AttrName, _environmentReporter.OsInfo.Name)
-                            .Add(AttrVersion, _environmentReporter.OsInfo.Version)
-                            .Build()
-                }
+                    new Node(AttrFamily,  LdValue.Of(_environmentReporter.OsInfo?.Family)),
+                    new Node(AttrName,  LdValue.Of(_environmentReporter.OsInfo?.Name)),
+                    new Node(AttrVersion,  LdValue.Of(_environmentReporter.OsInfo?.Version)),
+                })
             };
 
             return new List<ContextRecipe>
@@ -135,14 +135,14 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 new ContextRecipe(
                     ldApplicationKind,
                     () => Base64.UrlSafeSha256Hash(
-                        _environmentReporter.ApplicationInfo.ApplicationId ?? ""
+                        _environmentReporter.ApplicationInfo?.ApplicationId ?? ""
                     ),
-                    applicationCallables
+                    applicationNodes
                 ),
                 new ContextRecipe(
                     ldDeviceKind,
                     () => GetOrCreateAutoContextKey(_persistentData, ldDeviceKind),
-                    deviceCallables
+                    deviceNodes
                 )
             };
         }
@@ -156,6 +156,80 @@ namespace LaunchDarkly.Sdk.Client.Internal
                 store.SetGeneratedContextKey(contextKind, uniqueId);
             }
             return uniqueId;
+        }
+
+        private interface ISettableMap
+        {
+            void Set(string attributeName, LdValue value);
+        }
+
+        private class Node
+        {
+            private readonly string _key;
+            private readonly LdValue? _value;
+            private readonly List<Node> _children;
+
+            public Node(string key, List<Node> children)
+            {
+                _key = key;
+                _children = children;
+            }
+
+            public Node(string key, LdValue value)
+            {
+                _key = key;
+                _value = value;
+            }
+
+            public bool TryWrite(ISettableMap settableMap)
+            {
+                if (_value.HasValue && !_value.Value.IsNull)
+                {
+                    settableMap.Set(_key, _value.Value);
+                    return true;
+                }
+
+                if (_children == null) return false;
+
+                var objBuilder = LdValue.BuildObject();
+                var adaptedBuilder = new ObjectBuilderAdapter(objBuilder);
+
+                if (!_children.Aggregate(false, (wrote, node) => wrote | node.TryWrite(adaptedBuilder))) return false;
+
+                settableMap.Set(_key, objBuilder.Build());
+                return true;
+            }
+        }
+
+
+        private class ObjectBuilderAdapter : ISettableMap
+        {
+            private readonly LdValue.ObjectBuilder _underlyingBuilder;
+
+            public ObjectBuilderAdapter(LdValue.ObjectBuilder builder)
+            {
+                _underlyingBuilder = builder;
+            }
+
+            public void Set(string attributeName, LdValue value)
+            {
+                _underlyingBuilder.Set(attributeName, value);
+            }
+        }
+
+        private class ContextBuilderAdapter : ISettableMap
+        {
+            private readonly ContextBuilder _underlyingBuilder;
+
+            public ContextBuilderAdapter(ContextBuilder builder)
+            {
+                _underlyingBuilder = builder;
+            }
+
+            public void Set(string attributeName, LdValue value)
+            {
+                _underlyingBuilder.Set(attributeName, value);
+            }
         }
     }
 }

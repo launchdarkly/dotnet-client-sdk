@@ -18,7 +18,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 ).Build();
 
             var output = LdClientContext.MakeEnvironmentReporter(configuration);
-            Assert.Equal("mockId", output.ApplicationInfo.ApplicationId);
+            Assert.Equal("mockId", output.ApplicationInfo?.ApplicationId);
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 .Build();
 
             var output = LdClientContext.MakeEnvironmentReporter(configuration);
-            Assert.Equal(SdkAttributes.Layer.ApplicationInfo?.ApplicationId, output.ApplicationInfo.ApplicationId);
+            Assert.Equal(SdkAttributes.Layer.ApplicationInfo?.ApplicationId, output.ApplicationInfo?.ApplicationId);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 .Build();
 
             var output = LdClientContext.MakeEnvironmentReporter(configuration);
-            Assert.NotEqual(SdkAttributes.Layer.ApplicationInfo?.ApplicationId, output.ApplicationInfo.ApplicationId);
+            Assert.NotEqual(SdkAttributes.Layer.ApplicationInfo?.ApplicationId, output.ApplicationInfo?.ApplicationId);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 ).Build();
 
             var output = LdClientContext.MakeEnvironmentReporter(configuration);
-            Assert.Equal("mockId", output.ApplicationInfo.ApplicationId);
+            Assert.Equal("mockId", output.ApplicationInfo?.ApplicationId);
         }
     }
 }
