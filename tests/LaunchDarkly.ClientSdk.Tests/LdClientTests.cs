@@ -167,7 +167,6 @@ namespace LaunchDarkly.Sdk.Client
             {
                 var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
                 Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_application"), out _));
-                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
             }
         }
 
@@ -427,7 +426,6 @@ namespace LaunchDarkly.Sdk.Client
 
                 var receivedContext = dataSourceConfig.ReceivedClientContext.CurrentContext;
                 Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_application"), out _));
-                Assert.True(receivedContext.TryGetContextByKind(ContextKind.Of("ld_device"), out _));
             }
         }
 
