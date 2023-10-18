@@ -84,7 +84,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </para>
         /// </remarks>
         /// <param name="maxCachedContexts"></param>
-        /// <returns></returns>
+        /// <returns>the builder</returns>
         public PersistenceConfigurationBuilder MaxCachedContexts(int maxCachedContexts)
         {
             _maxCachedContexts = maxCachedContexts;

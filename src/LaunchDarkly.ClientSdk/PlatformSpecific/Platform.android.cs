@@ -87,7 +87,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
 
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
             (int)Build.VERSION.SdkInt >= (int)versionCode;
-
+        
         //internal static CameraManager CameraManager =>
         //    AppContext.GetSystemService(Context.CameraService) as CameraManager;
 

@@ -11,7 +11,7 @@ namespace LaunchDarkly.Sdk.Client
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Obtain an instance of this class by calling <see cref="Configuration.Builder(string)"/>.
+    /// Obtain an instance of this class by calling <see cref="Configuration.Builder(string, AutoEnvAttributes)"/>.
     /// </para>
     /// <para>
     /// All of the builder methods for setting a configuration property return a reference to the same builder, so they can be
@@ -25,12 +25,39 @@ namespace LaunchDarkly.Sdk.Client
     /// </example>
     public sealed class ConfigurationBuilder
     {
+        /// <summary>
+        /// Enable / disable options for Auto Environment Attributes functionality.  When enabled, the SDK will automatically
+        /// provide data about the environment where the application is running. This data makes it simpler to target
+        /// your mobile customers based on application name or version, or on device characteristics including manufacturer,
+        /// model, operating system, locale, and so on. We recommend enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a>
+        /// for more details.
+        /// For example, consider a “dark mode” feature being added to an app. Versions 10 through 14 contain early,
+        /// incomplete versions of the feature. These versions are available to all customers, but the “dark mode” feature is only
+        /// enabled for testers.  With version 15, the feature is considered complete. With Auto Environment Attributes enabled,
+        /// you can use targeting rules to enable "dark mode" for all customers who are using version 15 or greater, and ensure
+        /// that customers on previous versions don't use the earlier, unfinished version of the feature.
+        /// </summary>
+        public enum AutoEnvAttributes
+        {
+            /// <summary>
+            /// Enables the Auto EnvironmentAttributes functionality.
+            /// </summary>
+            Enabled,
+
+            /// <summary>
+            /// Disables the Auto EnvironmentAttributes functionality.
+            /// </summary>
+            Disabled
+        }
+
         // This exists so that we can distinguish between leaving the HttpMessageHandler property unchanged
         // and explicitly setting it to null. If the property value is the exact same instance as this, we
         // will replace it with a platform-specific implementation.
         internal static readonly HttpMessageHandler DefaultHttpMessageHandlerInstance = new HttpClientHandler();
 
         internal ApplicationInfoBuilder _applicationInfo;
+        internal bool _autoEnvAttributes = false;
         internal IComponentConfigurer<IDataSource> _dataSource = null;
         internal bool _diagnosticOptOut = false;
         internal bool _enableBackgroundUpdating = true;
@@ -48,13 +75,16 @@ namespace LaunchDarkly.Sdk.Client
         internal IBackgroundModeManager _backgroundModeManager;
         internal IConnectivityStateManager _connectivityStateManager;
 
-        internal ConfigurationBuilder(string mobileKey)
+        internal ConfigurationBuilder(string mobileKey, AutoEnvAttributes autoEnvAttributes)
         {
             _mobileKey = mobileKey;
+            _autoEnvAttributes = autoEnvAttributes == AutoEnvAttributes.Enabled; // map enum to boolean
         }
 
         internal ConfigurationBuilder(Configuration copyFrom)
         {
+            _applicationInfo = copyFrom.ApplicationInfo;
+            _autoEnvAttributes = copyFrom.AutoEnvAttributes;
             _dataSource = copyFrom.DataSource;
             _diagnosticOptOut = copyFrom.DiagnosticOptOut;
             _enableBackgroundUpdating = copyFrom.EnableBackgroundUpdating;
@@ -66,7 +96,6 @@ namespace LaunchDarkly.Sdk.Client
             _offline = copyFrom.Offline;
             _persistenceConfigurationBuilder = copyFrom.PersistenceConfigurationBuilder;
             _serviceEndpointsBuilder = new ServiceEndpointsBuilder(copyFrom.ServiceEndpoints);
-            _applicationInfo = copyFrom.ApplicationInfo;
         }
 
         /// <summary>
@@ -78,7 +107,7 @@ namespace LaunchDarkly.Sdk.Client
         {
             return new Configuration(this);
         }
-        
+
         /// <summary>
         /// Sets the SDK's application metadata, which may be used in the LaunchDarkly analytics or other product
         /// features.  This object is normally a configuration builder obtained from <see cref="Components.ApplicationInfo"/>,
@@ -89,6 +118,23 @@ namespace LaunchDarkly.Sdk.Client
         public ConfigurationBuilder ApplicationInfo(ApplicationInfoBuilder applicationInfo)
         {
             _applicationInfo = applicationInfo;
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies whether the SDK will use Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.
+        /// </summary>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.</param>
+        /// <returns>the same builder</returns>
+        public ConfigurationBuilder AutoEnvironmentAttributes(AutoEnvAttributes autoEnvAttributes)
+        {
+            _autoEnvAttributes = autoEnvAttributes == AutoEnvAttributes.Enabled; // map enum to boolean
             return this;
         }
 
@@ -205,7 +251,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <remarks>
         /// <para>
         /// If enabled, this option changes the SDK's behavior whenever the <see cref="Context"/> (as given to
-        /// methods like <see cref="LdClient.Init(string, Context, System.TimeSpan)"/> or
+        /// methods like <see cref="LdClient.Init(string, AutoEnvAttributes, Context, System.TimeSpan)"/> or
         /// <see cref="LdClient.Identify(Context, System.TimeSpan)"/>) has an <see cref="Context.Anonymous"/>
         /// property of <see langword="true"/>, as follows:
         /// </para>

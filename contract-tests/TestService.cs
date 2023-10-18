@@ -37,7 +37,8 @@ namespace TestService
             "singleton",
             "strongly-typed",
             "user-type",
-            "tags"
+            "tags",
+            "auto-env-attributes"
         };
 
         public readonly Handler Handler;
@@ -54,7 +55,7 @@ namespace TestService
             _quitSignal = quitSignal;
 
             _version = LdClient.Version.ToString();
-            
+
             var service = new SimpleJsonService();
             Handler = service.Handler;
 

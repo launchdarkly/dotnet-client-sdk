@@ -37,13 +37,12 @@
     <Folder Include="Properties\" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="System.Text.Json" Version="6.0.0" />
-    <PackageReference Include="LaunchDarkly.CommonSdk" Version="6.1.0" />
+    <PackageReference Include="LaunchDarkly.CommonSdk" Version="7.0.0" />
     <PackageReference Include="LaunchDarkly.EventSource" Version="5.0.1" />
-    <PackageReference Include="LaunchDarkly.InternalSdk" Version="3.2.0" />
+    <PackageReference Include="LaunchDarkly.InternalSdk" Version="3.3.1" />
     <PackageReference Include="LaunchDarkly.Logging" Version="2.0.0" />
     <Compile Include="**\*.cs" Exclude="PlatformSpecific\*.cs;bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="PlatformSpecific\*.shared.cs" />
-    <Folder Include="Subsystems\" />
   </ItemGroup>
 
   <!-- dependencies and source files for .NET Standard (all versions) -->
@@ -80,6 +79,15 @@
     <Compile Update="Subsystems\IComponentConfigurer.cs">
       <SubType></SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'monoandroid71'">
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'monoandroid80'">
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'monoandroid81'">
+    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <AssemblyOriginatorKeyFile>../../LaunchDarkly.ClientSdk.snk</AssemblyOriginatorKeyFile>

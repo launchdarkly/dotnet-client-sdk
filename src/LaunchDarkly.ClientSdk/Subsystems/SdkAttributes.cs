@@ -1,3 +1,4 @@
+using System.Globalization;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.EnvReporting;
 
@@ -10,6 +11,6 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
                 SdkPackage.Name,
                 SdkPackage.Version,
                 SdkPackage.Version),
-            null, null);
+            null, null, null);
     }
 }
