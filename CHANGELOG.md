@@ -3,6 +3,10 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [4.0.0] - 2023-10-18
+### Added:
+- Added Automatic Mobile Environment Attributes functionality which makes it simpler to target your mobile customers based on application name or version, or on device characteristics including manufacturer, model, operating system, locale, and so on. To learn more, read [Automatic environment attributes](https://docs.launchdarkly.com/sdk/features/environment-attributes).
+
 ## [3.1.0] - 2023-10-11
 ### Added:
 - `Configuration.Builder("myKey").ApplicationInfo()`, for configuration of application metadata that may be used in LaunchDarkly analytics or other product features.
