@@ -73,7 +73,7 @@
   
   <h1 id="LaunchDarkly_Sdk_Client_Configuration" data-uid="LaunchDarkly.Sdk.Client.Configuration" class="text-break">Class Configuration
   </h1>
-  <div class="markdown level0 summary"><p>Configuration options for <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a>. </p>
+  <div class="markdown level0 summary"><p>Configuration options for <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a>.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
@@ -89,8 +89,8 @@
   </div>
   <h5 id="LaunchDarkly_Sdk_Client_Configuration_remarks"><strong>Remarks</strong></h5>
   <div class="markdown level0 remarks"><p>Instances of <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html">Configuration</a> are immutable once created. They can be created with the factory method
-<a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Default_System_String_">Default(String)</a>, or using a builder pattern with <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_">Builder(String)</a>
-or <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_LaunchDarkly_Sdk_Client_Configuration_">Builder(Configuration)</a>.</p>
+<a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Default_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_">Default(String, ConfigurationBuilder.AutoEnvAttributes)</a>, or using a builder pattern
+with <span class="xref">System.Collections.Immutable.ImmutableArray`1.Builder</span> or <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_LaunchDarkly_Sdk_Client_Configuration_">Builder(Configuration)</a>.</p>
 </div>
   <h3 id="fields">Fields
   </h3>
@@ -164,6 +164,31 @@ or <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly
     <tbody>
       <tr>
         <td><a class="xref" href="LaunchDarkly.Sdk.ApplicationInfoBuilder.html">ApplicationInfoBuilder</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_Configuration_AutoEnvAttributes_" data-uid="LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_Configuration_AutoEnvAttributes" data-uid="LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes">AutoEnvAttributes</h4>
+  <div class="markdown level1 summary"><p>True if Auto Environment Attributes functionality is enabled.  When enabled, the SDK will automatically
+provide data about the environment where the application is running.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AutoEnvAttributes { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -402,7 +427,7 @@ for sending analytics events.</p>
   </table>
   <h5 id="LaunchDarkly_Sdk_Client_Configuration_LoggingConfigurationBuilder_seealso">See Also</h5>
   <div class="seealso">
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Logging_LaunchDarkly_Sdk_Client_Integrations_LoggingConfigurationBuilder_">Logging(LoggingConfigurationBuilder)</a></div>
+      <div><span class="xref">LaunchDarkly.Logging</span></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_Configuration_MobileKey_" data-uid="LaunchDarkly.Sdk.Client.Configuration.MobileKey*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_Configuration_MobileKey" data-uid="LaunchDarkly.Sdk.Client.Configuration.MobileKey">MobileKey</h4>
@@ -561,13 +586,13 @@ for sending analytics events.</p>
     </tbody>
   </table>
   <a id="LaunchDarkly_Sdk_Client_Configuration_Builder_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Builder*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Builder(System.String)">Builder(String)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Builder(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)">Builder(String, ConfigurationBuilder.AutoEnvAttributes)</h4>
   <div class="markdown level1 summary"><p>Creates a <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html">ConfigurationBuilder</a> for constructing a configuration object using a fluent syntax.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static ConfigurationBuilder Builder(string mobileKey)</code></pre>
+    <pre><code class="lang-csharp hljs">public static ConfigurationBuilder Builder(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -583,6 +608,18 @@ for sending analytics events.</p>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">mobileKey</span></td>
         <td><p>the mobile SDK key for your LaunchDarkly environment</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html">ConfigurationBuilder.AutoEnvAttributes</a></td>
+        <td><span class="parametername">autoEnvAttributes</span></td>
+        <td><p>Enable / disable Auto Environment Attributes functionality.  When enabled,
+the SDK will automatically provide data about the environment where the application is running.
+This data makes it simpler to target your mobile customers based on application name or version, or on
+device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+enabling this when you configure the SDK.  See
+<a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+more details.</p>
 </td>
       </tr>
     </tbody>
@@ -603,26 +640,26 @@ for sending analytics events.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_Configuration_Builder_System_String__remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes__remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>This is the only method for building a <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html">Configuration</a> if you are setting properties
 besides the <code>MobileKey</code>. The <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html">ConfigurationBuilder</a> has methods for setting any number of
 properties, after which you call <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Build">Build()</a> to get the resulting
 <code>Configuration</code> instance.</p>
 </div>
-  <h5 id="LaunchDarkly_Sdk_Client_Configuration_Builder_System_String__examples">Examples</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes__examples">Examples</h5>
   <pre><code>    var config = Configuration.Builder(&quot;my-sdk-key&quot;)
         .EventFlushInterval(TimeSpan.FromSeconds(90))
         .StartWaitTime(TimeSpan.FromSeconds(5))
         .Build();</code></pre>
 
   <a id="LaunchDarkly_Sdk_Client_Configuration_Default_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Default*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_Configuration_Default_System_String_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Default(System.String)">Default(String)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_Configuration_Default_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_" data-uid="LaunchDarkly.Sdk.Client.Configuration.Default(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)">Default(String, ConfigurationBuilder.AutoEnvAttributes)</h4>
   <div class="markdown level1 summary"><p>Creates a configuration with all parameters set to the default.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Configuration Default(string mobileKey)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Configuration Default(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -638,6 +675,18 @@ properties, after which you call <a class="xref" href="LaunchDarkly.Sdk.Client.C
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">mobileKey</span></td>
         <td><p>the SDK key for your LaunchDarkly environment</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html">ConfigurationBuilder.AutoEnvAttributes</a></td>
+        <td><span class="parametername">autoEnvAttributes</span></td>
+        <td><p>Enable / disable Auto Environment Attributes functionality.  When enabled,
+the SDK will automatically provide data about the environment where the application is running.
+This data makes it simpler to target your mobile customers based on application name or version, or on
+device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+enabling this when you configure the SDK.  See
+<a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+more details.</p>
 </td>
       </tr>
     </tbody>

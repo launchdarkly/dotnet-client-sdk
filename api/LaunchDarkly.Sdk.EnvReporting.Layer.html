@@ -74,7 +74,8 @@
   <h1 id="LaunchDarkly_Sdk_EnvReporting_Layer" data-uid="LaunchDarkly.Sdk.EnvReporting.Layer" class="text-break">Class Layer
   </h1>
   <div class="markdown level0 summary"><p>Represents one layer of sourcing environment properties.  A layer may know how to source any
-number of properties (even possibly 0 properties in edge cases).</p>
+number of properties (even possibly 0 properties in edge cases), in which case it may return null for individual
+properties.</p>
 </div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
@@ -91,13 +92,13 @@ number of properties (even possibly 0 properties in edge cases).</p>
   <h3 id="constructors">Constructors
   </h3>
   <a id="LaunchDarkly_Sdk_EnvReporting_Layer__ctor_" data-uid="LaunchDarkly.Sdk.EnvReporting.Layer.#ctor*"></a>
-  <h4 id="LaunchDarkly_Sdk_EnvReporting_Layer__ctor_System_Nullable_LaunchDarkly_Sdk_ApplicationInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo__" data-uid="LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo})">Layer(Nullable&lt;ApplicationInfo&gt;, Nullable&lt;OsInfo&gt;, Nullable&lt;DeviceInfo&gt;)</h4>
+  <h4 id="LaunchDarkly_Sdk_EnvReporting_Layer__ctor_System_Nullable_LaunchDarkly_Sdk_ApplicationInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo__System_String_" data-uid="LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo},System.String)">Layer(Nullable&lt;ApplicationInfo&gt;, Nullable&lt;OsInfo&gt;, Nullable&lt;DeviceInfo&gt;, String)</h4>
   <div class="markdown level1 summary"><p>Constructs a new layer with optional property values.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Layer(Nullable&lt;ApplicationInfo&gt; appInfo, Nullable&lt;OsInfo&gt; osInfo, Nullable&lt;DeviceInfo&gt; deviceInfo)</code></pre>
+    <pre><code class="lang-csharp hljs">public Layer(Nullable&lt;ApplicationInfo&gt; appInfo, Nullable&lt;OsInfo&gt; osInfo, Nullable&lt;DeviceInfo&gt; deviceInfo, string locale)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -125,6 +126,12 @@ number of properties (even possibly 0 properties in edge cases).</p>
         <td><span class="xref">System.Nullable</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html">DeviceInfo</a>&gt;</td>
         <td><span class="parametername">deviceInfo</span></td>
         <td><p>the optional DeviceInfo.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">locale</span></td>
+        <td><p>the optional application locale.</p>
 </td>
       </tr>
     </tbody>
@@ -175,6 +182,30 @@ number of properties (even possibly 0 properties in edge cases).</p>
     <tbody>
       <tr>
         <td><span class="xref">System.Nullable</span>&lt;<a class="xref" href="LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo.html">DeviceInfo</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_EnvReporting_Layer_Locale_" data-uid="LaunchDarkly.Sdk.EnvReporting.Layer.Locale*"></a>
+  <h4 id="LaunchDarkly_Sdk_EnvReporting_Layer_Locale" data-uid="LaunchDarkly.Sdk.EnvReporting.Layer.Locale">Locale</h4>
+  <div class="markdown level1 summary"><p>The application locale in the format languagecode2-country/regioncode2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string Locale { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
         <td></td>
       </tr>
     </tbody>

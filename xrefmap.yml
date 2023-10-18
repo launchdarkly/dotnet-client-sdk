@@ -487,18 +487,30 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo
   fullName: LaunchDarkly.Sdk.Client.Configuration.ApplicationInfo
   nameWithType: Configuration.ApplicationInfo
+- uid: LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes
+  name: AutoEnvAttributes
+  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_AutoEnvAttributes
+  commentId: P:LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes
+  fullName: LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes
+  nameWithType: Configuration.AutoEnvAttributes
+- uid: LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes*
+  name: AutoEnvAttributes
+  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_AutoEnvAttributes_
+  commentId: Overload:LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes
+  fullName: LaunchDarkly.Sdk.Client.Configuration.AutoEnvAttributes
+  nameWithType: Configuration.AutoEnvAttributes
 - uid: LaunchDarkly.Sdk.Client.Configuration.Builder(LaunchDarkly.Sdk.Client.Configuration)
   name: Builder(Configuration)
   href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_LaunchDarkly_Sdk_Client_Configuration_
   commentId: M:LaunchDarkly.Sdk.Client.Configuration.Builder(LaunchDarkly.Sdk.Client.Configuration)
   fullName: LaunchDarkly.Sdk.Client.Configuration.Builder(LaunchDarkly.Sdk.Client.Configuration)
   nameWithType: Configuration.Builder(Configuration)
-- uid: LaunchDarkly.Sdk.Client.Configuration.Builder(System.String)
-  name: Builder(String)
-  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_
-  commentId: M:LaunchDarkly.Sdk.Client.Configuration.Builder(System.String)
-  fullName: LaunchDarkly.Sdk.Client.Configuration.Builder(System.String)
-  nameWithType: Configuration.Builder(String)
+- uid: LaunchDarkly.Sdk.Client.Configuration.Builder(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  name: Builder(String, ConfigurationBuilder.AutoEnvAttributes)
+  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_
+  commentId: M:LaunchDarkly.Sdk.Client.Configuration.Builder(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  fullName: LaunchDarkly.Sdk.Client.Configuration.Builder(System.String, LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  nameWithType: Configuration.Builder(String, ConfigurationBuilder.AutoEnvAttributes)
 - uid: LaunchDarkly.Sdk.Client.Configuration.Builder*
   name: Builder
   href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_
@@ -517,12 +529,12 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.Client.Configuration.DataSource
   fullName: LaunchDarkly.Sdk.Client.Configuration.DataSource
   nameWithType: Configuration.DataSource
-- uid: LaunchDarkly.Sdk.Client.Configuration.Default(System.String)
-  name: Default(String)
-  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Default_System_String_
-  commentId: M:LaunchDarkly.Sdk.Client.Configuration.Default(System.String)
-  fullName: LaunchDarkly.Sdk.Client.Configuration.Default(System.String)
-  nameWithType: Configuration.Default(String)
+- uid: LaunchDarkly.Sdk.Client.Configuration.Default(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  name: Default(String, ConfigurationBuilder.AutoEnvAttributes)
+  href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Default_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_
+  commentId: M:LaunchDarkly.Sdk.Client.Configuration.Default(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  fullName: LaunchDarkly.Sdk.Client.Configuration.Default(System.String, LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  nameWithType: Configuration.Default(String, ConfigurationBuilder.AutoEnvAttributes)
 - uid: LaunchDarkly.Sdk.Client.Configuration.Default*
   name: Default
   href: api/LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Default_
@@ -691,6 +703,42 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo
   fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.ApplicationInfo
   nameWithType: ConfigurationBuilder.ApplicationInfo
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes
+  name: ConfigurationBuilder.AutoEnvAttributes
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html
+  commentId: T:LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes
+  nameWithType: ConfigurationBuilder.AutoEnvAttributes
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.Disabled
+  name: Disabled
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_Disabled
+  commentId: F:LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.Disabled
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.Disabled
+  nameWithType: ConfigurationBuilder.AutoEnvAttributes.Disabled
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.Enabled
+  name: Enabled
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_Enabled
+  commentId: F:LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.Enabled
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.Enabled
+  nameWithType: ConfigurationBuilder.AutoEnvAttributes.Enabled
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.value__
+  name: value__
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_value__
+  commentId: F:LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.value__
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.value__
+  nameWithType: ConfigurationBuilder.AutoEnvAttributes.value__
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes(LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  name: AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes)
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvironmentAttributes_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_
+  commentId: M:LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes(LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes(LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)
+  nameWithType: ConfigurationBuilder.AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes)
+- uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes*
+  name: AutoEnvironmentAttributes
+  href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvironmentAttributes_
+  commentId: Overload:LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes
+  fullName: LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes
+  nameWithType: ConfigurationBuilder.AutoEnvironmentAttributes
 - uid: LaunchDarkly.Sdk.Client.ConfigurationBuilder.Build
   name: Build()
   href: api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_Build
@@ -1138,12 +1186,15 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.ConnectTimeout
   fullName: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.ConnectTimeout
   nameWithType: HttpConfigurationBuilder.ConnectTimeout
-- uid: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String,LaunchDarkly.Sdk.ApplicationInfo)
-  name: CreateHttpConfiguration(String, ApplicationInfo)
-  href: api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_System_String_LaunchDarkly_Sdk_ApplicationInfo_
-  commentId: M:LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String,LaunchDarkly.Sdk.ApplicationInfo)
-  fullName: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String, LaunchDarkly.Sdk.ApplicationInfo)
-  nameWithType: HttpConfigurationBuilder.CreateHttpConfiguration(String, ApplicationInfo)
+- uid: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String,System.Nullable{LaunchDarkly.Sdk.ApplicationInfo})
+  name: CreateHttpConfiguration(String, Nullable<ApplicationInfo>)
+  href: api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_System_String_System_Nullable_LaunchDarkly_Sdk_ApplicationInfo__
+  commentId: M:LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String,System.Nullable{LaunchDarkly.Sdk.ApplicationInfo})
+  name.vb: CreateHttpConfiguration(String, Nullable(Of ApplicationInfo))
+  fullName: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String, System.Nullable<LaunchDarkly.Sdk.ApplicationInfo>)
+  fullName.vb: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration(System.String, System.Nullable(Of LaunchDarkly.Sdk.ApplicationInfo))
+  nameWithType: HttpConfigurationBuilder.CreateHttpConfiguration(String, Nullable<ApplicationInfo>)
+  nameWithType.vb: HttpConfigurationBuilder.CreateHttpConfiguration(String, Nullable(Of ApplicationInfo))
 - uid: LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.CreateHttpConfiguration*
   name: CreateHttpConfiguration
   href: api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html#LaunchDarkly_Sdk_Client_Integrations_HttpConfigurationBuilder_CreateHttpConfiguration_
@@ -2740,18 +2791,18 @@ references:
   commentId: M:LaunchDarkly.Sdk.Client.LdClient.Init(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.User,System.TimeSpan)
   fullName: LaunchDarkly.Sdk.Client.LdClient.Init(LaunchDarkly.Sdk.Client.Configuration, LaunchDarkly.Sdk.User, System.TimeSpan)
   nameWithType: LdClient.Init(Configuration, User, TimeSpan)
-- uid: LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Context,System.TimeSpan)
-  name: Init(String, Context, TimeSpan)
-  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_
-  commentId: M:LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Context,System.TimeSpan)
-  fullName: LaunchDarkly.Sdk.Client.LdClient.Init(System.String, LaunchDarkly.Sdk.Context, System.TimeSpan)
-  nameWithType: LdClient.Init(String, Context, TimeSpan)
-- uid: LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.User,System.TimeSpan)
-  name: Init(String, User, TimeSpan)
-  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_User_System_TimeSpan_
-  commentId: M:LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.User,System.TimeSpan)
-  fullName: LaunchDarkly.Sdk.Client.LdClient.Init(System.String, LaunchDarkly.Sdk.User, System.TimeSpan)
-  nameWithType: LdClient.Init(String, User, TimeSpan)
+- uid: LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.Context,System.TimeSpan)
+  name: Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)
+  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan_
+  commentId: M:LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.Context,System.TimeSpan)
+  fullName: LaunchDarkly.Sdk.Client.LdClient.Init(System.String, LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes, LaunchDarkly.Sdk.Context, System.TimeSpan)
+  nameWithType: LdClient.Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)
+- uid: LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.User,System.TimeSpan)
+  name: Init(String, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)
+  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan_
+  commentId: M:LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.User,System.TimeSpan)
+  fullName: LaunchDarkly.Sdk.Client.LdClient.Init(System.String, LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes, LaunchDarkly.Sdk.User, System.TimeSpan)
+  nameWithType: LdClient.Init(String, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)
 - uid: LaunchDarkly.Sdk.Client.LdClient.Init*
   name: Init
   href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_
@@ -2770,18 +2821,18 @@ references:
   commentId: M:LaunchDarkly.Sdk.Client.LdClient.InitAsync(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.User)
   fullName: LaunchDarkly.Sdk.Client.LdClient.InitAsync(LaunchDarkly.Sdk.Client.Configuration, LaunchDarkly.Sdk.User)
   nameWithType: LdClient.InitAsync(Configuration, User)
-- uid: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Context)
-  name: InitAsync(String, Context)
-  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_
-  commentId: M:LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Context)
-  fullName: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String, LaunchDarkly.Sdk.Context)
-  nameWithType: LdClient.InitAsync(String, Context)
-- uid: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.User)
-  name: InitAsync(String, User)
-  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_User_
-  commentId: M:LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.User)
-  fullName: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String, LaunchDarkly.Sdk.User)
-  nameWithType: LdClient.InitAsync(String, User)
+- uid: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.Context)
+  name: InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)
+  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_
+  commentId: M:LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.Context)
+  fullName: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String, LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes, LaunchDarkly.Sdk.Context)
+  nameWithType: LdClient.InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)
+- uid: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.User)
+  name: InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, User)
+  href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_
+  commentId: M:LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.User)
+  fullName: LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String, LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes, LaunchDarkly.Sdk.User)
+  nameWithType: LdClient.InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, User)
 - uid: LaunchDarkly.Sdk.Client.LdClient.InitAsync*
   name: InitAsync
   href: api/LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_
@@ -4700,6 +4751,18 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo
   fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.DeviceInfo
   nameWithType: IEnvironmentReporter.DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.Locale
+  name: Locale
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_Locale
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.Locale
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.Locale
+  nameWithType: IEnvironmentReporter.Locale
+- uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.Locale*
+  name: Locale
+  href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_Locale_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.Locale
+  fullName: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.Locale
+  nameWithType: IEnvironmentReporter.Locale
 - uid: LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.OsInfo
   name: OsInfo
   href: api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html#LaunchDarkly_Sdk_EnvReporting_IEnvironmentReporter_OsInfo
@@ -4718,15 +4781,15 @@ references:
   commentId: T:LaunchDarkly.Sdk.EnvReporting.Layer
   fullName: LaunchDarkly.Sdk.EnvReporting.Layer
   nameWithType: Layer
-- uid: LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo})
-  name: Layer(Nullable<ApplicationInfo>, Nullable<OsInfo>, Nullable<DeviceInfo>)
-  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer__ctor_System_Nullable_LaunchDarkly_Sdk_ApplicationInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo__
-  commentId: M:LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo})
-  name.vb: Layer(Nullable(Of ApplicationInfo), Nullable(Of OsInfo), Nullable(Of DeviceInfo))
-  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.Layer(System.Nullable<LaunchDarkly.Sdk.ApplicationInfo>, System.Nullable<LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo>, System.Nullable<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo>)
-  fullName.vb: LaunchDarkly.Sdk.EnvReporting.Layer.Layer(System.Nullable(Of LaunchDarkly.Sdk.ApplicationInfo), System.Nullable(Of LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo), System.Nullable(Of LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo))
-  nameWithType: Layer.Layer(Nullable<ApplicationInfo>, Nullable<OsInfo>, Nullable<DeviceInfo>)
-  nameWithType.vb: Layer.Layer(Nullable(Of ApplicationInfo), Nullable(Of OsInfo), Nullable(Of DeviceInfo))
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo},System.String)
+  name: Layer(Nullable<ApplicationInfo>, Nullable<OsInfo>, Nullable<DeviceInfo>, String)
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer__ctor_System_Nullable_LaunchDarkly_Sdk_ApplicationInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_OsInfo__System_Nullable_LaunchDarkly_Sdk_EnvReporting_LayerModels_DeviceInfo__System_String_
+  commentId: M:LaunchDarkly.Sdk.EnvReporting.Layer.#ctor(System.Nullable{LaunchDarkly.Sdk.ApplicationInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo},System.Nullable{LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo},System.String)
+  name.vb: Layer(Nullable(Of ApplicationInfo), Nullable(Of OsInfo), Nullable(Of DeviceInfo), String)
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.Layer(System.Nullable<LaunchDarkly.Sdk.ApplicationInfo>, System.Nullable<LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo>, System.Nullable<LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo>, System.String)
+  fullName.vb: LaunchDarkly.Sdk.EnvReporting.Layer.Layer(System.Nullable(Of LaunchDarkly.Sdk.ApplicationInfo), System.Nullable(Of LaunchDarkly.Sdk.EnvReporting.LayerModels.OsInfo), System.Nullable(Of LaunchDarkly.Sdk.EnvReporting.LayerModels.DeviceInfo), System.String)
+  nameWithType: Layer.Layer(Nullable<ApplicationInfo>, Nullable<OsInfo>, Nullable<DeviceInfo>, String)
+  nameWithType.vb: Layer.Layer(Nullable(Of ApplicationInfo), Nullable(Of OsInfo), Nullable(Of DeviceInfo), String)
 - uid: LaunchDarkly.Sdk.EnvReporting.Layer.#ctor*
   name: Layer
   href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer__ctor_
@@ -4757,6 +4820,18 @@ references:
   commentId: Overload:LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo
   fullName: LaunchDarkly.Sdk.EnvReporting.Layer.DeviceInfo
   nameWithType: Layer.DeviceInfo
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.Locale
+  name: Locale
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_Locale
+  commentId: P:LaunchDarkly.Sdk.EnvReporting.Layer.Locale
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.Locale
+  nameWithType: Layer.Locale
+- uid: LaunchDarkly.Sdk.EnvReporting.Layer.Locale*
+  name: Locale
+  href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_Locale_
+  commentId: Overload:LaunchDarkly.Sdk.EnvReporting.Layer.Locale
+  fullName: LaunchDarkly.Sdk.EnvReporting.Layer.Locale
+  nameWithType: Layer.Locale
 - uid: LaunchDarkly.Sdk.EnvReporting.Layer.OsInfo
   name: OsInfo
   href: api/LaunchDarkly.Sdk.EnvReporting.Layer.html#LaunchDarkly_Sdk_EnvReporting_Layer_OsInfo

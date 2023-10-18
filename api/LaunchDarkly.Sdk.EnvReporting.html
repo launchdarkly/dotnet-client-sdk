@@ -87,13 +87,15 @@ of returning properties associated with the runtime environment of the SDK.</p>
 </section>
       <h4><a class="xref" href="LaunchDarkly.Sdk.EnvReporting.Layer.html">Layer</a></h4>
       <section><p>Represents one layer of sourcing environment properties.  A layer may know how to source any
-number of properties (even possibly 0 properties in edge cases).</p>
+number of properties (even possibly 0 properties in edge cases), in which case it may return null for individual
+properties.</p>
 </section>
     <h3 id="interfaces">Interfaces
   </h3>
       <h4><a class="xref" href="LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html">IEnvironmentReporter</a></h4>
       <section><p>An <a class="xref" href="LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html">IEnvironmentReporter</a> is able to report various attributes
-of the environment in which the application is running.</p>
+of the environment in which the application is running. If a property is null,
+it means the reporter was unable to determine the value.</p>
 </section>
 </article>
           </div>

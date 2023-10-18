@@ -89,7 +89,7 @@
   </div>
   <h5 id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_remarks"><strong>Remarks</strong></h5>
   <div class="markdown level0 remarks"><p>
-Obtain an instance of this class by calling <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_">Builder(String)</a>.
+Obtain an instance of this class by calling <a class="xref" href="LaunchDarkly.Sdk.Client.Configuration.html#LaunchDarkly_Sdk_Client_Configuration_Builder_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_">Builder(String, ConfigurationBuilder.AutoEnvAttributes)</a>.
 </p>
 <p>
 All of the builder methods for setting a configuration property return a reference to the same builder, so they can be
@@ -126,6 +126,55 @@ which has methods for setting individual metadata properties.</p>
         <td><a class="xref" href="LaunchDarkly.Sdk.ApplicationInfoBuilder.html">ApplicationInfoBuilder</a></td>
         <td><span class="parametername">applicationInfo</span></td>
         <td><p>builder for <a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html#LaunchDarkly_Sdk_Client_ConfigurationBuilder_ApplicationInfo_LaunchDarkly_Sdk_ApplicationInfoBuilder_">ApplicationInfo(ApplicationInfoBuilder)</a></p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.html">ConfigurationBuilder</a></td>
+        <td><p>the same builder</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <a id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvironmentAttributes_" data-uid="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes*"></a>
+  <h4 id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvironmentAttributes_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_" data-uid="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvironmentAttributes(LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes)">AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes)</h4>
+  <div class="markdown level1 summary"><p>Specifies whether the SDK will use Auto Environment Attributes functionality.  When enabled,
+the SDK will automatically provide data about the environment where the application is running.
+This data makes it simpler to target your mobile customers based on application name or version, or on
+device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+enabling this when you configure the SDK.  See
+<a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+more details.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ConfigurationBuilder AutoEnvironmentAttributes(ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html">ConfigurationBuilder.AutoEnvAttributes</a></td>
+        <td><span class="parametername">autoEnvAttributes</span></td>
+        <td><p>Enable / disable Auto Environment Attributes functionality.</p>
 </td>
       </tr>
     </tbody>
@@ -488,7 +537,7 @@ If you want to set multiple options, set them on the same <a class="xref" href="
   <h5 id="LaunchDarkly_Sdk_Client_ConfigurationBuilder_GenerateAnonymousKeys_System_Boolean__remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
 If enabled, this option changes the SDK&apos;s behavior whenever the <a class="xref" href="LaunchDarkly.Sdk.Context.html">Context</a> (as given to
-methods like <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, Context, TimeSpan)</a> or
+methods like <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)</a> or
 <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Identify_LaunchDarkly_Sdk_Context_System_TimeSpan_">Identify(Context, TimeSpan)</a>) has an <a class="xref" href="LaunchDarkly.Sdk.Context.html#LaunchDarkly_Sdk_Context_Anonymous">Anonymous</a>
 property of <span class="xref">true</span>, as follows:
 </p>

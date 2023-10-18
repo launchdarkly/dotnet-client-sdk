@@ -69,7 +69,19 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.Configuration.html",
-          "hash": "0CVQFx87wXv7cA0EO4LjvkfO6hYVw7mSvPo+liavJ/A="
+          "hash": "OZ6U3gK/kLmHmsnOCywB9WtXm6H/2Vk+e2q1nokv9g8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "build/api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html",
+          "hash": "x8YX1S23ubh6qnx7RgL4WF5YLdmWt2R1yltIfEm5b/s="
         }
       },
       "is_incremental": false,
@@ -81,7 +93,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.ConfigurationBuilder.html",
-          "hash": "HSn3AxeANCrxrzIQSKjerZcpKfpAxvGkLfhs46IrWPA="
+          "hash": "qu7KuRyodDsra6mfoI9v0CjjLehsP79lrhXCrMskK1k="
         }
       },
       "is_incremental": false,
@@ -141,7 +153,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.Integrations.HttpConfigurationBuilder.html",
-          "hash": "i/Lx7IqFUQWhN7XlZ6GuI39k6CqHnCY646Ai0wGiKXI="
+          "hash": "mQinHgbO+7e7fBkbTyUkH5b/0xVOtZMiPgGYRD5mrYk="
         }
       },
       "is_incremental": false,
@@ -165,7 +177,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.Integrations.PersistenceConfigurationBuilder.html",
-          "hash": "RBQERZbLPLQOmaZWHvfoqsXUtq5y6U1Xapm+KWd4e9s="
+          "hash": "w1CEaf/CyhCYpuuKZsqWkk3WVjBCQVYoNhePzWYEirI="
         }
       },
       "is_incremental": false,
@@ -381,7 +393,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.LdClient.html",
-          "hash": "TqH7SzAE4AkEfSEzV/xE+fR0r1qtyXnpWKZ1v4qPJcM="
+          "hash": "1xEewIPN8A53Yi/a7zaOJTwQoRxYc9D/gKMy+lirZ+4="
         }
       },
       "is_incremental": false,
@@ -609,7 +621,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.Client.html",
-          "hash": "6AY4EmPU7rrY/uYcGarNItBoftoPOuUDSp0ZYx5KS9c="
+          "hash": "eqZS+pdWLRZeb7EfcAWtDKJw4D/bq4Wb/TWMTirPEQQ="
         }
       },
       "is_incremental": false,
@@ -693,7 +705,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.IEnvironmentReporter.html",
-          "hash": "pkZZkM3Ei4vSyFt7qCjb4rp3IXZqiqcO+6wKWFv/b6s="
+          "hash": "Zh7ZGxs7+KO1AtUpb/4gLelLTF27QUzD66ghDYmRtwU="
         }
       },
       "is_incremental": false,
@@ -705,7 +717,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.Layer.html",
-          "hash": "oKjC9LbxcOYJJ4K6Mrdj2NeqGlL0bB58FPR255Ttmv8="
+          "hash": "HM8xU2fQPjDn2ZBgXefMFZXnB5JL7Q+Guf/n/W32+KI="
         }
       },
       "is_incremental": false,
@@ -753,7 +765,7 @@
       "output": {
         ".html": {
           "relative_path": "api/LaunchDarkly.Sdk.EnvReporting.html",
-          "hash": "R4pyNSgIcpGR6sSUGBpJUqaYgCJPoF5i3qFwdLbqrn8="
+          "hash": "pFNE9fiXpmQ0I+IbVICF6jxSpzR/tEVVI/s9t5+wtGc="
         }
       },
       "is_incremental": false,
@@ -1137,7 +1149,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "mwNMIAty5/+Y6ku7uz2eH5YfOwPrO/6PUNHjkMF8ync="
+          "hash": "XYsh9IMJnYq/J6JwSHwoXPbEYwAyFIUbqFB/4cik3cE="
         }
       },
       "is_incremental": false,
@@ -1149,7 +1161,7 @@
       "output": {
         ".html": {
           "relative_path": "index.html",
-          "hash": "dh9odxzu1GCcEDrU6ETGbfURFop6ltzV3Ts8jMD64jc="
+          "hash": "RAALB/hFsnJR9t1FdG6qSYhWF6SHPsY9nO0jnbX54LU="
         }
       },
       "is_incremental": false,
@@ -1188,7 +1200,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 95,
+          "total_file_count": 96,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

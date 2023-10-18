@@ -1056,7 +1056,7 @@ and yields <span class="xref">true</span>.
   </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_Init_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context,System.TimeSpan)">Init(Configuration, Context, TimeSpan)</h4>
-  <div class="markdown level1 summary"><p>Creates and returns a new LdClient singleton instance, then starts the workflow for 
+  <div class="markdown level1 summary"><p>Creates and returns a new LdClient singleton instance, then starts the workflow for
 fetching Feature Flags.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -1123,7 +1123,8 @@ an <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_
 <p>
 If you would rather this happen asynchronously, use <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_">InitAsync(Configuration, Context)</a>.
 If you do not need to specify configuration options other than the mobile key, you can use
-<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, Context, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_">InitAsync(String, Context)</a>.
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)</a> or
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a>.
 </p>
 <p>
 You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -1133,12 +1134,12 @@ for the lifetime of your application.
   <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan__seealso">See Also</h5>
   <div class="seealso">
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(Configuration, User, TimeSpan)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, Context, TimeSpan)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_">InitAsync(Configuration, Context)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_Init_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.User,System.TimeSpan)">Init(Configuration, User, TimeSpan)</h4>
-  <div class="markdown level1 summary"><p>Creates and returns a new LdClient singleton instance, then starts the workflow for 
+  <div class="markdown level1 summary"><p>Creates and returns a new LdClient singleton instance, then starts the workflow for
 fetching Feature Flags.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -1201,17 +1202,17 @@ an uninitialized state</p>
   <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan__seealso">See Also</h5>
   <div class="seealso">
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(String, User, TimeSpan)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)</a></div>
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_">InitAsync(Configuration, User)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_Init_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Context,System.TimeSpan)">Init(String, Context, TimeSpan)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.Context,System.TimeSpan)">Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)</h4>
   <div class="markdown level1 summary"><p>Creates a new <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> singleton instance and attempts to initialize feature flags.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static LdClient Init(string mobileKey, Context initialContext, TimeSpan maxWaitTime)</code></pre>
+    <pre><code class="lang-csharp hljs">public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext, TimeSpan maxWaitTime)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1227,6 +1228,18 @@ an uninitialized state</p>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">mobileKey</span></td>
         <td><p>the mobile key given to you by LaunchDarkly</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html">ConfigurationBuilder.AutoEnvAttributes</a></td>
+        <td><span class="parametername">autoEnvAttributes</span></td>
+        <td><p>Enable / disable Auto Environment Attributes functionality.  When enabled,
+the SDK will automatically provide data about the environment where the application is running.
+This data makes it simpler to target your mobile customers based on application name or version, or on
+device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+enabling this when you configure the SDK.  See
+<a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+more details.</p>
 </td>
       </tr>
       <tr>
@@ -1260,7 +1273,7 @@ about setting the context and optionally requesting a unique key for it</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan__remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan__remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
 In offline mode, this constructor will return immediately. Otherwise, it will wait and block on
 the current thread until initialization and the first response from the LaunchDarkly service is
@@ -1268,7 +1281,8 @@ returned, up to the specified timeout. If the timeout elapses, the returned inst
 an <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Initialized">Initialized</a> property of <span class="xref">false</span>.
 </p>
 <p>
-If you would rather this happen asynchronously, use <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_">InitAsync(String, Context)</a>. To
+If you would rather this happen asynchronously, use
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a>. To
 specify additional configuration options rather than just the mobile key, use
 <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_">InitAsync(Configuration, Context)</a>.
 </p>
@@ -1277,20 +1291,20 @@ You must use one of these static factory methods to instantiate the single insta
 for the lifetime of your application.
 </p>
 </div>
-  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan__seealso">See Also</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan__seealso">See Also</h5>
   <div class="seealso">
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(String, User, TimeSpan)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_">InitAsync(String, Context)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_Init_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_User_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.User,System.TimeSpan)">Init(String, User, TimeSpan)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan_" data-uid="LaunchDarkly.Sdk.Client.LdClient.Init(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.User,System.TimeSpan)">Init(String, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)</h4>
   <div class="markdown level1 summary"><p>Creates a new <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> singleton instance and attempts to initialize feature flags.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static LdClient Init(string mobileKey, User initialUser, TimeSpan maxWaitTime)</code></pre>
+    <pre><code class="lang-csharp hljs">public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, User initialUser, TimeSpan maxWaitTime)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1306,6 +1320,18 @@ for the lifetime of your application.
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">mobileKey</span></td>
         <td><p>the mobile key given to you by LaunchDarkly</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html">ConfigurationBuilder.AutoEnvAttributes</a></td>
+        <td><span class="parametername">autoEnvAttributes</span></td>
+        <td><p>Enable / disable Auto Environment Attributes functionality.  When enabled,
+the SDK will automatically provide data about the environment where the application is running.
+This data makes it simpler to target your mobile customers based on application name or version, or on
+device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+enabling this when you configure the SDK.  See
+<a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+more details.</p>
 </td>
       </tr>
       <tr>
@@ -1339,15 +1365,16 @@ about setting the context and optionally requesting a unique key for it</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_User_System_TimeSpan__remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, Context, TimeSpan)</a>, but using the
+  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>This is equivalent to
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)</a>, but using the
 <a class="xref" href="LaunchDarkly.Sdk.User.html">User</a> type instead of <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Context">Context</a>.</p>
 </div>
-  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_User_System_TimeSpan__seealso">See Also</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan__seealso">See Also</h5>
   <div class="seealso">
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(Configuration, User, TimeSpan)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, Context, TimeSpan)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_User_">InitAsync(String, User)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync*"></a>
   <h4 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync(LaunchDarkly.Sdk.Client.Configuration,LaunchDarkly.Sdk.Context)">InitAsync(Configuration, Context)</h4>
@@ -1408,7 +1435,8 @@ the LaunchDarkly service is returned (or immediately if it is in offline mode).
 <p>
 If you would rather this happen synchronously, use <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a>.
 If you do not need to specify configuration options other than the mobile key, you can use
-<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, Context, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_">InitAsync(String, Context)</a>.
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)</a> or
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a>.
 </p>
 <p>
 You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -1418,7 +1446,7 @@ for the lifetime of your application.
   <h5 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context__seealso">See Also</h5>
   <div class="seealso">
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_">InitAsync(Configuration, User)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_">InitAsync(String, Context)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a></div>
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync*"></a>
@@ -1478,18 +1506,18 @@ asynchronously.</p>
   <h5 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User__seealso">See Also</h5>
   <div class="seealso">
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_">InitAsync(Configuration, Context)</a></div>
-      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_User_">InitAsync(String, User)</a></div>
+      <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, User)</a></div>
       <div><a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_User_System_TimeSpan_">Init(Configuration, User, TimeSpan)</a></div>
   </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Context)">InitAsync(String, Context)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.Context)">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</h4>
   <div class="markdown level1 summary"><p>Creates a new <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> singleton instance and attempts to initialize feature flags
 asynchronously.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Task&lt;LdClient&gt; InitAsync(string mobileKey, Context initialContext)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Task&lt;LdClient&gt; InitAsync(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1505,6 +1533,18 @@ asynchronously.</p>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">mobileKey</span></td>
         <td><p>the mobile key given to you by LaunchDarkly</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html">ConfigurationBuilder.AutoEnvAttributes</a></td>
+        <td><span class="parametername">autoEnvAttributes</span></td>
+        <td><p>Enable / disable Auto Environment Attributes functionality.  When enabled,
+the SDK will automatically provide data about the environment where the application is running.
+This data makes it simpler to target your mobile customers based on application name or version, or on
+device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+enabling this when you configure the SDK.  See
+<a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+more details.</p>
 </td>
       </tr>
       <tr>
@@ -1532,13 +1572,14 @@ about setting the context and optionally requesting a unique key for it</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context__remarks">Remarks</h5>
+  <h5 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context__remarks">Remarks</h5>
   <div class="markdown level1 remarks"><p>
 The returned task will yield the <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> instance once the first response from
 the LaunchDarkly service is returned (or immediately if it is in offline mode).
 </p>
 <p>
-If you would rather this happen synchronously, use <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, Context, TimeSpan)</a>. To
+If you would rather this happen synchronously, use
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(String, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan)</a>. To
 specify additional configuration options rather than just the mobile key, you can use
 <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Init_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_System_TimeSpan_">Init(Configuration, Context, TimeSpan)</a> or <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_LaunchDarkly_Sdk_Client_Configuration_LaunchDarkly_Sdk_Context_">InitAsync(Configuration, Context)</a>.
 </p>
@@ -1548,14 +1589,14 @@ for the lifetime of your application.
 </p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync*"></a>
-  <h4 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_User_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.User)">InitAsync(String, User)</h4>
+  <h4 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User_" data-uid="LaunchDarkly.Sdk.Client.LdClient.InitAsync(System.String,LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes,LaunchDarkly.Sdk.User)">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, User)</h4>
   <div class="markdown level1 summary"><p>Creates a new <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html">LdClient</a> singleton instance and attempts to initialize feature flags
 asynchronously.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Task&lt;LdClient&gt; InitAsync(string mobileKey, User initialUser)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Task&lt;LdClient&gt; InitAsync(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, User initialUser)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1571,6 +1612,18 @@ asynchronously.</p>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">mobileKey</span></td>
         <td><p>the mobile key given to you by LaunchDarkly</p>
+</td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="LaunchDarkly.Sdk.Client.ConfigurationBuilder.AutoEnvAttributes.html">ConfigurationBuilder.AutoEnvAttributes</a></td>
+        <td><span class="parametername">autoEnvAttributes</span></td>
+        <td><p>Enable / disable Auto Environment Attributes functionality.  When enabled,
+the SDK will automatically provide data about the environment where the application is running.
+This data makes it simpler to target your mobile customers based on application name or version, or on
+device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+enabling this when you configure the SDK.  See
+<a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+more details.</p>
 </td>
       </tr>
       <tr>
@@ -1597,8 +1650,9 @@ asynchronously.</p>
       </tr>
     </tbody>
   </table>
-  <h5 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_User__remarks">Remarks</h5>
-  <div class="markdown level1 remarks"><p>This is equivalent to <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Context_">InitAsync(String, Context)</a>, but using the
+  <h5 id="LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_User__remarks">Remarks</h5>
+  <div class="markdown level1 remarks"><p>This is equivalent to
+<a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_InitAsync_System_String_LaunchDarkly_Sdk_Client_ConfigurationBuilder_AutoEnvAttributes_LaunchDarkly_Sdk_Context_">InitAsync(String, ConfigurationBuilder.AutoEnvAttributes, Context)</a>, but using the
 <a class="xref" href="LaunchDarkly.Sdk.User.html">User</a> type instead of <a class="xref" href="LaunchDarkly.Sdk.Client.LdClient.html#LaunchDarkly_Sdk_Client_LdClient_Context">Context</a>.</p>
 </div>
   <a id="LaunchDarkly_Sdk_Client_LdClient_IntVariation_" data-uid="LaunchDarkly.Sdk.Client.LdClient.IntVariation*"></a>
