@@ -43,7 +43,7 @@ namespace LaunchDarkly.Sdk.Client
         // needed, protects against accidental interaction with external services and also makes it easier to
         // see which properties are important in a test.
         protected ConfigurationBuilder BasicConfig() =>
-            Configuration.Builder(BasicMobileKey)
+            Configuration.Builder(BasicMobileKey, ConfigurationBuilder.AutoEnvAttributes.Disabled)
                 .BackgroundModeManager(new MockBackgroundModeManager())
                 .ConnectivityStateManager(new MockConnectivityStateManager(true))
                 .DataSource(new MockDataSource().AsSingletonFactory<IDataSource>())

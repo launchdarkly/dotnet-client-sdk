@@ -93,6 +93,7 @@
          project file format, they need to be referenced explicitly even though
          they're in the project directory. -->
     <Compile Include="AndroidSpecificTests.cs" />
+    <Compile Include="LdClientContextTests.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="XunitConsoleLoggingResultChannel.cs" />
     <Compile Include="Resources\Resource.designer.cs" />

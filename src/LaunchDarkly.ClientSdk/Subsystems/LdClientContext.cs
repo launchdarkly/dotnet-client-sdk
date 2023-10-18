@@ -1,4 +1,5 @@
-﻿using LaunchDarkly.Logging;
+﻿using System;
+using LaunchDarkly.Logging;
 using LaunchDarkly.Sdk.Client.Interfaces;
 using LaunchDarkly.Sdk.Client.Internal;
 using LaunchDarkly.Sdk.Client.PlatformSpecific;
@@ -95,7 +96,8 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
         )
         {
             var logger = MakeLogger(configuration);
-            var environmentReporter = MakeEnvironmentReporter(configuration.ApplicationInfo);
+            var environmentReporter = MakeEnvironmentReporter(configuration);
+
             MobileKey = configuration.MobileKey;
             BaseLogger = logger;
             CurrentContext = currentContext;
@@ -228,16 +230,29 @@ namespace LaunchDarkly.Sdk.Client.Subsystems
             return logAdapter.Logger(logConfig.BaseLoggerName ?? LogNames.Base);
         }
 
-        internal static IEnvironmentReporter MakeEnvironmentReporter(ApplicationInfoBuilder applicationInfoBuilder)
+        internal static IEnvironmentReporter MakeEnvironmentReporter(Configuration configuration)
         {
+            var applicationInfoBuilder = configuration.ApplicationInfo;
+
             var builder = new EnvironmentReporterBuilder();
             if (applicationInfoBuilder != null)
             {
                 var applicationInfo = applicationInfoBuilder.Build();
+
+                // If AppInfo is provided by the user, then the Config layer has first priority in the environment reporter.
                 builder.SetConfigLayer(new ConfigLayerBuilder().SetAppInfo(applicationInfo).Build());
             }
 
+            // Enable the platform layer if auto env attributes is opted in.
+            if (configuration.AutoEnvAttributes)
+            {
+                // The platform layer has second priority if properties aren't set by the Config layer.
+                builder.SetPlatformLayer(PlatformAttributes.Layer);
+            }
+
+            // The SDK layer has third priority if properties aren't set by the Platform layer.
             builder.SetSdkLayer(SdkAttributes.Layer);
+
             return builder.Build();
         }
     }

@@ -2,7 +2,6 @@ using LaunchDarkly.Sdk.Internal;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
-
     /// <summary>
     /// Defines common information about the SDK itself for usage
     /// in various components.

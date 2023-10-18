@@ -5,7 +5,7 @@ using LaunchDarkly.Sdk.Client.Internal.DataStores;
 
 namespace LaunchDarkly.Sdk.Client.Internal
 {
-    internal class ContextDecorator
+    internal class AnonymousKeyContextDecorator
     {
         private readonly PersistentDataStoreWrapper _store;
         private readonly bool _generateAnonymousKeys;
@@ -13,7 +13,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         private Dictionary<ContextKind, string> _cachedGeneratedKey = new Dictionary<ContextKind, string>();
         private object _generatedKeyLock = new object();
 
-        public ContextDecorator(
+        public AnonymousKeyContextDecorator(
             PersistentDataStoreWrapper store,
             bool generateAnonymousKeys
             )

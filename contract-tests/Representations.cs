@@ -77,6 +77,7 @@ namespace TestService
         public Context? InitialContext { get; set; }
         public User InitialUser { get; set; }
         public bool? UseReport { get; set; }
+        public bool? IncludeEnvironmentAttributes { get; set; }
     }
 
     public class CommandParams
