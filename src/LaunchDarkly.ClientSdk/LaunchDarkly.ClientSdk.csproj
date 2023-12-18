@@ -1,20 +1,23 @@
-<Project Sdk="MSBuild.Sdk.Extras">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>4.0.0</Version>
+    <Version>5.0.0</Version>
     <!-- The BUILDFRAMEWORKS variable allows us to override the target frameworks in
          a situation where we need to build only the .NET Standard target and do not
-         want to even mention the Android/iOS targets, because we're in an environment
-         that doesn't have the Xamarin tools installed. That is currently the case in
-         the release phase where we build HTML documentation. -->
-    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">netstandard2.0;xamarin.ios10;monoandroid71;monoandroid80;monoandroid81</BuildFrameworks>
+         want to even mention the Android/iOS/Mac/Windows targets, because we're in an environment
+         that doesn't have the MAUI tools installed. That is currently the case in
+         the release phase where we build HTML documentation. -->     
+
+    <!-- TODO bring back netstandard target -->
+    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net7.0;net7.0-android;net7.0-ios;net7.0-maccatalyst;net7.0-windows</BuildFrameworks>
     <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
+    <UseMauiEssentials>true</UseMauiEssentials>
     <OutputType>Library</OutputType>
     <AssemblyName>LaunchDarkly.ClientSdk</AssemblyName>
     <PackageId>LaunchDarkly.ClientSdk</PackageId>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <DesignTimeBuild>False</DesignTimeBuild>
     <DisableExtraReferences>True</DisableExtraReferences>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -45,28 +48,55 @@
     <Compile Include="PlatformSpecific\*.shared.cs" />
   </ItemGroup>
 
-  <!-- dependencies and source files for .NET Standard (all versions) -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard')) ">
+  <!-- dependencies and source files for .NET 7.0 (all versions) -->
+  <ItemGroup Condition=" $(TargetFramework.ToLower().Equals('net7.0')) ">
     <Compile Include="**\*.netstandard.cs" />
   </ItemGroup>
 
-  <!-- dependencies for .NET Standard 1.x -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('netstandard1.')) ">
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
-
   <!-- dependencies and source files for Android (all versions) -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('monoandroid')) ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net7.0-android'))">
     <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.maui.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
 
   <!-- dependencies and source files for iOS (all versions) -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('xamarin.ios')) ">
+  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net7.0-ios')) ">
     <Compile Include="**\*.ios.cs" />
+    <Compile Include="**\*.maui.cs" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors" />
+  </ItemGroup>
+
+    <!-- dependencies and source files for MacCatalyst (all versions) -->
+  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net7.0-maccatalyst')) ">
+    <Compile Include="**\*.maccatalyst.cs" />
+    <Compile Include="**\*.maui.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+
+    <!-- Mac will use netstandard implementation for the following functionality -->
+    <Compile Include="PlatformSpecific\AsyncScheduler.netstandard.cs" />
+    <Compile Include="PlatformSpecific\BackgroundDetection.netstandard.cs" />
+    <Compile Include="PlatformSpecific\Http.netstandard.cs" />
+    <Compile Include="PlatformSpecific\LocalStorage.netstandard.cs" />
+    <Compile Include="PlatformSpecific\Logging.netstandard.cs" />
+  </ItemGroup>
+
+      <!-- dependencies and source files for Windows (all versions) -->
+  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net7.0-windows')) ">
+    <Compile Include="**\*.windows.cs" />
+    <Compile Include="**\*.maui.cs" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
+
+    <!-- Windows will use netstandard implementation for the following functionality -->
+    <Compile Include="PlatformSpecific\AsyncScheduler.netstandard.cs" />
+    <Compile Include="PlatformSpecific\BackgroundDetection.netstandard.cs" />
+    <Compile Include="PlatformSpecific\Http.netstandard.cs" />
+    <Compile Include="PlatformSpecific\LocalStorage.netstandard.cs" />
+    <Compile Include="PlatformSpecific\Logging.netstandard.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -79,15 +109,6 @@
     <Compile Update="Subsystems\IComponentConfigurer.cs">
       <SubType></SubType>
     </Compile>
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'monoandroid71'">
-    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'monoandroid80'">
-    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'monoandroid81'">
-    <PackageReference Include="Xamarin.Android.Support.v4" Version="28.0.0.1" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <AssemblyOriginatorKeyFile>../../LaunchDarkly.ClientSdk.snk</AssemblyOriginatorKeyFile>

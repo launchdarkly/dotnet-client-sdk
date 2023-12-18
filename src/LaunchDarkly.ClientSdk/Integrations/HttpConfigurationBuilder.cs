@@ -68,7 +68,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </para>
         /// <para>
         /// Not all .NET platforms support setting a connection timeout. It is supported in
-        /// .NET Core 2.1+, .NET 5+, and Xamarin Android, but not in Xamarin iOS. On platforms
+        /// .NET Core 2.1+, .NET 5+, and MAUI Android, but not in MAUI iOS. On platforms
         /// where it is not supported, only <see cref="ResponseStartTimeout"/> will be used.
         /// </para>
         /// <para>
@@ -109,8 +109,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// <remarks>
         /// This is mainly useful for testing, to cause the SDK to use custom logic instead of actual HTTP requests,
         /// but can also be used to customize HTTP behavior on platforms where the default handler is not optimal.
-        /// The default is the usual native HTTP handler for the current platform, if any (for instance,
-        /// <c>Xamarin.Android.Net.AndroidClientHandler</c>), or else <see cref="System.Net.Http.HttpClientHandler"/>.
+        /// The default is the usual native HTTP handler for the current platform, else <see cref="System.Net.Http.HttpClientHandler"/>.
         /// </remarks>
         /// <param name="messageHandler">the message handler, or null to use the platform's default handler</param>
         /// <returns>the builder</returns>
@@ -203,7 +202,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// </remarks>
         /// <param name="useReport">true to enable the REPORT method</param>
         /// <returns>the builder</returns>
-#if !MONOANDROID
+#if !ANDROID
         public HttpConfigurationBuilder UseReport(bool useReport)
 #else
         internal HttpConfigurationBuilder UseReport(bool useReport)

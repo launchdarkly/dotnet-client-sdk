@@ -22,7 +22,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly Context simpleUser = Context.New("me");
 
         private MockDataSourceUpdateSink _updateSink = new MockDataSourceUpdateSink();
-        
+
         public StreamingDataSourceTest(ITestOutputHelper testOutput) : base(testOutput) { }
 
         private IDataSource MakeDataSource(Uri baseUri, Context context, Action<ConfigurationBuilder> modConfig = null)
@@ -87,7 +87,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         }
 
         // REPORT mode is known to fail in Android (ch47341)
-#if !__ANDROID__
+#if !ANDROID
         [Theory]
         [InlineData("", false, "/meval", "")]
         [InlineData("", true, "/meval", "?withReasons=true")]

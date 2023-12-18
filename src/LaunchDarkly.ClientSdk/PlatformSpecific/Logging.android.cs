@@ -1,6 +1,5 @@
 ﻿using System;
 using LaunchDarkly.Logging;
-
 using AndroidLog = Android.Util.Log;
 
 namespace LaunchDarkly.Sdk.Client.PlatformSpecific
@@ -16,8 +15,8 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
         //    LoggingConfigurationBuilder.BaseLoggerName).
         // 2. The underlying Android API is a little different: Log has methods called "d", "i", "w",
         //    and "e" rather than Debug, Info, Warn, and Error, and they always take a message string
-        //    rather than a format string plus variables. Xamarin.Android adds some decoration of its
-        //    own so that we can use .NET-style format strings.
+        //    rather than a format string plus variables. MAUI's Android layer adds some decoration of
+        //    its own so that we can use .NET-style format strings.
         private sealed class AndroidLogAdapter : ILogAdapter
         {
             internal static readonly AndroidLogAdapter Instance =

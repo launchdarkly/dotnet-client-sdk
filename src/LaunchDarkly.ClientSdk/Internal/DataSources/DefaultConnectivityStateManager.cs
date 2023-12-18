@@ -11,7 +11,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         internal DefaultConnectivityStateManager()
         {
             UpdateConnectedStatus();
-            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+            PlatformConnectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
         bool isConnected;
@@ -23,8 +23,8 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                 isConnected = value;
             }
         }
-        
-        void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
+
+        void Connectivity_ConnectivityChanged(object sender, EventArgs e)
         {
             UpdateConnectedStatus();
             ConnectionChanged?.Invoke(isConnected);
@@ -32,7 +32,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
 
         private void UpdateConnectedStatus()
         {
-            isConnected = Connectivity.NetworkAccess == NetworkAccess.Internet;
+            isConnected = PlatformConnectivity.LdNetworkAccess == LdNetworkAccess.Internet;
         }
     }
 }

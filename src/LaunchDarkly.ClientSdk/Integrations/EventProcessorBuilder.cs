@@ -51,10 +51,10 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         /// undesirable in a mobile application as opposed to a desktop application.
         /// </remarks>
         public static readonly TimeSpan DefaultFlushInterval =
-#if NETSTANDARD
-            TimeSpan.FromSeconds(5);
-#else
+#if (ANDROID || IOS)
             TimeSpan.FromSeconds(30);
+#else
+            TimeSpan.FromSeconds(5);
 #endif
 
         /// <summary>

@@ -6,7 +6,7 @@
 
 The LaunchDarkly Client-Side SDK for .NET is designed primarily for use by code that is deployed to an end user, such as in a desktop application or a smart device. It follows the client-side LaunchDarkly model for single-user contexts (much like our mobile or JavaScript SDKs). It is not intended for use in multi-user systems such as web servers and applications.
 
-On supported mobile platforms (Android and iOS), the SDK uses the Xamarin framework which allows .NET code to run on those devices. For that reason, its name was previously "LaunchDarkly Xamarin SDK". However, Xamarin is not the only way to run .NET code in a client-side context (see "Supported platforms" below), so the SDK now has a more general name.
+On platforms with MAUI support (Android, iOS, Mac, Windows), the SDK depends on the MAUI framework which allows .NET code to run on those devices.  However, MAUI is not the only way to run .NET code in a client-side context (see "Supported platforms" below), so the SDK has a more general name.
 
 For using LaunchDarkly in *server-side* .NET applications, refer to our [Server-Side .NET SDK](https://github.com/launchdarkly/dotnet-server-sdk).
 
@@ -20,11 +20,13 @@ For using LaunchDarkly in *server-side* .NET applications, refer to our [Server-
 
 This version of the SDK is built for the following targets:
 
-* Xamarin Android 8.1, for use with Android 8.1 (Android API 27) and higher.
-* Xamarin iOS 10, for use with iOS 10 and higher.
-* .NET Standard 2.0, for use with any runtime platform that supports .NET Standard 2.0, or in portable .NET Standard library code.
+* .Net 7 Android, for use with Android 5.0 (Android API 21) and higher.
+* .Net 7 iOS, for use with iOS 11 and higher.
+* .Net 7 macOS (using Mac Catalyst), for use with macOS 10.15 and higher.
+* .Net 7 Windows (using WinUI), for Windows 11 and Windows 10 version 1809 or higher.
+* .NET 7, for use with any runtime platform that supports .NET Standard 2.1, or in portable .NET Standard library code.
 
-The .NET Standard 2.0 target does not use any Xamarin packages and has no OS-specific code. This allows the SDK to be used in a desktop .NET Framework or .NET 5.0 application, or in a Xamarin MacOS application. However, due to the lack of OS-specific integration, SDK functionality will be limited in those environments: for instance, the SDK will not be able to detect whether networking is turned on or off.
+The .NET 7 target does not use any MAUI packages and has no OS-specific code. This allows the SDK to be used in a desktop .NET Framework or .NET 7.0 application. However, due to the lack of OS-specific integration, SDK functionality will be limited in those environments: for instance, the SDK will not be able to detect whether networking is turned on or off.
 
 The .NET build tools should automatically load the most appropriate build of the SDK for whatever platform your application or library is targeted to.
 
