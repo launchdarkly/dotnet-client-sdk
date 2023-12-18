@@ -50,6 +50,7 @@ runs:
       run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-windows src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
     - name: Run Unit Tests for Net7
+      shell: bash
       run: |
         dotnet restore tests/LaunchDarkly.ClientSdk.Tests
         dotnet test -v=normal \
