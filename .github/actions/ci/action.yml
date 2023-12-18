@@ -59,10 +59,12 @@ runs:
 
     - name: Build Contract Tests
       if: inputs.run_tests == 'true'
+      shell: bash
       run: dotnet build contract-tests/TestService.csproj
 
     - name: Run Contract Tests
       if: inputs.run_tests == 'true'
+      shell: bash
       run: |
         dotnet contract-tests/bin/release/net7.0/ContractTestService.dll > test-service.log 2>&1 & disown
         curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end \
@@ -70,6 +72,7 @@ runs:
 
     - name: Build Test App
       if: inputs.run_tests == 'true'
+      shell: bash
       run: |
         dotnet build /restore /p:Configuration=release \
           tests/LaunchDarkly.ClientSdk.Device.Tests/LaunchDarkly.ClientSdk.Device.Tests.csproj
