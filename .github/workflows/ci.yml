@@ -11,7 +11,7 @@ on:
 
 jobs:
   ci-build:
-    runs-on: macos-latest-large
+    runs-on: macos-latest
     permissions:
       id-token: write
       contents: read

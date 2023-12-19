@@ -67,8 +67,7 @@ runs:
       shell: bash
       run: |
         dotnet contract-tests/bin/release/net7.0/ContractTestService.dll > test-service.log 2>&1 & disown
-        curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end \
-        -junit /tmp/circle-reports/contract-tests-junit.xml" sh
+        curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end sh
 
     - name: Build Test App
       if: inputs.run_tests == 'true'

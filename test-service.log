@@ -3745,3 +3745,383 @@ Listening on port 8000
 2023-12-19 09:52:33.571 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:52:33 AM)
 2023-12-19 09:52:33.571 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
 2023-12-19 09:52:33.571 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 27037 milliseconds before reconnecting...
+2023-12-19 09:53:00.610 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:53:00.613 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:53:00.613 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:53:00.613 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:53:00.613 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:53:00 AM)
+2023-12-19 09:53:00.613 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:53:00.613 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 26270 milliseconds before reconnecting...
+2023-12-19 09:53:26.885 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:53:26.888 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:53:26.888 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:53:26.889 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:53:26.889 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:53:26 AM)
+2023-12-19 09:53:26.889 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:53:26.889 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 25578 milliseconds before reconnecting...
+2023-12-19 09:53:52.468 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:53:52.471 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:53:52.471 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:53:52.471 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:53:52.472 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:53:52 AM)
+2023-12-19 09:53:52.472 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:53:52.472 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 22680 milliseconds before reconnecting...
+2023-12-19 09:54:15.153 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:54:15.156 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:54:15.156 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:54:15.157 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:54:15.157 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:54:15 AM)
+2023-12-19 09:54:15.157 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:54:15.157 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 15362 milliseconds before reconnecting...
+2023-12-19 09:54:30.519 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:54:30.522 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:54:30.522 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:54:30.522 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:54:30.522 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:54:30 AM)
+2023-12-19 09:54:30.522 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:54:30.522 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 19846 milliseconds before reconnecting...
+2023-12-19 09:54:50.370 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:54:50.371 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:54:50.371 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:54:50.372 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:54:50.372 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:54:50 AM)
+2023-12-19 09:54:50.372 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:54:50.372 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 21300 milliseconds before reconnecting...
+2023-12-19 09:55:11.673 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:55:11.675 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:55:11.675 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:55:11.676 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:55:11.676 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:55:11 AM)
+2023-12-19 09:55:11.676 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:55:11.676 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 28326 milliseconds before reconnecting...
+2023-12-19 09:55:40.003 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:55:40.006 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:55:40.006 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:55:40.006 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:55:40.006 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:55:40 AM)
+2023-12-19 09:55:40.006 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:55:40.006 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 26245 milliseconds before reconnecting...
+2023-12-19 09:56:06.253 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:56:06.255 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:56:06.255 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:56:06.256 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:56:06.256 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:56:06 AM)
+2023-12-19 09:56:06.256 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:56:06.256 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 16470 milliseconds before reconnecting...
+2023-12-19 09:56:22.727 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:56:22.730 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:56:22.730 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:56:22.730 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:56:22.730 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:56:22 AM)
+2023-12-19 09:56:22.730 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:56:22.730 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 20014 milliseconds before reconnecting...
+2023-12-19 09:56:42.745 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:56:42.748 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:56:42.748 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:56:42.749 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:56:42.749 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:56:42 AM)
+2023-12-19 09:56:42.749 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:56:42.749 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 16476 milliseconds before reconnecting...
+2023-12-19 09:56:59.225 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:56:59.228 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:56:59.228 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:56:59.229 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:56:59.229 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:56:59 AM)
+2023-12-19 09:56:59.229 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:56:59.229 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 25037 milliseconds before reconnecting...
+2023-12-19 09:57:24.268 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:57:24.270 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:57:24.270 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:57:24.270 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:57:24.270 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:57:24 AM)
+2023-12-19 09:57:24.270 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:57:24.270 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 20627 milliseconds before reconnecting...
+2023-12-19 09:57:44.898 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:57:44.901 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:57:44.901 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:57:44.902 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:57:44.902 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:57:44 AM)
+2023-12-19 09:57:44.902 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:57:44.902 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 22434 milliseconds before reconnecting...
+2023-12-19 09:58:07.338 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:58:07.340 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:58:07.340 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:58:07.341 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:58:07.341 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:58:07 AM)
+2023-12-19 09:58:07.341 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:58:07.341 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 28674 milliseconds before reconnecting...
+2023-12-19 09:58:36.015 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:58:36.017 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:58:36.017 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:58:36.018 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:58:36.018 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:58:36 AM)
+2023-12-19 09:58:36.018 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:58:36.018 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 22233 milliseconds before reconnecting...
+2023-12-19 09:58:58.251 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:58:58.253 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:58:58.254 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:58:58.254 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:58:58.254 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:58:58 AM)
+2023-12-19 09:58:58.254 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:58:58.254 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 21255 milliseconds before reconnecting...
+2023-12-19 09:59:19.510 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:59:19.513 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:59:19.513 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:59:19.514 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:59:19.514 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:59:19 AM)
+2023-12-19 09:59:19.514 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:59:19.514 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 22227 milliseconds before reconnecting...
+2023-12-19 09:59:41.742 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:59:41.744 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:59:41.744 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:59:41.744 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:59:41.744 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:59:41 AM)
+2023-12-19 09:59:41.744 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:59:41.744 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 17974 milliseconds before reconnecting...
+2023-12-19 09:59:59.718 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Making GET request to EventSource URI http://localhost:8111/endpoints/87/meval/eyJraW5kIjoidXNlciIsImtleSI6ImRvU2VydmVyU2lkZUV2ZW50Q29udGV4dFRlc3RzLjg2NzQxMjExNTg4NjU2NDQ3NDIuMiIsImF0dHIiOlsiYSIsImIiXX0=
+2023-12-19 09:59:59.720 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Cancelling current request
+2023-12-19 09:59:59.720 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] WARN: Encountered EventSource error: System.Net.Http.HttpRequestException: Connection refused (localhost:8111) (caused by: System.Net.Sockets.SocketException: Connection refused)
+2023-12-19 09:59:59.721 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG:    at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.HttpConnectionWaiter`1.WaitForConnectionAsync(Boolean async, CancellationToken requestCancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.ConnectToEventSourceApi(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSourceService.GetDataAsync(Action`1 processResponseLineString, Action`1 processResponseLineUTF8, String lastEventId, CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.ConnectToEventSourceAsync(CancellationToken cancellationToken)
+   at LaunchDarkly.EventSource.EventSource.StartAsync()
+2023-12-19 09:59:59.721 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Updated state to DataSourceStatus(Interrupted,12/19/2023 9:51:17 AM,UNKNOWN(Connection refused (localhost:8111))@12/19/2023 9:59:59 AM)
+2023-12-19 09:59:59.721 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] DEBUG: Close(Closed) - state was Connecting
+2023-12-19 09:59:59.721 -06:00 [events/context properties/custom attribute with value ["a","b"].SDK.DataSource] INFO: Waiting 29594 milliseconds before reconnecting...
