@@ -33,21 +33,21 @@ runs:
       shell: bash
       run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0 src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    - name: Build for Net7-android
-      shell: bash
-      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-android src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    # - name: Build for Net7-android
+    #   shell: bash
+    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-android src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    - name: Build for Net7-ios
-      shell: bash
-      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-ios src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    # - name: Build for Net7-ios
+    #   shell: bash
+    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-ios src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    - name: Build for Net7-windows
-      shell: bash
-      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-maccatalyst src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    # - name: Build for Net7-windows
+    #   shell: bash
+    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-maccatalyst src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    - name: Build for Net7-maccatalyst
-      shell: bash
-      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-windows src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    # - name: Build for Net7-maccatalyst
+    #   shell: bash
+    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-windows src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
     # - name: Run Unit Tests for Net7
     #   shell: bash
