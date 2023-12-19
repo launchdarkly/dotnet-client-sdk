@@ -33,21 +33,21 @@ runs:
       shell: bash
       run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0 src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    # - name: Build for Net7-android
-    #   shell: bash
-    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-android src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    - name: Build for Net7-android
+      shell: bash
+      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-android src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    # - name: Build for Net7-ios
-    #   shell: bash
-    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-ios src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    - name: Build for Net7-ios
+      shell: bash
+      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-ios src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    # - name: Build for Net7-windows
-    #   shell: bash
-    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-maccatalyst src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    - name: Build for Net7-windows
+      shell: bash
+      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-maccatalyst src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    # - name: Build for Net7-maccatalyst
-    #   shell: bash
-    #   run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-windows src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    - name: Build for Net7-maccatalyst
+      shell: bash
+      run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-windows src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
     # - name: Run Unit Tests for Net7
     #   shell: bash
@@ -69,12 +69,12 @@ runs:
         dotnet contract-tests/bin/release/net7.0/ContractTestService.dll > test-service.log 2>&1 & disown
         curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end" sh
 
-    - name: Build Test App
-      if: inputs.run_tests == 'true'
-      shell: bash
-      run: |
-        dotnet build /restore /p:Configuration=release \
-          tests/LaunchDarkly.ClientSdk.Device.Tests/LaunchDarkly.ClientSdk.Device.Tests.csproj
+    # - name: Build Test App
+    #   if: inputs.run_tests == 'true'
+    #   shell: bash
+    #   run: |
+    #     dotnet build /restore /p:Configuration=release \
+    #       tests/LaunchDarkly.ClientSdk.Device.Tests/LaunchDarkly.ClientSdk.Device.Tests.csproj
 
     # - name: Set up JDK 17
     #   if: inputs.run_tests == 'true'
