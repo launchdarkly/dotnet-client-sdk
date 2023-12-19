@@ -25,9 +25,9 @@ runs:
       shell: bash
       run: dotnet restore src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    # - name: Build for NetStandard2.0
-    #   shell: bash
-    #   run: dotnet build /p:Configuration=debug /p:TargetFramework=netstandard2.0 src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+    - name: Build for NetStandard2.0
+      shell: bash
+      run: dotnet build /p:Configuration=debug /p:TargetFramework=netstandard2.0 src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
     - name: Build for Net7
       shell: bash

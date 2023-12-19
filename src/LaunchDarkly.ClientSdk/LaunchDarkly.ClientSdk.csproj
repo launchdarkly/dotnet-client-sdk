@@ -6,10 +6,10 @@
          a situation where we need to build only the .NET Standard target and do not
          want to even mention the Android/iOS/Mac/Windows targets, because we're in an environment
          that doesn't have the MAUI tools installed. That is currently the case in
-         the release phase where we build HTML documentation. -->     
+         the release phase where we build HTML documentation. -->
 
     <!-- TODO bring back netstandard target -->
-    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net7.0;net7.0-android;net7.0-ios;net7.0-maccatalyst;net7.0-windows</BuildFrameworks>
+    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">netstandard2.0;net7.0;net7.0-android;net7.0-ios;net7.0-maccatalyst;net7.0-windows</BuildFrameworks>
     <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
     <UseMauiEssentials>true</UseMauiEssentials>
     <OutputType>Library</OutputType>
@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <!-- dependencies and source files for .NET 7.0 (all versions) -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().Equals('net7.0')) ">
+  <ItemGroup Condition="$(TargetFramework.ToLower().Equals('netstandard2.0')) Or $(TargetFramework.ToLower().Equals('net7.0'))">
     <Compile Include="**\*.netstandard.cs" />
   </ItemGroup>
 
@@ -63,7 +63,7 @@
   </ItemGroup>
 
   <!-- dependencies and source files for iOS (all versions) -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net7.0-ios')) ">
+  <ItemGroup Condition="$(TargetFramework.ToLower().StartsWith('net7.0-ios'))">
     <Compile Include="**\*.ios.cs" />
     <Compile Include="**\*.maui.cs" />
     <Reference Include="System.Numerics" />
@@ -71,7 +71,7 @@
   </ItemGroup>
 
     <!-- dependencies and source files for MacCatalyst (all versions) -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net7.0-maccatalyst')) ">
+  <ItemGroup Condition="$(TargetFramework.ToLower().StartsWith('net7.0-maccatalyst'))">
     <Compile Include="**\*.maccatalyst.cs" />
     <Compile Include="**\*.maui.cs" />
     <Reference Include="System.Numerics" />
@@ -86,7 +86,7 @@
   </ItemGroup>
 
       <!-- dependencies and source files for Windows (all versions) -->
-  <ItemGroup Condition=" $(TargetFramework.ToLower().StartsWith('net7.0-windows')) ">
+  <ItemGroup Condition="$(TargetFramework.ToLower().StartsWith('net7.0-windows'))">
     <Compile Include="**\*.windows.cs" />
     <Compile Include="**\*.maui.cs" />
     <Reference Include="System.Numerics" />
