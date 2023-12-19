@@ -31,6 +31,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <RootNamespace>LaunchDarkly.Sdk.Client</RootNamespace>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <!-- fail if XML comments are missing or invalid -->
     <WarningsAsErrors>1570,1571,1572,1573,1574,1580,1581,1584,1591,1710,1711,1712</WarningsAsErrors>
