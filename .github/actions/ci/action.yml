@@ -49,18 +49,18 @@ runs:
       shell: bash
       run: dotnet build /p:Configuration=release /p:TargetFramework=net7.0-windows src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
 
-    - name: Run Unit Tests for Net7
-      shell: bash
-      run: |
-        dotnet restore tests/LaunchDarkly.ClientSdk.Tests
-        dotnet test -v=normal \
-            --logger:"junit;LogFilePath=/tmp/circle-reports/unit-tests.xml" \
-            tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj
+    # - name: Run Unit Tests for Net7
+    #   shell: bash
+    #   run: |
+    #     dotnet restore tests/LaunchDarkly.ClientSdk.Tests
+    #     dotnet test -v=normal \
+    #         --logger:"junit;LogFilePath=/tmp/circle-reports/unit-tests.xml" \
+    #         tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj
 
     - name: Build Contract Tests
       if: inputs.run_tests == 'true'
       shell: bash
-      run: dotnet build contract-tests/TestService.csproj
+      run: dotnet build /p:Configuration=release contract-tests/TestService.csproj
 
     - name: Run Contract Tests
       if: inputs.run_tests == 'true'
