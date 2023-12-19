@@ -9,7 +9,7 @@
          the release phase where we build HTML documentation. -->     
 
     <!-- TODO bring back netstandard target -->
-    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net7.0;net7.0-android;net7.0-ios;net7.0-maccatalyst;net7.0-windows</BuildFrameworks>
+    <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">net7.0</BuildFrameworks>
     <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
     <UseMauiEssentials>true</UseMauiEssentials>
     <OutputType>Library</OutputType>
