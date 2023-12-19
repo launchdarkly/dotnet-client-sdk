@@ -69,7 +69,19 @@ namespace TestService
         SimpleResponse<Status> GetStatus(IRequestContext context) =>
             SimpleResponse.Of(200, new Status
             {
-                Name = "dotnet-client-sdk",
+#if ANDROID
+            Name = "dotnet-client-sdk-android",
+#elif IOS
+            Name = "dotnet-client-sdk-ios",
+#elif MACCATALYST
+            Name = "dotnet-client-sdk-maccatalyst",
+#elif WINDOWS
+            Name = "dotnet-client-sdk-windows",
+#elif NET7_0
+            Name = "dotnet-client-sdk-net7",
+#else
+            Name = "dotnet-client-sdk",
+#endif
                 Capabilities = Capabilities,
                 ClientVersion = _version
             });

@@ -19,7 +19,7 @@ runs:
 
     - name: Install MAUI Workload
       shell: bash
-      run: dotnet workload install maui-android maui-ios maui-windows maui-maccatalyst --ignore-failed-sources
+      run: dotnet workload restore
 
     - name: Restore Dependencies
       shell: bash
