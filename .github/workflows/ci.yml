@@ -1,0 +1,29 @@
+name: Run CI
+on:
+  push:
+    branches: [main, 'feat/**']
+    paths-ignore:
+      - '**.md' # Do not need to run CI for markdown changes.
+  pull_request:
+    branches: [main, 'feat/**']
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  ci-build:
+    runs-on: macos-13
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # If you only need the current version keep this.
+
+      - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.0
+        name: Get secrets
+        with:
+          aws_assume_role: ${{ vars.AWS_ROLE_ARN }}
+          ssm_parameter_pairs: '/production/common/releasing/placeholder = placeholder'
+
+      - uses: ./.github/actions/ci

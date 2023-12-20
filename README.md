@@ -6,46 +6,32 @@
 
 The LaunchDarkly Client-Side SDK for .NET is designed primarily for use by code that is deployed to an end user, such as in a desktop application or a smart device. It follows the client-side LaunchDarkly model for single-user contexts (much like our mobile or JavaScript SDKs). It is not intended for use in multi-user systems such as web servers and applications.
 
-On supported mobile platforms (Android and iOS), the SDK uses the Xamarin framework which allows .NET code to run on those devices. For that reason, its name was previously "LaunchDarkly Xamarin SDK". However, Xamarin is not the only way to run .NET code in a client-side context (see "Supported platforms" below), so the SDK now has a more general name.
+On platforms with MAUI support (Android, iOS, Mac, Windows), the SDK depends on the MAUI framework which allows .NET code to run on those devices.  However, MAUI is not the only way to run .NET code in a client-side context (see "Supported platforms" below), so the SDK has a more general name.
 
 For using LaunchDarkly in *server-side* .NET applications, refer to our [Server-Side .NET SDK](https://github.com/launchdarkly/dotnet-server-sdk).
 
 ## LaunchDarkly overview
 
 [LaunchDarkly](https://www.launchdarkly.com) is a feature management platform that serves trillions of feature flags daily to help teams build better software, faster. [Get started](https://docs.launchdarkly.com/home/getting-started) using LaunchDarkly today!
- 
-[![Twitter Follow](https://img.shields.io/twitter/follow/launchdarkly.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/intent/follow?screen_name=launchdarkly)
 
 ## Supported platforms
 
 This version of the SDK is built for the following targets:
 
-* Xamarin Android 8.1, for use with Android 8.1 (Android API 27) and higher.
-* Xamarin iOS 10, for use with iOS 10 and higher.
-* .NET Standard 2.0, for use with any runtime platform that supports .NET Standard 2.0, or in portable .NET Standard library code.
+* .Net Standard 2.0
+* .Net 7 Android, for use with Android 5.0 (Android API 21) and higher.
+* .Net 7 iOS, for use with iOS 11 and higher.
+* .Net 7 macOS (using Mac Catalyst), for use with macOS 10.15 and higher.
+* .Net 7 Windows (using WinUI), for Windows 11 and Windows 10 version 1809 or higher.
+* .NET 7
 
-The .NET Standard 2.0 target does not use any Xamarin packages and has no OS-specific code. This allows the SDK to be used in a desktop .NET Framework or .NET 5.0 application, or in a Xamarin MacOS application. However, due to the lack of OS-specific integration, SDK functionality will be limited in those environments: for instance, the SDK will not be able to detect whether networking is turned on or off.
+The .Net Standard and .Net 7.0 targets have no OS-specific code. This allows the SDK to be used in a desktop .NET Framework or .NET 7.0 application. However, due to the lack of OS-specific integration, SDK functionality will be limited in those environments: for instance, the SDK will not be able to detect whether networking is turned on or off.
 
 The .NET build tools should automatically load the most appropriate build of the SDK for whatever platform your application or library is targeted to.
 
 ## Getting started
 
 Refer to the [SDK documentation](https://docs.launchdarkly.com/sdk/client-side/dotnet) for instructions on getting started with using the SDK.
-
-## Signing
-
-The published version of this assembly is digitally signed with Authenticode and [strong-named](https://docs.microsoft.com/en-us/dotnet/framework/app-domains/strong-named-assemblies). Building the code locally in the default Debug configuration does not use strong-naming and does not require a key file. The public key file is in this repository at `LaunchDarkly.pk` as well as here:
-
-```
-Public Key:
-0024000004800000940000000602000000240000525341310004000001000100
-058a1dbccbc342759dc98b1eaba4467bfdea062629f212cf7c669ff26b4e2ff3
-c408292487bc349b8a687d73033ff14dbf861e1eea23303a5b5d13b1db034799
-13bd120ba372cf961d27db9f652631565f4e8aff4a79e11cfe713833157ecb5d
-cbc02d772967d919f8f06fbee227a664dc591932d5b05f4da1c8439702ecfdb1
-
-Public Key Token: 90b24964a3dfb906
-```
 
 ## Learn more
 

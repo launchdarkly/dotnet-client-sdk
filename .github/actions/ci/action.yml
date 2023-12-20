@@ -1,0 +1,102 @@
+name: CI Action
+inputs:
+  run_tests:
+    description: 'If true, run unit tests, otherwise skip them.'
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Download snk for signing assemblies
+      shell: bash
+      run: aws s3 cp s3://launchdarkly-releaser/dotnet/LaunchDarkly.ClientSdk.snk LaunchDarkly.ClientSdk.snk
+
+    - name: Setup dotnet build tools
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0
+
+    - name: Install MAUI Workload
+      shell: bash
+      run: dotnet workload restore
+
+    - name: Restore Dependencies
+      shell: bash
+      run: dotnet restore src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Build for NetStandard2.0
+      shell: bash
+      run: dotnet build /p:Configuration=debug /p:TargetFramework=netstandard2.0 src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Build for Net7
+      shell: bash
+      run: dotnet build /p:Configuration=debug /p:TargetFramework=net7.0 src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Build for Net7-android
+      shell: bash
+      run: dotnet build /p:Configuration=debug /p:TargetFramework=net7.0-android src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Build for Net7-ios
+      shell: bash
+      run: dotnet build /p:Configuration=debug /p:TargetFramework=net7.0-ios src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Build for Net7-windows
+      shell: bash
+      run: dotnet build /p:Configuration=debug /p:TargetFramework=net7.0-maccatalyst src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Build for Net7-maccatalyst
+      shell: bash
+      run: dotnet build /p:Configuration=debug /p:TargetFramework=net7.0-windows src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Run Unit Tests for Net7
+      shell: bash
+      run: |
+        dotnet restore tests/LaunchDarkly.ClientSdk.Tests
+        dotnet test -v=normal \
+            --logger:"junit;LogFilePath=/tmp/circle-reports/unit-tests.xml" \
+            tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj
+
+    - name: Build Contract Tests
+      if: inputs.run_tests == 'true'
+      shell: bash
+      run: dotnet build /p:Configuration=debug contract-tests/TestService.csproj
+
+    - name: Run Contract Tests
+      if: inputs.run_tests == 'true'
+      shell: bash
+      run: |
+        dotnet contract-tests/bin/debug/net7.0/ContractTestService.dll > test-service.log 2>&1 & disown
+        curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end" sh
+
+    - name: Build Test App
+      if: inputs.run_tests == 'true'
+      shell: bash
+      run: |
+        dotnet build /restore /p:Configuration=debug \
+          tests/LaunchDarkly.ClientSdk.Device.Tests/LaunchDarkly.ClientSdk.Device.Tests.csproj
+
+    # TODO: The test application does not auto-execute at the moment, so this is commented out.  For now this must be done manually.
+    # - name: Set up JDK 17
+    #   if: inputs.run_tests == 'true'
+    #   uses: actions/setup-java@v3
+    #   with:
+    #     java-version: '17'
+    #     distribution: 'temurin'
+
+    # - name: Setup Android Manager
+    #   if: inputs.run_tests == 'true'
+    #   uses: android-actions/setup-android@v3
+
+    # - name: Run Android Test App on Emulator
+    #   if: inputs.run_tests == 'true'
+    #   uses: reactivecircus/android-emulator-runner@v2
+    #   with:
+    #     api-level: 27
+    #     script: |
+          # dotnet run --framework net7.0-android --project tests/LaunchDarkly.ClientSdk.Device.Tests/LaunchDarkly.ClientSdk.Device.Tests.csproj
+          # adb install tests/LaunchDarkly.ClientSdk.Device.Tests/bin/debug/net7.0-android/com.LaunchDarkly.ClientSdk.Device.Tests-Signed.apk
+          # ( adb logcat DOTNET:D AndroidRuntime:D & ) | tee test-run.log | grep -q 'Tests run:'
+          # cat test-run.log | tr -s ' ' | cut -d ' ' -f 1,2,7-
+          # if grep '\[FAIL\]' test-run.log >/dev/null; then exit 1; fi
+

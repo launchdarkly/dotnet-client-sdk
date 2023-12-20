@@ -15,7 +15,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         protected override string SdkKeyOrMobileKey => _context.MobileKey;
         protected override string SdkName => SdkPackage.Name;
         protected override IEnumerable<LdValue> ConfigProperties => GetConfigProperties();
-        protected override string DotNetTargetFramework => GetDotNetTargetFramework();
+        protected override string DotNetTargetFramework => SdkPackage.DotNetTargetFramework;
         protected override HttpProperties HttpProperties => _context.Http.HttpProperties;
         protected override Type TypeOfLdClient => typeof(LdClient);
 
@@ -50,25 +50,5 @@ namespace LaunchDarkly.Sdk.Client.Internal.Events
         private LdValue GetComponentDescription(object component) =>
             component is IDiagnosticDescription dd ?
                 dd.DescribeConfiguration(_context) : LdValue.Null;
-
-        internal static string GetDotNetTargetFramework()
-        {
-            // Note that this is the _target framework_ that was selected at build time based on the application's
-            // compatibility requirements; it doesn't tell us anything about the actual OS version. We'll need to
-            // update this whenever we add or remove supported target frameworks in the .csproj file.
-#if NETSTANDARD2_0
-            return "netstandard2.0";
-#elif MONOANDROID71
-            return "monoandroid7.1";
-#elif MONOANDROID80
-            return "monoandroid8.0";
-#elif MONOANDROID81
-            return "monoandroid8.1";
-#elif XAMARIN_IOS10
-            return "xamarinios1.0";
-#else
-            return "unknown";
-#endif
-        }
     }
 }

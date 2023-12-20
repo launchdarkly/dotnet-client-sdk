@@ -17,7 +17,7 @@ namespace LaunchDarkly.Sdk.Client.Internal
         /// The prefix for the User-Agent header, omitting the version string. This may be different than the Name
         /// due to historical reasons.
         /// </summary>
-        private const string UserAgentPrefix = "XamarinClient";
+        private const string UserAgentPrefix = "DotnetClientSide";
 
         /// <summary>
         /// Version of the SDK.
@@ -28,6 +28,31 @@ namespace LaunchDarkly.Sdk.Client.Internal
         /// User-Agent suitable for usage in HTTP requests.
         /// </summary>
         internal static string UserAgent => $"{UserAgentPrefix}/{Version}";
+
+        /// <summary>
+        /// The target framework selected at build time.
+        /// </summary>
+        /// <remarks>
+        /// This is the _target framework_ that was selected at build time based
+        /// on the application's compatibility requirements; it doesn't tell
+        /// anything about the actual OS version.
+        /// </remarks>
+        internal static string DotNetTargetFramework =>
+            // We'll need to update this whenever we add or remove supported target frameworks in the .csproj file.
+            // Order of these conditonals matters.  Specific frameworks come before net7.0 intentionally.
+#if ANDROID
+            "net7.0-android";
+#elif IOS
+            "net7.0-ios";
+#elif MACCATALYST
+            "net7.0-maccatalyst";
+#elif WINDOWS
+            "net7.0-windows";
+#elif NET7_0
+            "net7.0";
+#else
+            "unknown";
+#endif
 
     }
 }

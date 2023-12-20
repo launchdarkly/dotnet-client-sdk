@@ -110,30 +110,6 @@ namespace LaunchDarkly.Sdk.Client
         /// <inheritdoc/>
         public IFlagTracker FlagTracker => _flagTracker;
 
-        /// <summary>
-        /// Indicates which platform the SDK is built for.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property is mainly useful for debugging. It does not indicate which platform you are actually running on,
-        /// but rather which variant of the SDK is currently in use.
-        /// </para>
-        /// <para>
-        /// The <c>LaunchDarkly.ClientSdk</c> package contains assemblies for multiple target platforms. In an Android
-        /// or iOS application, you will normally be using the Android or iOS variant of the SDK; that is done
-        /// automatically when you install the NuGet package. On all other platforms, you will get the .NET Standard
-        /// variant.
-        /// </para>
-        /// <para>
-        /// The basic features of the SDK are the same in all of these variants; the difference is in platform-specific
-        /// behavior such as detecting when an application has gone into the background, detecting network connectivity,
-        /// and ensuring that code is executed on the UI thread if applicable for that platform. Therefore, if you find
-        /// that these platform-specific behaviors are not working correctly, you may want to check this property to
-        /// make sure you are not for some reason running the .NET Standard SDK on a phone.
-        /// </para>
-        /// </remarks>
-        public static PlatformType PlatformType => UserMetadata.PlatformType;
-
         // private constructor prevents initialization of this class
         // without using WithConfigAnduser(config, user)
         LdClient()
@@ -154,7 +130,7 @@ namespace LaunchDarkly.Sdk.Client
             _log = _clientContext.BaseLogger;
             _taskExecutor = _clientContext.TaskExecutor;
 
-            _log.Info("Starting LaunchDarkly Client {0}", Version);
+            _log.Info("Starting LaunchDarkly Client {0} built with target framework {1}", Version, SdkPackage.DotNetTargetFramework);
 
             var persistenceConfiguration = (_config.PersistenceConfigurationBuilder ?? Components.Persistence())
                 .Build(_clientContext);

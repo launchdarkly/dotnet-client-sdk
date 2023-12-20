@@ -81,7 +81,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
         public void UserAgentHeader()
         {
             var config = Components.HttpConfiguration().CreateHttpConfiguration(mobileKey, applicationInfo);
-            Assert.Equal("XamarinClient/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)),
+            Assert.Equal("DotnetClientSide/" + AssemblyVersions.GetAssemblyVersionStringForType(typeof(LdClient)),
                 HeadersAsMap(config.DefaultHeaders)["user-agent"]); // not configurable
         }
 

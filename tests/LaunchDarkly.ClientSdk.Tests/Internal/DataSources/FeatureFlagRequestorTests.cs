@@ -74,7 +74,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         }
 
         // REPORT mode is known to fail in Android (ch47341)
-#if !__ANDROID__
+#if !ANDROID
         [Theory]
         [InlineData("", false, "/msdk/evalx/context", "")]
         [InlineData("", true, "/msdk/evalx/context", "?withReasons=true")]

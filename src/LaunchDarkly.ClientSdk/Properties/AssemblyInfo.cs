@@ -7,6 +7,5 @@ using System.Runtime.CompilerServices;
 // this assembly.
 
 [assembly: InternalsVisibleTo("LaunchDarkly.ClientSdk.Tests")]
-[assembly: InternalsVisibleTo("LaunchDarkly.ClientSdk.iOS.Tests")]
-[assembly: InternalsVisibleTo("LaunchDarkly.ClientSdk.Android.Tests")]
+[assembly: InternalsVisibleTo("LaunchDarkly.ClientSdk.Device.Tests")]
 #endif
