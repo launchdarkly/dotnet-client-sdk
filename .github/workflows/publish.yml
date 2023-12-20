@@ -1,9 +1,5 @@
 name: Publish Package
 on:
-  pull_request:
-    branches: [main, 'feat/**']
-    paths-ignore:
-      - '**.md'
   workflow_dispatch:
     inputs:
       run_tests:
@@ -107,7 +103,7 @@ jobs:
           ssm_parameter_pairs: '/production/common/releasing/nuget/api_key = NUGET_API_KEY'
 
       - name: Publish Nupkg
-        uses: ./.github/actions/pack
+        uses: ./.github/actions/publish
         with:
           dry_run: ${{ inputs.dry_run }}
 
