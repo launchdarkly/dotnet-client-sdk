@@ -23,11 +23,10 @@ jobs:
         with:
           fetch-depth: 0 # If you only need the current version keep this
 
-      - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.0
+      - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.1
         name: Get secrets
         with:
           aws_assume_role: ${{ vars.AWS_ROLE_ARN }}
-          ssm_parameter_pairs: '/production/common/releasing/placeholder = placeholder'
 
       - name: CI check
         uses: ./.github/actions/ci
@@ -62,7 +61,7 @@ jobs:
           name: dir-bin-release
           path: src/LaunchDarkly.ClientSdk/bin/Release/
 
-      - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.0
+      - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.1
         name: Get secrets
         with:
           aws_assume_role: ${{ vars.AWS_ROLE_ARN }}
@@ -96,7 +95,7 @@ jobs:
           name: dir-bin-release-signed
           path: src/LaunchDarkly.ClientSdk/bin/Release/
 
-      - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.0
+      - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.1
         name: Get secrets
         with:
           aws_assume_role: ${{ vars.AWS_ROLE_ARN }}
