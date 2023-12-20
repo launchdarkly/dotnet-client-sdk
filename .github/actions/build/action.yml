@@ -22,10 +22,6 @@ runs:
       shell: bash
       run: dotnet workload restore
 
-    - name: Find android tools
-      shell: bash
-      run: ls /Users/runner/Library/Android/sdk/build-tools/
-
     - name: Build
       shell: bash
       run: dotnet build /p:Configuration=release src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj

@@ -1,11 +1,15 @@
 name: Publish Package
 on:
+  pull_request:
+    branches: [main, 'feat/**']
+    paths-ignore:
+      - '**.md'
   workflow_dispatch:
     inputs:
-      prerelease:
-        description: 'Is this a prerelease.' # use this to control publish tag, for instance NPM wouldn't set latest.
-        type: boolean
-        required: true
+      run_tests:
+        description: 'If true, run unit tests, otherwise skip them.'
+        required: false
+        default: 'true'
       dry_run:
         description: 'Is this a dry run. If so no package will be published.'
         type: boolean
@@ -14,7 +18,7 @@ on:
 jobs:
 # Building is done on mac runner due to xcode build dependencies
   build:
-    runs-on: macos-latest
+    runs-on: macos-13
     permissions:
       id-token: write
       contents: read
@@ -27,10 +31,11 @@ jobs:
         name: Get secrets
         with:
           aws_assume_role: ${{ vars.AWS_ROLE_ARN }}
-          ssm_parameter_pairs: '/production/common/releasing/digicert/host = DIGICERT_HOST,/production/common/releasing/digicert/api_key = DIGICERT_API_KEY,/production/common/releasing/digicert/client_cert_file_b64 = DIGICERT_CLIENT_CERT_FILE_B64,/production/common/releasing/digicert/client_cert_password = DIGICERT_CLIENT_CERT_PASSWORD,/production/common/releasing/digicert/code_signing_cert_sha1_hash = DIGICERT_CODE_SIGNING_CERT_SHA1_HASH'
+          ssm_parameter_pairs: '/production/common/releasing/placeholder = placeholder'
 
       - name: CI check
         uses: ./.github/actions/ci
+        run_tests: inputs.run_tests
 
       - name: Build
         uses: ./.github/actions/build
@@ -78,7 +83,7 @@ jobs:
 
 # Packing is done on Mac due to ios workload requirements.
   pack-nupkg:
-    runs-on: macos-latest
+    runs-on: macos-13
     needs: sign-dlls
     permissions:
       id-token: write
@@ -98,10 +103,11 @@ jobs:
         name: Get secrets
         with:
           aws_assume_role: ${{ vars.AWS_ROLE_ARN }}
-          ssm_parameter_pairs: '/production/common/releasing/digicert/host = DIGICERT_HOST,/production/common/releasing/digicert/api_key = DIGICERT_API_KEY,/production/common/releasing/digicert/client_cert_file_b64 = DIGICERT_CLIENT_CERT_FILE_B64,/production/common/releasing/digicert/client_cert_password = DIGICERT_CLIENT_CERT_PASSWORD,/production/common/releasing/digicert/code_signing_cert_sha1_hash = DIGICERT_CODE_SIGNING_CERT_SHA1_HASH'
+          ssm_parameter_pairs: '/production/common/releasing/nuget/api_key = NUGET_API_KEY'
 
-      - name: Pack Nupkg
+      - name: Publish Nupkg
         uses: ./.github/actions/pack
+        dry_run: inputs.dry_run
 
       - name: Retain unsigned nupkg
         uses: actions/upload-artifact@v3
