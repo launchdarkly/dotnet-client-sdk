@@ -1,0 +1,40 @@
+name: Sign DLL Action
+
+runs:
+  using: composite
+  steps:
+    - name: Install Jsign for Linux for signing DLLs
+      shell: bash
+      run: |
+        curl -fSslL https://github.com/ebourg/jsign/releases/download/4.2/jsign_4.2_all.deb -o jsign_4.2_all.deb
+        sudo dpkg --install jsign_4.2_all.deb
+
+    - name: Set up certificate on filesystem
+      shell: bash
+      run: |
+        echo "${{ env.DIGICERT_CLIENT_CERT_FILE_B64 }}" | base64 --decode > ${{ github.workspace }}/Certificate_pkcs12.p12
+
+    - name: Set env variables used by smctl
+      id: variables
+      shell: bash
+      run: |
+        echo "SM_HOST=${{ env.DIGICERT_HOST }}" >> "$GITHUB_ENV"
+        echo "SM_API_KEY=${{ env.DIGICERT_API_KEY }}" >> "$GITHUB_ENV"
+        echo "SM_CLIENT_CERT_FILE=${{ github.workspace }}/Certificate_pkcs12.p12" >> "$GITHUB_ENV"
+        echo "SM_CLIENT_CERT_PASSWORD=${{ env.DIGICERT_CLIENT_CERT_PASSWORD }}" >> "$GITHUB_ENV"
+        echo "PKCS11_CONFIG=/tmp/DigiCert One Signing Manager Tools/smtools-linux-x64/pkcs11properties.cfg" >> "$GITHUB_ENV"
+
+    - name: Configure Digicert Secure Software Manager
+      uses: digicert/ssm-code-signing@v0.0.2
+      env:
+        SM_API_KEY: ${{ env.DIGICERT_API_KEY }}
+        SM_CLIENT_CERT_PASSWORD: ${{ env.DIGICERT_CLIENT_CERT_PASSWORD }}
+        SM_CLIENT_CERT_FILE: ${{ env.DIGICERT_CLIENT_CERT_FILE_B64 }}
+
+    - name: Sign DLLs
+      shell: bash
+      run: |
+        for dll in $(find ./src/LaunchDarkly.ClientSdk/bin/Release -name LaunchDarkly.ClientSdk.dll); do
+          echo "${dll}"
+          smctl sign --keypair-alias key_573919999 --config-file="/tmp/DigiCert One Signing Manager Tools/smtools-linux-x64/pkcs11properties.cfg" --input "${dll}"
+        done

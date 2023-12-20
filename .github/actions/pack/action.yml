@@ -1,0 +1,29 @@
+name: Pack Action
+description: 'Dotnet Client SDK action that packs DLLs into unsigned Nuget package.'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup dotnet build tools
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0
+
+    - name: Install Workloads
+      shell: bash
+      run: dotnet workload restore
+
+    - name: Create Nuget Package
+      shell: bash
+      run: |
+        dotnet restore
+        dotnet pack --no-build --output nupkgs --configuration release src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    # - id: publish
+    #   name: Publish Package
+    #   uses: ./.github/actions/publish
+    #   with:
+    #     token: "Put your release secret or github token here."
+    #     prerelease: ${{ inputs.prerelease }}
+    #     dry_run: ${{ inputs.dry_run }}
+
