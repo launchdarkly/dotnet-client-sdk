@@ -14,7 +14,7 @@ We encourage pull requests and other contributions from the community. Before su
 
 ### Prerequisites
 
-The .NET 7 target requires only the .NET Core 2.1 SDK or higher, while the iOS, Android, MacCatalys, and Windows targets require the corresponding MAUI SDKs.
+The .NET Standard target requires only the .NET Core 2.1 SDK or higher. The iOS, Android, MacCatalys, and Windows targets require Net 7.0 or later.
 
 ### Building
 
