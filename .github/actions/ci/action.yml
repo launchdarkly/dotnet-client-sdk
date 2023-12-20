@@ -58,19 +58,19 @@ runs:
             tests/LaunchDarkly.ClientSdk.Tests/LaunchDarkly.ClientSdk.Tests.csproj
 
     - name: Build Contract Tests
-      if: inputs.run_tests == 'true'
+      if: ${{ inputs.run_tests == 'true' }}
       shell: bash
       run: dotnet build /p:Configuration=debug contract-tests/TestService.csproj
 
     - name: Run Contract Tests
-      if: inputs.run_tests == 'true'
+      if: ${{ inputs.run_tests == 'true' }}
       shell: bash
       run: |
         dotnet contract-tests/bin/debug/net7.0/ContractTestService.dll > test-service.log 2>&1 & disown
         curl -s https://raw.githubusercontent.com/launchdarkly/sdk-test-harness/main/downloader/run.sh | VERSION=v2 PARAMS="-url http://localhost:8000 -debug -stop-service-at-end" sh
 
     - name: Build Test App
-      if: inputs.run_tests == 'true'
+      if: ${{ inputs.run_tests == 'true' }}
       shell: bash
       run: |
         dotnet build /restore /p:Configuration=debug \
@@ -78,18 +78,18 @@ runs:
 
     # TODO: The test application does not auto-execute at the moment, so this is commented out.  For now this must be done manually.
     # - name: Set up JDK 17
-    #   if: inputs.run_tests == 'true'
+    #   if: ${{ inputs.run_tests == 'true' }}
     #   uses: actions/setup-java@v3
     #   with:
     #     java-version: '17'
     #     distribution: 'temurin'
 
     # - name: Setup Android Manager
-    #   if: inputs.run_tests == 'true'
+    #   if: ${{ inputs.run_tests == 'true' }}
     #   uses: android-actions/setup-android@v3
 
     # - name: Run Android Test App on Emulator
-    #   if: inputs.run_tests == 'true'
+    #   if: ${{ inputs.run_tests == 'true' }}
     #   uses: reactivecircus/android-emulator-runner@v2
     #   with:
     #     api-level: 27
