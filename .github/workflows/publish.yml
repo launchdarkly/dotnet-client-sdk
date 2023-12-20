@@ -35,7 +35,7 @@ jobs:
 
       - name: CI check
         uses: ./.github/actions/ci
-        run_tests: inputs.run_tests
+        run_tests: {{ inputs.run_tests }}
 
       - name: Build
         uses: ./.github/actions/build
@@ -107,7 +107,7 @@ jobs:
 
       - name: Publish Nupkg
         uses: ./.github/actions/pack
-        dry_run: inputs.dry_run
+        dry_run: {{ inputs.dry_run }}
 
       - name: Retain unsigned nupkg
         uses: actions/upload-artifact@v3
