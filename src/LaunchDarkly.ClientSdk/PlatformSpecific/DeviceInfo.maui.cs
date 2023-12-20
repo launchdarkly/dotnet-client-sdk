@@ -31,7 +31,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
             {
                 return "Apple";
             }
-            else if(platform == Devices.DevicePlatform.UWP || platform == Devices.DevicePlatform.WinUI)
+            else if(platform == Devices.DevicePlatform.WinUI)
             {
                 return "Windows";
             }
