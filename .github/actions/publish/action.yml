@@ -29,7 +29,7 @@ runs:
       shell: bash
       run: |
         for pkg in $(find ./src/LaunchDarkly.ClientSdk/bin/Release -name '*.nupkg' -o -name '*.snupkg'); do
-          echo "publishing $pkg"
-          dotnet nuget push "$pkg" -ApiKey ${{ env.NUGET_API_KEY }} -Source https://www.nuget.org
+          echo "publishing ${pkg}"
+          dotnet nuget push "${pkg}" -ApiKey ${{ env.NUGET_API_KEY }} -Source https://www.nuget.org
           echo "published $pkg"
         done
