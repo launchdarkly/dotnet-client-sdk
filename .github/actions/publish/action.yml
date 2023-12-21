@@ -1,0 +1,35 @@
+name: Publish
+description: 'Dotnet Client SDK action that packs DLLs into unsigned Nuget package and publishes to Nuget.'
+inputs:
+  dry_run:
+    description: 'Is this a dry run. If so no package will be published.'
+    type: boolean
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup dotnet build tools
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0
+
+    - name: Install Workloads
+      shell: bash
+      run: dotnet workload restore
+
+    - name: Create Nuget Package
+      shell: bash
+      run: |
+        dotnet restore
+        dotnet pack --no-build --output nupkgs --configuration release src/LaunchDarkly.ClientSdk/LaunchDarkly.ClientSdk.csproj
+
+    - name: Publish Package
+      if: ${{ inputs.dry_run == 'false' }}
+      shell: bash
+      run: |
+        for pkg in $(find ./src/LaunchDarkly.ClientSdk/bin/Release -name '*.nupkg' -o -name '*.snupkg'); do
+          echo "publishing $pkg"
+          dotnet nuget push "$pkg" -ApiKey ${{ env.NUGET_API_KEY }} -Source https://www.nuget.org
+          echo "published $pkg"
+        done
