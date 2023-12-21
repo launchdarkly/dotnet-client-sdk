@@ -12,7 +12,7 @@ namespace LaunchDarkly.Sdk.Client.PlatformSpecific
             TimeSpan connectTimeout,
             IWebProxy proxy
             ) =>
-            p => new AndroidClientHandler()
+            p => new AndroidMessageHandler()
             {
                 ConnectTimeout = connectTimeout,
                 Proxy = proxy
