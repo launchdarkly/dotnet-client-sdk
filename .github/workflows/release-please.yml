@@ -1,0 +1,22 @@
+name: Release Please
+on:
+  push:
+    branches:
+      - main
+      - ta/sc-233251/release-please-support
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write # Needed if using OIDC to get release secrets.
+      contents: write # Contents and pull-requests are for release-please to make releases.
+      pull-requests: write
+
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          default-branch: main
