@@ -3,6 +3,39 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [5.0.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/4.1.0...5.0.0) (2024-02-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Automatic Environment Attributes ([#199](https://github.com/launchdarkly/dotnet-client-sdk/issues/199))
+
+### Features
+
+* adds automatic environment attributes support ([a8fbc31](https://github.com/launchdarkly/dotnet-client-sdk/commit/a8fbc313dd72b7aa0e9f985c36a90a5597aee2bd))
+* adds MAUI support ([d01a865](https://github.com/launchdarkly/dotnet-client-sdk/commit/d01a865aa83c6cc699c3d2ff528ce256f169ecdc))
+* adds MAUI support ([#66](https://github.com/launchdarkly/dotnet-client-sdk/issues/66)) ([112c2fb](https://github.com/launchdarkly/dotnet-client-sdk/commit/112c2fb7d54c31d88c3a1ffdd9aec88911f149de))
+* adds support for application tags in headers ([00f3124](https://github.com/launchdarkly/dotnet-client-sdk/commit/00f31242c3e24518abb12e8a7792d5644d28794e))
+* Adds support for application tags. ([c416f34](https://github.com/launchdarkly/dotnet-client-sdk/commit/c416f3478679322a04ee5a66d94c9ace15eafe33))
+* Adds support for application tags. ([#192](https://github.com/launchdarkly/dotnet-client-sdk/issues/192)) ([b0c539e](https://github.com/launchdarkly/dotnet-client-sdk/commit/b0c539e2b51a731e2f553ee8bdf41fbd1fc59b62))
+* Automatic Environment Attributes ([#199](https://github.com/launchdarkly/dotnet-client-sdk/issues/199)) ([73bb93d](https://github.com/launchdarkly/dotnet-client-sdk/commit/73bb93d027616846240cefe885315f6cdb8c0b18))
+* incorporate client sdk default header values when no application info provided. ([8c4d660](https://github.com/launchdarkly/dotnet-client-sdk/commit/8c4d660295936d96672c54e49c8bed8bb0dfdee8))
+* initial work to support release please ([cc50bd2](https://github.com/launchdarkly/dotnet-client-sdk/commit/cc50bd2e9429a7b98ad2afb1865e98d5e4637ea8))
+* propagate locale in SDK attribute layer ([#196](https://github.com/launchdarkly/dotnet-client-sdk/issues/196)) ([9dca50e](https://github.com/launchdarkly/dotnet-client-sdk/commit/9dca50eff3cadccbc3b3493f9bd0e6f1c04ea386))
+
+
+### Bug Fixes
+
+* adding missing release please config ([a7ba62a](https://github.com/launchdarkly/dotnet-client-sdk/commit/a7ba62a8af04bbf4a7895c00b9d878ce5713a438))
+* adding release please manifest with version ([15ecce5](https://github.com/launchdarkly/dotnet-client-sdk/commit/15ecce597ab79c20a4c92d150ebba2971e14ccc6))
+* adjusting release please target branch ([b837453](https://github.com/launchdarkly/dotnet-client-sdk/commit/b8374530eb926636246d2586bc140e0bc7ed5a5b))
+* android platform layer - os name should include Build.Version.SdkInt ([29853a5](https://github.com/launchdarkly/dotnet-client-sdk/commit/29853a5b57466e4b05e31601f24051dcd5d1c81a))
+* Fix generation of FullyQualifiedKey. ([#186](https://github.com/launchdarkly/dotnet-client-sdk/issues/186)) ([b82e365](https://github.com/launchdarkly/dotnet-client-sdk/commit/b82e3650db3d9b4bfcd5ba163d17b64c2aff1654))
+* Match the client's Xamarin.Android.Support.v4 package Android project ([#198](https://github.com/launchdarkly/dotnet-client-sdk/issues/198)) ([d1c3c1e](https://github.com/launchdarkly/dotnet-client-sdk/commit/d1c3c1e12c2b7170048df3d50eafae9301dd6eef))
+* updating deprecated AndroidClientHandler to AndroidMessageHandler ([973b38c](https://github.com/launchdarkly/dotnet-client-sdk/commit/973b38ccd59a232bf47384b20d8d8bbda6017a6e))
+* updating deprecated AndroidClientHandler to AndroidMessageHandler ([#69](https://github.com/launchdarkly/dotnet-client-sdk/issues/69)) ([3dc9dba](https://github.com/launchdarkly/dotnet-client-sdk/commit/3dc9dbaac918555691281322ea15ea94bbe29e5a))
+* updating version and bootstrap sha to match last release ([fb352e9](https://github.com/launchdarkly/dotnet-client-sdk/commit/fb352e96101ca3748f1b966d51a3f24f2c61aba8))
+
 ## [4.1.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/4.0.0...4.1.0) (2024-02-12)
 
 
