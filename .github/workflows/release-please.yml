@@ -15,6 +15,9 @@ jobs:
       contents: write # Contents and pull-requests are for release-please to make releases.
       pull-requests: write
 
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+
     steps:
       - uses: google-github-actions/release-please-action@v4
         id: release
@@ -25,7 +28,7 @@ jobs:
   call-workflow-passing-data:
     needs: release-please
     uses: ./.github/workflows/publish.yml
-    if: ${{ release-please.steps.release.outputs.releases_created == 'true' }}
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     with:
       run_tests-path: true
       dry_run: true
