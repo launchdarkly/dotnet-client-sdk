@@ -19,4 +19,4 @@ jobs:
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          default-branch: main
+          target-branch: ${{ github.ref_name }}
