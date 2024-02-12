@@ -3,6 +3,25 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [4.1.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/4.0.0...4.1.0) (2024-02-12)
+
+
+### Features
+
+* adds MAUI support ([d01a865](https://github.com/launchdarkly/dotnet-client-sdk/commit/d01a865aa83c6cc699c3d2ff528ce256f169ecdc))
+* adds MAUI support ([#66](https://github.com/launchdarkly/dotnet-client-sdk/issues/66)) ([112c2fb](https://github.com/launchdarkly/dotnet-client-sdk/commit/112c2fb7d54c31d88c3a1ffdd9aec88911f149de))
+* initial work to support release please ([cc50bd2](https://github.com/launchdarkly/dotnet-client-sdk/commit/cc50bd2e9429a7b98ad2afb1865e98d5e4637ea8))
+
+
+### Bug Fixes
+
+* adding missing release please config ([a7ba62a](https://github.com/launchdarkly/dotnet-client-sdk/commit/a7ba62a8af04bbf4a7895c00b9d878ce5713a438))
+* adding release please manifest with version ([15ecce5](https://github.com/launchdarkly/dotnet-client-sdk/commit/15ecce597ab79c20a4c92d150ebba2971e14ccc6))
+* adjusting release please target branch ([b837453](https://github.com/launchdarkly/dotnet-client-sdk/commit/b8374530eb926636246d2586bc140e0bc7ed5a5b))
+* updating deprecated AndroidClientHandler to AndroidMessageHandler ([973b38c](https://github.com/launchdarkly/dotnet-client-sdk/commit/973b38ccd59a232bf47384b20d8d8bbda6017a6e))
+* updating deprecated AndroidClientHandler to AndroidMessageHandler ([#69](https://github.com/launchdarkly/dotnet-client-sdk/issues/69)) ([3dc9dba](https://github.com/launchdarkly/dotnet-client-sdk/commit/3dc9dbaac918555691281322ea15ea94bbe29e5a))
+* updating version and bootstrap sha to match last release ([fb352e9](https://github.com/launchdarkly/dotnet-client-sdk/commit/fb352e96101ca3748f1b966d51a3f24f2c61aba8))
+
 ## [4.0.0] - 2023-10-18
 ### Added:
 - Added Automatic Mobile Environment Attributes functionality which makes it simpler to target your mobile customers based on application name or version, or on device characteristics including manufacturer, model, operating system, locale, and so on. To learn more, read [Automatic environment attributes](https://docs.launchdarkly.com/sdk/features/environment-attributes).
