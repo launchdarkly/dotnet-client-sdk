@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - ta/sc-233251/release-please-support
+      - ta/sc-233251/release-please-support-fake-main
 
 jobs:
   release-please:
