@@ -10,9 +10,16 @@ on:
         description: 'Is this a dry run. If so no package will be published.'
         type: boolean
         required: true
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+.*'
+  workflow_call:
+    inputs:
+      run_tests:
+        description: 'If true, run unit tests, otherwise skip them.'
+        required: false
+        default: 'true'
+      dry_run:
+        description: 'Is this a dry run. If so no package will be published.'
+        type: boolean
+        required: true
 
 jobs:
 # Building is done on mac runner due to xcode build dependencies
