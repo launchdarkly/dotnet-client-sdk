@@ -5,7 +5,19 @@ on:
       run_tests:
         description: 'If true, run unit tests, otherwise skip them.'
         required: false
-        default: 'true'
+        type: boolean
+        default: true
+      dry_run:
+        description: 'Is this a dry run. If so no package will be published.'
+        type: boolean
+        required: true
+  workflow_call:
+    inputs:
+      run_tests:
+        description: 'If true, run unit tests, otherwise skip them.'
+        required: false
+        type: boolean
+        default: true
       dry_run:
         description: 'Is this a dry run. If so no package will be published.'
         type: boolean
