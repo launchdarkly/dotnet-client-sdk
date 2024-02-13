@@ -29,4 +29,4 @@ jobs:
     if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     with:
       run_tests: true
-      dry_run: true
+      dry_run: false
