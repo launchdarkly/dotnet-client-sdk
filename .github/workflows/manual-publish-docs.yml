@@ -10,9 +10,9 @@ jobs:
       contents: write # Needed in this case to write github pages.
     steps:
       - uses: actions/checkout@v4
-        
+
       - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.1
-        name: Get secrets
+        name: Assume aws role
         with:
           aws_assume_role: ${{ vars.AWS_ROLE_ARN }}
 
