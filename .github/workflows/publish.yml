@@ -48,11 +48,18 @@ jobs:
       - name: Build
         uses: ./.github/actions/build
 
-      - name: Retain artifacts for other jobs to use
+      - name: Retain build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: dir-bin-release
           path: src/LaunchDarkly.ClientSdk/bin/Release/
+          retention-days: 1
+
+      - name: Retain docs artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dir-docs
+          path: docs/
           retention-days: 1
 
 # Signing DLLs is done on Ubuntu due to Digicert tooling compatibility
@@ -107,6 +114,12 @@ jobs:
           name: dir-bin-release-signed
           path: src/LaunchDarkly.ClientSdk/bin/Release/
 
+      - name: Restore docs artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dir-docs
+          path: docs/
+
       - uses: launchdarkly/gh-actions/actions/release-secrets@release-secrets-v1.0.1
         name: Get secrets
         with:
@@ -124,3 +137,9 @@ jobs:
           name: unsigned-nupkg
           path: nupkgs/
           retention-days: 1
+
+      - uses: ./.github/actions/publish-docs
+        with:
+          # If publishing somewhere else, then get the token from SSM. If you need both github,
+          # and another token, then add more tokens to the composite action.
+          token: ${{secrets.GITHUB_TOKEN}}

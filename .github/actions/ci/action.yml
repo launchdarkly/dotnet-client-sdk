@@ -100,3 +100,8 @@ runs:
           # cat test-run.log | tr -s ' ' | cut -d ' ' -f 1,2,7-
           # if grep '\[FAIL\]' test-run.log >/dev/null; then exit 1; fi
 
+    # We build documentation during CI to ensure it can always build prior to a
+    # release.
+    - name: Build documentation
+      uses: ./.github/actions/build-docs
+
