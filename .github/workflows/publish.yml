@@ -102,7 +102,7 @@ jobs:
     needs: sign-dlls
     permissions:
       id-token: write
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -140,6 +140,4 @@ jobs:
 
       - uses: ./.github/actions/publish-docs
         with:
-          # If publishing somewhere else, then get the token from SSM. If you need both github,
-          # and another token, then add more tokens to the composite action.
           token: ${{secrets.GITHUB_TOKEN}}
