@@ -10,7 +10,6 @@
              that doesn't have the MAUI tools installed. That is currently the case in
              the release phase where we build HTML documentation. -->
 
-        <!-- TODO bring back netstandard target -->
         <BuildFrameworks Condition="'$(BUILDFRAMEWORKS)' == ''">netstandard2.0;net7.0;net7.0-android;net7.0-ios;net7.0-maccatalyst;net7.0-windows</BuildFrameworks>
         <TargetFrameworks>$(BUILDFRAMEWORKS)</TargetFrameworks>
         <UseMauiEssentials>true</UseMauiEssentials>
