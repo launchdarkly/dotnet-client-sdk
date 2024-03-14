@@ -38,7 +38,9 @@ namespace TestService
             "strongly-typed",
             "user-type",
             "tags",
-            "auto-env-attributes"
+            "auto-env-attributes",
+            "inline-context",
+            "anonymous-redaction"
         };
 
         public readonly Handler Handler;
