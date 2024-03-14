@@ -3,6 +3,19 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [5.1.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/5.0.0...5.1.0) (2024-03-14)
+
+
+### Features
+
+* Always inline contexts for feature events ([c658bee](https://github.com/launchdarkly/dotnet-client-sdk/commit/c658beee27cd871c8ad91942ac5a04b29b8338bd))
+* Redact anonymous attributes within feature events ([c658bee](https://github.com/launchdarkly/dotnet-client-sdk/commit/c658beee27cd871c8ad91942ac5a04b29b8338bd))
+
+
+### Bug Fixes
+
+* Bump LaunchDarkly.InternalSdk to 3.4.0 ([#91](https://github.com/launchdarkly/dotnet-client-sdk/issues/91)) ([c658bee](https://github.com/launchdarkly/dotnet-client-sdk/commit/c658beee27cd871c8ad91942ac5a04b29b8338bd))
+
 ## [5.0.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/4.0.0...5.0.0) (2024-02-13)
 
 
