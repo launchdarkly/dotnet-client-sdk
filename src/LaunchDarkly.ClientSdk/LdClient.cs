@@ -384,8 +384,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
-        [Obsolete("Initializing the LDClient without a timeout is no longer permitted to help prevent" +
-                  "consumers from blocking their application execution by mistake when connectivity is poor.  Please" +
+        [Obsolete("Initializing the LDClient without a timeout is no longer permitted to help prevent " +
+                  "consumers from blocking their application execution by mistake when connectivity is poor.  Please " +
                   "use InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan) and specify a max wait time.")]
         public static async Task<LdClient> InitAsync(string mobileKey,
             ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext)
@@ -555,8 +555,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="InitAsync(Configuration, User)"/>
         /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
         /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
-        [Obsolete("Initializing the LDClient without a timeout is no longer permitted to help prevent" +
-                  "consumers from blocking their application execution by mistake when connectivity is poor.  Please" +
+        [Obsolete("Initializing the LDClient without a timeout is no longer permitted to help prevent " +
+                  "consumers from blocking their application execution by mistake when connectivity is poor.  Please " +
                   "use InitAsync(Configuration, Context, TimeSpan) and specify a max wait time.")]
         public static async Task<LdClient> InitAsync(Configuration config, Context initialContext)
         {

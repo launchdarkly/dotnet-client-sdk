@@ -111,6 +111,25 @@ namespace LaunchDarkly.Sdk.Client
             }
         }
 
+        [Fact]
+        public async void InitCanTimeOutAsync()
+        {
+            var handler = Handlers.Delay(TimeSpan.FromSeconds(2)).Then(SetupResponse(_flagData1, UpdateMode.Polling));
+            using (var server = HttpServer.Start(handler))
+            {
+                var config = BaseConfig(builder =>
+                    builder.DataSource(Components.PollingDataSource())
+                        .ServiceEndpoints(Components.ServiceEndpoints().Polling(server.Uri)));
+                using (var client = await TestUtil.CreateClientAsync(config, _user, TimeSpan.FromMilliseconds(200)))
+                {
+                    Assert.False(client.Initialized);
+                    Assert.Null(client.StringVariation(_flagData1.Items.First().Key, null));
+                    Assert.True(logCapture.HasMessageWithText(Logging.LogLevel.Warn,
+                        "Client did not initialize within 200 milliseconds."));
+                }
+            }
+        }
+
         [Theory]
         [MemberData(nameof(PollingAndStreaming))]
         public void InitFailsOn401Sync(UpdateMode mode)
