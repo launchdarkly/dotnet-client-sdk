@@ -106,7 +106,7 @@ namespace LaunchDarkly.Sdk.Client
         /// to be logged and no event will be sent</param>
         /// <param name="maxWaitTime">the maximum time to wait for the new flag values</param>
         /// <returns>true if new flag values were obtained</returns>
-        /// <seealso cref="ILdClient.Identify(Context, TimeSpan)"/>
+        [Obsolete("User has been superseded by Context.  See ILdClient.Identify(Context, TimeSpan)")]
         public static bool Identify(this ILdClient client, User user, TimeSpan maxWaitTime) =>
             client.Identify(Context.FromUser(user), maxWaitTime);
 
@@ -123,7 +123,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <param name="user">the user; should not be null (a null reference will cause an error
         /// to be logged and no event will be sent</param>
         /// <returns>a task that yields true if new flag values were obtained</returns>
-        /// <seealso cref="ILdClient.Identify(Context, TimeSpan)"/>
+        [Obsolete("User has been superseded by Context.  See ILdClient.Identify(Context, TimeSpan)")]
         public static Task<bool> IdentifyAsync(this ILdClient client, User user) =>
             client.IdentifyAsync(Context.FromUser(user));
     }

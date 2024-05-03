@@ -327,7 +327,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// <param name="maxWaitTime">the maximum time to wait for the new flag values</param>
         /// <returns>true if new flag values were obtained</returns>
         /// <seealso cref="IdentifyAsync(Context)"/>
-        /// <seealso cref="ILdClientExtensions.Identify(ILdClient, User, TimeSpan)"/>
         bool Identify(Context context, TimeSpan maxWaitTime);
 
         /// <summary>
@@ -349,7 +348,6 @@ namespace LaunchDarkly.Sdk.Client.Interfaces
         /// about setting the context and optionally requesting a unique key for it</param>
         /// <returns>a task that yields true if new flag values were obtained</returns>
         /// <seealso cref="Identify(Context, TimeSpan)"/>
-        /// <seealso cref="ILdClientExtensions.IdentifyAsync(ILdClient, User)"/>
         Task<bool> IdentifyAsync(Context context);
 
         /// <summary>
