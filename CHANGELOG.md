@@ -3,6 +3,13 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [5.2.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/5.1.0...5.2.0) (2024-05-08)
+
+
+### Features
+
+* adds init async with timeout and deprecated non-timeout init functions ([#95](https://github.com/launchdarkly/dotnet-client-sdk/issues/95)) ([41e70f2](https://github.com/launchdarkly/dotnet-client-sdk/commit/41e70f2c49e864da13648bd85c2c427111e502cc))
+
 ## [5.1.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/5.0.0...5.1.0) (2024-03-14)
 
 
