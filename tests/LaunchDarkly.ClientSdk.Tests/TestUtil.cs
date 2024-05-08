@@ -125,6 +125,20 @@ namespace LaunchDarkly.Sdk.Client
             });
         }
 
+        // Calls LdClient.Init, but then sets LdClient.Instance to null so other tests can
+        // instantiate their own independent clients. Application code cannot do this because
+        // the LdClient.Instance setter has internal scope.
+        public static async Task<LdClient> CreateClientAsync(Configuration config, Context context, TimeSpan waitTime)
+        {
+            return await WithClientLockAsync(async () =>
+            {
+                ClearClient();
+                LdClient client = await LdClient.InitAsync(config, context, waitTime);
+                client.DetachInstance();
+                return client;
+            });
+        }
+
         public static void ClearClient()
         {
             WithClientLock(() => { LdClient.Instance?.Dispose(); });

@@ -47,6 +47,13 @@ namespace LaunchDarkly.Sdk.Client
         static readonly object _createInstanceLock = new object();
         static volatile LdClient _instance;
 
+        private readonly TimeSpan ExcessiveInitWaitTime = TimeSpan.FromSeconds(15);
+
+        private const String ExcessiveInitWaitTimeWarning =
+            "LDClient.Init called with max wait time parameter of {0} seconds.  We recommend a timeout of less than {1} seconds.";
+
+        private const String DidNotInitializeTimelyWarning = "Client did not initialize within {0} milliseconds.";
+
         // Immutable client state
         readonly Configuration _config;
         readonly LdClientContext _clientContext;
@@ -130,7 +137,8 @@ namespace LaunchDarkly.Sdk.Client
             _log = _clientContext.BaseLogger;
             _taskExecutor = _clientContext.TaskExecutor;
 
-            _log.Info("Starting LaunchDarkly Client {0} built with target framework {1}", Version, SdkPackage.DotNetTargetFramework);
+            _log.Info("Starting LaunchDarkly Client {0} built with target framework {1}", Version,
+                SdkPackage.DotNetTargetFramework);
 
             var persistenceConfiguration = (_config.PersistenceConfigurationBuilder ?? Components.Persistence())
                 .Build(_clientContext);
@@ -226,14 +234,43 @@ namespace LaunchDarkly.Sdk.Client
 
         void Start(TimeSpan maxWaitTime)
         {
+            if (maxWaitTime >= ExcessiveInitWaitTime)
+            {
+                _log.Warn(ExcessiveInitWaitTimeWarning, maxWaitTime, ExcessiveInitWaitTime);
+            }
+
             var success = AsyncUtils.WaitSafely(() => _connectionManager.Start(), maxWaitTime);
             if (!success)
             {
-                _log.Warn("Client did not successfully initialize within {0} milliseconds.",
-                    maxWaitTime.TotalMilliseconds);
+                _log.Warn(DidNotInitializeTimelyWarning, maxWaitTime.TotalMilliseconds);
             }
         }
 
+        /// <summary>
+        /// Starts the client and waits up to the wait time to initialize feature flags.  If offline,
+        /// returns immediately.
+        /// </summary>
+        /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
+        async Task StartAsync(TimeSpan  maxWaitTime)
+        {
+            if (maxWaitTime >= ExcessiveInitWaitTime)
+            {
+                _log.Warn(
+                    ExcessiveInitWaitTimeWarning,
+                    maxWaitTime, ExcessiveInitWaitTime);
+            }
+
+            var startTask = _connectionManager.Start();
+            var completedTask = await Task.WhenAny(startTask, Task.Delay(maxWaitTime));
+            if (completedTask != startTask)
+            {
+                _log.Warn(DidNotInitializeTimelyWarning, maxWaitTime.TotalMilliseconds);
+            }
+        }
+
+        /// <summary>
+        /// Starts the client and waits to initialize feature flags.  If offline, returns immediately.
+        /// </summary>
         async Task StartAsync()
         {
             await _connectionManager.Start();
@@ -244,16 +281,19 @@ namespace LaunchDarkly.Sdk.Client
         /// </summary>
         /// <remarks>
         /// <para>
-        /// In offline mode, this constructor will return immediately. Otherwise, it will wait and block on
-        /// the current thread until initialization and the first response from the LaunchDarkly service is
-        /// returned, up to the specified timeout. If the timeout elapses, the returned instance will have
-        /// an <see cref="Initialized"/> property of <see langword="false"/>.
+        /// The constructor will return the <see cref="LdClient"/> instance once the first response from
+        /// the LaunchDarkly service is returned, or immediately if offline, or when the the specified
+        /// wait time elapses.  If the max wait time elapses, the returned instance will have
+        /// an <see cref="Initialized"/> property of <see langword="false"/>, but the instance will continue
+        /// trying to get fresh feature flags.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use
-        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>. To
-        /// specify additional configuration options rather than just the mobile key, use
-        /// <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Sdk.Context)"/>.
+        /// To specify additional configuration options rather than just the mobile key, use
+        /// <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/>.
+        /// </para>
+        /// <para>
+        /// If you would rather an asynchronous version of this method, use
+        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -306,6 +346,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
         /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
         /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
+        [Obsolete("User has been superseded by Context, use Init(string, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan) instead.")]
         public static LdClient Init(string mobileKey, ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes,
             User initialUser, TimeSpan maxWaitTime) =>
             Init(mobileKey, autoEnvAttributes, Context.FromUser(initialUser), maxWaitTime);
@@ -317,7 +358,53 @@ namespace LaunchDarkly.Sdk.Client
         /// <remarks>
         /// <para>
         /// The returned task will yield the <see cref="LdClient"/> instance once the first response from
-        /// the LaunchDarkly service is returned (or immediately if it is in offline mode).
+        /// the LaunchDarkly service is returned or immediately if it is offline.
+        /// </para>
+        /// <para>
+        /// To specify additional configuration options rather than just the mobile key, you can use
+        /// <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/> or <see cref="InitAsync(Configuration, Sdk.Context)"/>.
+        /// </para>
+        /// <para>
+        /// If you would rather a synchronous version of this method, use
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/>.
+        /// </para>
+        /// <para>
+        /// You must use one of these static factory methods to instantiate the single instance of LdClient
+        /// for the lifetime of your application.
+        /// </para>
+        /// </remarks>
+        /// <param name="mobileKey">the mobile key given to you by LaunchDarkly</param>
+        /// <param name="autoEnvAttributes">Enable / disable Auto Environment Attributes functionality.  When enabled,
+        /// the SDK will automatically provide data about the environment where the application is running.
+        /// This data makes it simpler to target your mobile customers based on application name or version, or on
+        /// device characteristics including manufacturer, model, operating system, locale, and so on. We recommend
+        /// enabling this when you configure the SDK.  See
+        /// <a href="https://docs.launchdarkly.com/sdk/features/environment-attributes">our documentation</a> for
+        /// more details.</param>
+        /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
+        /// <returns>a Task that resolves to the singleton LdClient instance</returns>
+        [Obsolete("Initializing the LDClient without a timeout is no longer permitted to help prevent " +
+                  "consumers from blocking their application execution by mistake when connectivity is poor.  Please " +
+                  "use InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Context, TimeSpan) and specify a max wait time.")]
+        public static async Task<LdClient> InitAsync(string mobileKey,
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext)
+        {
+            var config = Configuration.Default(mobileKey, autoEnvAttributes);
+            return await InitAsync(config, initialContext);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
+        /// asynchronously.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The returned task will yield the <see cref="LdClient"/> instance once the first response from
+        /// the LaunchDarkly service is returned, or immediately if offline, or when the the specified
+        /// wait time elapses.  If the max wait time elapses, the returned instance will have
+        /// an <see cref="Initialized"/> property of <see langword="false"/>, and the instance will continue
+        /// trying to get fresh feature flags.
         /// </para>
         /// <para>
         /// If you would rather this happen synchronously, use
@@ -340,13 +427,13 @@ namespace LaunchDarkly.Sdk.Client
         /// more details.</param>
         /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
         /// about setting the context and optionally requesting a unique key for it</param>
+        /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
         public static async Task<LdClient> InitAsync(string mobileKey,
-            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext)
+            ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, Context initialContext, TimeSpan maxWaitTime)
         {
             var config = Configuration.Default(mobileKey, autoEnvAttributes);
-
-            return await InitAsync(config, initialContext);
+            return await InitAsync(config, initialContext, maxWaitTime);
         }
 
         /// <summary>
@@ -368,6 +455,7 @@ namespace LaunchDarkly.Sdk.Client
         /// more details.</param>
         /// <param name="initialUser">the initial user attributes</param>
         /// <returns>a Task that resolves to the singleton LdClient instance</returns>
+        [Obsolete("User has been superseded by Context, use Init(string, ConfigurationBuilder.AutoEnvAttributes, Context) instead.")]
         public static Task<LdClient> InitAsync(string mobileKey,
             ConfigurationBuilder.AutoEnvAttributes autoEnvAttributes, User initialUser) =>
             InitAsync(mobileKey, autoEnvAttributes, Context.FromUser(initialUser));
@@ -378,16 +466,19 @@ namespace LaunchDarkly.Sdk.Client
         /// </summary>
         /// <remarks>
         /// <para>
-        /// In offline mode, this constructor will return immediately. Otherwise, it will wait and block on
-        /// the current thread until initialization and the first response from the LaunchDarkly service is
-        /// returned, up to the specified timeout. If the timeout elapses, the returned instance will have
-        /// an <see cref="Initialized"/> property of <see langword="false"/>.
+        /// The constructor will return the <see cref="LdClient"/> instance once the first response from
+        /// the LaunchDarkly service is returned, or immediately if offline, or when the the specified
+        /// wait time elapses.  If the max wait time elapses, the returned instance will have
+        /// an <see cref="Initialized"/> property of <see langword="false"/>, but the instance will continue
+        /// trying to get fresh feature flags.
         /// </para>
         /// <para>
-        /// If you would rather this happen asynchronously, use <see cref="InitAsync(Configuration, Sdk.Context)"/>.
         /// If you do not need to specify configuration options other than the mobile key, you can use
-        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/> or
-        /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>.
+        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/>.
+        /// </para>
+        /// <para>
+        /// If you would rather an asynchronous version of this method, use
+        /// <see cref="InitAsync(Configuration, Sdk.Context, TimeSpan)"/>.
         /// </para>
         /// <para>
         /// You must use one of these static factory methods to instantiate the single instance of LdClient
@@ -433,6 +524,8 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
         /// <seealso cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, User, TimeSpan)"/>
         /// <seealso cref="InitAsync(Configuration, User)"/>
+        ///
+        [Obsolete("User has been superseded by Context, use Init(Configuration, Context, TimeSpan) instead.")]
         public static LdClient Init(Configuration config, User initialUser, TimeSpan maxWaitTime) =>
             Init(config, Context.FromUser(initialUser), maxWaitTime);
 
@@ -448,7 +541,6 @@ namespace LaunchDarkly.Sdk.Client
         /// <para>
         /// If you would rather this happen synchronously, use <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/>.
         /// If you do not need to specify configuration options other than the mobile key, you can use
-        /// <see cref="Init(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context, TimeSpan)"/> or
         /// <see cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>.
         /// </para>
         /// <para>
@@ -463,10 +555,45 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="InitAsync(Configuration, User)"/>
         /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, Sdk.Context)"/>
         /// <seealso cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
+        [Obsolete("Initializing the LDClient without a timeout is no longer permitted to help prevent " +
+                  "consumers from blocking their application execution by mistake when connectivity is poor.  Please " +
+                  "use InitAsync(Configuration, Context, TimeSpan) and specify a max wait time.")]
         public static async Task<LdClient> InitAsync(Configuration config, Context initialContext)
         {
             var c = CreateInstance(config, initialContext, TimeSpan.Zero);
             await c.StartAsync();
+            return c;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LdClient"/> singleton instance and attempts to initialize feature flags
+        /// asynchronously.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The returned task will yield the <see cref="LdClient"/> instance once the first response from
+        /// the LaunchDarkly service is returned, or immediately if offline, or when the the specified
+        /// wait time elapses.  If the max wait time elapses, the returned instance will have
+        /// an <see cref="Initialized"/> property of <see langword="false"/>, and the instance will continue
+        /// trying to get fresh feature flags.
+        /// </para>
+        /// <para>
+        /// If you would rather this happen synchronously, use <see cref="Init(Configuration, Sdk.Context, TimeSpan)"/>
+        /// </para>
+        /// <para>
+        /// You must use one of these static factory methods to instantiate the single instance of LdClient
+        /// for the lifetime of your application.
+        /// </para>
+        /// </remarks>
+        /// <param name="config">the client configuration</param>
+        /// <param name="initialContext">the initial evaluation context; see <see cref="LdClient"/> for more
+        /// about setting the context and optionally requesting a unique key for it</param>
+        /// <param name="maxWaitTime">the maximum length of time to wait for the client to initialize</param>
+        /// <returns>a Task that resolves to the singleton LdClient instance</returns>
+        public static async Task<LdClient> InitAsync(Configuration config, Context initialContext, TimeSpan maxWaitTime)
+        {
+            var c = CreateInstance(config, initialContext, TimeSpan.Zero);
+            await c.StartAsync(maxWaitTime);
             return c;
         }
 
@@ -484,6 +611,7 @@ namespace LaunchDarkly.Sdk.Client
         /// <seealso cref="InitAsync(Configuration, Sdk.Context)"/>
         /// <seealso cref="InitAsync(string, ConfigurationBuilder.AutoEnvAttributes, User)"/>
         /// <seealso cref="Init(Configuration, User, TimeSpan)"/>
+        [Obsolete("User has been superseded by Context, use InitAsync(Configuration, Context) instead.")]
         public static Task<LdClient> InitAsync(Configuration config, User initialUser) =>
             InitAsync(config, Context.FromUser(initialUser));
 

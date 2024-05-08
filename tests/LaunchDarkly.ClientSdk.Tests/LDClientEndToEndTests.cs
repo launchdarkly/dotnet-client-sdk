@@ -37,7 +37,7 @@ namespace LaunchDarkly.Sdk.Client
             { new object[] { UpdateMode.Polling } },
             { new object[] { UpdateMode.Streaming } }
         };
-        
+
         public LdClientEndToEndTests(ITestOutputHelper testOutput) : base(testOutput) { }
 
         [Theory]
@@ -106,7 +106,26 @@ namespace LaunchDarkly.Sdk.Client
                     Assert.False(client.Initialized);
                     Assert.Null(client.StringVariation(_flagData1.Items.First().Key, null));
                     Assert.True(logCapture.HasMessageWithText(Logging.LogLevel.Warn,
-                        "Client did not successfully initialize within 200 milliseconds."));
+                        "Client did not initialize within 200 milliseconds."));
+                }
+            }
+        }
+
+        [Fact]
+        public async void InitCanTimeOutAsync()
+        {
+            var handler = Handlers.Delay(TimeSpan.FromSeconds(2)).Then(SetupResponse(_flagData1, UpdateMode.Polling));
+            using (var server = HttpServer.Start(handler))
+            {
+                var config = BaseConfig(builder =>
+                    builder.DataSource(Components.PollingDataSource())
+                        .ServiceEndpoints(Components.ServiceEndpoints().Polling(server.Uri)));
+                using (var client = await TestUtil.CreateClientAsync(config, _user, TimeSpan.FromMilliseconds(200)))
+                {
+                    Assert.False(client.Initialized);
+                    Assert.Null(client.StringVariation(_flagData1.Items.First().Key, null));
+                    Assert.True(logCapture.HasMessageWithText(Logging.LogLevel.Warn,
+                        "Client did not initialize within 200 milliseconds."));
                 }
             }
         }
