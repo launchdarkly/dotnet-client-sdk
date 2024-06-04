@@ -13,8 +13,9 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
         private readonly FlagDataManager _store;
         private readonly FlagTrackerImpl _flagTracker;
         private readonly DataSourceUpdateSinkImpl _updateSink;
-        private readonly Context _basicUser = Context.New("user-key");
-        private readonly Context _otherUser = Context.New("other-key");
+        
+        private readonly Context _basicUser = Context.NewMulti(Context.New(ContextKind.Of("user"), "user-key1"), Context.New(ContextKind.Of("custom-kind"), "custom-key1"));
+        private readonly Context _otherUser = Context.NewMulti(Context.New(ContextKind.Of("user"), "user-key2"), Context.New(ContextKind.Of("custom-kind"), "custom-key2"));
 
         public DataSourceUpdateSinkImplTest(ITestOutputHelper testOutput) : base(testOutput)
         {

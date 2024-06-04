@@ -52,9 +52,10 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
             _dataStore.Init(context, data, true);
 
             ImmutableDictionary<string, FeatureFlag> oldValues, newValues;
+            var contextKey = context.FullyQualifiedKey;
             lock (_lastValuesLock)
             {
-                _lastValues.TryGetValue(context.Key, out oldValues);
+                _lastValues.TryGetValue(contextKey, out oldValues);
                 var builder = ImmutableDictionary.CreateBuilder<string, FeatureFlag>();
                 foreach (var newEntry in data.Items)
                 {
@@ -65,7 +66,7 @@ namespace LaunchDarkly.Sdk.Client.Internal.DataSources
                     }
                 }
                 newValues = builder.ToImmutable();
-                _lastValues = _lastValues.SetItem(context.Key, newValues);
+                _lastValues = _lastValues.SetItem(contextKey, newValues);
             }
 
             UpdateStatus(DataSourceState.Valid, null);
