@@ -596,7 +596,7 @@ namespace LaunchDarkly.Sdk.Client.Integrations
                 }
                 int variation;
                 if (!_variationByContextKey.TryGetValue(context.Kind, out var keys) ||
-                    !keys.TryGetValue(context.Key, out variation))
+                    !keys.TryGetValue(context.FullyQualifiedKey, out variation))
                 {
                     variation = _variationFunc?.Invoke(context) ?? _defaultVariation;
                 }

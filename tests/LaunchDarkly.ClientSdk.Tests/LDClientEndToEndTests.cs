@@ -182,7 +182,7 @@ namespace LaunchDarkly.Sdk.Client
                     var success = client.Identify(_otherUser, TimeSpan.FromSeconds(5));
                     Assert.True(success);
                     Assert.True(client.Initialized);
-                    Assert.Equal(_otherUser.Key, client.Context.Key); // don't compare entire user, because SDK may have added device/os attributes
+                    Assert.Equal(_otherUser.FullyQualifiedKey, client.Context.FullyQualifiedKey); // don't compare entire user, because SDK may have added device/os attributes
 
                     var req2 = VerifyRequest(server.Recorder, mode);
                     Assert.NotEqual(user1RequestPath, req2.Path);
@@ -211,7 +211,7 @@ namespace LaunchDarkly.Sdk.Client
                     var success = await client.IdentifyAsync(_otherUser);
                     Assert.True(success);
                     Assert.True(client.Initialized);
-                    Assert.Equal(_otherUser.Key, client.Context.Key); // don't compare entire user, because SDK may have added device/os attributes
+                    Assert.Equal(_otherUser.FullyQualifiedKey, client.Context.FullyQualifiedKey); // don't compare entire user, because SDK may have added device/os attributes
 
                     var req2 = VerifyRequest(server.Recorder, mode);
                     Assert.NotEqual(user1RequestPath, req2.Path);
