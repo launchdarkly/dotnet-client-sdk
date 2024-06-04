@@ -257,7 +257,7 @@ namespace LaunchDarkly.Sdk.Client
         /// </para>
         /// <list type="bullet">
         /// <item><description> The first time this happens in the application, the SDK will generate a
-        /// pseudo-random GUID and overwrite the context's <see cref="Context.FullyQualifiedKey"/> with this string.
+        /// pseudo-random GUID and overwrite the context's <see cref="Context.Key"/> with this string.
         /// </description></item>
         /// <item><description> The SDK will then cache this key so that the same key will be reused next time.
         /// </description></item>
