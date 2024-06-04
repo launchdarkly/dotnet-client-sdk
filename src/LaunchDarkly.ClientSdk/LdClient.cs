@@ -32,7 +32,7 @@ namespace LaunchDarkly.Sdk.Client
     /// <para>
     /// Normally, the SDK uses the exact context that you have specified in the <see cref="Context"/>. However,
     /// you can also tell the SDK to generate a randomized identifier and use this as the context's
-    /// <see cref="Context.Key"/>; see <see cref="ConfigurationBuilder.GenerateAnonymousKeys(bool)"/>.
+    /// <see cref="Context.FullyQualifiedKey"/>; see <see cref="ConfigurationBuilder.GenerateAnonymousKeys(bool)"/>.
     /// </para>
     /// <para>
     /// If you use more than one <see cref="ContextKind"/> in your evaluation contexts, and you request a
