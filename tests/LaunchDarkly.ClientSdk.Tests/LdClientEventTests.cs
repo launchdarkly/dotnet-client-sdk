@@ -48,7 +48,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.Context.Key);
+                        Assert.Equal(user.FullyQualifiedKey, ce.Context.FullyQualifiedKey);
                         Assert.Equal(LdValue.Null, ce.Data);
                         Assert.Null(ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -68,7 +68,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.Context.Key);
+                        Assert.Equal(user.FullyQualifiedKey, ce.Context.FullyQualifiedKey);
                         Assert.Equal(data, ce.Data);
                         Assert.Null(ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -89,7 +89,7 @@ namespace LaunchDarkly.Sdk.Client
                     e => {
                         CustomEvent ce = Assert.IsType<CustomEvent>(e);
                         Assert.Equal("eventkey", ce.EventKey);
-                        Assert.Equal(user.Key, ce.Context.Key);
+                        Assert.Equal(user.FullyQualifiedKey, ce.Context.FullyQualifiedKey);
                         Assert.Equal(data, ce.Data);
                         Assert.Equal(metricValue, ce.MetricValue);
                         Assert.NotEqual(0, ce.Timestamp.Value);
@@ -336,7 +336,7 @@ namespace LaunchDarkly.Sdk.Client
         private void CheckIdentifyEvent(object e, Context c)
         {
             IdentifyEvent ie = Assert.IsType<IdentifyEvent>(e);
-            Assert.Equal(c.Key, ie.Context.Key);
+            Assert.Equal(c.FullyQualifiedKey, ie.Context.FullyQualifiedKey);
             Assert.NotEqual(0, ie.Timestamp.Value);
         }
     }

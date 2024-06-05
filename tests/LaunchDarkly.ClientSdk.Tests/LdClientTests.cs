@@ -66,7 +66,7 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                key1 = client.Context.Key;
+                key1 = client.Context.FullyQualifiedKey;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
@@ -77,7 +77,7 @@ namespace LaunchDarkly.Sdk.Client
             // Starting again should generate a new key, since we've turned off persistence
             using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                var key2 = client.Context.Key;
+                var key2 = client.Context.FullyQualifiedKey;
                 Assert.NotNull(key2);
                 Assert.NotEqual("", key2);
                 Assert.NotEqual(key1, key2);
@@ -112,7 +112,7 @@ namespace LaunchDarkly.Sdk.Client
 
             using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                key1 = client.Context.Key;
+                key1 = client.Context.FullyQualifiedKey;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
@@ -123,7 +123,7 @@ namespace LaunchDarkly.Sdk.Client
             // Starting again should reuse the persisted key
             using (var client = await TestUtil.CreateClientAsync(config, AnonUser))
             {
-                Assert.Equal(key1, client.Context.Key);
+                Assert.Equal(key1, client.Context.FullyQualifiedKey);
                 AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(AnonUser).Key(key1).Build(),
                     client.Context);
@@ -147,7 +147,7 @@ namespace LaunchDarkly.Sdk.Client
                 Assert.NotEqual(AnonUser, receivedContext);
                 Assert.Equal(client.Context, receivedContext);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(AnonUser).Key(receivedContext.Key).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(receivedContext.FullyQualifiedKey).Build(),
                     receivedContext);
             }
         }
@@ -187,7 +187,7 @@ namespace LaunchDarkly.Sdk.Client
                 Assert.NotEqual(AnonUser, receivedContext);
                 Assert.Equal(client.Context, receivedContext);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(AnonUser).Key(receivedContext.Key).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(receivedContext.FullyQualifiedKey).Build(),
                     receivedContext);
             }
         }
@@ -200,7 +200,7 @@ namespace LaunchDarkly.Sdk.Client
                 var updatedUser = Context.New("some new key");
                 var success = client.Identify(updatedUser, TimeSpan.FromSeconds(1));
                 Assert.True(success);
-                Assert.Equal(client.Context.Key, updatedUser.Key); // don't compare entire user, because SDK may have added device/os attributes
+                Assert.Equal(client.Context.FullyQualifiedKey, updatedUser.FullyQualifiedKey); // don't compare entire user, because SDK may have added device/os attributes
             }
         }
 
@@ -230,7 +230,7 @@ namespace LaunchDarkly.Sdk.Client
             var dataSourceFactory = MockComponents.ComponentConfigurerFromLambda<IDataSource>(ctx =>
                 new MockDataSourceFromLambda(ctx.CurrentContext, async () =>
                 {
-                    switch (ctx.CurrentContext.Key)
+                    switch (ctx.CurrentContext.FullyQualifiedKey)
                     {
                         case "a":
                             ctx.DataSourceUpdateSink.Init(ctx.CurrentContext, userAFlags);
@@ -308,7 +308,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(AnonUser);
 
-                key1 = client.Context.Key;
+                key1 = client.Context.FullyQualifiedKey;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
@@ -317,7 +317,7 @@ namespace LaunchDarkly.Sdk.Client
 
                 var anonUser2 = TestUtil.BuildAutoContext().Name("other").Build();
                 await client.IdentifyAsync(anonUser2);
-                var key2 = client.Context.Key;
+                var key2 = client.Context.FullyQualifiedKey;
                 Assert.Equal(key1, key2); // Even though persistence is disabled, the key is stable during the lifetime of the SDK client.
                 AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(anonUser2).Key(key2).Build(),
@@ -328,7 +328,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(AnonUser);
 
-                var key3 = client.Context.Key;
+                var key3 = client.Context.FullyQualifiedKey;
                 Assert.NotNull(key3);
                 Assert.NotEqual("", key3);
                 Assert.NotEqual(key1, key3); // The previously generated key was discarded with the previous client.
@@ -365,7 +365,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(AnonUser);
 
-                key1 = client.Context.Key;
+                key1 = client.Context.FullyQualifiedKey;
                 Assert.NotNull(key1);
                 Assert.NotEqual("", key1);
                 AssertHelpers.ContextsEqual(
@@ -377,7 +377,7 @@ namespace LaunchDarkly.Sdk.Client
             {
                 await client.IdentifyAsync(AnonUser);
 
-                var key2 = client.Context.Key;
+                var key2 = client.Context.FullyQualifiedKey;
                 Assert.Equal(key1, key2);
                 AssertHelpers.ContextsEqual(
                     Context.BuilderFromContext(AnonUser).Key(key2).Build(),
@@ -404,7 +404,7 @@ namespace LaunchDarkly.Sdk.Client
                 Assert.NotEqual(AnonUser, receivedContext);
                 Assert.Equal(client.Context, receivedContext);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(AnonUser).Key(client.Context.Key).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(client.Context.FullyQualifiedKey).Build(),
                     receivedContext);
             }
         }
@@ -448,7 +448,7 @@ namespace LaunchDarkly.Sdk.Client
                 Assert.NotEqual(AnonUser, receivedContext);
                 Assert.Equal(client.Context, receivedContext);
                 AssertHelpers.ContextsEqual(
-                    Context.BuilderFromContext(AnonUser).Key(receivedContext.Key).Build(),
+                    Context.BuilderFromContext(AnonUser).Key(receivedContext.FullyQualifiedKey).Build(),
                     receivedContext);
             }
         }
