@@ -3,6 +3,13 @@
 All notable changes to the LaunchDarkly Client-Side SDK for .NET will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org).
 
+## [5.2.1](https://github.com/launchdarkly/dotnet-client-sdk/compare/5.2.0...5.2.1) (2024-06-05)
+
+
+### Bug Fixes
+
+* fixes issue where first flag listener callback was not triggered… ([#97](https://github.com/launchdarkly/dotnet-client-sdk/issues/97)) ([6bf8ec1](https://github.com/launchdarkly/dotnet-client-sdk/commit/6bf8ec160ee29984928bb7320ddd1f6f8580d7a9))
+
 ## [5.2.0](https://github.com/launchdarkly/dotnet-client-sdk/compare/5.1.0...5.2.0) (2024-05-08)
 
 
