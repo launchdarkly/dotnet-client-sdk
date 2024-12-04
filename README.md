@@ -1,5 +1,9 @@
 # LaunchDarkly Client-Side SDK for .NET
 
+> [!WARNING]  
+> The Client-Side SDK for .NET has moved! Please visit [launchdarkly/dotnet-core](https://github.com/launchdarkly/dotnet-core) to get started. This repo is no longer maintained.
+
+
 [![NuGet](https://img.shields.io/nuget/v/LaunchDarkly.ClientSdk.svg?style=flat-square)](https://www.nuget.org/packages/LaunchDarkly.ClientSdk/)
 [![CircleCI](https://circleci.com/gh/launchdarkly/dotnet-client-sdk.svg?style=shield)](https://circleci.com/gh/launchdarkly/dotnet-client-sdk)
 [![Documentation](https://img.shields.io/static/v1?label=GitHub+Pages&message=API+reference&color=00add8)](https://launchdarkly.github.io/dotnet-client-sdk)
