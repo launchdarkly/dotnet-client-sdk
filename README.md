@@ -1,3 +1,7 @@
+# [DEPRECATED]
+
+Development has moved to [dotnet-core repository](https://github.com/launchdarkly/dotnet-core/tree/main/pkgs/sdk/client). This repository remains here to support legacy references to dotnet-client-sdk.
+
 # LaunchDarkly Client-Side SDK for .NET
 
 > [!WARNING]  
